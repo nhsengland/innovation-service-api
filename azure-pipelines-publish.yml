@@ -1,0 +1,78 @@
+trigger:
+- develop
+pr: none
+
+pool:
+  vmImage: windows-latest
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '12.x'
+  displayName: 'Install Node.js'
+
+- task: Npm@1
+  inputs:
+    command: 'install'
+    verbose: true
+    customRegistry: 'useFeed'
+    customFeed: 'd9ecb648-bec3-489a-8033-491efc9722a1/68378af9-2d8c-48bf-b1c8-9a01f4ad4851'
+  displayName: 'Install dependencies'
+
+
+- task: Npm@1
+  inputs:
+    command: 'custom'
+    customCommand: 'install -g azure-functions-core-tools'
+  displayName: 'Install azure-function-core-tools'
+  
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: 'func extensions install'
+  displayName: 'Install Func extensions'
+
+- script: |
+    npm run build
+  displayName: 'Run Build'
+
+- script: |
+    npm test
+  displayName: 'Run Tests'
+
+- task: CopyFiles@2
+  inputs:
+    Contents: |
+      **/*
+      !.git/**
+      !coverage/**
+      !.vscode/**
+      !azure-pipelines-build-and-publish.yml
+      !azure-pipelines-pull-request.yml
+      !jest.config.js
+      !local.settings.json
+      !package-lock.json
+      !README.MD
+      !commitizen.js
+      !azure-pipelines-publish.yml
+      !.eslintrc.js
+      !.npmrc
+      !.gitignore
+      !.funcignore
+      !__tests__
+      !surveyCreateOne
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/Functions.zip'
+    replaceExistingArchive: true
+  
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/Functions.zip'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'

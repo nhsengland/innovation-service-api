@@ -1,0 +1,61 @@
+{
+  "name": "nhseiaacapi",
+  "description": "A generated Azure Functions App for NhseIAACAPI.",
+  "version": "1.0.0",
+  "dependencies": {
+    "@azure/core-http": "^1.1.4",
+    "@azure/cosmos": "^3.10.3",
+    "axios": "^0.21.1",
+    "joi": "^17.4.0",
+    "jwt-decode": "^3.1.2",
+    "mongoose": "^5.12.0",
+    "nhs-aac-domain-services": "0.0.20-0",
+    "tslib": "^1.9.3"
+  },
+  "keywords": [
+    "node",
+    "azure",
+    "typescript",
+    "browser",
+    "azure-functions"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "prestart": "npm run build",
+    "start": "func start",
+    "test:ci": "test -- --ci --reporters=jest-junit --reporters=default --coverage --coverageReporters=cobertura",
+    "test": "jest --runInBand --coverage",
+    "lint": "eslint */**/*.{ts,tsx}",
+    "lint:fix": "eslint */**/*.{ts,tsx} --fix",
+    "commit": "git-cz"
+  },
+  "devDependencies": {
+    "@azure/core-http": "^1.1.4",
+    "@azure/functions": "^1.0.2-beta2",
+    "@types/jest": "^26.0.21",
+    "@typescript-eslint/eslint-plugin": "^4.19.0",
+    "eslint": "^7.22.0",
+    "git-cz": "^4.7.6",
+    "husky": "^1.0.0-rc.13",
+    "jest": "^26.6.3",
+    "prettier": "^2.2.1",
+    "stub-azure-function-context": "^2.0.0-alpha.5",
+    "ts-jest": "^26.5.4",
+    "typescript": "^3.3.3",
+    "eslint-config-prettier": "^7.2.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "@typescript-eslint/parser": "^4.15.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./commitizen.js",
+      "jiraMode": true
+    }
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint && npm test"
+    }
+  }
+}

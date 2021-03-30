@@ -1,0 +1,8 @@
+.git
+coverage
+.vscode
+azure-pipelines-build-and-publish.yml
+azure-pipelines-pull-request.yml
+jest.config.js
+local.settings.json
+package-lock.json
