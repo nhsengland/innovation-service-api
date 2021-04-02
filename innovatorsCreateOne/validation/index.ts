@@ -2,9 +2,6 @@ import Joi = require("joi");
 
 const payloadSchema = Joi.object({
   actionType: Joi.string().valid("first_time_signin", "invitation").required(),
-  innovator: Joi.object({
-    surveyId: Joi.string().required(),
-  }),
   innovation: Joi.object({
     name: Joi.string().required(),
     description: Joi.string().required(),

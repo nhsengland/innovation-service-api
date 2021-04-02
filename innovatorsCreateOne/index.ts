@@ -30,47 +30,55 @@ export default async function innovatorsCreateOne(
   try {
     await setupSQLConnection();
   } catch (error) {
-    context.log(error);
+    context.log.error(error);
     context.res = Responsify.Internal({
       error: "Error establishing connection with the datasource.",
     });
     return;
   }
 
-  context.log("Database connection established");
+  context.log.info("Database connection established");
 
   const payload = req.body;
   const payloadValidation = ValidatePayload(payload);
 
   if (payloadValidation.error) {
-    context.log(payloadValidation.error);
+    context.log.error(payloadValidation.error);
     context.res = Responsify.BadData({ error: "Payload validation failed." });
     return;
   }
 
-  context.log("Payload validation succeeded");
+  context.log.info("Payload validation succeeded");
 
   const headersValidation = ValidateHeaders(req.headers);
 
   if (headersValidation.error) {
-    context.log(headersValidation.error);
+    context.log.error(headersValidation.error);
     context.res = Responsify.BadRequest({
       error: "Headers validation failed.",
     });
     return;
   }
-
-  context.log("Headers validation succeeded");
+  context.log.info("Headers validation succeeded");
 
   const token = req.headers.authorization;
   const jwt = jwt_decode(token) as any;
   const oid = jwt.oid;
+  const surveyId = jwt.extension_surveyId;
 
-  context.log(oid);
+  context.log.info(`oid => ${oid}`);
+  context.log.info(`surveyId => ${surveyId}`);
+
+  if (!surveyId) {
+    context.res = Responsify.BadRequest({
+      error: "SurveyId missing from JWT.",
+    });
+    return;
+  }
 
   try {
     await persistence.updateUserDisplayName({ user: payload.user, oid });
-    context.log("Updated User display name");
+    context.log.info("Updated User display name");
   } catch (error) {
     context.log.error(error);
     context.res = Responsify.Internal();
@@ -85,7 +93,7 @@ export default async function innovatorsCreateOne(
   }
 
   try {
-    const innovator: Innovator = Innovator.new({ ...payload.innovator, oid });
+    const innovator: Innovator = Innovator.new({ surveyId, oid });
     const innovation: Innovation = Innovation.new({ ...payload.innovation });
     const organisation: Organisation = Organisation.new({
       ...payload.organisation,
@@ -98,7 +106,7 @@ export default async function innovatorsCreateOne(
     );
 
     context.res = Responsify.Created(result);
-    context.log("Innovator was created");
+    context.log.info("Innovator was created");
   } catch (error) {
     context.log.error(error);
     context.res = Responsify.Internal();

@@ -11,7 +11,7 @@ export default async function surveyCreateOne(
   try {
     await setupCosmosDb();
   } catch (error) {
-    context.log(error);
+    context.log.error(error);
     context.res = Responsify.Internal({
       error: "Error establishing connection with the datasource.",
     });
@@ -21,7 +21,7 @@ export default async function surveyCreateOne(
   const surveyItem = req.body;
   const validationRes = ValidatePayload(surveyItem);
   if (validationRes.error) {
-    context.log(validationRes.error);
+    context.log.error(validationRes.error);
     context.res = Responsify.BadData({ error: "Payload validation failed." });
     return;
   }
@@ -34,7 +34,7 @@ export default async function surveyCreateOne(
 
     context.res = Responsify.Created(data);
   } catch (error) {
-    context.log(error);
+    context.log.error(error);
     context.res = Responsify.Internal({
       error: "Error occured while saving to the datastore.",
     });

@@ -14,7 +14,6 @@ module.exports = {
     "coverage",
     "jest.config.js",
     "schemas",
-    "innovatorsCreateOne/persistence",
     "innovatorsCreateInnovation",
     "innovatorsDeleteInnovation",
     "innovatorsGetOne",
@@ -28,7 +27,6 @@ module.exports = {
     "usersUpdateInfo",
     "commitizen.js",
     ".eslintrc.js",
-    "innovatorsHeadOne",
   ],
   coverageDirectory: "./coverage",
   coverageThreshold: {
