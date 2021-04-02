@@ -19,19 +19,6 @@ steps:
     customFeed: 'd9ecb648-bec3-489a-8033-491efc9722a1/68378af9-2d8c-48bf-b1c8-9a01f4ad4851'
   displayName: 'Install dependencies'
 
-
-- task: Npm@1
-  inputs:
-    command: 'custom'
-    customCommand: 'install -g azure-functions-core-tools'
-  displayName: 'Install azure-function-core-tools'
-  
-- task: PowerShell@2
-  inputs:
-    targetType: 'inline'
-    script: 'func extensions install'
-  displayName: 'Install Func extensions'
-
 - script: |
     npm run build
   displayName: 'Run Build'
