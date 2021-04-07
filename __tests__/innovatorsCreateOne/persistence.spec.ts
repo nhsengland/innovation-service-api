@@ -9,7 +9,7 @@ import {
 } from "nhs-aac-domain-services";
 import * as typeorm from "typeorm";
 
-describe("[innovatorCreateOne] Persistence suite", () => {
+describe("[innovatorsCreateOne] Persistence suite", () => {
   describe("createInnovator", () => {
     it("should create an Innovator and its dependencies", async () => {
       // Arrange

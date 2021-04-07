@@ -2,7 +2,7 @@ import * as persistence from "../../innovatorsHeadOne/persistence";
 import { InnovatorService } from "nhs-aac-domain-services";
 import * as typeorm from "typeorm";
 
-describe("[innovatorHeadOne] Persistence suite", () => {
+describe("[innovatorsHeadOne] Persistence suite", () => {
   describe("headInnovator", () => {
     it("should assess if an Innovator exists", async () => {
       // Arrange

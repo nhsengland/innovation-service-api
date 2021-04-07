@@ -1,8 +1,8 @@
 import { Context, HttpRequest } from "@azure/functions";
 import * as persistence from "./persistence";
-import jwt_decode from "jwt-decode";
 import * as Responsify from "../utils/responsify";
 import { setupSQLConnection } from "../utils/connection";
+import { decodeToken } from "../utils/authentication";
 
 export default async function innovatorsGetAllInnovations(
   context: Context,
@@ -21,7 +21,7 @@ export default async function innovatorsGetAllInnovations(
 
   const innovatorId = req.params.innovatorId;
   const token = req.headers.authorization;
-  const jwt = jwt_decode(token) as any;
+  const jwt = decodeToken(token);
   const oid = jwt.oid;
 
   if (innovatorId !== oid) {

@@ -1,8 +1,8 @@
 import { Context, HttpRequest } from "@azure/functions";
 import * as persistence from "./persistence";
-import jwt_decode from "jwt-decode";
 import * as Responsify from "../utils/responsify";
 import { setupSQLConnection } from "../utils/connection";
+import { decodeToken } from "../utils/authentication";
 
 export default async function innovatorsGetInnovation(
   context: Context,
@@ -22,7 +22,7 @@ export default async function innovatorsGetInnovation(
   const innovatorId = req.params.innovatorId;
   const innovationId = req.params.innovationId;
   const token = req.headers.authorization;
-  const jwt = jwt_decode(token) as any;
+  const jwt = decodeToken(token);
   const oid = jwt.oid;
 
   if (innovatorId !== oid) {
@@ -32,7 +32,7 @@ export default async function innovatorsGetInnovation(
 
   let result;
   try {
-    result = await persistence.findAllInnovationsByInnovator(
+    result = await persistence.findInnovationsByInnovator(
       innovatorId,
       innovationId
     );

@@ -1,14 +1,14 @@
-import * as persistence from "../../innovatorsHeadOne/persistence";
-import innovatorsHeadOne from "../../innovatorsHeadOne";
+import * as persistence from "../../innovatorsGetAllInnovations/persistence";
+import innovatorsGetAllInnovations from "../../innovatorsGetAllInnovations";
 import * as connection from "../../utils/connection";
-import * as validation from "../../innovatorsHeadOne/validation";
+import * as authentication from "../../utils/authentication";
 
 import {
   runStubFunctionFromBindings,
   createHttpTrigger,
 } from "stub-azure-function-context";
 
-describe("[HttpTrigger] innovatorHeadOne Suite", () => {
+describe("[HttpTrigger] innovatorsGetAllInnovations Suite", () => {
   describe("Function Handler", () => {
     afterEach(() => {
       jest.resetAllMocks();
@@ -27,19 +27,13 @@ describe("[HttpTrigger] innovatorHeadOne Suite", () => {
       );
     });
 
-    it("fails on missing authorization header", async () => {
+    it("Should return 200 when Innovations is found", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(validation, "ValidateParams").and.returnValue({
-        error: "missing innovatorId",
+      spyOn(authentication, "decodeToken").and.returnValue({
+        oid: "test_innovator_id",
       });
-      const { res } = await mockedRequestFactory({});
-      expect(res.status).toBe(400);
-    });
-
-    it("Should return 200 when Innovator is found", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(persistence, "findInnovatorById").and.returnValue([
-        { innovator: "" },
+      spyOn(persistence, "findAllInnovationsByInnovator").and.returnValue([
+        { innovator: "test_innovator_id" },
       ]);
 
       const { res } = await mockedRequestFactory({});
@@ -50,15 +44,15 @@ describe("[HttpTrigger] innovatorHeadOne Suite", () => {
 
 async function mockedRequestFactory(data?: any) {
   return runStubFunctionFromBindings(
-    innovatorsHeadOne,
+    innovatorsGetAllInnovations,
     [
       {
         type: "httpTrigger",
         name: "req",
         direction: "in",
         data: createHttpTrigger(
-          "HEAD",
-          "http://nhse-i-aac/api/surveys",
+          "GET",
+          "http://nhse-i-aac/api/innovators/{innovatorId}/innovations",
           { ...data.headers }, // headers
           { innovatorId: "test_innovator_id" }, // ?
           {}, // payload/body
