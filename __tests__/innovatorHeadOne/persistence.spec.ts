@@ -8,13 +8,12 @@ describe("[innovatorHeadOne] Persistence suite", () => {
       // Arrange
       spyOn(typeorm, "getRepository");
       spyOn(typeorm, "getConnection");
-      const spy = spyOn(
-        InnovatorService.prototype,
-        "findByOid"
-      ).and.returnValue([{ innovator: "" }]);
+      const spy = spyOn(InnovatorService.prototype, "find").and.returnValue([
+        { innovator: "" },
+      ]);
 
       // Act
-      await persistence.findInnovatorByOid("test_innovator_oid");
+      await persistence.findInnovatorById("test_innovator_oid");
 
       expect(spy).toHaveBeenCalled();
     });

@@ -1,8 +1,8 @@
 import { InnovatorService } from "nhs-aac-domain-services";
 
-export const findInnovatorByOid = async (oid: string) => {
+export const findInnovatorById = async (oid: string) => {
   const service = new InnovatorService();
-  const result = await service.findByOid(oid);
+  const result = await service.find(oid);
 
   return result;
 };

@@ -38,7 +38,7 @@ describe("[HttpTrigger] innovatorHeadOne Suite", () => {
 
     it("Should return 200 when Innovator is found", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(persistence, "findInnovatorByOid").and.returnValue([
+      spyOn(persistence, "findInnovatorById").and.returnValue([
         { innovator: "" },
       ]);
 

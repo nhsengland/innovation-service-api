@@ -1,20 +1,46 @@
-import { AzureFunction, Context, HttpRequest } from "@azure/functions";
+import { Context, HttpRequest } from "@azure/functions";
+import * as persistence from "./persistence";
+import jwt_decode from "jwt-decode";
+import * as Responsify from "../utils/responsify";
+import { setupSQLConnection } from "../utils/connection";
 
 export default async function innovatorsGetInnovation(
   context: Context,
   req: HttpRequest
 ): Promise<void> {
-  context.log("HTTP trigger function processed a request.");
+  try {
+    await setupSQLConnection();
+  } catch (error) {
+    context.log.error(error);
+    context.res = Responsify.Internal({
+      error: "Error establishing connection with the datasource.",
+    });
+    return;
+  }
+  context.log.info("Database connection established");
 
-  //
-  const innovatorId = req.query.innovatorId;
+  const innovatorId = req.params.innovatorId;
+  const innovationId = req.params.innovationId;
+  const token = req.headers.authorization;
+  const jwt = jwt_decode(token) as any;
+  const oid = jwt.oid;
 
-  //
-  const innovationId = req.query.innovationId;
+  if (innovatorId !== oid) {
+    context.res = Responsify.Forbidden({ error: "Operation denied." });
+    return;
+  }
 
-  //
-  const authorization = req.query.authorization;
+  let result;
+  try {
+    result = await persistence.findAllInnovationsByInnovator(
+      innovatorId,
+      innovationId
+    );
+  } catch (error) {
+    context.log.error(error);
+    context.res = Responsify.Internal();
+    return;
+  }
 
-  // Default response code is 200.
-  context.res = { body: "Successfully Setup" };
+  context.res = Responsify.Ok(result);
 }

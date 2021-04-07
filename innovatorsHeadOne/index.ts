@@ -28,9 +28,9 @@ export default async function innovatorsHeadOne(
 
   const oid = req.params.innovatorId;
 
-  const result = await persistence.findInnovatorByOid(oid);
+  const result = await persistence.findInnovatorById(oid);
 
-  if (result && result.length > 0) {
+  if (result) {
     context.res = Responsify.Ok();
     return;
   }

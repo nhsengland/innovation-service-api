@@ -1,5 +1,5 @@
 import { Context, HttpRequest } from "@azure/functions";
-import { Innovator, Innovation, Organisation } from "nhs-aac-domain-services";
+import { User, Innovation, Organisation } from "nhs-aac-domain-services";
 import * as persistence from "./persistence";
 import jwt_decode from "jwt-decode";
 import * as Responsify from "../utils/responsify";
@@ -93,8 +93,11 @@ export default async function innovatorsCreateOne(
   }
 
   try {
-    const innovator: Innovator = Innovator.new({ surveyId, oid });
-    const innovation: Innovation = Innovation.new({ ...payload.innovation });
+    const innovator: User = User.new({ id: oid });
+    const innovation: Innovation = Innovation.new({
+      ...payload.innovation,
+      surveyId,
+    });
     const organisation: Organisation = Organisation.new({
       ...payload.organisation,
     });
