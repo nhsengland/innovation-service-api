@@ -1,8 +1,8 @@
-import { Innovation, Innovator, Organisation } from "nhs-aac-domain";
+import { Innovation, Organisation, User } from "nhs-aac-domain";
 import { ADUserService, InnovatorService } from "nhs-aac-domain-services";
 
 export const createInnovator = async (
-  innovator: Innovator,
+  innovator: User,
   innovation: Innovation,
   organisation: Organisation
 ) => {

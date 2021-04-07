@@ -2,18 +2,18 @@ import { Survey } from "../../schemas/Survey";
 import * as persistence from "../../innovatorsCreateOne/persistence";
 import {
   Innovation,
-  Innovator,
   InnovatorService,
+  User,
   ADUserService,
   Organisation,
 } from "nhs-aac-domain-services";
 import * as typeorm from "typeorm";
 
-describe("[innovatorCreateOne] Persistence suite", () => {
+describe("[innovatorsCreateOne] Persistence suite", () => {
   describe("createInnovator", () => {
     it("should create an Innovator and its dependencies", async () => {
       // Arrange
-      const innovator = new Innovator();
+      const innovator = new User();
       const innovation = new Innovation();
       const organisation = new Organisation();
       const result = {
