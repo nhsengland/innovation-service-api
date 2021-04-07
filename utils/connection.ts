@@ -11,6 +11,7 @@ export const setupCosmosDb = async () => {
       dbName: process.env.COSMOS_DB_NAME,
     });
     isCosmosConnected = true;
+    return connectionString;
   }
 };
 
