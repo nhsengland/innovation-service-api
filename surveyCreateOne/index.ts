@@ -8,10 +8,16 @@ export default async function surveyCreateOne(
   context: Context,
   req: HttpRequest
 ): Promise<void> {
+  let connectionString;
   try {
-    await setupCosmosDb();
+    connectionString = await setupCosmosDb();
   } catch (error) {
     context.log.error(error);
+    context.log.error(`key: ${process.env.COSMOSDB_KEY}`);
+    context.log.error(`acc: ${process.env.COSMOSDB_ACCOUNT}`);
+    context.log.error(`host: ${process.env.COSMOSDB_HOST}`);
+    context.log.error(`connection: ${connectionString}`);
+
     context.res = Responsify.Internal({
       error: "Error establishing connection with the datasource.",
     });
