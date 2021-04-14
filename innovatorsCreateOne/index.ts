@@ -94,9 +94,19 @@ export default async function innovatorsCreateOne(
 
   try {
     const innovator: User = User.new({ id: oid });
+    const organisationShares = payload.innovation.organisationShares.map(
+      (id) => {
+        id;
+      }
+    );
+
     const innovation: Innovation = Innovation.new({
-      ...payload.innovation,
+      name: payload.innovation.name,
+      description: payload.innovation.description,
+      countryName: payload.innovation.countryName,
+      postcode: payload.innovation.postcode,
       surveyId,
+      organisationShares,
     });
     const organisation: Organisation = Organisation.new({
       ...payload.organisation,

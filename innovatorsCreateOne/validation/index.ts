@@ -7,6 +7,7 @@ const payloadSchema = Joi.object({
     description: Joi.string().required(),
     countryName: Joi.string().required(),
     postcode: Joi.string().allow(null).allow("").optional(),
+    organisationShares: Joi.array().items(Joi.string()).required(),
   }),
   organisation: Joi.object({
     name: Joi.string().required(),

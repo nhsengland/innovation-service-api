@@ -39,7 +39,8 @@ describe("[innovatorsCreateOne] Persistence suite", () => {
   describe("updateDisplayName", () => {
     it("should update an Innovator displayName", async () => {
       // Arrange
-
+      spyOn(typeorm, "getRepository");
+      spyOn(typeorm, "getConnection");
       const spy = spyOn(
         ADUserService.prototype,
         "updateUserDisplayName"
