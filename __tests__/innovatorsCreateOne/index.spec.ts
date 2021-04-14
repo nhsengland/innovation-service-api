@@ -17,6 +17,7 @@ const dummy = {
       description: "description",
       countryName: "UK",
       postcode: "123",
+      organisationShares: ["organisationId1"],
     },
     organisation: { name: "Organization A", size: "huge" },
     user: { displayName: "User Test" },
