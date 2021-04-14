@@ -96,7 +96,7 @@ export default async function innovatorsCreateOne(
     const innovator: User = User.new({ id: oid });
     const organisationShares = payload.innovation.organisationShares.map(
       (id) => {
-        id;
+        return { id };
       }
     );
 
