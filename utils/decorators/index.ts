@@ -28,7 +28,7 @@ export function SetupConnection() {
   };
 }
 
-export function Validate(validationFunc: Function) {
+export function Validate(validationFunc: Function, errorMessage?: string) {
   return function (
     target: Object,
     propertyKey: string,
@@ -44,7 +44,7 @@ export function Validate(validationFunc: Function) {
       if (validate.error) {
         context.log.error(validate.error);
         context.res = Responsify.BadRequest({
-          error: "Invalid path parameters",
+          error: errorMessage || "validation failed",
         });
         return;
       }

@@ -7,7 +7,7 @@ import { SetupConnection, Validate } from "../utils/decorators";
 
 class UsersGetProfile {
   @SetupConnection()
-  @Validate(validation.ValidateHeaders)
+  @Validate(validation.ValidateHeaders, "Invalid Headers")
   static async httpTrigger(ctx: Context, req: HttpRequest): Promise<void> {
     const token = req.headers.authorization;
     const jwt = decodeToken(token);
