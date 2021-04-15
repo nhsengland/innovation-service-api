@@ -2,38 +2,22 @@ import { Context, HttpRequest } from "@azure/functions";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
 import * as Responsify from "../utils/responsify";
-import { setupSQLConnection } from "../utils/connection";
+import { SetupConnection, Validate } from "../utils/decorators";
 
-export default async function innovatorsHeadOne(
-  context: Context,
-  req: HttpRequest
-): Promise<void> {
-  try {
-    await setupSQLConnection();
-  } catch (error) {
-    context.log.error(error);
-    context.res = Responsify.Internal({
-      error: "Error establishing connection with the datasource.",
-    });
-    return;
+class InnovatorsHeadOne {
+  @SetupConnection()
+  @Validate(validation.ValidateParams, "params", "Invalid Query Parameters")
+  static async httpTrigger(context: Context, req: HttpRequest): Promise<void> {
+    const oid = req.params.innovatorId;
+
+    const result = await persistence.findInnovatorById(oid);
+
+    if (result) {
+      context.res = Responsify.Ok();
+      return;
+    }
+    context.res = Responsify.NotFound(null);
   }
-  context.log.info("Database connection established");
-
-  const validate = validation.ValidateParams(req.params);
-  if (validate.error) {
-    context.log.error(validate.error);
-    context.res = Responsify.BadRequest({ error: "Invalid path parameters" });
-    return;
-  }
-
-  const oid = req.params.innovatorId;
-
-  const result = await persistence.findInnovatorById(oid);
-
-  if (result) {
-    context.res = Responsify.Ok();
-    return;
-  }
-
-  context.res = Responsify.NotFound(null);
 }
+
+export default InnovatorsHeadOne.httpTrigger;

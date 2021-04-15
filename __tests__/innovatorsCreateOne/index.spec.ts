@@ -59,7 +59,7 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
       spyOn(Validation, "ValidatePayload").and.returnValue({});
 
       const { res } = await mockedRequestFactory({});
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(422);
     });
 
     it("Successfuly validates payload and headers", async () => {

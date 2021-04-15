@@ -27,15 +27,6 @@ describe("[HttpTrigger] innovatorsHeadOne Suite", () => {
       );
     });
 
-    it("fails on missing authorization header", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(validation, "ValidateParams").and.returnValue({
-        error: "missing innovatorId",
-      });
-      const { res } = await mockedRequestFactory({});
-      expect(res.status).toBe(400);
-    });
-
     it("Should return 200 when Innovator is found", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(persistence, "findInnovatorById").and.returnValue([

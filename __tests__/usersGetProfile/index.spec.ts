@@ -36,7 +36,7 @@ describe("[HttpTrigger] usersGetProfile Test Suite", () => {
         error: "missing authorization header",
       });
       const { res } = await mockedRequestFactory({});
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(422);
     });
 
     it("Should return 200 when User Profile is found", async () => {
