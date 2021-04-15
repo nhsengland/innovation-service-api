@@ -23,6 +23,7 @@ module.exports = {
     "innovatorsUpdateInnovation",
     "innovatorsUpdateOne",
     "surveyGetOne",
+    "decorators",
     "usersUpdateInfo",
     "commitizen.js",
     ".eslintrc.js",
