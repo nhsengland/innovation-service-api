@@ -1,19 +1,30 @@
-import { AzureFunction, Context, HttpRequest } from "@azure/functions";
+import { Context, HttpRequest } from "@azure/functions";
+import * as Responsify from "../utils/responsify";
+import * as validation from "./validation";
+import { decodeToken } from "../utils/authentication";
+import * as persistence from "./persistence";
+import { SetupConnection, Validate } from "../utils/decorators";
 
-const httpTrigger: AzureFunction = async function (
-  context: Context,
-  req: HttpRequest
-): Promise<void> {
-  context.log("HTTP trigger function processed a request.");
-  const name = req.query.name || (req.body && req.body.name);
-  const responseMessage = name
-    ? "Hello, " + name + ". This HTTP triggered function executed successfully."
-    : "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.";
+class UsersGetProfile {
+  @SetupConnection()
+  @Validate(validation.ValidateHeaders, "Invalid Headers")
+  static async httpTrigger(ctx: Context, req: HttpRequest): Promise<void> {
+    const token = req.headers.authorization;
+    const jwt = decodeToken(token);
+    const id = jwt.oid;
 
-  context.res = {
-    // status: 200, /* Defaults to 200 */
-    body: responseMessage,
-  };
-};
+    let result;
 
-export default httpTrigger;
+    try {
+      result = await persistence.getProfile(id);
+    } catch (error) {
+      ctx.log.error(error);
+      ctx.res = Responsify.Internal();
+      return;
+    }
+
+    ctx.res = Responsify.Ok(result);
+  }
+}
+
+export default UsersGetProfile.httpTrigger;

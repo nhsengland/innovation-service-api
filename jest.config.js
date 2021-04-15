@@ -24,7 +24,6 @@ module.exports = {
     "innovatorsUpdateOne",
     "surveyGetOne",
     "usersUpdateInfo",
-    "usersGetProfile",
     "commitizen.js",
     ".eslintrc.js",
   ],
