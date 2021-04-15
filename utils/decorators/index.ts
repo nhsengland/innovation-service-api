@@ -36,7 +36,7 @@ export function Validate(validationFunc: Function, errorMessage?: string) {
   ) {
     const original = descriptor.value;
 
-    descriptor.value = function (...args: any[]) {
+    descriptor.value = async function (...args: any[]) {
       const context: Context = args[0];
       const req: HttpRequest = args[1];
 
@@ -48,7 +48,7 @@ export function Validate(validationFunc: Function, errorMessage?: string) {
         });
         return;
       }
-      original.apply(this, args);
+      await original.apply(this, args);
       return;
     };
   };
