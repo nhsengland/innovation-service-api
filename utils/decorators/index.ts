@@ -28,7 +28,11 @@ export function SetupConnection() {
   };
 }
 
-export function Validate(validationFunc: Function, errorMessage?: string) {
+export function Validate(
+  validationFunc: Function,
+  reqProperty: string,
+  errorMessage?: string
+) {
   return function (
     target: Object,
     propertyKey: string,
@@ -40,10 +44,10 @@ export function Validate(validationFunc: Function, errorMessage?: string) {
       const context: Context = args[0];
       const req: HttpRequest = args[1];
 
-      const validate = validationFunc(req.headers);
+      const validate = validationFunc(req[reqProperty]);
       if (validate.error) {
         context.log.error(validate.error);
-        context.res = Responsify.BadRequest({
+        context.res = Responsify.BadData({
           error: errorMessage || "validation failed",
         });
         return;

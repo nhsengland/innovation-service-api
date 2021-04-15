@@ -36,20 +36,6 @@ describe("[HttpTrigger] organisationsGetAll Suite", () => {
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(200);
     });
-
-    it("Should return 400 when invalid query params", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(persistence, "findAll").and.returnValue([
-        { id: "organisation_id" },
-      ]);
-      spyOn(validation, "ValidateQueryParams").and.returnValue({
-        error: "Error",
-      });
-
-      const { res } = await mockedRequestFactory({});
-      expect(res.status).toBe(400);
-      expect(res.body.error).toBeDefined();
-    });
   });
 });
 
