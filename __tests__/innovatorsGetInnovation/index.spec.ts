@@ -2,6 +2,7 @@ import * as persistence from "../../innovatorsGetInnovation/persistence";
 import innovatorsGetInnovation from "../../innovatorsGetInnovation";
 import * as connection from "../../utils/connection";
 import * as authentication from "../../utils/authentication";
+import * as service_loader from "../../utils/serviceLoader";
 
 import {
   runStubFunctionFromBindings,
@@ -29,6 +30,7 @@ describe("[HttpTrigger] innovatorsGetInnovation Suite", () => {
 
     it("Should return 200 when Innovations is found", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: "test_innovator_id",
       });

@@ -1,6 +1,7 @@
 import * as persistence from "../../innovatorsHeadOne/persistence";
 import { InnovatorService } from "nhs-aac-domain-services";
 import * as typeorm from "typeorm";
+import { CustomContext } from "../../utils/types";
 
 describe("[innovatorsHeadOne] Persistence suite", () => {
   describe("headInnovator", () => {
@@ -12,8 +13,16 @@ describe("[innovatorsHeadOne] Persistence suite", () => {
         { innovator: "" },
       ]);
 
+      const ctx = {
+        services: {
+          InnovatorService: new InnovatorService(),
+        },
+      };
       // Act
-      await persistence.findInnovatorById("test_innovator_oid");
+      await persistence.findInnovatorById(
+        ctx as CustomContext,
+        "test_innovator_oid"
+      );
 
       expect(spy).toHaveBeenCalled();
     });

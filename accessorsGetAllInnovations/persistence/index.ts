@@ -1,11 +1,12 @@
-import { InnovationService } from "nhs-aac-domain-services";
-
+import { CustomContext } from "../../utils/types";
 export const findAllInnovationsByAccessor = async (
+  ctx: CustomContext,
   accessorId: string,
   filter: any
 ) => {
-  const service = new InnovationService();
-  const result = await service.findAllByAccessor(accessorId, filter);
-
+  const result = await ctx.services.InnovationService.findAllByAccessor(
+    accessorId,
+    filter
+  );
   return result;
 };

@@ -1,6 +1,7 @@
 import * as persistence from "../../innovatorsGetInnovation/persistence";
 import { InnovationService } from "nhs-aac-domain-services";
 import * as typeorm from "typeorm";
+import { CustomContext } from "../../utils/types";
 
 describe("[innovatorsGetInnovation] Persistence suite", () => {
   describe("findAllInnovationsByInnovator", () => {
@@ -12,9 +13,14 @@ describe("[innovatorsGetInnovation] Persistence suite", () => {
         InnovationService.prototype,
         "getInnovationOverview"
       ).and.returnValue({ id: "innovationA" });
-
+      const ctx = {
+        services: {
+          InnovationService: new InnovationService(),
+        },
+      };
       // Act
       await persistence.findInnovationsByInnovator(
+        ctx as CustomContext,
         "test_innovator_id",
         "test_innovation_id"
       );

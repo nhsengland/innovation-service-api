@@ -1,6 +1,7 @@
 import * as persistence from "../../organisationsGetAll/persistence";
 import { OrganisationService } from "nhs-aac-domain-services";
 import * as typeorm from "typeorm";
+import { CustomContext } from "../../utils/types";
 
 describe("[organisationsGetAll] Persistence suite", () => {
   describe("findAll", () => {
@@ -13,8 +14,13 @@ describe("[organisationsGetAll] Persistence suite", () => {
         "findAll"
       ).and.returnValue([{ id: "organisationA" }, { id: "organisationB" }]);
 
+      const ctx = {
+        services: {
+          OrganisationService: new OrganisationService(),
+        },
+      };
       // Act
-      await persistence.findAll({ type: "accessor" });
+      await persistence.findAll(ctx as CustomContext, { type: "accessor" });
 
       expect(spy).toHaveBeenCalled();
     });

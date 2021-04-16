@@ -1,6 +1,7 @@
 import * as persistence from "../../accessorsGetAllInnovations/persistence";
 import { InnovationService } from "nhs-aac-domain-services";
 import * as typeorm from "typeorm";
+import { CustomContext } from "../../utils/types";
 
 describe("[accessorsGetAllInnovations] Persistence suite", () => {
   describe("findAllInnovationsByAccessor", () => {
@@ -13,8 +14,17 @@ describe("[accessorsGetAllInnovations] Persistence suite", () => {
         "findAllByAccessor"
       ).and.returnValue([{ id: "innovationA" }, { id: "innovationB" }]);
 
+      const ctx = {
+        services: {
+          InnovationService: new InnovationService(),
+        },
+      };
       // Act
-      await persistence.findAllInnovationsByAccessor("test_accessor_id", {});
+      await persistence.findAllInnovationsByAccessor(
+        ctx as CustomContext,
+        "test_accessor_id",
+        {}
+      );
 
       expect(spy).toHaveBeenCalled();
     });

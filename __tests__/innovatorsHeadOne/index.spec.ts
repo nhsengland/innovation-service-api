@@ -1,7 +1,7 @@
 import * as persistence from "../../innovatorsHeadOne/persistence";
 import innovatorsHeadOne from "../../innovatorsHeadOne";
 import * as connection from "../../utils/connection";
-import * as validation from "../../innovatorsHeadOne/validation";
+import * as service_loader from "../../utils/serviceLoader";
 
 import {
   runStubFunctionFromBindings,
@@ -29,6 +29,7 @@ describe("[HttpTrigger] innovatorsHeadOne Suite", () => {
 
     it("Should return 200 when Innovator is found", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(persistence, "findInnovatorById").and.returnValue([
         { innovator: "" },
       ]);

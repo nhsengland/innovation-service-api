@@ -1,11 +1,9 @@
 import { Context, HttpRequest } from "@azure/functions";
-import {
-  initializeAllServices,
-  OrganisationUser,
-} from "nhs-aac-domain-services";
+import { OrganisationUser } from "nhs-aac-domain-services";
 import { decodeToken } from "../authentication";
 import { setIsSQLConnected, setupSQLConnection } from "../connection";
 import * as Responsify from "../responsify";
+import { loadAllServices } from "../serviceLoader";
 import { CustomContext } from "../types";
 
 export function SQLConnector() {
@@ -20,7 +18,7 @@ export function SQLConnector() {
       const context: CustomContext = args[0];
       try {
         await setupSQLConnection();
-        context.services = await initializeAllServices();
+        context.services = await loadAllServices();
       } catch (error) {
         context.log.error(error);
         context.res = Responsify.Internal({
@@ -82,8 +80,8 @@ export function JwtDecoder() {
 
       context.auth = {
         decodedJwt: {
-          oid: "test-accessor", //jwt.oid,
-          surveyId: jwt.surveyId,
+          oid: jwt.oid,
+          surveyId: jwt.extension_surveyId,
         },
       };
 
@@ -93,7 +91,7 @@ export function JwtDecoder() {
   };
 }
 
-export function RoleValidator(...roles: any[]) {
+export function OrganisationRoleValidator(...roles: any[]) {
   return function (
     target: Object,
     propertyKey: string,

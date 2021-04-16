@@ -3,7 +3,8 @@ import * as persistence from "./persistence";
 import * as Responsify from "../utils/responsify";
 import * as validation from "./validation";
 import { decodeToken } from "../utils/authentication";
-import { SQLConnector, Validator } from "../utils/decorators";
+import { JwtDecoder, SQLConnector, Validator } from "../utils/decorators";
+import { CustomContext } from "../utils/types";
 
 class AccessorsGetAllInnovations {
   @SQLConnector()
@@ -12,15 +13,16 @@ class AccessorsGetAllInnovations {
     "query",
     "Invalid querystring parameters."
   )
+  @JwtDecoder()
   static async httpTrigger(
-    context: Context,
+    context: CustomContext,
     req: HttpRequest,
     auth: any
   ): Promise<void> {
     const accessorId = req.params.accessorId;
     const token = req.headers.authorization;
     const jwt = decodeToken(token);
-    const oid = jwt.oid;
+    const oid = context.auth.decodedJwt.oid;
 
     if (accessorId !== oid) {
       context.res = Responsify.Forbidden({ error: "Operation denied." });
@@ -40,6 +42,7 @@ class AccessorsGetAllInnovations {
     let result;
     try {
       result = await persistence.findAllInnovationsByAccessor(
+        context,
         accessorId,
         filter
       );

@@ -3,20 +3,23 @@ import * as Responsify from "../utils/responsify";
 import * as validation from "./validation";
 import { decodeToken } from "../utils/authentication";
 import * as persistence from "./persistence";
-import { SQLConnector, Validator } from "../utils/decorators";
+import { JwtDecoder, SQLConnector, Validator } from "../utils/decorators";
+import { CustomContext } from "../utils/types";
 
 class UsersGetProfile {
   @SQLConnector()
   @Validator(validation.ValidateHeaders, "headers", "Invalid Headers")
-  static async httpTrigger(context: Context, req: HttpRequest): Promise<void> {
-    const token = req.headers.authorization;
-    const jwt = decodeToken(token);
-    const id = jwt.oid;
+  @JwtDecoder()
+  static async httpTrigger(
+    context: CustomContext,
+    req: HttpRequest
+  ): Promise<void> {
+    const id = context.auth.decodedJwt.oid;
 
     let result;
 
     try {
-      result = await persistence.getProfile(id);
+      result = await persistence.getProfile(context, id);
     } catch (error) {
       context.log.error(error);
       context.res = Responsify.Internal();

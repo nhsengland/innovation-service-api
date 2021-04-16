@@ -3,7 +3,7 @@ import * as usersGetProfile from "../../usersGetProfile";
 import * as connection from "../../utils/connection";
 import * as validation from "../../usersGetProfile/validation";
 import * as decodejwt from "../../utils/authentication";
-import * as decorators from "../../utils/decorators";
+import * as service_loader from "../../utils/serviceLoader";
 
 import {
   runStubFunctionFromBindings,
@@ -32,6 +32,7 @@ describe("[HttpTrigger] usersGetProfile Test Suite", () => {
 
     it("fails on missing authorization header", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(validation, "ValidateHeaders").and.returnValue({
         error: "missing authorization header",
       });
@@ -41,6 +42,7 @@ describe("[HttpTrigger] usersGetProfile Test Suite", () => {
 
     it("Should return 200 when User Profile is found", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(validation, "ValidateHeaders").and.returnValue({});
       spyOn(persistence, "getProfile").and.returnValue([
         {
@@ -69,6 +71,7 @@ describe("[HttpTrigger] usersGetProfile Test Suite", () => {
 
     it("Should return 500 when User Profile fetch fails", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(validation, "ValidateHeaders").and.returnValue({});
       spyOn(persistence, "getProfile").and.throwError("");
 

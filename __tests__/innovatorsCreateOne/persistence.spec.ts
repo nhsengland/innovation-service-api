@@ -8,6 +8,7 @@ import {
   Organisation,
 } from "nhs-aac-domain-services";
 import * as typeorm from "typeorm";
+import { CustomContext } from "../../utils/types";
 
 describe("[innovatorsCreateOne] Persistence suite", () => {
   describe("createInnovator", () => {
@@ -29,8 +30,18 @@ describe("[innovatorsCreateOne] Persistence suite", () => {
         "createFirstTimeSignIn"
       ).and.returnValue(result);
 
+      const ctx = {
+        services: {
+          InnovatorService: new InnovatorService(),
+        },
+      };
       // Act
-      await persistence.createInnovator(innovator, innovation, organisation);
+      await persistence.createInnovator(
+        ctx as CustomContext,
+        innovator,
+        innovation,
+        organisation
+      );
 
       expect(spy).toHaveBeenCalled();
     });
@@ -46,8 +57,16 @@ describe("[innovatorsCreateOne] Persistence suite", () => {
         "updateUserDisplayName"
       ).and.returnValue(null);
 
+      const ctx = {
+        services: {
+          ADUserService: new ADUserService(),
+        },
+      };
       // Act
-      await persistence.updateUserDisplayName({ user: {}, oid: "" });
+      await persistence.updateUserDisplayName(ctx as CustomContext, {
+        user: {},
+        oid: "",
+      });
 
       expect(spy).toHaveBeenCalled();
     });

@@ -1,8 +1,6 @@
-import { InnovatorService } from "nhs-aac-domain-services";
+import { CustomContext } from "../../utils/types";
 
-export const findInnovatorById = async (oid: string) => {
-  const service = new InnovatorService();
-  const result = await service.find(oid);
-
+export const findInnovatorById = async (ctx: CustomContext, oid: string) => {
+  const result = await ctx.services.InnovatorService.find(oid);
   return result;
 };

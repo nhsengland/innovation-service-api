@@ -1,13 +1,13 @@
 import { Innovation, Organisation, User } from "nhs-aac-domain";
-import { ADUserService, InnovatorService } from "nhs-aac-domain-services";
+import { CustomContext } from "../../utils/types";
 
 export const createInnovator = async (
+  ctx: CustomContext,
   innovator: User,
   innovation: Innovation,
   organisation: Organisation
 ) => {
-  const service = new InnovatorService();
-  const result = await service.createFirstTimeSignIn(
+  const result = await ctx.services.InnovatorService.createFirstTimeSignIn(
     innovator,
     innovation,
     organisation
@@ -16,11 +16,12 @@ export const createInnovator = async (
   return result;
 };
 
-export const updateUserDisplayName = async (data: any) => {
-  const userService = new ADUserService();
-
+export const updateUserDisplayName = async (ctx: CustomContext, data: any) => {
   try {
-    await userService.updateUserDisplayName({ ...data.user }, data.oid);
+    await ctx.services.ADUserService.updateUserDisplayName(
+      { ...data.user },
+      data.oid
+    );
   } catch (error) {
     throw error;
   }

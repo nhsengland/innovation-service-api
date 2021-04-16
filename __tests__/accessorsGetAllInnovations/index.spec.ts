@@ -2,6 +2,7 @@ import * as persistence from "../../accessorsGetAllInnovations/persistence";
 import accessorsGetAllInnovations from "../../accessorsGetAllInnovations";
 import * as connection from "../../utils/connection";
 import * as authentication from "../../utils/authentication";
+import * as service_loader from "../../utils/serviceLoader";
 
 import {
   runStubFunctionFromBindings,
@@ -29,6 +30,7 @@ describe("[HttpTrigger] accessorsGetAllInnovations Suite", () => {
 
     it("Should return 200 when Accessors is found", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: "test_accessor_id",
       });

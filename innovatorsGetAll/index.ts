@@ -1,11 +1,15 @@
 import { HttpRequest } from "@azure/functions";
-import { SQLConnector, JwtDecoder, RoleValidator } from "../utils/decorators";
+import {
+  SQLConnector,
+  JwtDecoder,
+  OrganisationRoleValidator,
+} from "../utils/decorators";
 import { CustomContext } from "../utils/types";
 
 class InnovatorsGetAll {
   @SQLConnector()
   @JwtDecoder()
-  @RoleValidator("QUALIFYING_ACCESSOR")
+  @OrganisationRoleValidator("QUALIFYING_ACCESSOR")
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
