@@ -2,11 +2,11 @@ import { Context, HttpRequest } from "@azure/functions";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
 import * as Responsify from "../utils/responsify";
-import { SetupConnection, Validate } from "../utils/decorators";
+import { SQLConnector, Validator } from "../utils/decorators";
 
 class InnovatorsHeadOne {
-  @SetupConnection()
-  @Validate(validation.ValidateParams, "params", "Invalid Query Parameters")
+  @SQLConnector()
+  @Validator(validation.ValidateParams, "params", "Invalid Query Parameters")
   static async httpTrigger(context: Context, req: HttpRequest): Promise<void> {
     const oid = req.params.innovatorId;
 

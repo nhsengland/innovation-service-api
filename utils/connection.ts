@@ -24,3 +24,7 @@ export const setupSQLConnection = async () => {
     isSQLConnected = true;
   }
 };
+
+export const setIsSQLConnected = (value: boolean) => {
+  isSQLConnected = value;
+};

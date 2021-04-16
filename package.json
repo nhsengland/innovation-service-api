@@ -9,7 +9,7 @@
     "joi": "^17.4.0",
     "jwt-decode": "^3.1.2",
     "mongoose": "^5.12.0",
-    "nhs-aac-domain-services": "0.0.27-0",
+    "nhs-aac-domain-services": "0.0.31-0",
     "tslib": "^1.9.3"
   },
   "keywords": [

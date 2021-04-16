@@ -2,10 +2,10 @@ import { Context, HttpRequest } from "@azure/functions";
 import * as persistence from "./persistence";
 import * as Responsify from "../utils/responsify";
 import { decodeToken } from "../utils/authentication";
-import { SetupConnection, Validate } from "../utils/decorators";
+import { SQLConnector } from "../utils/decorators";
 
 class InnovatorsGetAllInnovations {
-  @SetupConnection()
+  @SQLConnector()
   static async httpTrigger(context: Context, req: HttpRequest): Promise<void> {
     const innovatorId = req.params.innovatorId;
     const token = req.headers.authorization;

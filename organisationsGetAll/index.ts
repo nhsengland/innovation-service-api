@@ -2,11 +2,11 @@ import { Context, HttpRequest } from "@azure/functions";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
 import * as Responsify from "../utils/responsify";
-import { SetupConnection, Validate } from "../utils/decorators";
+import { SQLConnector, Validator } from "../utils/decorators";
 
 class OrganisationsGetAll {
-  @SetupConnection()
-  @Validate(
+  @SQLConnector()
+  @Validator(
     validation.ValidateQueryParams,
     "query",
     "Invalid querystring parameters."

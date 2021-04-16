@@ -4,13 +4,12 @@ import * as persistence from "./persistence";
 import jwt_decode from "jwt-decode";
 import * as Responsify from "../utils/responsify";
 import * as validation from "./validation";
-import { setupSQLConnection } from "../utils/connection";
-import { SetupConnection, Validate } from "../utils/decorators";
+import { SQLConnector, Validator } from "../utils/decorators";
 
 class InnovatorsCreateOne {
-  @SetupConnection()
-  @Validate(validation.ValidateHeaders, "headers", "Invalid Headers")
-  @Validate(validation.ValidatePayload, "body", "Invalid Payload")
+  @SQLConnector()
+  @Validator(validation.ValidateHeaders, "headers", "Invalid Headers")
+  @Validator(validation.ValidatePayload, "body", "Invalid Payload")
   static async httpTrigger(context: Context, req: HttpRequest): Promise<void> {
     /*
         1 - GET OID  FROM JWT

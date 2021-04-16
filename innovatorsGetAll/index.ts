@@ -1,14 +1,17 @@
-import { AzureFunction, Context, HttpRequest } from "@azure/functions";
+import { HttpRequest } from "@azure/functions";
+import { SQLConnector, JwtDecoder, RoleValidator } from "../utils/decorators";
+import { CustomContext } from "../utils/types";
 
-export default async function innovatorsGetAll(
-  context: Context,
-  req: HttpRequest
-): Promise<void> {
-  context.log("HTTP trigger function processed a request.");
-
-  //
-  const authorization = req.query.authorization;
-
-  // Default response code is 200.
-  context.res = { body: "Successfully Setup" };
+class InnovatorsGetAll {
+  @SQLConnector()
+  @JwtDecoder()
+  @RoleValidator("QUALIFYING_ACCESSOR")
+  static async httpTrigger(
+    context: CustomContext,
+    req: HttpRequest
+  ): Promise<void> {
+    context.log(context.auth.userOrganisations);
+  }
 }
+
+export default InnovatorsGetAll.httpTrigger;
