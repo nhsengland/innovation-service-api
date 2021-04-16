@@ -6,6 +6,7 @@ export const findAllInnovationsByAccessor = async (
 ) => {
   const result = await ctx.services.InnovationService.findAllByAccessor(
     accessorId,
+    ctx.auth.userOrganisations,
     filter
   );
   return result;

@@ -18,6 +18,9 @@ describe("[accessorsGetAllInnovations] Persistence suite", () => {
         services: {
           InnovationService: new InnovationService(),
         },
+        auth: {
+          userOrganisations: [],
+        },
       };
       // Act
       await persistence.findAllInnovationsByAccessor(

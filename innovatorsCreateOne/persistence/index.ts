@@ -18,7 +18,7 @@ export const createInnovator = async (
 
 export const updateUserDisplayName = async (ctx: CustomContext, data: any) => {
   try {
-    await ctx.services.ADUserService.updateUserDisplayName(
+    await ctx.services.UserService.updateUserDisplayName(
       { ...data.user },
       data.oid
     );

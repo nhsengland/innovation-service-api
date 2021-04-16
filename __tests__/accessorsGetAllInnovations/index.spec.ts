@@ -1,4 +1,5 @@
 import * as persistence from "../../accessorsGetAllInnovations/persistence";
+import * as validation from "../../accessorsGetAllInnovations/validation";
 import accessorsGetAllInnovations from "../../accessorsGetAllInnovations";
 import * as connection from "../../utils/connection";
 import * as authentication from "../../utils/authentication";
@@ -28,18 +29,38 @@ describe("[HttpTrigger] accessorsGetAllInnovations Suite", () => {
       );
     });
 
-    it("Should return 200 when Accessors is found", async () => {
+    it("Should return 200 when Innovations is found", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
+      spyOn(validation, "ValidateQueryParams").and.returnValue({});
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: "test_accessor_id",
       });
       spyOn(persistence, "findAllInnovationsByAccessor").and.returnValue([
-        { innovator: "test_accessor_id" },
+        { id: "innovation_id" },
       ]);
 
-      const { res } = await mockedRequestFactory({});
+      const { res } = await mockedRequestFactory({
+        headers: { authorization: ":access_token" },
+      });
       expect(res.status).toBe(200);
+    });
+
+    it("Should throw error when oid is different from accessorId", async () => {
+      spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(null);
+      spyOn(validation, "ValidateQueryParams").and.returnValue({});
+      spyOn(authentication, "decodeToken").and.returnValue({
+        oid: "test",
+      });
+      spyOn(persistence, "findAllInnovationsByAccessor").and.returnValue([
+        { id: "innovation_id" },
+      ]);
+
+      const { res } = await mockedRequestFactory({
+        headers: { authorization: ":access_token" },
+      });
+      expect(res.status).toBe(403);
     });
   });
 });
@@ -58,7 +79,7 @@ async function mockedRequestFactory(data?: any) {
           { ...data.headers }, // headers
           { accessorId: "test_accessor_id" }, // ?
           {}, // payload/body
-          undefined // querystring
+          { take: 10, skip: 0 } // querystring
         ),
       },
       { type: "http", name: "res", direction: "out" },

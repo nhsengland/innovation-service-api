@@ -38,6 +38,16 @@ describe("[HttpTrigger] organisationsGetAll Suite", () => {
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(200);
     });
+
+    it("Should return 404 when not found", async () => {
+      spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(null);
+
+      spyOn(persistence, "findAll").and.returnValue(undefined);
+
+      const { res } = await mockedRequestFactory({});
+      expect(res.status).toBe(404);
+    });
   });
 });
 

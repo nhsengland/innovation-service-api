@@ -4,7 +4,7 @@ import {
   Innovation,
   InnovatorService,
   User,
-  ADUserService,
+  UserService,
   Organisation,
 } from "nhs-aac-domain-services";
 import * as typeorm from "typeorm";
@@ -53,13 +53,13 @@ describe("[innovatorsCreateOne] Persistence suite", () => {
       spyOn(typeorm, "getRepository");
       spyOn(typeorm, "getConnection");
       const spy = spyOn(
-        ADUserService.prototype,
+        UserService.prototype,
         "updateUserDisplayName"
       ).and.returnValue(null);
 
       const ctx = {
         services: {
-          ADUserService: new ADUserService(),
+          UserService: new UserService(),
         },
       };
       // Act
