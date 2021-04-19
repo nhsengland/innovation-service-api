@@ -1,28 +1,32 @@
-import * as persistence from "../../innovatorsGetInnovation/persistence";
+import * as persistence from "../../accessorsGetAllInnovations/persistence";
 import { InnovationService } from "nhs-aac-domain-services";
 import * as typeorm from "typeorm";
 import { CustomContext } from "../../utils/types";
 
-describe("[innovatorsGetInnovation] Persistence suite", () => {
-  describe("findAllInnovationsByInnovator", () => {
-    it("should assess if an Innovator exists", async () => {
+describe("[accessorsGetAllInnovations] Persistence suite", () => {
+  describe("findAllInnovationsByAccessor", () => {
+    it("should assess if an Accessor exists", async () => {
       // Arrange
       spyOn(typeorm, "getRepository");
       spyOn(typeorm, "getConnection");
       const spy = spyOn(
         InnovationService.prototype,
-        "getInnovationOverview"
-      ).and.returnValue({ id: "innovationA" });
+        "findAllByAccessor"
+      ).and.returnValue([{ id: "innovationA" }, { id: "innovationB" }]);
+
       const ctx = {
         services: {
           InnovationService: new InnovationService(),
         },
+        auth: {
+          userOrganisations: [],
+        },
       };
       // Act
-      await persistence.findInnovationsByInnovator(
+      await persistence.findAllInnovationsByAccessor(
         ctx as CustomContext,
-        "test_innovator_id",
-        "test_innovation_id"
+        "test_accessor_id",
+        {}
       );
 
       expect(spy).toHaveBeenCalled();

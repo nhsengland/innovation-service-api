@@ -1,6 +1,5 @@
-import { ADUserService } from "nhs-aac-domain-services";
+import { CustomContext } from "../../utils/types";
 
-export const getProfile = async (id: string) => {
-  const userService = new ADUserService();
-  return await userService.getProfile(id);
+export const getProfile = async (ctx: CustomContext, id: string) => {
+  return await ctx.services.UserService.getProfile(id);
 };

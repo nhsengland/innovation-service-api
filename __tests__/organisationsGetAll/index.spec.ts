@@ -1,7 +1,7 @@
 import * as persistence from "../../organisationsGetAll/persistence";
-import * as validation from "../../organisationsGetAll/validation";
 import organisationsGetAll from "../../organisationsGetAll";
 import * as connection from "../../utils/connection";
+import * as service_loader from "../../utils/serviceLoader";
 
 import {
   runStubFunctionFromBindings,
@@ -29,12 +29,24 @@ describe("[HttpTrigger] organisationsGetAll Suite", () => {
 
     it("Should return 200 when Organisations is found", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(null);
+
       spyOn(persistence, "findAll").and.returnValue([
         { id: "organisation_id" },
       ]);
 
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(200);
+    });
+
+    it("Should return 404 when not found", async () => {
+      spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(null);
+
+      spyOn(persistence, "findAll").and.returnValue(undefined);
+
+      const { res } = await mockedRequestFactory({});
+      expect(res.status).toBe(404);
     });
   });
 });

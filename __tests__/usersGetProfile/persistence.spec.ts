@@ -1,6 +1,7 @@
 import * as persistence from "../../usersGetProfile/persistence";
-import { ADUserService } from "nhs-aac-domain-services";
+import { UserService } from "nhs-aac-domain-services";
 import * as typeorm from "typeorm";
+import { CustomContext } from "../../utils/types";
 
 describe("[usersGetProfile] Persistence suite", () => {
   describe("usersGetProfile", () => {
@@ -8,12 +9,17 @@ describe("[usersGetProfile] Persistence suite", () => {
       // Arrange
       spyOn(typeorm, "getRepository");
       spyOn(typeorm, "getConnection");
-      const spy = spyOn(ADUserService.prototype, "getProfile").and.returnValue([
+      const spy = spyOn(UserService.prototype, "getProfile").and.returnValue([
         { innovator: "" },
       ]);
 
+      const ctx = {
+        services: {
+          UserService: new UserService(),
+        },
+      };
       // Act
-      await persistence.getProfile(":id");
+      await persistence.getProfile(ctx as CustomContext, ":id");
 
       expect(spy).toHaveBeenCalled();
     });

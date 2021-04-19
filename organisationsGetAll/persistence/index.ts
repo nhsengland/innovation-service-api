@@ -1,8 +1,6 @@
-import { OrganisationService } from "nhs-aac-domain-services";
+import { CustomContext } from "../../utils/types";
 
-export const findAll = async (filter: any) => {
-  const service = new OrganisationService();
-  const result = await service.findAll(filter);
-
+export const findAll = async (ctx: CustomContext, filter: any) => {
+  const result = await ctx.services.OrganisationService.findAll(filter);
   return result;
 };

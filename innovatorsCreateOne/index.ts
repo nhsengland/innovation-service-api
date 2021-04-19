@@ -4,14 +4,18 @@ import * as persistence from "./persistence";
 import jwt_decode from "jwt-decode";
 import * as Responsify from "../utils/responsify";
 import * as validation from "./validation";
-import { setupSQLConnection } from "../utils/connection";
-import { SetupConnection, Validate } from "../utils/decorators";
+import { JwtDecoder, SQLConnector, Validator } from "../utils/decorators";
+import { CustomContext } from "../utils/types";
 
 class InnovatorsCreateOne {
-  @SetupConnection()
-  @Validate(validation.ValidateHeaders, "headers", "Invalid Headers")
-  @Validate(validation.ValidatePayload, "body", "Invalid Payload")
-  static async httpTrigger(context: Context, req: HttpRequest): Promise<void> {
+  @SQLConnector()
+  @Validator(validation.ValidateHeaders, "headers", "Invalid Headers")
+  @Validator(validation.ValidatePayload, "body", "Invalid Payload")
+  @JwtDecoder()
+  static async httpTrigger(
+    context: CustomContext,
+    req: HttpRequest
+  ): Promise<void> {
     /*
         1 - GET OID  FROM JWT
         2 - GET REQ BODY
@@ -30,11 +34,10 @@ class InnovatorsCreateOne {
         - END TRANSACTION
     */
     const payload = req.body;
-    const token = req.headers.authorization;
-    const jwt = jwt_decode(token) as any;
+    const jwt = context.auth.decodedJwt;
     const oid = jwt.oid;
+    const surveyId = jwt.surveyId;
 
-    const surveyId = jwt.extension_surveyId;
     if (!surveyId) {
       context.res = Responsify.BadRequest({
         error: "SurveyId missing from JWT.",
@@ -43,7 +46,10 @@ class InnovatorsCreateOne {
     }
 
     try {
-      await persistence.updateUserDisplayName({ user: payload.user, oid });
+      await persistence.updateUserDisplayName(context, {
+        user: payload.user,
+        oid,
+      });
       context.log.info("Updated User display name");
     } catch (error) {
       context.log.error(error);
@@ -79,6 +85,7 @@ class InnovatorsCreateOne {
       });
 
       const result = await persistence.createInnovator(
+        context,
         innovator,
         innovation,
         organisation
