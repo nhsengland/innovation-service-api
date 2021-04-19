@@ -1,4 +1,4 @@
-import { Context, HttpRequest } from "@azure/functions";
+import { HttpRequest } from "@azure/functions";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
 import * as Responsify from "../utils/responsify";

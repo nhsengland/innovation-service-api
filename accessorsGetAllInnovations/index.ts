@@ -2,8 +2,14 @@ import { HttpRequest } from "@azure/functions";
 import * as persistence from "./persistence";
 import * as Responsify from "../utils/responsify";
 import * as validation from "./validation";
-import { JwtDecoder, SQLConnector, Validator } from "../utils/decorators";
+import {
+  JwtDecoder,
+  OrganisationRoleValidator,
+  SQLConnector,
+  Validator,
+} from "../utils/decorators";
 import { CustomContext } from "../utils/types";
+import { AccessorOrganisationRole, Innovation } from "nhs-aac-domain-services";
 
 class AccessorsGetAllInnovations {
   @SQLConnector()
@@ -13,6 +19,7 @@ class AccessorsGetAllInnovations {
     "Invalid querystring parameters."
   )
   @JwtDecoder()
+  @OrganisationRoleValidator(AccessorOrganisationRole.QUALIFYING_ACCESSOR)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest,
@@ -34,11 +41,32 @@ class AccessorsGetAllInnovations {
 
     let result;
     try {
-      result = await persistence.findAllInnovationsByAccessor(
+      const callResult = await persistence.findAllInnovationsByAccessor(
         context,
         accessorId,
         filter
       );
+
+      const innovations = callResult[0] as Innovation[];
+
+      // TODO : remove after accessor assign task
+      const tmpStatusList = [
+        "UNNASSIGNED",
+        "FURTHER_INFO_REQUIRED",
+        "WAITING",
+        "ENGAGING",
+      ];
+      // end temporary code
+
+      result = {
+        data: innovations?.map((inno: Innovation) => ({
+          id: inno.id,
+          status: inno.status,
+          description: inno.description,
+          innovationSupportStatus: tmpStatusList[Math.floor(Math.random() * 4)],
+        })),
+        count: callResult[1],
+      };
     } catch (error) {
       context.log.error(error);
       context.res = Responsify.Internal();

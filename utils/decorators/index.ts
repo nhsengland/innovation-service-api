@@ -111,7 +111,11 @@ export function OrganisationRoleValidator(...roles: any[]) {
       );
 
       if (filteredOrganisations.length == 0) {
-        throw new Error("Invalid user. User has no valid roles.");
+        context.log.error(
+          `Invalid user. User has no valid roles. {oid: ${oid}}`
+        );
+        context.res = Responsify.Forbidden();
+        return;
       }
 
       context.auth.userOrganisations = filteredOrganisations;
