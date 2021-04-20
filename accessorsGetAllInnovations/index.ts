@@ -62,8 +62,10 @@ class AccessorsGetAllInnovations {
         data: innovations?.map((inno: Innovation) => ({
           id: inno.id,
           status: inno.status,
-          description: inno.description,
-          innovationSupportStatus: tmpStatusList[Math.floor(Math.random() * 4)],
+          name: inno.name,
+          supportStatus: tmpStatusList[Math.floor(Math.random() * 4)],
+          createdAt: inno.createdAt,
+          updatedAt: inno.updatedAt,
         })),
         count: callResult[1],
       };
