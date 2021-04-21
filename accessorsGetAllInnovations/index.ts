@@ -34,6 +34,9 @@ class AccessorsGetAllInnovations {
     }
 
     const query: any = req.query;
+    if (query.order) {
+      query.order = JSON.parse(query.order);
+    }
 
     const filter = {
       ...query,

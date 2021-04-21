@@ -69,6 +69,22 @@ describe("[HttpTrigger] usersGetProfile Test Suite", () => {
       expect(res.status).toBe(200);
     });
 
+    it("Should return 404 when User Profile is not found", async () => {
+      spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(null);
+      spyOn(validation, "ValidateHeaders").and.returnValue({});
+      spyOn(persistence, "getProfile").and.returnValue(null);
+
+      spyOn(decodejwt, "decodeToken").and.returnValue({
+        oid: ":user_oid",
+      });
+
+      const { res } = await mockedRequestFactory({
+        headers: { authorization: ":access_token" },
+      });
+      expect(res.status).toBe(404);
+    });
+
     it("Should return 500 when User Profile fetch fails", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
