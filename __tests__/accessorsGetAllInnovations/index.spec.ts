@@ -125,7 +125,7 @@ async function mockedRequestFactory(data?: any) {
           { ...data.headers }, // headers
           { accessorId: "test_accessor_id" }, // ?
           {}, // payload/body
-          { take: 10, skip: 0 } // querystring
+          { take: 10, skip: 0, order: '{"name": "asc"}' } // querystring
         ),
       },
       { type: "http", name: "res", direction: "out" },
