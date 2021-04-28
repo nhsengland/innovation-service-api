@@ -1,10 +1,10 @@
 import { HttpRequest } from "@azure/functions";
 import * as persistence from "./persistence";
-import * as Responsify from "../utils/responsify";
 import { JwtDecoder, SQLConnector } from "../utils/decorators";
+import * as Responsify from "../utils/responsify";
 import { CustomContext } from "../utils/types";
 
-class InnovatorsGetInnovation {
+class InnovatorsGetInnovationSectionSummary {
   @SQLConnector()
   @JwtDecoder()
   static async httpTrigger(
@@ -22,7 +22,7 @@ class InnovatorsGetInnovation {
 
     let result;
     try {
-      result = await persistence.findInnovationsByInnovator(
+      result = await persistence.findAllInnovationSectionsByInnovator(
         context,
         innovatorId,
         innovationId
@@ -37,4 +37,4 @@ class InnovatorsGetInnovation {
   }
 }
 
-export default InnovatorsGetInnovation.httpTrigger;
+export default InnovatorsGetInnovationSectionSummary.httpTrigger;

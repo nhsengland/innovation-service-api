@@ -1,0 +1,14 @@
+{
+  "bindings": [
+    {
+      "authLevel": "anonymous",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": ["get"],
+      "route": "innovators/{innovatorId}/innovations/{innovationId}/section-summary"
+    },
+    { "type": "http", "direction": "out", "name": "res" }
+  ],
+  "scriptFile": "../dist/innovatorsGetInnovationSectionSummary/index.js"
+}
