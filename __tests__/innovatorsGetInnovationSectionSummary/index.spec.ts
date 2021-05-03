@@ -42,6 +42,23 @@ describe("[HttpTrigger] innovatorsGetInnovation Suite", () => {
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(200);
     });
+
+    it("Should throw error when oid is different from innovatorId", async () => {
+      spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(null);
+      spyOn(authentication, "decodeToken").and.returnValue({
+        oid: "test",
+      });
+      spyOn(
+        persistence,
+        "findAllInnovationSectionsByInnovator"
+      ).and.returnValue([{ id: "innovation_id" }]);
+
+      const { res } = await mockedRequestFactory({
+        headers: { authorization: ":access_token" },
+      });
+      expect(res.status).toBe(403);
+    });
   });
 });
 
