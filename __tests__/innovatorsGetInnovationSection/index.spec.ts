@@ -1,5 +1,6 @@
-import * as persistence from "../../innovatorsGetInnovation/persistence";
-import innovatorsGetInnovation from "../../innovatorsGetInnovation";
+import * as persistence from "../../innovatorsGetInnovationSection/persistence";
+import * as validation from "../../innovatorsGetInnovationSection/validation";
+import innovatorsGetInnovationSection from "../../innovatorsGetInnovationSection";
 import * as connection from "../../utils/connection";
 import * as authentication from "../../utils/authentication";
 import * as service_loader from "../../utils/serviceLoader";
@@ -8,8 +9,19 @@ import {
   runStubFunctionFromBindings,
   createHttpTrigger,
 } from "stub-azure-function-context";
+import { InnovatorOrganisationRole } from "nhs-aac-domain-services";
 
-describe("[HttpTrigger] innovatorsGetInnovation Suite", () => {
+const dummy = {
+  services: {
+    OrganisationService: {
+      findUserOrganisations: () => [
+        { role: InnovatorOrganisationRole.INNOVATOR_OWNER },
+      ],
+    },
+  },
+};
+
+describe("[HttpTrigger] innovatorsGetInnovationSection Suite", () => {
   describe("Function Handler", () => {
     afterEach(() => {
       jest.resetAllMocks();
@@ -30,25 +42,50 @@ describe("[HttpTrigger] innovatorsGetInnovation Suite", () => {
 
     it("Should return 200 when Innovations is found", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
+      spyOn(validation, "ValidateQueryParams").and.returnValue({});
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: "test_innovator_id",
       });
-      spyOn(persistence, "findInnovationsByInnovator").and.returnValue([
-        { innovation: "test_innovator_id" },
+      spyOn(persistence, "findInnovationSectionByInnovator").and.returnValue([
+        { section: "SECTION", data: {} },
       ]);
 
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(200);
     });
 
+    it("Should return 403 when innovator has an invalid role", async () => {
+      const services = {
+        OrganisationService: {
+          findUserOrganisations: () => [{ role: "other" }],
+        },
+      };
+
+      spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(services);
+      spyOn(validation, "ValidateQueryParams").and.returnValue({});
+      spyOn(authentication, "decodeToken").and.returnValue({
+        oid: "test_innovator_id",
+      });
+      spyOn(persistence, "findInnovationSectionByInnovator").and.returnValue([
+        { id: "innovation_id" },
+      ]);
+
+      const { res } = await mockedRequestFactory({
+        headers: { authorization: ":access_token" },
+      });
+      expect(res.status).toBe(403);
+    });
+
     it("Should throw error when oid is different from innovatorId", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
+      spyOn(validation, "ValidateQueryParams").and.returnValue({});
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: "test",
       });
-      spyOn(persistence, "findInnovationsByInnovator").and.returnValue([
+      spyOn(persistence, "findInnovationSectionByInnovator").and.returnValue([
         { id: "innovation_id" },
       ]);
 
@@ -62,7 +99,7 @@ describe("[HttpTrigger] innovatorsGetInnovation Suite", () => {
 
 async function mockedRequestFactory(data?: any) {
   return runStubFunctionFromBindings(
-    innovatorsGetInnovation,
+    innovatorsGetInnovationSection,
     [
       {
         type: "httpTrigger",
@@ -70,14 +107,14 @@ async function mockedRequestFactory(data?: any) {
         direction: "in",
         data: createHttpTrigger(
           "GET",
-          "http://nhse-i-aac/api/innovators/{innovatorId}/innovations/{innovationId}",
+          "http://nhse-i-aac/api/innovators/{innovatorId}/innovations/{innovationId}/section",
           { ...data.headers }, // headers
           {
             innovatorId: "test_innovator_id",
             innovationId: "test_innovation_id",
           }, // ?
           {}, // payload/body
-          undefined // querystring
+          { section: "SECTION" } // querystring
         ),
       },
       { type: "http", name: "res", direction: "out" },
