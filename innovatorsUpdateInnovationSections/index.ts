@@ -11,7 +11,7 @@ import {
 import { CustomContext } from "../utils/types";
 import { InnovatorOrganisationRole } from "nhs-aac-domain-services";
 
-class InnovatorsUpdateInnovationSection {
+class InnovatorsUpdateInnovationSections {
   @SQLConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
   @JwtDecoder()
@@ -49,4 +49,4 @@ class InnovatorsUpdateInnovationSection {
   }
 }
 
-export default InnovatorsUpdateInnovationSection.httpTrigger;
+export default InnovatorsUpdateInnovationSections.httpTrigger;

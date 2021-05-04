@@ -11,7 +11,7 @@ import {
 import { CustomContext } from "../utils/types";
 import { InnovatorOrganisationRole } from "nhs-aac-domain-services";
 
-class InnovatorsGetInnovationSection {
+class InnovatorsGetInnovationSections {
   @SQLConnector()
   @Validator(
     validation.ValidateQueryParams,
@@ -51,4 +51,4 @@ class InnovatorsGetInnovationSection {
   }
 }
 
-export default InnovatorsGetInnovationSection.httpTrigger;
+export default InnovatorsGetInnovationSections.httpTrigger;
