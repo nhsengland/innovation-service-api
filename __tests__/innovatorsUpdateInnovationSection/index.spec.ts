@@ -1,6 +1,6 @@
-import * as persistence from "../../innovatorsUpdateInnovationSection/persistence";
-import * as validation from "../../innovatorsUpdateInnovationSection/validation";
-import innovatorsUpdateInnovationSection from "../../innovatorsUpdateInnovationSection";
+import * as persistence from "../../innovatorsUpdateInnovationSections/persistence";
+import * as validation from "../../innovatorsUpdateInnovationSections/validation";
+import innovatorsUpdateInnovationSection from "../../innovatorsUpdateInnovationSections";
 import * as connection from "../../utils/connection";
 import * as authentication from "../../utils/authentication";
 import * as service_loader from "../../utils/serviceLoader";
@@ -107,7 +107,7 @@ async function mockedRequestFactory(data?: any) {
         direction: "in",
         data: createHttpTrigger(
           "PUT",
-          "http://nhse-i-aac/api/innovators/{innovatorId}/innovations/{innovationId}/section",
+          "http://nhse-i-aac/api/innovators/{innovatorId}/innovations/{innovationId}/sections",
           { ...data.headers }, // headers
           {
             innovatorId: "test_innovator_id",
