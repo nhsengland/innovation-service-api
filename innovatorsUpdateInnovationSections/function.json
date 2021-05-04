@@ -10,5 +10,5 @@
     },
     { "type": "http", "direction": "out", "name": "res" }
   ],
-  "scriptFile": "../dist/innovatorsUpdateInnovationSection/index.js"
+  "scriptFile": "../dist/innovatorsUpdateInnovationSections/index.js"
 }
