@@ -1,4 +1,4 @@
-import * as persistence from "../../innovatorsUpdateInnovationSection/persistence";
+import * as persistence from "../../innovatorsUpdateInnovationSections/persistence";
 import {
   InnovationSectionCatalogue,
   InnovationSectionService,
