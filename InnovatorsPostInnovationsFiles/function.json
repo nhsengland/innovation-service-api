@@ -6,7 +6,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["post"],
-      "route": "innovators/{innovatorId}/innovations/{innovatorId}/upload"
+      "route": "innovators/{innovatorId}/innovations/{innovationId}/upload"
     },
     { "type": "http", "direction": "out", "name": "res" }
   ],

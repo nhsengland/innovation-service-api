@@ -10,7 +10,7 @@
     "jwt-decode": "^3.1.2",
     "memory-cache": "^0.2.0",
     "mongoose": "^5.12.0",
-    "nhs-aac-domain-services": "0.0.41-0",
+    "nhs-aac-domain-services": "0.0.42-0",
     "tslib": "^1.9.3"
   },
   "keywords": [
