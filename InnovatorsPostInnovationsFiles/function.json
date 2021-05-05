@@ -1,0 +1,14 @@
+{
+  "bindings": [
+    {
+      "authLevel": "anonymous",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": ["post"],
+      "route": "innovators/{innovatorId}/innovations/{innovatorId}/upload"
+    },
+    { "type": "http", "direction": "out", "name": "res" }
+  ],
+  "scriptFile": "../dist/InnovatorsPostInnovationsFiles/index.js"
+}
