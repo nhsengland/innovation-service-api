@@ -5,13 +5,15 @@ export const updateInnovationSection = async (
   innovationId: string,
   innovatorId: string,
   section: string,
-  data: any
+  data: any,
+  isSubmission: boolean
 ) => {
   const result = await ctx.services.InnovationSectionService.saveSection(
     innovationId,
     innovatorId,
     section,
-    data
+    data,
+    isSubmission
   );
 
   return result;
