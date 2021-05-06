@@ -40,7 +40,7 @@ describe("[HttpTrigger] innovatorsGetInnovationSection Suite", () => {
       );
     });
 
-    it("Should return 200 when Innovations is found", async () => {
+    it("Should return 200 when Innovation Section is found", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
       spyOn(validation, "ValidateQueryParams").and.returnValue({});

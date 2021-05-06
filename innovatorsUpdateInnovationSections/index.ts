@@ -45,7 +45,7 @@ class InnovatorsUpdateInnovationSections {
       return;
     }
 
-    context.res = Responsify.Ok(result);
+    context.res = Responsify.NoContent();
   }
 }
 

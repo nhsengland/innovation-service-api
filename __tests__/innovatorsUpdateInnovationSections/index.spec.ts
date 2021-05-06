@@ -40,7 +40,7 @@ describe("[HttpTrigger] innovatorsUpdateInnovationSection Suite", () => {
       );
     });
 
-    it("Should return 200 when Innovations is found", async () => {
+    it("Should return 204 when Innovation section is updated", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
       spyOn(validation, "ValidatePayload").and.returnValue({});
@@ -52,7 +52,7 @@ describe("[HttpTrigger] innovatorsUpdateInnovationSection Suite", () => {
       ]);
 
       const { res } = await mockedRequestFactory({});
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(204);
     });
 
     it("Should return 403 when innovator has an invalid role", async () => {
