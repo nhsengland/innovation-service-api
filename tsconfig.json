@@ -6,6 +6,14 @@
     "rootDir": ".",
     "sourceMap": true,
     "strict": false,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@domain/*": ["__external__/domain/src/*"],
+      "@services/*": ["__external__/services/src/*"],
+      "@entities/*": ["__external__/services/src/entities/*"]
+    }
   }
 }

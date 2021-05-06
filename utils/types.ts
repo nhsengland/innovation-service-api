@@ -1,5 +1,5 @@
 import { Context } from "@azure/functions";
-import { Services } from "nhs-aac-domain-services";
+import { Services } from "@services/index";
 
 type DecodedJwt = {
   oid: string;

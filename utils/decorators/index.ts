@@ -1,5 +1,5 @@
 import { Context, HttpRequest } from "@azure/functions";
-import { OrganisationUser } from "nhs-aac-domain-services";
+import { OrganisationUser } from "@services/index";
 import { decodeToken } from "../authentication";
 import { setIsSQLConnected, setupSQLConnection } from "../connection";
 import * as Responsify from "../responsify";

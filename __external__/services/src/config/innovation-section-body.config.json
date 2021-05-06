@@ -1,0 +1,64 @@
+{
+  "INNOVATION_DESCRIPTION": {
+    "innovationFields": ["description", "hasFinalProduct", "otherCategoryDescription", "mainPurpose"],
+    "innovationTypes": ["categories", "areas", "clinicalAreas", "careSettings"]
+  },
+  "VALUE_PROPOSITION": {
+    "innovationFields": []
+  },
+  "UNDERSTANDING_OF_NEEDS": {
+    "innovationFields": ["hasSubgroups"],
+    "innovationDependencies": [
+      {
+        "type": "subgroups",
+        "fields": ["name", "conditions"]
+      }
+    ]
+  },
+  "UNDERSTANDING_OF_BENEFITS": {
+    "innovationFields": ["hasBenefits", "benefits"],
+    "innovationDependencies": [
+      {
+        "type": "subgroups",
+        "fields": ["benefits"]
+      }
+    ]
+  },
+  "EVIDENCE_OF_EFFECTIVENESS": {
+    "innovationFields": ["hasEvidence"],
+    "innovationDependencies": [
+      {
+        "type": "evidence",
+        "fields": ["evidenceType", "clinicalEvidenceType", "description", "summary", "files"],
+        "files": true
+      }
+    ]
+  },
+  "MARKET_RESEARCH": {
+    "innovationFields": []
+  },
+  "INTELLECTUAL_PROPERTY": {
+    "innovationFields": []
+  },
+  "REGULATIONS_AND_STANDARDS": {
+    "innovationFields": []
+  },
+  "CURRENT_CARE_PATHWAY": {
+    "innovationFields": []
+  },
+  "TESTING_WITH_USERS": {
+    "innovationFields": []
+  },
+  "COST_OF_INNOVATION": {
+    "innovationFields": []
+  },
+  "COMPARATIVE_COST_BENEFIT": {
+    "innovationFields": []
+  },
+  "REVENUE_MODEL": {
+    "innovationFields": []
+  },
+  "IMPLEMENTATION_PLAN": {
+    "innovationFields": []
+  }
+}

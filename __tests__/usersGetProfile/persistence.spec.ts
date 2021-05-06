@@ -1,5 +1,5 @@
 import * as persistence from "../../usersGetProfile/persistence";
-import { UserService } from "nhs-aac-domain-services";
+import { UserService } from "@services/index";
 import * as typeorm from "typeorm";
 import { CustomContext } from "../../utils/types";
 

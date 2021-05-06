@@ -9,7 +9,7 @@ import {
   runStubFunctionFromBindings,
   createHttpTrigger,
 } from "stub-azure-function-context";
-import { InnovatorOrganisationRole } from "nhs-aac-domain-services";
+import { InnovatorOrganisationRole } from "@services/index";
 
 const dummy = {
   services: {

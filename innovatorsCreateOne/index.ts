@@ -1,5 +1,5 @@
 import { Context, HttpRequest } from "@azure/functions";
-import { User, Innovation, Organisation } from "nhs-aac-domain-services";
+import { User, Innovation, Organisation } from "@services/index";
 import * as persistence from "./persistence";
 import jwt_decode from "jwt-decode";
 import * as Responsify from "../utils/responsify";

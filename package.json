@@ -10,8 +10,9 @@
     "jwt-decode": "^3.1.2",
     "memory-cache": "^0.2.0",
     "mongoose": "^5.12.0",
-    "nhs-aac-domain-services": "0.0.44-0",
-    "tslib": "^1.9.3"
+    "mssql": "^6.3.1",
+    "tslib": "^1.9.3",
+    "typeorm": "^0.2.32"
   },
   "keywords": [
     "node",
@@ -26,7 +27,7 @@
     "prestart": "npm run build",
     "start": "func start",
     "test:ci": "test -- --ci --reporters=jest-junit --reporters=default --coverage --coverageReporters=cobertura",
-    "test": "ts-node node_modules/jest/bin/jest.js --runInBand --coverage --silent",
+    "test": "jest --runInBand --coverage --silent",
     "lint": "eslint */**/*.{ts,tsx}",
     "lint:fix": "eslint */**/*.{ts,tsx} --fix",
     "commit": "git-cz"
@@ -38,6 +39,7 @@
     "@types/memory-cache": "^0.2.1",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.15.0",
+    "dotenv": "^9.0.0",
     "eslint": "^7.22.0",
     "eslint-config-prettier": "^7.2.0",
     "eslint-plugin-prettier": "^3.3.1",
@@ -49,7 +51,8 @@
     "stub-azure-function-context": "^2.0.0-alpha.5",
     "ts-jest": "^26.5.4",
     "ts-node": "^9.1.1",
-    "typescript": "^3.3.3"
+    "typescript": "^3.3.3",
+    "tsconfig-paths": "^3.9.0"
   },
   "config": {
     "commitizen": {

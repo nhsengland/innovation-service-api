@@ -1,7 +1,7 @@
 import { Context, HttpRequest } from "@azure/functions";
 import jwt_decode from "jwt-decode";
 
-import { UserService } from "nhs-aac-domain-services";
+import { UserService } from "@services/index";
 
 import * as Responsify from "../utils/responsify";
 import { ValidateHeaders, ValidatePayload } from "./validation";

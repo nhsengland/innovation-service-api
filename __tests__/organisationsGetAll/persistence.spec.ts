@@ -1,5 +1,5 @@
 import * as persistence from "../../organisationsGetAll/persistence";
-import { OrganisationService } from "nhs-aac-domain-services";
+import { OrganisationService } from "@services/index";
 import * as typeorm from "typeorm";
 import { CustomContext } from "../../utils/types";
 
