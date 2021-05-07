@@ -13,7 +13,7 @@ export const getMigrationConnection = (): ConnectionOptions => {
     migrations: [helpers.rootDir(`${C.TYPEORM_MIGRATIONS_DIR}/*.ts`)],
     migrationsTableName: C.TYPEORM_MIGRATIONS_TABLE_NAME,
     cli: {
-      migrationsDir: C.TYPEORM_MIGRATIONS_DIR,
+      migrationsDir: `${C.TYPEORM_CLI_ROOT_PATH}${C.TYPEORM_MIGRATIONS_DIR}`,
     },
     namingStrategy: new CustomNamingStrategy(),
   };

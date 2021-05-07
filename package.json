@@ -32,7 +32,16 @@
     "test": "jest --runInBand --coverage --silent",
     "lint": "eslint */**/*.{ts,tsx}",
     "lint:fix": "eslint */**/*.{ts,tsx} --fix",
-    "commit": "git-cz"
+    "commit": "git-cz",
+    "orm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
+    "migrations:diff": "npm run orm -- migration:generate --connection 'migration' --name",
+    "migrations:new": "npm run orm -- migration:create --config __external__/domain/ormconfig.ts --connection 'migration' --name",
+    "migrations:run": "npm run orm -- migration:run --config __external__/domain/ormconfig.ts --connection 'migration'",
+    "migrations:revert": "npm run orm -- migration:revert --config __external__/domain/ormconfig.ts --connection 'migration'",
+    "migrations:run:tests": "npm run orm -- migration:run --config __external__/domain/ormconfig.ts --connection 'tests'",
+    "seeds:new": "ts-node tools/generators/seed-generator.ts generate",
+    "seeds:run": "npm run orm -- migration:run --connection 'seeding'",
+    "seeds:revert": "npm run orm -- migration:revert --connection 'seeding'"
   },
   "devDependencies": {
     "@azure/core-http": "^1.1.4",
