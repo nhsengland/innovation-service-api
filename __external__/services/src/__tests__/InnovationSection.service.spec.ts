@@ -237,7 +237,8 @@ describe("Innovation Service Suite", () => {
             files: [file.id],
           },
         ],
-      }
+      },
+      true
     );
 
     // Act

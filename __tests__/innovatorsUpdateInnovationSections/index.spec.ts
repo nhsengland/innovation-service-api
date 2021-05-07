@@ -115,6 +115,7 @@ async function mockedRequestFactory(data?: any) {
           }, // ?
           {
             section: "INNOVATION_DESCRIPTION",
+            isSubmission: true,
             data: {
               id: "E362433E-F36B-1410-80DE-0032FE5B194B",
               description: "bbb",

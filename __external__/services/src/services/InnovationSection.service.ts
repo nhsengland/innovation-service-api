@@ -128,7 +128,8 @@ export class InnovationSectionService extends BaseService<Innovation> {
     innovationId: string,
     userId: string,
     section: string,
-    data: any
+    data: any,
+    isSubmission?: boolean
   ) {
     // VALIDATIONS
     if (!innovationId || !userId || !section || !data) {
@@ -166,14 +167,16 @@ export class InnovationSectionService extends BaseService<Innovation> {
       const innovationSection = InnovationSection.new({
         section,
         innovation,
-        status: InnovationSectionStatus.SUBMITTED,
+        status: this.getInnovationSectionStatus(isSubmission),
         createdBy: userId,
         updatedBy: userId,
       });
       sections.push(innovationSection);
     } else {
       sections[innovationSectionIdx].updatedBy = userId;
-      sections[innovationSectionIdx].status = InnovationSectionStatus.SUBMITTED;
+      sections[innovationSectionIdx].status = this.getInnovationSectionStatus(
+        isSubmission
+      );
     }
     updatedInnovation.sections = sections;
 
@@ -209,6 +212,12 @@ export class InnovationSectionService extends BaseService<Innovation> {
     updatedInnovation.updatedBy = userId;
 
     return super.update(innovationId, updatedInnovation);
+  }
+
+  private getInnovationSectionStatus(isSubmission?: boolean) {
+    return isSubmission
+      ? InnovationSectionStatus.SUBMITTED
+      : InnovationSectionStatus.DRAFT;
   }
 
   private getInnovationSections(

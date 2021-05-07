@@ -40,7 +40,8 @@ describe("[innovatorsUpdateInnovationSection] Persistence suite", () => {
           areas: [],
           clinicalAreas: [],
           careSettings: [],
-        }
+        },
+        true
       );
 
       expect(spy).toHaveBeenCalled();
