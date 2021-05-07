@@ -24,7 +24,7 @@
     "azure-functions"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --project tsconfig.json && tscpaths -p tsconfig.json -s . -o ./dist",
     "watch": "tsc -w",
     "prestart": "npm run build",
     "start": "func start",
@@ -50,6 +50,7 @@
     "@types/memory-cache": "^0.2.1",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.15.0",
+    "babel-cli": "^6.26.0",
     "dotenv": "^9.0.0",
     "eslint": "^7.22.0",
     "eslint-config-prettier": "^7.2.0",
@@ -62,8 +63,9 @@
     "stub-azure-function-context": "^2.0.0-alpha.5",
     "ts-jest": "^26.5.4",
     "ts-node": "^9.1.1",
-    "typescript": "^3.3.3",
-    "tsconfig-paths": "^3.9.0"
+    "tsconfig-paths": "^3.9.0",
+    "tscpaths": "0.0.9",
+    "typescript": "^3.3.3"
   },
   "config": {
     "commitizen": {
