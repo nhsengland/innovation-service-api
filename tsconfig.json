@@ -14,6 +14,11 @@
       "@domain/*": ["__external__/domain/src/*"],
       "@services/*": ["__external__/services/src/*"],
       "@entities/*": ["__external__/services/src/entities/*"]
-    }
+    },
+    "plugins": [
+      {
+        "transform": "typescript-transform-paths",
+      }
+    ]
   }
 }

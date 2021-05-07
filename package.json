@@ -24,7 +24,8 @@
     "azure-functions"
   ],
   "scripts": {
-    "build": "tsc --project tsconfig.json && tscpaths -p tsconfig.json -s . -o ./dist",
+    "build_": "tsc --project tsconfig.json && tscpaths -p tsconfig.json -s . -o ./dist",
+    "build": "ttsc",
     "watch": "tsc -w",
     "prestart": "npm run build",
     "start": "func start",
@@ -64,8 +65,9 @@
     "ts-jest": "^26.5.4",
     "ts-node": "^9.1.1",
     "tsconfig-paths": "^3.9.0",
-    "tscpaths": "0.0.9",
-    "typescript": "^3.3.3"
+    "ttypescript": "^1.5.12",
+    "typescript": "^3.3.3",
+    "typescript-transform-paths": "^2.2.3"
   },
   "config": {
     "commitizen": {
