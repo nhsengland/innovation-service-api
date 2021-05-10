@@ -23,10 +23,6 @@ steps:
     npm run build
   displayName: 'Run Build'
 
-- script: |
-    npm test
-  displayName: 'Run Tests'
-
 - task: CopyFiles@2
   inputs:
     Contents: |

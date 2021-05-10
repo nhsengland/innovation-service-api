@@ -1,5 +1,5 @@
 import * as mongoose from "mongoose";
-import { setupConnection } from "nhs-aac-domain-services";
+import { setupConnection } from "@services/index";
 
 let isCosmosConnected = false;
 let isSQLConnected = false;

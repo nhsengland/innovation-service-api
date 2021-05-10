@@ -1,5 +1,5 @@
 import * as persistence from "../../innovatorsHeadOne/persistence";
-import { InnovatorService } from "nhs-aac-domain-services";
+import { InnovatorService } from "@services/index";
 import * as typeorm from "typeorm";
 import { CustomContext } from "../../utils/types";
 

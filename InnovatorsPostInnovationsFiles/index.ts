@@ -1,5 +1,5 @@
 import { HttpRequest } from "@azure/functions";
-import { InnovatorOrganisationRole } from "nhs-aac-domain-services";
+import { InnovatorOrganisationRole } from "@services/index";
 import * as persistence from "./persistence";
 import * as Responsify from "../utils/responsify";
 import * as validation from "./validation";

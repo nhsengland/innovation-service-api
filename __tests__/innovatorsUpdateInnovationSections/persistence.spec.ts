@@ -2,7 +2,7 @@ import * as persistence from "../../innovatorsUpdateInnovationSections/persisten
 import {
   InnovationSectionCatalogue,
   InnovationSectionService,
-} from "nhs-aac-domain-services";
+} from "@services/index";
 import * as typeorm from "typeorm";
 import { CustomContext } from "../../utils/types";
 

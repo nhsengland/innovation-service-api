@@ -9,7 +9,7 @@ import {
   runStubFunctionFromBindings,
   createHttpTrigger,
 } from "stub-azure-function-context";
-import { UserType } from "nhs-aac-domain";
+import { UserType } from "@domain/index";
 
 describe("[HttpTrigger] usersGetProfile Test Suite", () => {
   describe("Function Handler", () => {

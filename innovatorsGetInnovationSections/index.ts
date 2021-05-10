@@ -9,7 +9,7 @@ import {
   Validator,
 } from "../utils/decorators";
 import { CustomContext } from "../utils/types";
-import { InnovatorOrganisationRole } from "nhs-aac-domain-services";
+import { InnovatorOrganisationRole } from "@services/index";
 
 class InnovatorsGetInnovationSections {
   @SQLConnector()

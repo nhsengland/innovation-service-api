@@ -1,4 +1,4 @@
-import { Innovation, Organisation, User } from "nhs-aac-domain";
+import { Innovation, Organisation, User } from "@domain/index";
 import { CustomContext } from "../../utils/types";
 
 export const createInnovator = async (

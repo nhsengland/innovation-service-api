@@ -1,4 +1,4 @@
-import { initializeAllServices, Services } from "nhs-aac-domain-services";
+import { initializeAllServices, Services } from "@services/index";
 import { get, set } from "../utils/cache";
 
 export const loadAllServices = async (): Promise<Services> => {
