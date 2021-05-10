@@ -1,0 +1,40 @@
+description: Innovator Create Payload
+required: true
+content:
+  application/json:
+    schema:
+      type: object
+      properties:
+        actionType:
+          type: string
+          enum: [first_time_signin, invitation]
+        innovator:
+          type: object
+          properties:
+            surveyId:
+              type: string
+        innovation:
+          type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+            countryName:
+              type: string
+            postcode:
+              type: string
+        organisation:
+          type: object
+          properties:
+            name:
+              type: string
+            size:
+              type: string
+            id:
+              type: string
+        user:
+          type: object
+          properties:
+            displayName:
+              type: string

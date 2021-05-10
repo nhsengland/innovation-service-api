@@ -1,0 +1,42 @@
+description: OK
+headers:
+  X-Request-ID:
+    description: >
+      Correlation Header of the request
+    schema:
+      type: string
+content:
+  application/json:
+    schema:
+      $ref: '../nhse-i-aac-openapi.yaml#/components/schemas/innovator-get-innovation'
+    example: |-
+      {
+        "links": {
+          "self": "/innovator/5b1e3375-6149-4ff1-be76-bce72e4236c0/innovations/054d5b4f-b67b-4545-949d-ec4b83d15990/section-summary"
+          "next": null,
+          "prev": null
+        },
+        "data": {
+          "type": "innovation",
+          "id": "054d5b4f-b67b-4545-949d-ec4b83d15990",
+          "attributes": {
+            "name": "Innovation #1",
+            "sections": [
+              {id: '9561433E-F36B-1410-80DE-0032FE5B194B', section: 'INNOVATION_DESCRIPTION', status: 'DRAFT', actionStatus: null}
+              {id: null, section: 'VALUE_PROPOSITION', status: 'NOT_STARTED', actionStatus: null}
+              {id: null, section: 'UNDERSTANDING_OF_NEEDS', status: 'NOT_STARTED', actionStatus: null}
+              {id: null, section: 'UNDERSTANDING_OF_BENEFITS', status: 'NOT_STARTED', actionStatus: null}
+              {id: null, section: 'EVIDENCE_OF_EFFECTIVENESS', status: 'NOT_STARTED', actionStatus: null}
+              {id: null, section: 'MARKET_RESEARCH', status: 'NOT_STARTED', actionStatus: null}
+              {id: null, section: 'INTELLECTUAL_PROPERTY', status: 'NOT_STARTED', actionStatus: null}
+              {id: null, section: 'REGULATIONS_AND_STANDARDS', status: 'NOT_STARTED', actionStatus: null}
+              {id: null, section: 'CURRENT_CARE_PATHWAY', status: 'NOT_STARTED', actionStatus: null}
+              {id: null, section: 'TESTING_WITH_USERS', status: 'NOT_STARTED', actionStatus: null}
+              {id: null, section: 'COST_OF_INNOVATION', status: 'NOT_STARTED', actionStatus: null}
+              {id: null, section: 'COMPARATIVE_COST_BENEFIT', status: 'NOT_STARTED', actionStatus: null}
+              {id: null, section: 'REVENUE_MODEL', status: 'NOT_STARTED', actionStatus: null}
+              {id: null, section: 'IMPLEMENTATION_PLAN', status: 'NOT_STARTED', actionStatus: null}
+            ]
+          }
+        }
+      }

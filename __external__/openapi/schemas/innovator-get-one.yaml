@@ -1,0 +1,13 @@
+type: object
+properties:
+  links:
+    type: object
+    properties:
+      self:
+        type: string
+      next:
+        type: string
+      last:
+        type: string
+  data:
+    $ref: '../nhse-i-aac-openapi.yaml#/components/schemas/innovator-schema'

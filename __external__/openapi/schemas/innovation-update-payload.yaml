@@ -1,0 +1,16 @@
+description: Innovation Update Payload
+required: true
+content:
+  application/json:
+    schema:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        ownerId:
+          type: string
+          format: uuid
+        title:
+          type: string
+          format: uuid

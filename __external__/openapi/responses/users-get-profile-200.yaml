@@ -1,0 +1,34 @@
+description: OK
+headers:
+  X-Request-ID:
+    description: >
+      Correlation Header of the request
+    schema:
+      type: string
+content:
+  application/json:
+    schema:
+      $ref: '../nhse-i-aac-openapi.yaml#/components/schemas/profile-schema'
+    example: |-
+      {
+        "links": {
+          "self": "/me"
+        },
+        "data:": {
+            "type": "user",
+            "id": "5b1e3375-6149-4ff1-be76-bce72e4236c0",
+            "attributes": {
+              "displayName": "John Smith",
+              "organisations": [
+                {
+                  "id": "bce72e4236c0",
+                  "name": "Organisation A",
+                  "roles": [
+                    "ACCESSOR",
+                    "QUALIFYING_ACCESSOR"
+                  ]
+                }
+              ]
+            }
+          }
+      }

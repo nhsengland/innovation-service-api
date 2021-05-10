@@ -1,0 +1,12 @@
+description: Innovation Section Update Payload
+required: true
+content:
+  application/json:
+    schema:
+      type: object
+      properties:
+        section:
+          type: string
+          format: uuid
+        data:
+          type: object
