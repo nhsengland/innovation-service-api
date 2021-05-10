@@ -24,7 +24,7 @@
     "azure-functions"
   ],
   "scripts": {
-    "build_": "tsc --project tsconfig.json && tscpaths -p tsconfig.json -s . -o ./dist",
+    "build:openapi": "swagger-cli bundle __external__/openapi/nhse-i-aac-openapi.yaml --outfile _build/openapi.yaml --type yaml",
     "build": "ttsc",
     "watch": "tsc -w",
     "prestart": "npm run build",
@@ -67,7 +67,8 @@
     "tsconfig-paths": "^3.9.0",
     "ttypescript": "^1.5.12",
     "typescript": "^3.3.3",
-    "typescript-transform-paths": "^2.2.3"
+    "typescript-transform-paths": "^2.2.3",
+    "swagger-cli": "^4.0.4"
   },
   "config": {
     "commitizen": {

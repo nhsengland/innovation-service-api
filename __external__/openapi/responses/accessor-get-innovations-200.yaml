@@ -1,0 +1,55 @@
+description: OK
+headers:
+  X-Request-ID:
+    description: >
+      Correlation Header of the request
+    schema:
+      type: string
+content:
+  application/json:
+    schema:
+      $ref: '../nhse-i-aac-openapi.yaml#/components/schemas/accessor-get-innovations'
+    example: |-
+      {
+        "links": {
+          "self": "/accessor/5b1e3375-6149-4ff1-be76-bce72e4236c0/innovations",
+          "next": null,
+          "prev": null
+        },
+        "data": [
+          {
+            "links": {
+              "self": "/accessor/5b1e3375-6149-4ff1-be76-bce72e4236c0/innovations/054d5b4f-b67b-4545-949d-ec4b83d15990"
+              "next": null,
+              "prev": null
+            },
+            "data": {
+              "type": "innovation",
+              "id": "054d5b4f-b67b-4545-949d-ec4b83d15990",
+              "attributes": {
+                "name": "Innovation #1",
+                "status": "WAITING_NEEDS_ASSESSMENT",
+                "createdAt": "1615390632",
+                "updatedAt": "1615390632"
+              }
+            }
+          },
+          {
+            "links": {
+              "self": "/accessor/5b1e3375-6149-4ff1-be76-bce72e4236c0/innovations/054d5b4f-b67b-4545-949d-ec4b83d1abcd"
+              "next": null,
+              "prev": null
+            },
+            "data": {
+              "type": "innovation",
+              "id": "054d5b4f-b67b-4545-949d-ec4b83d1abcd",
+              "attributes": {
+                "name": "Innovation #2",
+                "status": "WAITING_NEEDS_ASSESSMENT",
+                "createdAt": "1615390632",
+                "updatedAt": "1615390632"
+              }
+            }
+          }
+        ]
+      }

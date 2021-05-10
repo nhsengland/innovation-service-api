@@ -1,0 +1,18 @@
+type: object
+properties:
+  links:
+    type: object
+    properties:
+      self:
+        type: string
+      next:
+        type: string
+      last:
+        type: string
+  data:
+    type: object
+    properties:
+      id:
+        type: string
+      url:
+        type: string

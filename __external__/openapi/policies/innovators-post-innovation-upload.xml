@@ -1,0 +1,21 @@
+<policies>
+    <inbound>
+        <base />
+        <validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="Unauthorized. Access token is missing or invalid.">
+            <openid-config url="https://nhsaacdevb2c.b2clogin.com/nhsaacdevb2c.onmicrosoft.com/v2.0/.well-known/openid-configuration?p=B2C_1A_SIGNIN" />
+            <audiences>
+                <audience>266b0eda-e32a-49b0-ad3d-0f54662c5c39</audience>
+            </audiences>
+        </validate-jwt>
+        <set-backend-service base-url="https://nhse-dev-innovation-service-functions.azurewebsites.net/api" />
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>

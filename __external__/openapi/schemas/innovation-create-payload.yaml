@@ -1,0 +1,22 @@
+description: Innovation Create Payload
+required: true
+content:
+  application/json:
+    schema:
+      type: object
+      properties:
+        ownerId:
+          type: string
+          format: uuid
+        triageId:
+          type: string
+          format: uuid
+        organisationId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 150
+        description:
+          type: string
+          maxLength: 1000

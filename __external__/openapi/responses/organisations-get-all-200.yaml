@@ -1,0 +1,11 @@
+description: OK
+headers:
+  X-Request-ID:
+    description: >
+      Correlation Header of the request
+    schema:
+      type: string
+content:
+  application/json:
+    schema:
+      $ref: '../nhse-i-aac-openapi.yaml#/components/schemas/organisations-get-all'

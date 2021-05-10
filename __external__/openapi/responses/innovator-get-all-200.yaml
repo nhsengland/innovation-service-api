@@ -1,0 +1,101 @@
+description: OK
+headers:
+  X-Request-ID:
+    description: >
+      Correlation Header of the request
+    schema:
+      type: string
+content:
+  application/json:
+    schema:
+      $ref: '../nhse-i-aac-openapi.yaml#/components/schemas/innovator-get-all'
+    example: |-
+      {
+        "links": {
+          "self": "/innovators",
+          "next": "/innovators/?page=2",
+          "prev": null
+        },
+        "data:": [
+          {
+            "links": {
+              "self": "/innovators/d0ce7c33-49d8-4f45-97ca-62f53bbeca4c",
+              "next": "/innovators/5b1e3375-6149-4ff1-be76-bce72e4236c0",
+              "prev": null
+            },
+            "data": {
+              "type": "innovator",
+              "id": "d0ce7c33-49d8-4f45-97ca-62f53bbeca4c",
+              "attributes": {
+                "userId": "b874f3c4-7955-475d-a8a8-cb9e7e13eb1b",
+                "createdAt": "1615390632",
+                "updatedAt": "1615390672"
+              }
+            }
+          },
+          {
+            "links": {
+              "self": "/innovators/5b1e3375-6149-4ff1-be76-bce72e4236c0",
+              "next": "/innovators/054d5b4f-b67b-4545-949d-ec4b83d15990",
+              "prev": "/innovators/d0ce7c33-49d8-4f45-97ca-62f53bbeca4c"
+            },
+            "data": {
+              "type": "innovator",
+              "id": "5b1e3375-6149-4ff1-be76-bce72e4236c0",
+              "attributes": {
+                "userId": "a691122e-aa14-469e-946d-79ee6bea0c0e",
+                "createdAt": "1615390832",
+                "updatedAt": "1615390972"
+              }
+            }
+          },
+          {
+            "links": {
+              "self": "/innovators/054d5b4f-b67b-4545-949d-ec4b83d15990",
+              "next": "/innovators/a6d86375-7e5c-4e64-8f81-97a8ea070066",
+              "prev": "/innovators/5b1e3375-6149-4ff1-be76-bce72e4236c0"
+            }
+            "data": {
+              "type": "innovator",
+              "id": "054d5b4f-b67b-4545-949d-ec4b83d15990",
+              "attributes": {
+                "userId": "26ed7429-d14c-4d9b-ac70-977fe95c917b",
+                "createdAt": "1615390332",
+                "updatedAt": "1615390372"
+              }
+            }
+          },
+          {
+            "links": {
+              "self": "/innovators/a6d86375-7e5c-4e64-8f81-97a8ea070066",
+              "next": "/innovators/e421c885-b2ce-4885-9923-a50ef49a6358",
+              "prev": "/innovators/054d5b4f-b67b-4545-949d-ec4b83d15990"
+            },
+            "data": {
+              "type": "innovator",
+              "id": "a6d86375-7e5c-4e64-8f81-97a8ea070066",
+              "attributes": {
+                "userId": "51142540-ec65-4af8-b49a-070975032122",
+                "createdAt": "1615390732",
+                "updatedAt": "1615390772"
+              }
+            }
+          },
+          {
+            "links": {
+              "self": "/innovators/e421c885-b2ce-4885-9923-a50ef49a6358",
+              "next": null,
+              "prev": "/innovators/a6d86375-7e5c-4e64-8f81-97a8ea070066"
+            }
+            "data": {
+              "type": "innovator",
+              "id": "e421c885-b2ce-4885-9923-a50ef49a6358",
+              "attributes": {
+                "userId": "017e9c86-b7de-4a2f-b808-033c6c5ba0a4",
+                "createdAt": "1615390232",
+                "updatedAt": "1615390272"
+              }
+            }
+          }
+        ]
+      }

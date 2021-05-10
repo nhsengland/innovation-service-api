@@ -1,0 +1,7 @@
+description: Created
+headers:
+  X-Request-ID:
+    description: >
+      Correlation Header of the request
+    schema:
+      type: string

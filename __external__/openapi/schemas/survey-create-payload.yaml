@@ -1,0 +1,8 @@
+description: Survey Create Payload
+required: true
+content:
+  application/json:
+    schema:
+      type: object
+      additionalProperties: true
+      minProperties: 1

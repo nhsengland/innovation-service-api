@@ -1,0 +1,12 @@
+type: object
+properties:
+  "type":
+    type: string
+    maxLength: 40
+  id:
+    type: string
+    format: uuid
+  attributes:
+    type: object
+    additionalProperties: true
+    minProperties: 1
