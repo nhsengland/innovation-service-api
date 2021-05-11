@@ -5,6 +5,7 @@ import {
   SASProtocol,
   SASQueryParameters,
   StorageSharedKeyCredential,
+  BlobClient,
 } from "@azure/storage-blob";
 
 import * as dotenv from "dotenv";
@@ -87,5 +88,36 @@ export class FileService extends BaseService<InnovationFile> {
   getDownloadUrl(filename: string) {
     const permissions = STORAGE_PERMISSION.READ;
     return this.getUrl(filename, permissions);
+  }
+
+  async deleteFile(file: InnovationFile) {
+    try {
+      file.isDeleted = true;
+      await this.update(file.id, file);
+    } catch (error) {
+      throw error;
+    }
+
+    try {
+      const url = `${process.env.STORAGE_BASE_URL}${process.env.STORAGE_CONTAINER}/${file.displayFileName}`;
+      const storageSharedKeyCredential = new StorageSharedKeyCredential(
+        process.env.STORAGE_ACCOUNT,
+        process.env.STORAGE_KEY
+      );
+      const blobClient = new BlobClient(url, storageSharedKeyCredential);
+      const response = await blobClient.deleteIfExists({
+        deleteSnapshots: "include",
+      });
+
+      if (response.errorCode) {
+        throw new Error(
+          `Failed to delete the file ${file.displayFileName} with errorCode: ${response.errorCode}`
+        );
+      }
+
+      return response;
+    } catch (error) {
+      throw error;
+    }
   }
 }
