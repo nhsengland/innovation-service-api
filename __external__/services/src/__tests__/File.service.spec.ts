@@ -20,6 +20,8 @@ describe("File Service Suite", () => {
       .createQueryBuilder()
       .delete();
     await query.from(InnovationFile).execute();
+    await query.from(Innovation).execute();
+    await query.from(User).execute();
   });
 
   it("should instantiate the file service", () => {
