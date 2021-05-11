@@ -4,7 +4,7 @@
     "innovationTypes": ["categories", "areas", "clinicalAreas", "careSettings"]
   },
   "VALUE_PROPOSITION": {
-    "innovationFields": ["id"]
+    "innovationFields": ["id", "problemsTrackled", "problemsConsequences", "intervention", "interventionImpact"]
   },
   "UNDERSTANDING_OF_NEEDS": {
     "innovationFields": ["id", "hasSubgroups"],
@@ -35,30 +35,70 @@
     ]
   },
   "MARKET_RESEARCH": {
-    "innovationFields": ["id"]
+    "innovationFields": ["id", "marketResearch", "hasMarketResearch"]
   },
   "INTELLECTUAL_PROPERTY": {
-    "innovationFields": ["id"]
+    "innovationFields": ["id", "hasPatents", "hasOtherIntellectual", "otherIntellectual"]
   },
   "REGULATIONS_AND_STANDARDS": {
-    "innovationFields": ["id"]
+    "innovationFields": ["id", "hasRegulationKnowledge", "otherRegulationDescription"],
+    "innovationDependencies": [
+      {
+        "type": "standards",
+        "fields": ["id", "type", "hasMet"]
+      }
+    ],
+    "files": true
   },
   "CURRENT_CARE_PATHWAY": {
-    "innovationFields": ["id"]
+    "innovationFields": ["id", "hasUKPathwayKnowledge", "innovationPathwayKnowledge", "potentialPathway"],
+    "innovationDependencies": [
+      {
+        "type": "subgroups",
+        "fields": ["id", "name", "carePathway"]
+      }
+    ]
   },
   "TESTING_WITH_USERS": {
-    "innovationFields": ["id"]
+    "innovationFields": ["id", "hasTests"],
+    "innovationDependencies": [
+      {
+        "type": "userTests",
+        "fields": ["id", "kind", "feedback"]
+      }
+    ],
+    "files": true
   },
   "COST_OF_INNOVATION": {
-    "innovationFields": ["id"]
+    "innovationFields": ["id", "hasCostKnowledge"],
+    "innovationDependencies": [
+      {
+        "type": "subgroups",
+        "fields": ["id", "name", "costDescription", "patientsRange", "sellExpectations", "usageExpectations"]
+      }
+    ]
   },
   "COMPARATIVE_COST_BENEFIT": {
-    "innovationFields": ["id"]
+    "innovationFields": ["id", "hasCostSavingKnowledge", "hasCostCareKnowledge"],
+    "innovationDependencies": [
+      {
+        "type": "subgroups",
+        "fields": ["id", "name", "costComparison"]
+      }
+    ]
   },
   "REVENUE_MODEL": {
-    "innovationFields": ["id"]
+    "innovationFields": ["id", "hasRevenueModel", "payingOrganisations", "benefittingOrganisations", "hasFunding", "fundingDescription"],
+    "innovationTypes": ["revenues"]
   },
   "IMPLEMENTATION_PLAN": {
-    "innovationFields": ["id"]
+    "innovationFields": ["id", "hasDeployPlan", "isDeployed", "hasResourcesToScale"],
+    "innovationDependencies": [
+      {
+        "type": "deploymentPlans",
+        "fields": ["id", "name", "commercialBasis", "orgDeploymentAffect"]
+      }
+    ],
+    "files": true
   }
 }

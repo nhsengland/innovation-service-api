@@ -29,7 +29,7 @@ describe("File Service Suite", () => {
   });
 
   it("should create an download url with sas", () => {
-    const downloadUrl = fileService.getDownloadUrl("test.txt");
+    const downloadUrl = fileService.getDownloadUrl("AAA-BBB-CCC", "test.txt");
     expect(downloadUrl).toBeDefined();
   });
 

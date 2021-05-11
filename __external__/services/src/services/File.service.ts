@@ -85,9 +85,11 @@ export class FileService extends BaseService<InnovationFile> {
     };
   }
 
-  getDownloadUrl(filename: string) {
+  getDownloadUrl(id: string, filename: string) {
     const permissions = STORAGE_PERMISSION.READ;
-    return this.getUrl(filename, permissions);
+    const extension = path.extname(filename);
+
+    return this.getUrl(`${id}${extension}`, permissions);
   }
 
   async deleteFile(file: InnovationFile) {
@@ -99,7 +101,8 @@ export class FileService extends BaseService<InnovationFile> {
     }
 
     try {
-      const url = `${process.env.STORAGE_BASE_URL}${process.env.STORAGE_CONTAINER}/${file.displayFileName}`;
+      const extension = path.extname(file.displayFileName);
+      const url = `${process.env.STORAGE_BASE_URL}${process.env.STORAGE_CONTAINER}/${file.id}${extension}`;
       const storageSharedKeyCredential = new StorageSharedKeyCredential(
         process.env.STORAGE_ACCOUNT,
         process.env.STORAGE_KEY

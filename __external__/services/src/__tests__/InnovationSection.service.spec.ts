@@ -9,17 +9,22 @@ import {
   InnovationCategory,
   InnovationCategoryCatalogue,
   InnovationClinicalArea,
+  InnovationDeploymentPlan,
   InnovationEvidence,
   InnovationFile,
+  InnovationRevenue,
   InnovationSection,
   InnovationSectionCatalogue,
   InnovationSectionStatus,
+  InnovationStandard,
   InnovationStatus,
   InnovationSubgroup,
+  InnovationUserTest,
   User,
   YesOrNoCatalogue,
 } from "@domain/index";
 import { getConnection } from "typeorm";
+import { closeTestsConnection, setupTestsConnection } from "..";
 import { FileService } from "../services/File.service";
 import { InnovationService } from "../services/Innovation.service";
 import { InnovationSectionService } from "../services/InnovationSection.service";
@@ -29,7 +34,7 @@ const dummy = {
   innovatorId: "innovatorId",
 };
 
-describe("Innovation Service Suite", () => {
+describe("Innovation Section Service Suite", () => {
   let fileService: FileService;
   let innovationService: InnovationService;
   let innovationSectionService: InnovationSectionService;
@@ -62,6 +67,10 @@ describe("Innovation Service Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(InnovationDeploymentPlan).execute();
+    await query.from(InnovationRevenue).execute();
+    await query.from(InnovationUserTest).execute();
+    await query.from(InnovationStandard).execute();
     await query.from(InnovationFile).execute();
     await query.from(InnovationArea).execute();
     await query.from(InnovationCareSetting).execute();
@@ -416,28 +425,15 @@ describe("Innovation Service Suite", () => {
       InnovationSectionCatalogue.EVIDENCE_OF_EFFECTIVENESS,
       {
         hasEvidence: YesOrNoCatalogue.YES,
-        evidence: [
-          {
-            evidenceType: EvidenceTypeCatalogue.CLINICAL,
-            clinicalEvidenceType: ClinicalEvidenceTypeCatalogue.OTHER,
-            description: "other description",
-            summary: "my summary",
-            files: [file.id],
-          },
-        ],
       }
     );
 
     const sections = await result.sections;
-    const evidence = await result.evidence;
-    const evidenceFiles = evidence[0].files;
 
     // Assert
     expect(result.name).toEqual("My Innovation");
     expect(result.hasEvidence).toEqual(YesOrNoCatalogue.YES);
     expect(sections.length).toEqual(1);
-    expect(evidence.length).toEqual(1);
-    expect(evidenceFiles.length).toEqual(1);
   });
 
   it("should save INNOVATION_DESCRIPTION section with correct properties", async () => {

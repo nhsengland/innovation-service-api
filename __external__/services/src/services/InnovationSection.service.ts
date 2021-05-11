@@ -5,22 +5,23 @@ import {
   InnovationSectionCatalogue,
   InnovationSectionStatus,
 } from "@domain/index";
-import { Connection, FindOneOptions, getConnection } from "typeorm";
+import * as sectionBodySchema from "@services/config/innovation-section-body.config.json";
+import * as sectionResponseSchema from "@services/config/innovation-section-response.config.json";
+import { FindOneOptions } from "typeorm";
 import { InnovationSectionModel } from "../models/InnovationSectionModel";
 import { InnovationSectionResult } from "../models/InnovationSectionResult";
 import { BaseService } from "./Base.service";
-import * as sectionResponseSchema from "@services/config/innovation-section-response.config.json";
-import * as sectionBodySchema from "@services/config/innovation-section-body.config.json";
 import { FileService } from "./File.service";
+import { InnovationService } from "./Innovation.service";
 
-export class InnovationSectionService extends BaseService<Innovation> {
-  private readonly connection: Connection;
+export class InnovationSectionService extends BaseService<InnovationSection> {
   private readonly fileService: FileService;
+  private readonly innovationService: InnovationService;
 
   constructor(connectionName?: string) {
-    super(Innovation, connectionName);
-    this.connection = getConnection(connectionName);
+    super(InnovationSection, connectionName);
     this.fileService = new FileService(connectionName);
+    this.innovationService = new InnovationService(connectionName);
   }
 
   async findAllInnovationSectionsByInnovator(
@@ -36,7 +37,10 @@ export class InnovationSectionService extends BaseService<Innovation> {
     const filterOptions: FindOneOptions = {
       where: { owner: userId },
     };
-    const innovation = await super.find(innovationId, filterOptions);
+    const innovation = await this.innovationService.find(
+      innovationId,
+      filterOptions
+    );
 
     if (!innovation) {
       throw new Error("Invalid parameters. Innovation not found for the user.");
@@ -68,9 +72,12 @@ export class InnovationSectionService extends BaseService<Innovation> {
     }
 
     const filterOptions: FindOneOptions = {
-      relations: ["evidence", "evidence.files", "owner"],
+      relations: ["owner"],
     };
-    const innovation = await super.find(innovationId, filterOptions);
+    const innovation = await this.innovationService.find(
+      innovationId,
+      filterOptions
+    );
 
     if (!innovation) {
       throw new Error("Invalid parameters. Innovation not found.");
@@ -111,7 +118,10 @@ export class InnovationSectionService extends BaseService<Innovation> {
               (dep.files = dep.files?.map((obj: InnovationFile) => ({
                 id: obj.id,
                 displayFileName: obj.displayFileName,
-                url: this.fileService.getDownloadUrl(obj.id),
+                url: this.fileService.getDownloadUrl(
+                  obj.id,
+                  obj.displayFileName
+                ),
               })))
           );
         }
@@ -144,7 +154,10 @@ export class InnovationSectionService extends BaseService<Innovation> {
     const filterOptions: FindOneOptions = {
       where: { owner: userId },
     };
-    const innovation = await super.find(innovationId, filterOptions);
+    const innovation = await this.innovationService.find(
+      innovationId,
+      filterOptions
+    );
     if (!innovation) {
       throw new Error("Invalid parameters. Innovation not found for the user.");
     }
@@ -211,7 +224,11 @@ export class InnovationSectionService extends BaseService<Innovation> {
 
     updatedInnovation.updatedBy = userId;
 
-    return super.update(innovationId, updatedInnovation);
+    return this.innovationService.update(innovationId, updatedInnovation);
+  }
+
+  async findAll(filter?: any): Promise<InnovationSection[]> {
+    return this.repository.find(filter);
   }
 
   private getInnovationSectionStatus(isSubmission?: boolean) {
