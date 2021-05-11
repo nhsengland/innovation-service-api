@@ -498,6 +498,165 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
+  '/innovators/{innovatorId}/innovations/{innovationId}/evidence':
+    post:
+      tags:
+        - Innovator
+        - Innovation
+        - CreateInnovationEvidence
+      description: Creates an Innovation Evidence associated with the Innovation
+      operationId: innovators-create-innovation-evidence
+      security:
+        - OpenId:
+            - innovators_write
+      parameters:
+        - name: innovatorId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/innovation-create-evidence-payload'
+      responses:
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/innovators/{innovatorId}/innovations/{innovationId}/evidence/{evidenceId}':
+    get:
+      tags:
+        - Innovator
+        - Innovation
+        - GetInnovationEvidence
+      description: Get an Innovation Evidence associated with the Innovation
+      operationId: innovators-get-innovation-evidence
+      security:
+        - OpenId:
+            - innovators_details
+      parameters:
+        - name: innovatorId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: evidenceId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          $ref: '#/components/responses/innovator-get-innovation-evidence-200'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+    put:
+      tags:
+        - Innovator
+        - Innovation
+        - UpdateInnovationEvidence
+      description: Updates an Innovation Evidence associated with the Innovation
+      operationId: innovators-update-innovation-evidence
+      security:
+        - OpenId:
+            - innovators_write
+      parameters:
+        - name: innovatorId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: evidenceId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/innovation-update-evidence-payload'
+      responses:
+        '200':
+          description: Ok
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+    delete:
+      tags:
+        - Innovator
+        - Innovation
+        - DeleteInnovationEvidence
+      description: Deletes an Innovation Evidence associated with the Innovation
+      operationId: innovators-delete-innovation-evidence
+      security:
+        - OpenId:
+            - innovators_delete
+      parameters:
+        - name: innovatorId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: evidenceId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Ok
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
   '/innovators/{innovatorId}/innovations/{innovationId}/upload':
     post:
       tags:
@@ -971,6 +1130,52 @@ components:
                 format: uuid
               data:
                 type: object
+    innovation-update-evidence-payload:
+      description: Innovation Evidence Update Payload
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              innovation:
+                type: string
+                format: uuid
+              evidenceType:
+                type: string
+              clinicalEvidenceType:
+                type: string
+              description:
+                type: string
+              summary:
+                type: string
+              files:
+                type: array
+                items:
+                  type: string
+    innovation-create-evidence-payload:
+      description: Innovation Evidence Create Payload
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              evidenceType:
+                type: string
+              clinicalEvidenceType:
+                type: string
+              description:
+                type: string
+              summary:
+                type: string
+              files:
+                type: array
+                items:
+                  type: string
     survey-create-payload:
       description: Survey Create Payload
       required: true
@@ -1396,6 +1601,35 @@ components:
             Correlation Header of the request
           schema:
             type: string
+    innovator-get-innovation-evidence-200:
+      description: OK
+      headers:
+        X-Request-ID:
+          description: |
+            Correlation Header of the request
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/innovator-get-innovation'
+          example: |-
+            {
+              "links": {
+                "self": "/innovator/5b1e3375-6149-4ff1-be76-bce72e4236c0/innovations/054d5b4f-b67b-4545-949d-ec4b83d15990/evidence/984f5b4f-b67b-4545-949d-ec4b83d15563"
+                "next": null,
+                "prev": null
+              },
+              "data": {
+                "id": "984f5b4f-b67b-4545-949d-ec4b83d15563",
+                "innovation": "054d5b4f-b67b-4545-949d-ec4b83d15990",
+                "evidenceType": "CLINICAL",
+                "clinicalEvidenceType": "DATA_PUBLISHED",
+                "description": "",
+                "summary": "",
+                "files": []
+              }
+            }
     survey-get-one-200:
       description: OK
       headers:

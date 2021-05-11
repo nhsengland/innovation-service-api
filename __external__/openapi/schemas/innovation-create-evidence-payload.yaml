@@ -1,0 +1,19 @@
+description: Innovation Evidence Create Payload
+required: true
+content:
+  application/json:
+    schema:
+      type: object
+      properties:
+        evidenceType:
+          type: string
+        clinicalEvidenceType:
+          type: string
+        description:
+          type: string
+        summary:
+          type: string
+        files:
+          type: array
+          items:
+            type: string

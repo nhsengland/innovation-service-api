@@ -4,7 +4,7 @@
     "innovationTypes": ["categories", "areas", "clinicalAreas", "careSettings"]
   },
   "VALUE_PROPOSITION": {
-    "innovationFields": []
+    "innovationFields": ["problemsTrackled", "problemsConsequences", "intervention", "interventionImpact"]
   },
   "UNDERSTANDING_OF_NEEDS": {
     "innovationFields": ["hasSubgroups"],
@@ -25,40 +25,73 @@
     ]
   },
   "EVIDENCE_OF_EFFECTIVENESS": {
-    "innovationFields": ["hasEvidence"],
+    "innovationFields": ["hasEvidence"]
+  },
+  "MARKET_RESEARCH": {
+    "innovationFields": ["marketResearch", "hasMarketResearch"]
+  },
+  "INTELLECTUAL_PROPERTY": {
+    "innovationFields": ["hasPatents", "hasOtherIntellectual", "otherIntellectual"]
+  },
+  "REGULATIONS_AND_STANDARDS": {
+    "innovationFields": ["hasRegulationKnowledge", "otherRegulationDescription"],
     "innovationDependencies": [
       {
-        "type": "evidence",
-        "fields": ["evidenceType", "clinicalEvidenceType", "description", "summary", "files"],
-        "files": true
+        "type": "standards",
+        "fields": ["type", "hasMet"]
+      }
+    ],
+    "files": true
+  },
+  "CURRENT_CARE_PATHWAY": {
+    "innovationFields": ["hasUKPathwayKnowledge", "innovationPathwayKnowledge", "potentialPathway"],
+    "innovationDependencies": [
+      {
+        "type": "subgroups",
+        "fields": ["carePathway"]
       }
     ]
   },
-  "MARKET_RESEARCH": {
-    "innovationFields": []
-  },
-  "INTELLECTUAL_PROPERTY": {
-    "innovationFields": []
-  },
-  "REGULATIONS_AND_STANDARDS": {
-    "innovationFields": []
-  },
-  "CURRENT_CARE_PATHWAY": {
-    "innovationFields": []
-  },
   "TESTING_WITH_USERS": {
-    "innovationFields": []
+    "innovationFields": ["hasTests"],
+    "innovationDependencies": [
+      {
+        "type": "userTests",
+        "fields": ["kind", "feedback"]
+      }
+    ],
+    "files": true
   },
   "COST_OF_INNOVATION": {
-    "innovationFields": []
+    "innovationFields": ["hasCostKnowledge"],
+    "innovationDependencies": [
+      {
+        "type": "subgroups",
+        "fields": ["costDescription", "patientsRange", "sellExpectations", "usageExpectations"]
+      }
+    ]
   },
   "COMPARATIVE_COST_BENEFIT": {
-    "innovationFields": []
+    "innovationFields": ["hasCostSavingKnowledge", "hasCostCareKnowledge"],
+    "innovationDependencies": [
+      {
+        "type": "subgroups",
+        "fields": ["costComparison"]
+      }
+    ]
   },
   "REVENUE_MODEL": {
-    "innovationFields": []
+    "innovationFields": ["hasRevenueModel", "payingOrganisations", "benefittingOrganisations", "hasFunding", "fundingDescription"],
+    "innovationTypes": ["revenues"]
   },
   "IMPLEMENTATION_PLAN": {
-    "innovationFields": []
+    "innovationFields": ["hasDeployPlan", "isDeployed", "hasResourcesToScale"],
+    "innovationDependencies": [
+      {
+        "type": "deploymentPlans",
+        "fields": ["name", "commercialBasis", "orgDeploymentAffect"]
+      }
+    ],
+    "files": true
   }
 }

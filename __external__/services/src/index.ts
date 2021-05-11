@@ -12,6 +12,7 @@ export { CommentService } from "../src/services/Comment.service";
 export { FileService } from "../src/services/File.service";
 export { InnovatorService } from "../src/services/Innovator.service";
 export { InnovationService } from "../src/services/Innovation.service";
+export { InnovationEvidenceService } from "../src/services/InnovationEvidence.service";
 export { InnovationSectionService } from "../src/services/InnovationSection.service";
 export { OrganisationService } from "../src/services/Organisation.service";
 

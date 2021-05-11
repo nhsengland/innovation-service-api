@@ -7,6 +7,7 @@ import { InnovationSectionService } from "./InnovationSection.service";
 import { InnovatorService } from "./Innovator.service";
 import { OrganisationService } from "./Organisation.service";
 import { FileService } from "./File.service";
+import { InnovationEvidenceService } from "./InnovationEvidence.service";
 
 export type Services = {
   AccessorService?: AccessorService;
@@ -15,6 +16,7 @@ export type Services = {
   CommentService?: CommentService;
   FileService?: FileService;
   InnovationService?: InnovationService;
+  InnovationEvidenceService?: InnovationEvidenceService;
   InnovationSectionService?: InnovationSectionService;
   InnovatorService?: InnovatorService;
   OrganisationService?: OrganisationService;
@@ -41,6 +43,7 @@ export const initializeAllServices = (connectionName?: string): Services => {
     CommentService,
     FileService,
     InnovationService,
+    InnovationEvidenceService,
     InnovationSectionService,
     InnovatorService,
     OrganisationService,
