@@ -4,10 +4,16 @@ import * as persistence from "./persistence";
 import jwt_decode from "jwt-decode";
 import * as Responsify from "../utils/responsify";
 import * as validation from "./validation";
-import { JwtDecoder, SQLConnector, Validator } from "../utils/decorators";
+import {
+  AppInsights,
+  JwtDecoder,
+  SQLConnector,
+  Validator,
+} from "../utils/decorators";
 import { CustomContext } from "../utils/types";
 
 class InnovatorsCreateOne {
+  @AppInsights()
   @SQLConnector()
   @Validator(validation.ValidateHeaders, "headers", "Invalid Headers")
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")

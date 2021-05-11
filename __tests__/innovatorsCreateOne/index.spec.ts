@@ -1,3 +1,4 @@
+/* eslint-disable */ 
 import * as Validation from "../../innovatorsCreateOne/validation";
 import * as persistence from "../../innovatorsCreateOne/persistence";
 
@@ -9,6 +10,25 @@ import {
   runStubFunctionFromBindings,
   createHttpTrigger,
 } from "stub-azure-function-context";
+
+jest.mock("../../utils/logging/insights", () => ({
+  start: () => {},
+  getInstance: () => ({
+    startOperation: () => ({
+      operation: {
+        parentId: ":parent_id",
+      },
+    }),
+    wrapWithCorrelationContext: (func) => {
+      return func;
+    },
+    defaultClient: {
+      trackTrace: () => {},
+      trackRequest: () => {},
+      flush: () => {},
+    },
+  }),
+}));
 
 const dummy = {
   validPayload: {

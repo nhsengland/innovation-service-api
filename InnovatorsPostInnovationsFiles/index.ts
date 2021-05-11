@@ -4,6 +4,7 @@ import * as persistence from "./persistence";
 import * as Responsify from "../utils/responsify";
 import * as validation from "./validation";
 import {
+  AppInsights,
   JwtDecoder,
   OrganisationRoleValidator,
   SQLConnector,
@@ -12,6 +13,7 @@ import {
 import { CustomContext } from "../utils/types";
 
 class InnovatorsPostInnovationsFiles {
+  @AppInsights()
   @SQLConnector()
   @Validator(validation.ValidateHeaders, "headers", "Invalid Headers")
   @JwtDecoder()

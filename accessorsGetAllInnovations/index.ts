@@ -3,6 +3,7 @@ import * as persistence from "./persistence";
 import * as Responsify from "../utils/responsify";
 import * as validation from "./validation";
 import {
+  AppInsights,
   JwtDecoder,
   OrganisationRoleValidator,
   SQLConnector,
@@ -12,6 +13,7 @@ import { CustomContext } from "../utils/types";
 import { AccessorOrganisationRole, Innovation } from "@services/index";
 
 class AccessorsGetAllInnovations {
+  @AppInsights()
   @SQLConnector()
   @Validator(
     validation.ValidateQueryParams,

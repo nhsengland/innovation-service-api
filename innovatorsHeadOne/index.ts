@@ -2,10 +2,11 @@ import { HttpRequest } from "@azure/functions";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
 import * as Responsify from "../utils/responsify";
-import { SQLConnector, Validator } from "../utils/decorators";
+import { AppInsights, SQLConnector, Validator } from "../utils/decorators";
 import { CustomContext } from "../utils/types";
 
 class InnovatorsHeadOne {
+  @AppInsights()
   @SQLConnector()
   @Validator(validation.ValidateParams, "params", "Invalid Query Parameters")
   static async httpTrigger(

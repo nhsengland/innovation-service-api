@@ -3,10 +3,16 @@ import * as Responsify from "../utils/responsify";
 import * as validation from "./validation";
 import { decodeToken } from "../utils/authentication";
 import * as persistence from "./persistence";
-import { JwtDecoder, SQLConnector, Validator } from "../utils/decorators";
+import {
+  AppInsights,
+  JwtDecoder,
+  SQLConnector,
+  Validator,
+} from "../utils/decorators";
 import { CustomContext } from "../utils/types";
 
 class UsersGetProfile {
+  @AppInsights()
   @SQLConnector()
   @Validator(validation.ValidateHeaders, "headers", "Invalid Headers")
   @JwtDecoder()

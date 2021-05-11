@@ -1,3 +1,4 @@
+/* eslint-disable */ 
 import * as persistence from "../../usersGetProfile/persistence";
 import * as usersGetProfile from "../../usersGetProfile";
 import * as connection from "../../utils/connection";
@@ -10,6 +11,25 @@ import {
   createHttpTrigger,
 } from "stub-azure-function-context";
 import { UserType } from "@domain/index";
+
+jest.mock("../../utils/logging/insights", () => ({
+  start: () => {},
+  getInstance: () => ({
+    startOperation: () => ({
+      operation: {
+        parentId: ":parent_id",
+      },
+    }),
+    wrapWithCorrelationContext: (func) => {
+      return func;
+    },
+    defaultClient: {
+      trackTrace: () => {},
+      trackRequest: () => {},
+      flush: () => {},
+    },
+  }),
+}));
 
 describe("[HttpTrigger] usersGetProfile Test Suite", () => {
   describe("Function Handler", () => {

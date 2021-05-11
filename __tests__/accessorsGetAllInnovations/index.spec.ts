@@ -1,3 +1,4 @@
+/* eslint-disable */ 
 import * as persistence from "../../accessorsGetAllInnovations/persistence";
 import * as validation from "../../accessorsGetAllInnovations/validation";
 import accessorsGetAllInnovations from "../../accessorsGetAllInnovations";
@@ -10,6 +11,25 @@ import {
   createHttpTrigger,
 } from "stub-azure-function-context";
 import { AccessorOrganisationRole, InnovationStatus } from "@services/index";
+
+jest.mock("../../utils/logging/insights", () => ({
+  start: () => {},
+  getInstance: () => ({
+    startOperation: () => ({
+      operation: {
+        parentId: ":parent_id",
+      },
+    }),
+    wrapWithCorrelationContext: (func) => {
+      return func;
+    },
+    defaultClient: {
+      trackTrace: () => {},
+      trackRequest: () => {},
+      flush: () => {},
+    },
+  }),
+}));
 
 const dummy = {
   services: {

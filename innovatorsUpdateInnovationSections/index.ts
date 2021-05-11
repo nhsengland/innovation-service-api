@@ -3,6 +3,7 @@ import * as persistence from "./persistence";
 import * as validation from "./validation";
 import * as Responsify from "../utils/responsify";
 import {
+  AppInsights,
   JwtDecoder,
   OrganisationRoleValidator,
   SQLConnector,
@@ -12,6 +13,7 @@ import { CustomContext } from "../utils/types";
 import { InnovatorOrganisationRole } from "@services/index";
 
 class InnovatorsUpdateInnovationSections {
+  @AppInsights()
   @SQLConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
   @JwtDecoder()

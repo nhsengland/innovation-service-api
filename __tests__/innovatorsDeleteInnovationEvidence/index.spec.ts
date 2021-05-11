@@ -1,3 +1,4 @@
+/* eslint-disable */ 
 import { InnovatorOrganisationRole } from "@services/index";
 import {
   createHttpTrigger,
@@ -8,6 +9,25 @@ import * as persistence from "../../innovatorsDeleteInnovationEvidence/persisten
 import * as authentication from "../../utils/authentication";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
+
+jest.mock("../../utils/logging/insights", () => ({
+  start: () => {},
+  getInstance: () => ({
+    startOperation: () => ({
+      operation: {
+        parentId: ":parent_id",
+      },
+    }),
+    wrapWithCorrelationContext: (func) => {
+      return func;
+    },
+    defaultClient: {
+      trackTrace: () => {},
+      trackRequest: () => {},
+      flush: () => {},
+    },
+  }),
+}));
 
 const dummy = {
   services: {

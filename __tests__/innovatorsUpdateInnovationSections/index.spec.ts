@@ -1,3 +1,4 @@
+/* eslint-disable */ 
 import * as persistence from "../../innovatorsUpdateInnovationSections/persistence";
 import * as validation from "../../innovatorsUpdateInnovationSections/validation";
 import innovatorsUpdateInnovationSection from "../../innovatorsUpdateInnovationSections";
@@ -11,6 +12,24 @@ import {
 } from "stub-azure-function-context";
 import { InnovatorOrganisationRole } from "@services/index";
 
+jest.mock("../../utils/logging/insights", () => ({
+  start: () => {},
+  getInstance: () => ({
+    startOperation: () => ({
+      operation: {
+        parentId: ":parent_id",
+      },
+    }),
+    wrapWithCorrelationContext: (func) => {
+      return func;
+    },
+    defaultClient: {
+      trackTrace: () => {},
+      trackRequest: () => {},
+      flush: () => {},
+    },
+  }),
+}));
 const dummy = {
   services: {
     OrganisationService: {
