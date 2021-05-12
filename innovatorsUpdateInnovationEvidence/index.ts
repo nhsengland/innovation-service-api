@@ -29,14 +29,12 @@ class InnovatorsUpdateInnovationEvidence {
     const evidenceId = req.params.evidenceId;
     const oid = context.auth.decodedJwt.oid;
 
-    if (
-      innovatorId !== oid ||
-      evidence.id !== evidenceId ||
-      evidence.innovation !== innovationId
-    ) {
+    if (innovatorId !== oid || evidence.id !== evidenceId) {
       context.res = Responsify.Forbidden({ error: "Operation denied." });
       return;
     }
+
+    evidence.innovation = innovationId;
 
     let result;
     try {
