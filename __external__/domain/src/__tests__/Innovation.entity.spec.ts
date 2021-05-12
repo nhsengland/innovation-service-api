@@ -403,6 +403,7 @@ describe("Innovation Test Suite", () => {
       const sectionObj = InnovationSection.new({
         section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
         status: InnovationSectionStatus.DRAFT,
+        submittedAt: new Date(),
       });
 
       const innovationObj = Innovation.new({

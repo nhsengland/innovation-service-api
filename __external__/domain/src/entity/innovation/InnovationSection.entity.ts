@@ -36,6 +36,9 @@ export class InnovationSection extends Base {
   })
   status: InnovationSectionStatus;
 
+  @Column({ name: "submitted_at", nullable: true })
+  submittedAt: Date;
+
   // relationships
   @ManyToOne(() => Innovation, { nullable: false })
   @JoinColumn({ name: "innovation_id" })

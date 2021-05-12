@@ -23,6 +23,7 @@ import {
   User,
   YesOrNoCatalogue,
 } from "@domain/index";
+import { InnovationSectionModel } from "@services/models/InnovationSectionModel";
 import { getConnection } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
 import { FileService } from "../services/File.service";
@@ -524,5 +525,79 @@ describe("Innovation Section Service Suite", () => {
 
     expect(err).toBeDefined();
     expect(err.message).toContain("Invalid parameters. Section not found.");
+  });
+
+  it("should submmit sections with correct properties", async () => {
+    const sectionObj = InnovationSection.new({
+      section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+      status: InnovationSectionStatus.DRAFT,
+    });
+
+    const innovationObj = Innovation.new({
+      owner: innovatorUser,
+      surveyId: "abc",
+      name: "My Innovation",
+      description: "My Description",
+      countryName: "UK",
+      hasSubgroups: HasSubgroupsCatalogue.NO,
+      status: InnovationStatus.IN_PROGRESS,
+      sections: [sectionObj],
+    });
+    const innovation = await innovationService.create(innovationObj);
+
+    // Act
+    await innovationSectionService.submitSections(
+      innovation.id,
+      dummy.innovatorId,
+      [
+        InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+        InnovationSectionCatalogue.UNDERSTANDING_OF_NEEDS,
+      ]
+    );
+
+    const result = await innovationSectionService.findAllInnovationSectionsByInnovator(
+      innovation.id,
+      dummy.innovatorId
+    );
+    const count = result.sections.reduce(
+      (counter: number, obj: InnovationSectionModel) => {
+        if (obj.status === InnovationSectionStatus.SUBMITTED) counter += 1;
+        return counter;
+      },
+      0
+    );
+
+    // Assert
+    expect(count).toEqual(2);
+  });
+
+  it("should throw when id is null in submitSections()", async () => {
+    let err;
+    try {
+      await innovationSectionService.submitSections(null, null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err.message).toContain("Invalid parameters.");
+  });
+
+  it("should throw when innovation id invalid in submitSections()", async () => {
+    let err;
+    try {
+      await innovationSectionService.submitSections(
+        "D58C433E-F36B-1410-80E0-0032FE5B194B",
+        "D58C433E-F36B-1410-80E0-0032FE5B194B",
+        [InnovationSectionCatalogue.INNOVATION_DESCRIPTION]
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err.message).toContain(
+      "Invalid parameters. Innovation not found for the user."
+    );
   });
 });

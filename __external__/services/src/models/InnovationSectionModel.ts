@@ -10,4 +10,5 @@ export interface InnovationSectionModel {
   status: InnovationSectionStatus;
   actionStatus: InnovationActionStatus;
   updatedAt: Date;
+  submittedAt: Date;
 }
