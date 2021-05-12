@@ -1,5 +1,4 @@
 import {
-  connection,
   Innovation,
   InnovationFile,
   InnovationSection,
@@ -73,7 +72,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     }
 
     const filterOptions: FindOneOptions = {
-      relations: ["owner"],
+      relations: ["sections", "sections.files", "owner"],
     };
     const innovation = await this.innovationService.find(
       innovationId,
@@ -94,6 +93,16 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
         sectionFields.innovationFields
       ),
     };
+
+    if (sectionFields.files) {
+      const files = sec.files?.map((obj: InnovationFile) => ({
+        id: obj.id,
+        displayFileName: obj.displayFileName,
+        url: this.fileService.getDownloadUrl(obj.id, obj.displayFileName),
+      }));
+
+      data["files"] = files;
+    }
 
     // GET SPECIFIC TYPES & DEPENDENCIES
     if (sectionFields.innovationTypes) {
@@ -183,11 +192,32 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
         status: InnovationSectionStatus.DRAFT,
         createdBy: userId,
         updatedBy: userId,
+        files:
+          sectionFields.files && data.files
+            ? data.files.map((id: string) => ({ id }))
+            : [],
       });
       sections.push(innovationSection);
     } else {
       sections[innovationSectionIdx].updatedBy = userId;
       sections[innovationSectionIdx].status = InnovationSectionStatus.DRAFT;
+
+      if (sectionFields.files) {
+        const deletedFiles = sections[innovationSectionIdx].files.filter(
+          (obj: InnovationFile) => !data.files.includes(obj.id)
+        );
+
+        try {
+          await this.fileService.deleteFiles(deletedFiles);
+        } catch (error) {
+          console.error(error);
+          throw error;
+        }
+
+        sections[
+          innovationSectionIdx
+        ].files = data.files?.map((id: string) => ({ id }));
+      }
     }
     updatedInnovation.sections = sections;
 

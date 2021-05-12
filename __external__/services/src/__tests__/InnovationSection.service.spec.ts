@@ -1,6 +1,7 @@
 import {
   ClinicalEvidenceTypeCatalogue,
   EvidenceTypeCatalogue,
+  HasRegulationKnowledegeCatalogue,
   HasSubgroupsCatalogue,
   Innovation,
   InnovationArea,
@@ -17,9 +18,11 @@ import {
   InnovationSectionCatalogue,
   InnovationSectionStatus,
   InnovationStandard,
+  InnovationStandardCatologue,
   InnovationStatus,
   InnovationSubgroup,
   InnovationUserTest,
+  StandardMetCatalogue,
   User,
   YesOrNoCatalogue,
 } from "@domain/index";
@@ -43,6 +46,7 @@ describe("Innovation Section Service Suite", () => {
   let innovatorUser: User;
 
   beforeAll(async () => {
+    // await setupTestsConnection();
     fileService = new FileService(process.env.DB_TESTS_NAME);
     innovationService = new InnovationService(process.env.DB_TESTS_NAME);
     innovationSectionService = new InnovationSectionService(
@@ -61,6 +65,7 @@ describe("Innovation Section Service Suite", () => {
       .delete();
 
     await query.from(User).execute();
+    // closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -476,6 +481,54 @@ describe("Innovation Section Service Suite", () => {
     expect(result.hasFinalProduct).toEqual(YesOrNoCatalogue.YES);
     expect(categories.length).toEqual(1);
     expect(areas.length).toEqual(1);
+  });
+
+  it("should save REGULATIONS_AND_STANDARDS section with correct properties", async () => {
+    const innovationObj = Innovation.new({
+      owner: innovatorUser,
+      surveyId: "abc",
+      name: "My Innovation",
+      description: "My Description",
+      countryName: "UK",
+      hasFinalProduct: YesOrNoCatalogue.NO,
+      hasSubgroups: HasSubgroupsCatalogue.YES,
+      hasEvidence: YesOrNoCatalogue.NO,
+      status: InnovationStatus.IN_PROGRESS,
+    });
+    const innovation = await innovationService.create(innovationObj);
+
+    const file = await fileService.getUploadUrl(
+      "test.txt",
+      innovation.id,
+      "INNOVATION_EVIDENCE"
+    );
+
+    // Act
+    await innovationSectionService.saveSection(
+      innovation.id,
+      dummy.innovatorId,
+      InnovationSectionCatalogue.REGULATIONS_AND_STANDARDS,
+      {
+        hasRegulationKnowledge: HasRegulationKnowledegeCatalogue.YES_ALL,
+        hasOtherIntellectual: "cenas variadas",
+        standards: [
+          {
+            type: InnovationStandardCatologue.CE_UKCA_CLASS_I,
+            hasMet: StandardMetCatalogue.IN_PROGRESS,
+          },
+        ],
+        files: [file.id],
+      }
+    );
+
+    // Act
+    const result = await innovationSectionService.findSection(
+      innovation.id,
+      InnovationSectionCatalogue.REGULATIONS_AND_STANDARDS
+    );
+
+    // Assert
+    expect(result).toBeDefined();
   });
 
   it("should throw when id is null in saveSection()", async () => {

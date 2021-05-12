@@ -123,4 +123,11 @@ export class FileService extends BaseService<InnovationFile> {
       throw error;
     }
   }
+
+  async deleteFiles(files: InnovationFile[]) {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      await this.deleteFile(file);
+    }
+  }
 }
