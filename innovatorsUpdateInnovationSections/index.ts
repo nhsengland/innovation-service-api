@@ -37,8 +37,7 @@ class InnovatorsUpdateInnovationSections {
         innovationId,
         innovatorId,
         payload.section,
-        payload.data,
-        payload.isSubmission
+        payload.data
       );
     } catch (error) {
       context.log.error(error);
