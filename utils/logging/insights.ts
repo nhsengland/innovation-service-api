@@ -2,7 +2,9 @@
 const appInsights = require("applicationinsights");
 
 export const start = () => {
-  appInsights.setup().start();
+  appInsights
+    .setup()
+    .start();
 };
 
 export type CustomProperties = {
