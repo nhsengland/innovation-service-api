@@ -1,4 +1,5 @@
 import {
+  connection,
   Innovation,
   InnovationFile,
   InnovationSection,
@@ -231,6 +232,52 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     return this.repository.find(filter);
   }
 
+  async submitSections(
+    innovationId: string,
+    userId: string,
+    sections: InnovationSectionCatalogue[]
+  ) {
+    if (!innovationId || !userId || !sections) {
+      throw new Error("Invalid parameters.");
+    }
+
+    const filterOptions: FindOneOptions = {
+      where: { owner: userId },
+    };
+    const innovation = await this.innovationService.find(
+      innovationId,
+      filterOptions
+    );
+    if (!innovation) {
+      throw new Error("Invalid parameters. Innovation not found for the user.");
+    }
+
+    const innovSections = await innovation.sections;
+
+    sections.forEach((key: InnovationSectionCatalogue) => {
+      const secIdx = innovSections.findIndex((obj) => obj.section === key);
+
+      if (secIdx === -1) {
+        innovSections.push(
+          InnovationSection.new({
+            innovation,
+            section: InnovationSectionCatalogue[key],
+            status: InnovationSectionStatus.SUBMITTED,
+            createdBy: userId,
+            updatedBy: userId,
+            submittedAt: new Date(),
+          })
+        );
+      } else {
+        innovSections[secIdx].updatedBy = userId;
+        innovSections[secIdx].status = InnovationSectionStatus.SUBMITTED;
+        innovSections[secIdx].submittedAt = new Date();
+      }
+    });
+
+    return await this.repository.save(innovSections);
+  }
+
   private getInnovationSectionStatus(isSubmission?: boolean) {
     return isSubmission
       ? InnovationSectionStatus.SUBMITTED
@@ -262,6 +309,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
         section: section.section,
         status: section.status,
         updatedAt: section.updatedAt,
+        submittedAt: section.submittedAt,
         actionStatus: null,
       };
     } else {
@@ -270,6 +318,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
         section: InnovationSectionCatalogue[key],
         status: InnovationSectionStatus.NOT_STARTED,
         updatedAt: null,
+        submittedAt: null,
         actionStatus: null,
       };
     }

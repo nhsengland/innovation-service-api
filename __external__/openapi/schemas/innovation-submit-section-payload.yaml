@@ -1,0 +1,11 @@
+description: Innovation Evidence Submit Payload
+required: true
+content:
+  application/json:
+    schema:
+      type: object
+      properties:
+        sections:
+          type: array
+          items:
+            type: string

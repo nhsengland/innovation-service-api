@@ -5,10 +5,10 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": ["post"],
-      "route": "innovators/{innovatorId}/innovations/{innovationId}/evidence"
+      "methods": ["patch"],
+      "route": "innovators/{innovatorId}/innovations/{innovationId}/sections/submit"
     },
     { "type": "http", "direction": "out", "name": "res" }
   ],
-  "scriptFile": "../dist/innovatorsCreateInnovationEvidence/index.js"
+  "scriptFile": "../dist/innovatorsSubmitInnovationSections/index.js"
 }
