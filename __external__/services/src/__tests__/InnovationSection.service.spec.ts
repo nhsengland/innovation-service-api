@@ -247,8 +247,7 @@ describe("Innovation Section Service Suite", () => {
             files: [file.id],
           },
         ],
-      },
-      true
+      }
     );
 
     // Act

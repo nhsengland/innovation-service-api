@@ -60,8 +60,7 @@ describe("Innovation Evidence Suite", () => {
       InnovationSectionCatalogue.EVIDENCE_OF_EFFECTIVENESS,
       {
         hasEvidence: YesOrNoCatalogue.YES,
-      },
-      true
+      }
     );
   });
 
