@@ -17,3 +17,8 @@ export const updateInnovationEvidence = async (
 
   return result;
 };
+
+export const getEvidenceWithOwner = async (ctx: CustomContext, id: string) => {
+  const result = await ctx.services.InnovationEvidenceService.find(id);
+  return result;
+};

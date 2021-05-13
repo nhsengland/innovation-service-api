@@ -17,6 +17,7 @@ import { InnovationEvidenceService } from "../services/InnovationEvidence.servic
 import { InnovationSectionService } from "../services/InnovationSection.service";
 import { InnovatorService } from "../services/Innovator.service";
 import * as storage_blob from "@azure/storage-blob";
+import { executePromisesSequentially } from "@azure/core-http";
 
 const dummy = {
   innovatorId: "innovatorId",
@@ -132,6 +133,8 @@ describe("Innovation Evidence Suite", () => {
 
     expect(item).toBeDefined();
     expect(item.summary).toEqual(evidence.summary);
+    expect(item.innovation).toBeDefined();
+    expect(item.innovation.owner.id).toBeDefined();
   });
 
   it("should update an evidence", async () => {

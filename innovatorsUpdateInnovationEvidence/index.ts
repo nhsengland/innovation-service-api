@@ -29,7 +29,16 @@ class InnovatorsUpdateInnovationEvidence {
     const evidenceId = req.params.evidenceId;
     const oid = context.auth.decodedJwt.oid;
 
-    if (innovatorId !== oid || evidence.id !== evidenceId) {
+    if (innovatorId !== oid) {
+      context.res = Responsify.Forbidden({ error: "Operation denied." });
+      return;
+    }
+
+    const evidenceResult = await persistence.getEvidenceWithOwner(
+      context,
+      evidenceId
+    );
+    if (evidenceResult.innovation.owner.id !== innovatorId) {
       context.res = Responsify.Forbidden({ error: "Operation denied." });
       return;
     }
@@ -51,7 +60,7 @@ class InnovatorsUpdateInnovationEvidence {
       return;
     }
 
-    context.res = Responsify.Ok(1);
+    context.res = Responsify.Ok(result);
   }
 }
 

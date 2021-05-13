@@ -115,7 +115,7 @@ export class InnovationEvidenceService {
 
   private async findOne(id: string): Promise<InnovationEvidence> {
     const filterOptions = {
-      relations: ["files"],
+      relations: ["files", "innovation", "innovation.owner"],
       where: { isDeleted: false },
     };
 
