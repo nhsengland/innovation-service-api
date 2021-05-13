@@ -39,7 +39,7 @@ class InnovatorsDeleteInnovationEvidence {
       return;
     }
 
-    context.res = Responsify.Ok(1);
+    context.res = Responsify.Ok(result);
   }
 }
 
