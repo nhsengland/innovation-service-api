@@ -1,7 +1,6 @@
 import Joi = require("joi");
 
 const payloadSchema = Joi.object({
-  id: Joi.string().required(),
   evidenceType: Joi.string().allow(null).allow("").required(),
   clinicalEvidenceType: Joi.string().allow(null).allow("").required(),
   description: Joi.string().allow(null).allow("").required(),
