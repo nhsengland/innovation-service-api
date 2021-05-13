@@ -102,7 +102,7 @@ export class FileService extends BaseService<InnovationFile> {
 
     try {
       const extension = path.extname(file.displayFileName);
-      const url = `${process.env.STORAGE_BASE_URL}${process.env.STORAGE_CONTAINER}/${file.id}${extension}`;
+      const url = `${process.env.STORAGE_BASE_URL}/${process.env.STORAGE_CONTAINER}/${file.id}${extension}`;
       const storageSharedKeyCredential = new StorageSharedKeyCredential(
         process.env.STORAGE_ACCOUNT,
         process.env.STORAGE_KEY
