@@ -102,7 +102,7 @@ export class FileService extends BaseService<InnovationFile> {
 
     try {
       const extension = path.extname(file.displayFileName);
-      const url = `${process.env.STORAGE_BASE_URL}${process.env.STORAGE_CONTAINER}/${file.id}${extension}`;
+      const url = `${process.env.STORAGE_BASE_URL}/${process.env.STORAGE_CONTAINER}/${file.id}${extension}`;
       const storageSharedKeyCredential = new StorageSharedKeyCredential(
         process.env.STORAGE_ACCOUNT,
         process.env.STORAGE_KEY
@@ -121,6 +121,13 @@ export class FileService extends BaseService<InnovationFile> {
       return response;
     } catch (error) {
       throw error;
+    }
+  }
+
+  async deleteFiles(files: InnovationFile[]) {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      await this.deleteFile(file);
     }
   }
 }

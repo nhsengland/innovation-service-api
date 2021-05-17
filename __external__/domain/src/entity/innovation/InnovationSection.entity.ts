@@ -3,6 +3,8 @@ import {
   Entity,
   Index,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -14,6 +16,7 @@ import {
 import { Base } from "../Base.entity";
 import { Innovation } from "./Innovation.entity";
 import { InnovationAction } from "./InnovationAction.entity";
+import { InnovationFile } from "./InnovationFile.entity";
 
 @Entity("innovation_section")
 @Index(["section", "innovation"], { unique: true })
@@ -43,6 +46,22 @@ export class InnovationSection extends Base {
   @ManyToOne(() => Innovation, { nullable: false })
   @JoinColumn({ name: "innovation_id" })
   innovation: Innovation;
+
+  @ManyToMany(() => InnovationFile, (record) => record.evidence, {
+    nullable: true,
+  })
+  @JoinTable({
+    name: "innovation_section_file",
+    joinColumn: {
+      name: "innovation_section_id",
+      referencedColumnName: "id",
+    },
+    inverseJoinColumn: {
+      name: "innovation_file_id",
+      referencedColumnName: "id",
+    },
+  })
+  files: InnovationFile[];
 
   @OneToMany(() => InnovationAction, (record) => record.innovationSection, {
     lazy: true,

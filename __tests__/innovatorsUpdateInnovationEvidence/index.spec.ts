@@ -72,6 +72,13 @@ describe("[HttpTrigger] innovatorsUpdateInnovationEvidence Suite", () => {
       spyOn(persistence, "updateInnovationEvidence").and.returnValue([
         { id: "" },
       ]);
+      spyOn(persistence, "getEvidenceWithOwner").and.returnValue({
+        innovation: {
+          owner: {
+            id: dummy.innovatorId,
+          },
+        },
+      });
 
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(200);

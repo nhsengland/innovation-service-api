@@ -9,6 +9,7 @@ import {
 import { Base } from "../Base.entity";
 import { Innovation } from "./Innovation.entity";
 import { InnovationEvidence } from "./InnovationEvidence.entity";
+import { InnovationSection } from "./InnovationSection.entity";
 
 @Entity("innovation_file")
 export class InnovationFile extends Base {
@@ -28,6 +29,9 @@ export class InnovationFile extends Base {
 
   @ManyToMany(() => InnovationEvidence, (record) => record.files)
   evidence: InnovationEvidence[];
+
+  @ManyToMany(() => InnovationSection, (record) => record.files)
+  sections: InnovationSection[];
 
   static new(data) {
     const newObj = new InnovationFile();

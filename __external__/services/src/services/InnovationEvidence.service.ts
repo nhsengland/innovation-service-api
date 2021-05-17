@@ -81,7 +81,7 @@ export class InnovationEvidenceService {
       (obj: InnovationFile) => !evidence.files.includes(obj.id)
     );
     try {
-      await this.deleteAllFiles(deletedFiles);
+      await this.fileService.deleteFiles(deletedFiles);
     } catch (error) {
       throw error;
     }
@@ -105,7 +105,7 @@ export class InnovationEvidenceService {
     evidence.isDeleted = true;
 
     try {
-      await this.deleteAllFiles(evidence.files);
+      await this.fileService.deleteFiles(evidence.files);
     } catch (error) {
       throw error;
     }
@@ -113,16 +113,9 @@ export class InnovationEvidenceService {
     return await this.evidenceRepo.save(evidence);
   }
 
-  private async deleteAllFiles(files: InnovationFile[]) {
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      await this.fileService.deleteFile(file);
-    }
-  }
-
   private async findOne(id: string): Promise<InnovationEvidence> {
     const filterOptions = {
-      relations: ["files"],
+      relations: ["files", "innovation", "innovation.owner"],
       where: { isDeleted: false },
     };
 
