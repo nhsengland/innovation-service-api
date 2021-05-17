@@ -1,3 +1,4 @@
+/* eslint-disable */ 
 import * as persistence from "../../innovatorsHeadOne/persistence";
 import innovatorsHeadOne from "../../innovatorsHeadOne";
 import * as connection from "../../utils/connection";
@@ -7,6 +8,25 @@ import {
   runStubFunctionFromBindings,
   createHttpTrigger,
 } from "stub-azure-function-context";
+
+jest.mock("../../utils/logging/insights", () => ({
+  start: () => {},
+  getInstance: () => ({
+    startOperation: () => ({
+      operation: {
+        parentId: ":parent_id",
+      },
+    }),
+    wrapWithCorrelationContext: (func) => {
+      return func;
+    },
+    defaultClient: {
+      trackTrace: () => {},
+      trackRequest: () => {},
+      flush: () => {},
+    },
+  }),
+}));
 
 describe("[HttpTrigger] innovatorsHeadOne Suite", () => {
   describe("Function Handler", () => {

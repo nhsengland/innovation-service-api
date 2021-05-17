@@ -1,3 +1,4 @@
+/* eslint-disable */ 
 import * as persistence from "../../innovatorsGetInnovation/persistence";
 import innovatorsGetInnovation from "../../innovatorsGetInnovation";
 import * as connection from "../../utils/connection";
@@ -8,6 +9,25 @@ import {
   runStubFunctionFromBindings,
   createHttpTrigger,
 } from "stub-azure-function-context";
+
+jest.mock("../../utils/logging/insights", () => ({
+  start: () => {},
+  getInstance: () => ({
+    startOperation: () => ({
+      operation: {
+        parentId: ":parent_id",
+      },
+    }),
+    wrapWithCorrelationContext: (func) => {
+      return func;
+    },
+    defaultClient: {
+      trackTrace: () => {},
+      trackRequest: () => {},
+      flush: () => {},
+    },
+  }),
+}));
 
 describe("[HttpTrigger] innovatorsGetInnovation Suite", () => {
   describe("Function Handler", () => {

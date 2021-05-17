@@ -1,6 +1,7 @@
 import { HttpRequest } from "@azure/functions";
 import { InnovatorOrganisationRole } from "@domain/index";
 import {
+  AppInsights,
   JwtDecoder,
   OrganisationRoleValidator,
   SQLConnector,
@@ -10,6 +11,7 @@ import { CustomContext } from "../utils/types";
 import * as persistence from "./persistence";
 
 class InnovatorsDeleteInnovationEvidence {
+  @AppInsights()
   @SQLConnector()
   @JwtDecoder()
   @OrganisationRoleValidator(InnovatorOrganisationRole.INNOVATOR_OWNER)

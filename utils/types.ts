@@ -14,4 +14,13 @@ type Auth = {
 export interface CustomContext extends Context {
   auth: Auth;
   services: Services;
+  logger?: any;
+}
+
+export enum Severity {
+  Verbose = 0,
+  Information = 1,
+  Warning = 2,
+  Error = 3,
+  Critical = 4,
 }

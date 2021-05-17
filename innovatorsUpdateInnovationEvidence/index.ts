@@ -4,6 +4,7 @@ import {
   InnovatorOrganisationRole,
 } from "@domain/index";
 import {
+  AppInsights,
   JwtDecoder,
   OrganisationRoleValidator,
   SQLConnector,
@@ -15,6 +16,7 @@ import * as persistence from "./persistence";
 import * as validation from "./validation";
 
 class InnovatorsUpdateInnovationEvidence {
+  @AppInsights()
   @SQLConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
   @JwtDecoder()

@@ -1,10 +1,11 @@
 import { HttpRequest } from "@azure/functions";
 import * as persistence from "./persistence";
 import * as Responsify from "../utils/responsify";
-import { JwtDecoder, SQLConnector } from "../utils/decorators";
+import { AppInsights, JwtDecoder, SQLConnector } from "../utils/decorators";
 import { CustomContext } from "../utils/types";
 
 class InnovatorsGetInnovation {
+  @AppInsights()
   @SQLConnector()
   @JwtDecoder()
   static async httpTrigger(
