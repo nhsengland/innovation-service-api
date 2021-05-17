@@ -4,9 +4,11 @@ export enum YesOrNoCatalogue {
 }
 
 export enum CarePathwayCatalogue {
-  YES_CHANGES = "YES_CHANGES",
-  YES_FITS = "YES_FITS",
-  NO_PATHWAY = "NO_PATHWAY",
+  ONLY_OPTION = "ONLY_OPTION",
+  BETTER_OPTION = "BETTER_OPTION",
+  EQUIVALENT_OPTION = "EQUIVALENT_OPTION",
+  FIT_LESS_COSTS = "FIT_LESS_COSTS",
+  NO_KNOWLEDGE = "NO_KNOWLEDGE",
 }
 
 export enum PatientRangeCatalogue {

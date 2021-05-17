@@ -94,7 +94,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
       ),
     };
 
-    if (sectionFields.files) {
+    if (sectionFields.files && sec) {
       const files = sec.files?.map((obj: InnovationFile) => ({
         id: obj.id,
         displayFileName: obj.displayFileName,
@@ -440,7 +440,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     const newObject = original;
 
     filter.forEach((key) => {
-      if (data[key]) {
+      if (data[key] !== undefined) {
         newObject[key] = data[key];
       }
     });

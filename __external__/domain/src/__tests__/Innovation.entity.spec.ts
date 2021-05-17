@@ -54,7 +54,7 @@ const dummy = {
     name: "name",
     conditions: "conditions",
     benefits: "benefits",
-    carePathway: CarePathwayCatalogue.YES_FITS,
+    carePathway: CarePathwayCatalogue.FIT_LESS_COSTS,
     costDescription: "cost description",
     patientsRange: PatientRangeCatalogue.BETWEEN_10000_500000,
     sellExpectations: "sell expectations",
