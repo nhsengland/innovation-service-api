@@ -23,7 +23,7 @@
 	"section": "VALUE_PROPOSITION",
 	"data": {
 		"id": "string",
-		"problemsTrackled": "string",
+		"problemsTackled": "string",
 		"problemsConsequences": "string",
 		"intervention": "string",		
 		"interventionImpact": "string"
@@ -218,6 +218,7 @@
 		"benefittingOrganisations": "string",
 		"hasFunding": "HasFundingCatalogue",
 		"fundingDescription": "string",
+		"otherRevenueDescription": "string",
 		"revenues": [InnovationRevenueTypeCatalogue]
 	}
 }

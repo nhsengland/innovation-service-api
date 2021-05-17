@@ -4,7 +4,7 @@
     "innovationTypes": ["categories", "areas", "clinicalAreas", "careSettings"]
   },
   "VALUE_PROPOSITION": {
-    "innovationFields": ["problemsTrackled", "problemsConsequences", "intervention", "interventionImpact"]
+    "innovationFields": ["problemsTackled", "problemsConsequences", "intervention", "interventionImpact"]
   },
   "UNDERSTANDING_OF_NEEDS": {
     "innovationFields": ["hasSubgroups"],
@@ -81,7 +81,7 @@
     ]
   },
   "REVENUE_MODEL": {
-    "innovationFields": ["hasRevenueModel", "payingOrganisations", "benefittingOrganisations", "hasFunding", "fundingDescription"],
+    "innovationFields": ["hasRevenueModel", "payingOrganisations", "benefittingOrganisations", "hasFunding", "fundingDescription", "otherRevenueDescription"],
     "innovationTypes": ["revenues"]
   },
   "IMPLEMENTATION_PLAN": {
