@@ -3,6 +3,7 @@ import * as persistence from "../../organisationsGetAll/persistence";
 import organisationsGetAll from "../../organisationsGetAll";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
+import * as authentication from "../../utils/authentication";
 
 import {
   runStubFunctionFromBindings,
@@ -35,6 +36,7 @@ describe("[HttpTrigger] organisationsGetAll Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
+      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
       spyOn(connection, "setupSQLConnection").and.throwError(
         "Error establishing connection with the datasource."
       );
@@ -48,6 +50,7 @@ describe("[HttpTrigger] organisationsGetAll Suite", () => {
     });
 
     it("Should return 200 when Organisations is found", async () => {
+      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
 
@@ -60,6 +63,7 @@ describe("[HttpTrigger] organisationsGetAll Suite", () => {
     });
 
     it("Should return 404 when not found", async () => {
+      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
 

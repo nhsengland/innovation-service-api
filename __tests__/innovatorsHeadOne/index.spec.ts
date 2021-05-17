@@ -3,7 +3,7 @@ import * as persistence from "../../innovatorsHeadOne/persistence";
 import innovatorsHeadOne from "../../innovatorsHeadOne";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
-
+import * as authentication from '../../utils/authentication';
 import {
   runStubFunctionFromBindings,
   createHttpTrigger,
@@ -35,6 +35,7 @@ describe("[HttpTrigger] innovatorsHeadOne Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
+      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
       spyOn(connection, "setupSQLConnection").and.throwError(
         "Error establishing connection with the datasource."
       );
@@ -48,6 +49,7 @@ describe("[HttpTrigger] innovatorsHeadOne Suite", () => {
     });
 
     it("Should return 200 when Innovator is found", async () => {
+      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(persistence, "findInnovatorById").and.returnValue([

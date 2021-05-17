@@ -48,6 +48,7 @@ describe("[HttpTrigger] innovatorsPostInnovationsFiles Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
+      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
       spyOn(connection, "setupSQLConnection").and.throwError(
         "Error establishing connection with the datasource."
       );
