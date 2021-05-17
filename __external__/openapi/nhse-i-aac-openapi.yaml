@@ -3,7 +3,8 @@ info:
   title: "NHSE-I-AAC API"
   version: "0.0.1"
 servers:
-  - url: https://nhse-apim-${ENV}-gateway-uks.azure-api.net
+  - url: https://nhse-${ENV}-innovation-service-functions.azurewebsites.net/api
+
 
 paths:
   "/survey":
