@@ -313,7 +313,7 @@ describe("Innovation Test Suite", () => {
         otherCategoryDescription: "other category description",
         hasFinalProduct: YesOrNoCatalogue.YES,
         mainPurpose: MainPurposeCatalogue.ENABLING_CARE,
-        problemsTrackled: "problems trackled",
+        problemsTackled: "problems tackled",
         problemsConsequences: "problems consequences",
         intervention: "intervention",
         interventionImpact: "intervention impact",

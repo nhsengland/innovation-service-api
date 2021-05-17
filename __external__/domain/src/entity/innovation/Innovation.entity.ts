@@ -76,8 +76,8 @@ export class Innovation extends Base {
   @Column({ name: "main_purpose", type: "nvarchar", nullable: true })
   mainPurpose: MainPurposeCatalogue;
 
-  @Column({ name: "problems_trackled", nullable: true })
-  problemsTrackled: string;
+  @Column({ name: "problems_tackled", nullable: true })
+  problemsTackled: string;
 
   @Column({ name: "problems_consequences", nullable: true })
   problemsConsequences: string;
@@ -160,6 +160,9 @@ export class Innovation extends Base {
 
   @Column({ name: "has_revenue_model", type: "nvarchar", nullable: true })
   hasRevenueModel: YesOrNoCatalogue;
+
+  @Column({ name: "other_revenue_description", nullable: true })
+  otherRevenueDescription: string;
 
   @Column({ name: "paying_organisations", nullable: true })
   payingOrganisations: string;
