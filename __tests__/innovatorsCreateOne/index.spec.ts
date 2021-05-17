@@ -11,6 +11,8 @@ import {
   createHttpTrigger,
 } from "stub-azure-function-context";
 
+import * as authentication from "../../utils/authentication";
+
 jest.mock("../../utils/logging/insights", () => ({
   start: () => {},
   getInstance: () => ({
@@ -56,6 +58,7 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
+      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
       spyOn(connection, "setupSQLConnection").and.throwError(
         "Error establishing connection with the datasource."
       );
@@ -69,6 +72,7 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
     });
 
     it("fails on missing payload", async () => {
+      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
       const { res } = await mockedRequestFactory({});
@@ -76,6 +80,7 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
     });
 
     it("fails on missing authorization header", async () => {
+      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(Validation, "ValidatePayload").and.returnValue({});
@@ -85,6 +90,7 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
     });
 
     it("Successfuly validates payload and headers", async () => {
+      //spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(persistence, "createInnovator").and.returnValue({});
@@ -102,6 +108,7 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
     });
 
     it("Should return status 400 when surveyId is not present in the JWT", async () => {
+      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(persistence, "createInnovator").and.returnValue({});
@@ -119,6 +126,7 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
     });
 
     it("Should return status 500 when updateDisplayName fails", async () => {
+      //spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(persistence, "createInnovator").and.returnValue({});
@@ -136,6 +144,7 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
     });
 
     it("Should return status 500 when createInnovator fails", async () => {
+      //spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(persistence, "createInnovator").and.throwError(null);

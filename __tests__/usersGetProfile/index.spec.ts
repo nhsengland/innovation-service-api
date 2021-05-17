@@ -38,6 +38,7 @@ describe("[HttpTrigger] usersGetProfile Test Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
+      spyOn(decodejwt, 'decodeToken').and.returnValue({oid: ':oid'});
       spyOn(connection, "setupSQLConnection").and.throwError(
         "Error establishing connection with the datasource."
       );
@@ -51,6 +52,7 @@ describe("[HttpTrigger] usersGetProfile Test Suite", () => {
     });
 
     it("fails on missing authorization header", async () => {
+      spyOn(decodejwt, 'decodeToken').and.returnValue({oid: ':oid'});
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(validation, "ValidateHeaders").and.returnValue({

@@ -1,4 +1,4 @@
-import { Context, HttpRequest } from "@azure/functions";
+import { HttpRequest } from "@azure/functions";
 import { OrganisationUser } from "@services/index";
 import { getInstance, start } from "../logging/insights";
 import { decodeToken } from "../authentication";
@@ -6,7 +6,6 @@ import { setIsSQLConnected, setupSQLConnection } from "../connection";
 import * as Responsify from "../responsify";
 import { loadAllServices } from "../serviceLoader";
 import { CustomContext, Severity } from "../types";
-import { valid } from "joi";
 
 export function SQLConnector() {
   return function (
@@ -177,9 +176,14 @@ export function AppInsights() {
 
       return insights.wrapWithCorrelationContext(async () => {
         const loggerFunc = (message, severity, props) => {
+          const token = req.headers.authorization;
+          const jwt = decodeToken(token);
+          const authenticatedUser = jwt.oid;
+
           const properties = {
             properties: {
               ...props,
+              authenticatedUser,
             },
           };
 
