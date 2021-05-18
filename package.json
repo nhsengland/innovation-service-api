@@ -15,7 +15,8 @@
     "mongoose": "^5.12.0",
     "mssql": "^6.3.1",
     "tslib": "^1.9.3",
-    "typeorm": "^0.2.32"
+    "typeorm": "^0.2.32",
+    "uuid": "^8.3.2"
   },
   "keywords": [
     "node",
