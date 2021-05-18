@@ -79,8 +79,10 @@ export class FileService extends BaseService<InnovationFile> {
     const result = await this.create(innovationFile);
     const permissions = STORAGE_PERMISSION.CREATE + STORAGE_PERMISSION.WRITE;
     const extension = path.extname(filename);
+
     return {
       id: result.id,
+      displayFileName: filename,
       url: this.getUrl(`${result.id}${extension}`, permissions),
     };
   }

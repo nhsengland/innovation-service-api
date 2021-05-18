@@ -161,6 +161,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     }
 
     const filterOptions: FindOneOptions = {
+      relations: ["sections", "sections.files", "owner"],
       where: { owner: userId },
     };
     const innovation = await this.innovationService.find(
