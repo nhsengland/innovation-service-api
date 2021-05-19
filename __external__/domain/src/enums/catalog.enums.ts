@@ -64,6 +64,24 @@ export enum HasSubgroupsCatalogue {
   NOT_RELEVANT = "NOT_RELEVANT",
 }
 
+export enum HasProblemTackleKnowledgeCatalogue {
+  YES = "YES",
+  NOT_YET = "NOT_YET",
+  NOT_SURE = "NOT_SURE",
+}
+
+export enum HasBenefitsCatalogue {
+  YES = "YES",
+  NOT_YET = "NOT_YET",
+  NOT_SURE = "NOT_SURE",
+}
+
+export enum HasEvidenceCatalogue {
+  YES = "YES",
+  IN_PROGRESS = "IN_PROGRESS",
+  NOT_YET = "NOT_YET",
+}
+
 export enum HasMarketResearchCatalogue {
   YES = "YES",
   IN_PROGRESS = "IN_PROGRESS",
@@ -80,6 +98,7 @@ export enum HasRegulationKnowledegeCatalogue {
   YES_ALL = "YES_ALL",
   YES_SOME = "YES_SOME",
   NO = "NO",
+  NOT_RELEVANT = "NOT_RELEVANT",
 }
 
 export enum InnovationPathwayKnowledgeCatalogue {
@@ -182,4 +201,16 @@ export enum InnovationStandardCatologue {
   CE_UKCA_CLASS_III = "CE_UKCA_CLASS_III",
   DTAC = "DTAC",
   OTHER = "OTHER",
+}
+
+export enum InnovationSupportTypeCatalogue {
+  ASSESSMENT = "ASSESSMENT",
+  PRODUCT_MIGRATION = "PRODUCT_MIGRATION",
+  CLINICAL_TESTS = "CLINICAL_TESTS",
+  COMMERCIAL = "COMMERCIAL",
+  PROCUREMENT = "PROCUREMENT",
+  DEVELOPMENT = "DEVELOPMENT",
+  EVIDENCE_EVALUATION = "EVIDENCE_EVALUATION",
+  FUNDING = "FUNDING",
+  INFORMATION = "INFORMATION",
 }

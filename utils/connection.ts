@@ -28,3 +28,7 @@ export const setupSQLConnection = async () => {
 export const setIsSQLConnected = (value: boolean) => {
   isSQLConnected = value;
 };
+
+export const setIsCosmosConnected = (value: boolean) => {
+  isCosmosConnected = value;
+};

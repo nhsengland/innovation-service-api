@@ -1,20 +1,21 @@
-import { Context, HttpRequest } from "@azure/functions";
-import { User, Innovation, Organisation } from "@services/index";
-import * as persistence from "./persistence";
-import jwt_decode from "jwt-decode";
-import * as Responsify from "../utils/responsify";
-import * as validation from "./validation";
+import { HttpRequest } from "@azure/functions";
+import { Innovation, Organisation, User } from "@services/index";
 import {
   AppInsights,
+  CosmosConnector,
   JwtDecoder,
   SQLConnector,
   Validator,
 } from "../utils/decorators";
+import * as Responsify from "../utils/responsify";
 import { CustomContext } from "../utils/types";
+import * as persistence from "./persistence";
+import * as validation from "./validation";
 
 class InnovatorsCreateOne {
   @AppInsights()
   @SQLConnector()
+  @CosmosConnector()
   @Validator(validation.ValidateHeaders, "headers", "Invalid Headers")
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
   @JwtDecoder()
@@ -51,6 +52,43 @@ class InnovatorsCreateOne {
       return;
     }
 
+    let survey: any;
+    try {
+      survey = await persistence.getSurvey(surveyId);
+    } catch (error) {
+      context.log.error(error);
+      context.res = Responsify.Internal();
+      return;
+    }
+
+    if (!survey) {
+      context.res = Responsify.BadRequest({
+        error: "Survey not found!",
+      });
+      return;
+    }
+
+    const surveyAnswers = survey.answers;
+
+    const getTypeObjectArray: Function = (types: String[]) => {
+      return types?.map((type: String) => ({
+        type,
+        createdBy: oid,
+        updatedBy: oid,
+      }));
+    };
+
+    const surveyInfo = {
+      mainCategory: surveyAnswers.get("mainCategory"),
+      hasProblemTackleKnowledge: surveyAnswers.get("hasProblemTackleKnowledge"),
+      hasMarketResearch: surveyAnswers.get("hasMarketResearch"),
+      hasBenefits: surveyAnswers.get("hasBenefits"),
+      hasTests: surveyAnswers.get("hasTests"),
+      hasEvidence: surveyAnswers.get("hasEvidence"),
+      categories: getTypeObjectArray(surveyAnswers.get("categories")),
+      supportTypes: getTypeObjectArray(surveyAnswers.get("supportTypes")),
+    };
+
     try {
       await persistence.updateUserDisplayName(context, {
         user: payload.user,
@@ -79,6 +117,7 @@ class InnovatorsCreateOne {
       );
 
       const innovation: Innovation = Innovation.new({
+        ...surveyInfo,
         name: payload.innovation.name,
         description: payload.innovation.description,
         countryName: payload.innovation.countryName,
@@ -86,6 +125,7 @@ class InnovatorsCreateOne {
         surveyId,
         organisationShares,
       });
+
       const organisation: Organisation = Organisation.new({
         ...payload.organisation,
       });

@@ -1,10 +1,10 @@
 {
   "INNOVATION_DESCRIPTION": {
-    "innovationFields": ["description", "hasFinalProduct", "otherCategoryDescription", "mainPurpose"],
-    "innovationTypes": ["categories", "areas", "clinicalAreas", "careSettings"]
+    "innovationFields": ["description", "hasFinalProduct", "otherCategoryDescription", "mainPurpose", "mainCategory"],
+    "innovationTypes": ["categories", "areas", "clinicalAreas", "careSettings", "supportTypes"]
   },
   "VALUE_PROPOSITION": {
-    "innovationFields": ["problemsTackled", "problemsConsequences", "intervention", "interventionImpact"]
+    "innovationFields": ["hasProblemTackleKnowledge", "problemsTackled", "problemsConsequences", "intervention", "interventionImpact"]
   },
   "UNDERSTANDING_OF_NEEDS": {
     "innovationFields": ["hasSubgroups"],

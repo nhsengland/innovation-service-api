@@ -3,7 +3,7 @@ info:
   title: NHSE-I-AAC API
   version: 0.0.1
 servers:
-  - url: 'https://nhse-apim-dev-gateway-uks.azure-api.net'
+  - url: 'https://nhse-${ENV}-innovation-service-functions.azurewebsites.net/api'
 paths:
   /survey:
     post:
@@ -21,24 +21,6 @@ paths:
           description: Bad Request
         '422':
           description: UnprocessableEntity
-  '/survey/{surveyId}':
-    get:
-      tags:
-        - Survey
-        - GetOne
-      description: Gets a Survey object
-      operationId: survey-get-one
-      parameters:
-        - name: surveyId
-          in: path
-          schema:
-            type: string
-          required: true
-      responses:
-        '200':
-          $ref: '#/components/responses/survey-get-one-200'
-        '404':
-          description: Not Found
   '/accessors/{accessorId}/innovations':
     get:
       tags:
@@ -1037,20 +1019,6 @@ components:
                         - ACCESSOR
                         - QUALIFYING_ACCESSOR
                         - INNOVATOR
-    survey-get-one:
-      type: object
-      properties:
-        links:
-          type: object
-          properties:
-            self:
-              type: string
-            next:
-              type: string
-            last:
-              type: string
-        data:
-          $ref: '#/components/schemas/survey-schema'
     survey-get-id:
       type: object
       properties:
@@ -1679,64 +1647,6 @@ components:
                 "summary": "",
                 "files": []
               }
-            }
-    survey-get-one-200:
-      description: OK
-      headers:
-        X-Request-ID:
-          description: |
-            Correlation Header of the request
-          schema:
-            type: string
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/survey-get-one'
-          example: |-
-            {
-              "links": {
-                "self": "/surveys/5b1e3375-6149-4ff1-be76-bce72e4236c0",
-                "next": null,
-                "prev": null
-              },
-              "data:": {
-                  "type": "survey",
-                  "id": "5b1e3375-6149-4ff1-be76-bce72e4236c0",
-                  "attributes": {
-                    "items": [
-                      {
-                        "label": "What size is your organization?",
-                        "url": "/triage-innovator-pack/survey/1",
-                        "value": "1 to 5 employees"
-                      },
-                      {
-                        "label": "Which categories can be used to describe your innovation?",
-                        "url": "/triage-innovator-pack/survey/2",
-                        "value": ["Pharmaceutical"]
-                      },
-                      {
-                        "label": "Which category best describes the main part of your innovation?",
-                        "url": "/triage-innovator-pack/survey/3",
-                        "value": ["Pharmaceutical", "Medical"]
-                      },
-                      {
-                        "label": "Have you identified what problem the innovation will tackle?",
-                        "url": "/triage-innovator-pack/survey/4",
-                        "value": "Yes"
-                      },
-                      {
-                        "label": "Have you done market research so that you understand the need for your innovation in the UK?",
-                        "url": "/triage-innovator-pack/survey/5",
-                        "value": "No"
-                      },
-                      {
-                        "label": "Have you identified the specific benefits that your innovation would bring?",
-                        "url": "/triage-innovator-pack/survey/6",
-                        "value": "No"
-                      },
-                    ]
-                  }
-                }
             }
     survey-create-201:
       description: Created

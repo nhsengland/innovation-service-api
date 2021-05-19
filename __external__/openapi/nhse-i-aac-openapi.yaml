@@ -24,25 +24,6 @@ paths:
         "422":
           description: "UnprocessableEntity"
 
-  "/survey/{surveyId}":
-    get:
-      tags:
-        - "Survey"
-        - "GetOne"
-      description: "Gets a Survey object"
-      operationId: "survey-get-one"
-      parameters:
-        - name: surveyId
-          in: path
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          $ref: "#/components/responses/survey-get-one-200"
-        "404":
-          description: "Not Found"
-
   "/accessors/{accessorId}/innovations":
     get:
       tags:
@@ -832,8 +813,6 @@ components:
       $ref: "./schemas/innovator-post-innovation-upload.yaml"
     profile-schema:
       $ref: "./schemas/users-profile-base-schema.yaml"
-    survey-get-one:
-      $ref: "./schemas/survey-get-one.yaml"
     survey-get-id:
       $ref: "./schemas/survey-get-id.yaml"
 
@@ -890,8 +869,6 @@ components:
       $ref: "./responses/innovator-update-innovation-section-200.yaml"
     innovator-get-innovation-evidence-200:
       $ref: "./responses/innovator-get-innovation-evidence-200.yaml"
-    survey-get-one-200:
-      $ref: "./responses/survey-get-one-200.yaml"
     survey-create-201:
       $ref: "./responses/survey-create-201.yaml"
     users-get-profile-200:

@@ -1,20 +1,17 @@
-/* eslint-disable */ 
-import * as Validation from "../../innovatorsCreateOne/validation";
-import * as persistence from "../../innovatorsCreateOne/persistence";
-
+/* eslint-disable */
+import * as mongoose from "mongoose";
+import {
+  createHttpTrigger, runStubFunctionFromBindings
+} from "stub-azure-function-context";
 import innovatorsCreateOne from "../../innovatorsCreateOne";
+import * as persistence from "../../innovatorsCreateOne/persistence";
+import * as Validation from "../../innovatorsCreateOne/validation";
+import * as authentication from "../../utils/authentication";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
 
-import {
-  runStubFunctionFromBindings,
-  createHttpTrigger,
-} from "stub-azure-function-context";
-
-import * as authentication from "../../utils/authentication";
-
 jest.mock("../../utils/logging/insights", () => ({
-  start: () => {},
+  start: () => { },
   getInstance: () => ({
     startOperation: () => ({
       operation: {
@@ -25,9 +22,9 @@ jest.mock("../../utils/logging/insights", () => ({
       return func;
     },
     defaultClient: {
-      trackTrace: () => {},
-      trackRequest: () => {},
-      flush: () => {},
+      trackTrace: () => { },
+      trackRequest: () => { },
+      flush: () => { },
     },
   }),
 }));
@@ -58,7 +55,7 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
+      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
       spyOn(connection, "setupSQLConnection").and.throwError(
         "Error establishing connection with the datasource."
       );
@@ -72,7 +69,8 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
     });
 
     it("fails on missing payload", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
+      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
+      spyOn(mongoose, "connect").and.returnValue(null);
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
       const { res } = await mockedRequestFactory({});
@@ -80,7 +78,8 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
     });
 
     it("fails on missing authorization header", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
+      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
+      spyOn(mongoose, "connect").and.returnValue(null);
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(Validation, "ValidatePayload").and.returnValue({});
@@ -90,12 +89,12 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
     });
 
     it("Successfuly validates payload and headers", async () => {
-      //spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
+      spyOn(mongoose, "connect").and.returnValue(null);
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(persistence, "createInnovator").and.returnValue({});
       spyOn(persistence, "updateUserDisplayName").and.returnValue({});
-
+      spyOn(persistence, "getSurvey").and.returnValue({ answers: new Map() });
       const data = {
         payload: dummy.validPayload,
         headers: {
@@ -108,11 +107,13 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
     });
 
     it("Should return status 400 when surveyId is not present in the JWT", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
+      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
+      spyOn(mongoose, "connect").and.returnValue(null);
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(persistence, "createInnovator").and.returnValue({});
       spyOn(persistence, "updateUserDisplayName").and.throwError(null);
+      spyOn(persistence, "getSurvey").and.returnValue({ answers: new Map() });
 
       const data = {
         payload: dummy.validPayload,
@@ -126,11 +127,12 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
     });
 
     it("Should return status 500 when updateDisplayName fails", async () => {
-      //spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
+      spyOn(mongoose, "connect").and.returnValue(null);
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(persistence, "createInnovator").and.returnValue({});
       spyOn(persistence, "updateUserDisplayName").and.throwError(null);
+      spyOn(persistence, "getSurvey").and.returnValue({ answers: new Map() });
 
       const data = {
         payload: dummy.validPayload,
@@ -144,11 +146,12 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
     });
 
     it("Should return status 500 when createInnovator fails", async () => {
-      //spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
+      spyOn(mongoose, "connect").and.returnValue(null);
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(persistence, "createInnovator").and.throwError(null);
       spyOn(persistence, "updateUserDisplayName").and.returnValue(null);
+      spyOn(persistence, "getSurvey").and.returnValue({ answers: new Map() });
 
       const data = {
         payload: dummy.validPayload,

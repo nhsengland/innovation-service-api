@@ -363,7 +363,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
         obj.isDeleted = true;
       });
 
-    newValues.forEach((code: any) => {
+    newValues?.forEach((code: any) => {
       const objectIndex = original.findIndex((e: any) => e.type === code);
       if (objectIndex === -1) {
         original.push({
