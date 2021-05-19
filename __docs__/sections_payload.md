@@ -8,11 +8,13 @@
 		"description": "string",
 		"hasFinalProduct": "YesOrNoCatalogue",
 		"categories": [InnovationCategoryCatalogue],
+		"mainCategory": "InnovationCategoryCatalogue",
 		"otherCategoryDescription": "string",
 		"areas": [InnovationAreaCatalogue],
 		"clinicalAreas": [InnovationClinicalAreaCatalogue],
 		"careSettings": [InnovationCareSettingCatalogue],
-		"mainPurpose": "string"
+		"mainPurpose": "string",
+		"supportTypes": [InnovationSupportTypeCatalogue]
 	}
 }
 
@@ -23,6 +25,7 @@
 	"section": "VALUE_PROPOSITION",
 	"data": {
 		"id": "string",
+		"hasProblemTackleKnowledge": "HasProblemTackleKnowledgeCatalogue",
 		"problemsTackled": "string",
 		"problemsConsequences": "string",
 		"intervention": "string",		
@@ -53,7 +56,7 @@
 {
 	"section": "UNDERSTANDING_OF_BENEFITS",
 	"data": {
-		"hasBenefits": "YesOrNoCatalogue",
+		"hasBenefits": "HasBenefitsCatalogue",
 		"subgroups": [
 			{
 				"id": "string",
@@ -71,7 +74,7 @@
 {
 	"section": "EVIDENCE_OF_EFFECTIVENESS",
 	"data": {
-		"hasEvidence": "YesOrNoCatalogue",
+		"hasEvidence": "HasEvidenceCatalogue",
 		"evidence": [
 			{
 				"id": "string?",
@@ -118,7 +121,7 @@
 	"data": {
 		"id": "string",
 		"hasRegulationKnowledge": "HasRegulationKnowledegeCatalogue",
-		"hasOtherIntellectual": "string",
+		"otherRegulationDescription": "string",
 		"standards": [
 			{
 				"id": "string",

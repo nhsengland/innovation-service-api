@@ -32,6 +32,7 @@ export {
   InnovationSection,
   InnovationSubgroup,
   InnovationSupport,
+  InnovationSupportType,
   InnovationUserTest,
   Organisation,
   OrganisationUnit,

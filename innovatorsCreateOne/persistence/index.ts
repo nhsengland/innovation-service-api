@@ -1,4 +1,5 @@
 import { Innovation, Organisation, User } from "@domain/index";
+import { Survey } from "../../schemas/Survey";
 import { CustomContext } from "../../utils/types";
 
 export const createInnovator = async (
@@ -22,6 +23,14 @@ export const updateUserDisplayName = async (ctx: CustomContext, data: any) => {
       { ...data.user },
       data.oid
     );
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getSurvey = async (id: string) => {
+  try {
+    return await Survey.findById(id);
   } catch (error) {
     throw error;
   }

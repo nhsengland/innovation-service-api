@@ -1,13 +1,13 @@
 {
   "INNOVATION_DESCRIPTION": {
-    "innovationFields": ["id", "description", "hasFinalProduct", "otherCategoryDescription", "mainPurpose"],
-    "innovationTypes": ["categories", "areas", "clinicalAreas", "careSettings"]
+    "innovationFields": ["description", "hasFinalProduct", "otherCategoryDescription", "mainPurpose", "mainCategory"],
+    "innovationTypes": ["categories", "areas", "clinicalAreas", "careSettings", "supportTypes"]
   },
   "VALUE_PROPOSITION": {
-    "innovationFields": ["id", "problemsTackled", "problemsConsequences", "intervention", "interventionImpact"]
+    "innovationFields": ["hasProblemTackleKnowledge", "problemsTackled", "problemsConsequences", "intervention", "interventionImpact"]
   },
   "UNDERSTANDING_OF_NEEDS": {
-    "innovationFields": ["id", "hasSubgroups"],
+    "innovationFields": ["hasSubgroups"],
     "innovationDependencies": [
       {
         "type": "subgroups",
@@ -16,7 +16,7 @@
     ]
   },
   "UNDERSTANDING_OF_BENEFITS": {
-    "innovationFields": ["id", "hasBenefits", "benefits"],
+    "innovationFields": ["hasBenefits", "benefits"],
     "innovationDependencies": [
       {
         "type": "subgroups",
@@ -25,7 +25,7 @@
     ]
   },
   "EVIDENCE_OF_EFFECTIVENESS": {
-    "innovationFields": ["id", "hasEvidence"],
+    "innovationFields": ["hasEvidence"],
     "innovationDependencies": [
       {
         "type": "evidence",
@@ -35,13 +35,13 @@
     ]
   },
   "MARKET_RESEARCH": {
-    "innovationFields": ["id", "marketResearch", "hasMarketResearch"]
+    "innovationFields": ["marketResearch", "hasMarketResearch"]
   },
   "INTELLECTUAL_PROPERTY": {
-    "innovationFields": ["id", "hasPatents", "hasOtherIntellectual", "otherIntellectual"]
+    "innovationFields": ["hasPatents", "hasOtherIntellectual", "otherIntellectual"]
   },
   "REGULATIONS_AND_STANDARDS": {
-    "innovationFields": ["id", "hasRegulationKnowledge", "otherRegulationDescription"],
+    "innovationFields": ["hasRegulationKnowledge", "otherRegulationDescription"],
     "innovationDependencies": [
       {
         "type": "standards",
@@ -51,7 +51,7 @@
     "files": true
   },
   "CURRENT_CARE_PATHWAY": {
-    "innovationFields": ["id", "hasUKPathwayKnowledge", "innovationPathwayKnowledge", "potentialPathway"],
+    "innovationFields": ["hasUKPathwayKnowledge", "innovationPathwayKnowledge", "potentialPathway"],
     "innovationDependencies": [
       {
         "type": "subgroups",
@@ -60,7 +60,7 @@
     ]
   },
   "TESTING_WITH_USERS": {
-    "innovationFields": ["id", "hasTests"],
+    "innovationFields": ["hasTests"],
     "innovationDependencies": [
       {
         "type": "userTests",
@@ -70,7 +70,7 @@
     "files": true
   },
   "COST_OF_INNOVATION": {
-    "innovationFields": ["id", "hasCostKnowledge"],
+    "innovationFields": ["hasCostKnowledge"],
     "innovationDependencies": [
       {
         "type": "subgroups",
@@ -79,7 +79,7 @@
     ]
   },
   "COMPARATIVE_COST_BENEFIT": {
-    "innovationFields": ["id", "hasCostSavingKnowledge", "hasCostCareKnowledge"],
+    "innovationFields": ["hasCostSavingKnowledge", "hasCostCareKnowledge"],
     "innovationDependencies": [
       {
         "type": "subgroups",
@@ -88,11 +88,11 @@
     ]
   },
   "REVENUE_MODEL": {
-    "innovationFields": ["id", "hasRevenueModel", "payingOrganisations", "benefittingOrganisations", "hasFunding", "fundingDescription", "otherRevenueDescription"],
+    "innovationFields": ["hasRevenueModel", "payingOrganisations", "benefittingOrganisations", "hasFunding", "fundingDescription", "otherRevenueDescription"],
     "innovationTypes": ["revenues"]
   },
   "IMPLEMENTATION_PLAN": {
-    "innovationFields": ["id", "hasDeployPlan", "isDeployed", "hasResourcesToScale"],
+    "innovationFields": ["hasDeployPlan", "isDeployed", "hasResourcesToScale"],
     "innovationDependencies": [
       {
         "type": "deploymentPlans",

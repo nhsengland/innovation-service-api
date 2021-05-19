@@ -8,35 +8,39 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { InnovationStatus } from "../../enums/innovation.enums";
-
-import { Base } from "../Base.entity";
-import { Comment } from "../user/Comment.entity";
-import { Organisation } from "../organisation/Organisation.entity";
-import { User } from "../user/User.entity";
 import {
-  HasKnowledgeCatalogue,
+  HasBenefitsCatalogue,
+  HasEvidenceCatalogue,
   HasFundingCatalogue,
+  HasKnowledgeCatalogue,
   HasMarketResearchCatalogue,
   HasPatentsCatalogue,
   HasRegulationKnowledegeCatalogue,
   HasResourcesToScaleCatalogue,
   HasSubgroupsCatalogue,
+  HasProblemTackleKnowledgeCatalogue,
   HasTestsCatalogue,
+  InnovationCategoryCatalogue,
   InnovationPathwayKnowledgeCatalogue,
   MainPurposeCatalogue,
   YesOrNoCatalogue,
 } from "../../enums/catalog.enums";
-import { InnovationSubgroup } from "./InnovationSubgroup.entity";
-import { InnovationSection } from "./InnovationSection.entity";
+import { InnovationStatus } from "../../enums/innovation.enums";
+import { Base } from "../Base.entity";
+import { Organisation } from "../organisation/Organisation.entity";
+import { Comment } from "../user/Comment.entity";
+import { User } from "../user/User.entity";
 import { InnovationArea } from "./InnovationArea.entity";
 import { InnovationCareSetting } from "./InnovationCareSetting.entity";
 import { InnovationCategory } from "./InnovationCategory.entity";
 import { InnovationClinicalArea } from "./InnovationClinicalArea.entity";
 import { InnovationDeploymentPlan } from "./InnovationDeploymentPlan.entity";
 import { InnovationEvidence } from "./InnovationEvidence.entity";
-import { InnovationStandard } from "./InnovationStandard.entity";
 import { InnovationRevenue } from "./InnovationRevenue.entity";
+import { InnovationSection } from "./InnovationSection.entity";
+import { InnovationStandard } from "./InnovationStandard.entity";
+import { InnovationSubgroup } from "./InnovationSubgroup.entity";
+import { InnovationSupportType } from "./InnovationSupportType.entity";
 import { InnovationUserTest } from "./InnovationUserTest.entity";
 
 @Entity("innovation")
@@ -70,11 +74,21 @@ export class Innovation extends Base {
   @Column({ name: "other_category_description", nullable: true })
   otherCategoryDescription: string;
 
+  @Column({ name: "main_category", nullable: true })
+  mainCategory: InnovationCategoryCatalogue;
+
   @Column({ name: "has_final_product", type: "nvarchar", nullable: true })
   hasFinalProduct: YesOrNoCatalogue;
 
   @Column({ name: "main_purpose", type: "nvarchar", nullable: true })
   mainPurpose: MainPurposeCatalogue;
+
+  @Column({
+    name: "has_problem_tackle_knowledge",
+    type: "nvarchar",
+    nullable: true,
+  })
+  hasProblemTackleKnowledge: HasProblemTackleKnowledgeCatalogue;
 
   @Column({ name: "problems_tackled", nullable: true })
   problemsTackled: string;
@@ -92,13 +106,13 @@ export class Innovation extends Base {
   hasSubgroups: HasSubgroupsCatalogue;
 
   @Column({ name: "has_benefits", type: "nvarchar", nullable: true })
-  hasBenefits: YesOrNoCatalogue;
+  hasBenefits: HasBenefitsCatalogue;
 
   @Column({ name: "benefits", nullable: true })
   benefits: string;
 
   @Column({ name: "has_evidence", type: "nvarchar", nullable: true })
-  hasEvidence: YesOrNoCatalogue;
+  hasEvidence: HasEvidenceCatalogue;
 
   @Column({ name: "has_market_research", type: "nvarchar", nullable: true })
   hasMarketResearch: HasMarketResearchCatalogue;
@@ -271,6 +285,12 @@ export class Innovation extends Base {
     cascade: ["insert", "update"],
   })
   userTests: InnovationUserTest[];
+
+  @OneToMany(() => InnovationSupportType, (record) => record.innovation, {
+    lazy: true,
+    cascade: ["insert", "update"],
+  })
+  supportTypes: InnovationSupportType[];
 
   @OneToMany(() => Comment, (record) => record.innovation, { lazy: true })
   comments: Comment[];

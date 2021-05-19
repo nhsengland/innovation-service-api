@@ -2,7 +2,12 @@ import { HttpRequest } from "@azure/functions";
 import { OrganisationUser } from "@services/index";
 import { getInstance, start } from "../logging/insights";
 import { decodeToken } from "../authentication";
-import { setIsSQLConnected, setupSQLConnection } from "../connection";
+import {
+  setIsSQLConnected,
+  setIsCosmosConnected,
+  setupCosmosDb,
+  setupSQLConnection,
+} from "../connection";
 import * as Responsify from "../responsify";
 import { loadAllServices } from "../serviceLoader";
 import { CustomContext, Severity } from "../types";
@@ -41,6 +46,47 @@ export function SQLConnector() {
       context.log.info("Database connection established");
 
       context.logger("@SQLConnector", Severity.Information, {
+        isConnected: true,
+      });
+
+      await original.apply(this, args);
+      return;
+    };
+  };
+}
+
+export function CosmosConnector() {
+  return function (
+    target: Object,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    const decoratorId = "CosmosConnector";
+
+    const original = descriptor.value;
+    descriptor.value = async function (...args: any[]) {
+      const context: CustomContext = args[0];
+      try {
+        await setupCosmosDb();
+      } catch (error) {
+        context.log.error(error);
+        context.logger(
+          `${decoratorId}: an error has occurred. Check details.`,
+          Severity.Error,
+          {
+            error,
+          }
+        );
+        context.res = Responsify.Internal({
+          error: "Error establishing connection with the datasource.",
+        });
+        setIsCosmosConnected(false);
+        return;
+      }
+
+      context.log.info("CosmosDB connection established");
+
+      context.logger("@CosmosConnector", Severity.Information, {
         isConnected: true,
       });
 
@@ -177,8 +223,12 @@ export function AppInsights() {
       return insights.wrapWithCorrelationContext(async () => {
         const loggerFunc = (message, severity, props) => {
           const token = req.headers.authorization;
-          const jwt = decodeToken(token);
-          const authenticatedUser = jwt.oid;
+          let authenticatedUser = {};
+
+          if (token) {
+            const jwt = decodeToken(token);
+            authenticatedUser = jwt.oid;
+          }
 
           const properties = {
             properties: {
