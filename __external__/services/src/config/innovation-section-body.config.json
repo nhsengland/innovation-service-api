@@ -1,6 +1,6 @@
 {
   "INNOVATION_DESCRIPTION": {
-    "innovationFields": ["description", "hasFinalProduct", "otherCategoryDescription", "mainPurpose", "mainCategory"],
+    "innovationFields": ["description", "hasFinalProduct", "otherCategoryDescription", "mainPurpose", "mainCategory", "otherMainCategoryDescription"],
     "innovationTypes": ["categories", "areas", "clinicalAreas", "careSettings", "supportTypes"]
   },
   "VALUE_PROPOSITION": {

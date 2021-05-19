@@ -7,7 +7,7 @@ const payloadSchema = Joi.object()
       Joi.string(),
       Joi.array().items(Joi.string()),
       Joi.number()
-    )
+    ).allow(null)
   )
   .required();
 
