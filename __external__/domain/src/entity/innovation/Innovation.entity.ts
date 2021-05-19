@@ -71,6 +71,9 @@ export class Innovation extends Base {
   @Column({ name: "postcode", nullable: true, length: 20 })
   postcode: string;
 
+  @Column({ name: "other_main_category_description", nullable: true })
+  otherMainCategoryDescription: string;
+
   @Column({ name: "other_category_description", nullable: true })
   otherCategoryDescription: string;
 

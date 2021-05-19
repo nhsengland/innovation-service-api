@@ -80,11 +80,15 @@ class InnovatorsCreateOne {
 
     const surveyInfo = {
       mainCategory: surveyAnswers.get("mainCategory"),
+      otherMainCategoryDescription: surveyAnswers.get(
+        "otherMainCategoryDescription"
+      ),
       hasProblemTackleKnowledge: surveyAnswers.get("hasProblemTackleKnowledge"),
       hasMarketResearch: surveyAnswers.get("hasMarketResearch"),
       hasBenefits: surveyAnswers.get("hasBenefits"),
       hasTests: surveyAnswers.get("hasTests"),
       hasEvidence: surveyAnswers.get("hasEvidence"),
+      otherCategoryDescription: surveyAnswers.get("otherCategoryDescription"),
       categories: getTypeObjectArray(surveyAnswers.get("categories")),
       supportTypes: getTypeObjectArray(surveyAnswers.get("supportTypes")),
     };
