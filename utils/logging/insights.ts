@@ -1,5 +1,5 @@
 /* eslint-disable */ 
-const appInsights = require("applicationinsights");
+import * as appInsights from "applicationinsights";
 
 export const start = () => {
   appInsights

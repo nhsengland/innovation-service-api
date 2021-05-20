@@ -221,7 +221,7 @@ export function AppInsights() {
       const correlationContext = insights.startOperation(context, req);
 
       return insights.wrapWithCorrelationContext(async () => {
-        const loggerFunc = (message, severity, props) => {
+        const loggerFunc = (message, severity, props, error?) => {
           const token = req.headers.authorization;
           let authenticatedUser = {};
 
@@ -237,6 +237,7 @@ export function AppInsights() {
             },
           };
 
+          // logs all as a trace
           insights.defaultClient.trackTrace({
             message,
             severity,

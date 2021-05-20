@@ -7,7 +7,7 @@ import {
   SQLConnector,
 } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
-import { CustomContext } from "../utils/types";
+import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 
 class InnovatorsDeleteInnovationEvidence {
@@ -36,6 +36,12 @@ class InnovatorsDeleteInnovationEvidence {
         oid
       );
     } catch (error) {
+      context.logger(
+        `[${req.method}] ${req.url}`,
+        Severity.Error,
+        { error },
+        error
+      );
       context.log.error(error);
       context.res = Responsify.Internal();
       return;
