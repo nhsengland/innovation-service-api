@@ -20,6 +20,7 @@ class InnovatorsGetInnovationEvidence {
     req: HttpRequest
   ): Promise<void> {
     const innovatorId = req.params.innovatorId;
+    const innovationId = req.params.innovationId;
     const oid = context.auth.decodedJwt.oid;
 
     if (innovatorId !== oid) {
@@ -40,6 +41,13 @@ class InnovatorsGetInnovationEvidence {
         context.res = Responsify.NotFound();
         return;
       }
+
+      if (result.innovation.owner.id !== innovatorId) {
+        context.res = Responsify.Forbidden({ error: "Operation denied." });
+        return;
+      }
+
+      result.innovation = innovationId;
     } catch (error) {
       context.log.error(error);
       context.res = Responsify.Internal();

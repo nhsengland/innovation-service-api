@@ -34,6 +34,7 @@ describe("Innovation Evidence Suite", () => {
   let innovation: Innovation;
 
   beforeAll(async () => {
+    // await setupTestsConnection();
     const innovationService = new InnovationService(process.env.DB_TESTS_NAME);
     const innovationSectionService = new InnovationSectionService(
       process.env.DB_TESTS_NAME
@@ -73,6 +74,8 @@ describe("Innovation Evidence Suite", () => {
     await query.from(InnovationSection).execute();
     await query.from(Innovation).execute();
     await query.from(User).execute();
+
+    // closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -114,7 +117,7 @@ describe("Innovation Evidence Suite", () => {
     fileObj = InnovationFile.new({
       displayFileName: "myDeletedFile.txt",
       innovation: innovation.id,
-      isDeleted: true,
+      deletedAt: new Date(),
     });
     const deletedFile = await fileService.create(fileObj);
 
@@ -133,8 +136,6 @@ describe("Innovation Evidence Suite", () => {
 
     expect(item).toBeDefined();
     expect(item.summary).toEqual(evidence.summary);
-    expect(item.innovation).toBeDefined();
-    expect(item.innovation.owner.id).toBeDefined();
   });
 
   it("should update an evidence", async () => {
@@ -192,11 +193,10 @@ describe("Innovation Evidence Suite", () => {
       InnovationSectionCatalogue.EVIDENCE_OF_EFFECTIVENESS
     );
 
-    const item = await evidenceService.delete(evidence.id, dummy.innovatorId);
+    await evidenceService.delete(evidence.id, dummy.innovatorId);
 
     const result = await evidenceService.find(evidence.id);
 
-    expect(item.isDeleted).toEqual(true);
     expect(result).toBeNull();
   });
 });

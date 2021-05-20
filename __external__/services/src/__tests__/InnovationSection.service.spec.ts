@@ -157,7 +157,7 @@ describe("Innovation Section Service Suite", () => {
   it("should get a specific innovation section with all dependencies", async () => {
     const category = InnovationCategory.new({
       type: InnovationCategoryCatalogue.AI,
-      isDeleted: true,
+      deletedAt: new Date(),
     });
 
     const category2 = InnovationCategory.new({
@@ -205,7 +205,7 @@ describe("Innovation Section Service Suite", () => {
   it("should get a specific innovation section with all types", async () => {
     const category = InnovationCategory.new({
       type: InnovationCategoryCatalogue.AI,
-      isDeleted: true,
+      deletedAt: new Date(),
     });
 
     const category2 = InnovationCategory.new({

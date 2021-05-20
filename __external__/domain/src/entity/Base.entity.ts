@@ -1,4 +1,9 @@
-import { Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  UpdateDateColumn,
+} from "typeorm";
 
 export class Base {
   @CreateDateColumn({ name: "created_at" })
@@ -13,6 +18,6 @@ export class Base {
   @Column({ name: "updated_by", nullable: true })
   updatedBy: string;
 
-  @Column({ name: "is_deleted", nullable: false, default: false })
-  isDeleted: boolean;
+  @DeleteDateColumn({ name: "deleted_at", nullable: true })
+  public deletedAt: Date;
 }

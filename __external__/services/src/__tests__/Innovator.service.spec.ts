@@ -80,11 +80,11 @@ describe("Innovator Service Suite", () => {
 
     const item = await innovatorService.create(innovator);
 
-    item.isDeleted = true;
+    item.deletedAt = new Date();
 
     const result = await innovatorService.update(item.id, item);
 
-    expect(result.isDeleted).toEqual(true);
+    expect(result.deletedAt).toBeDefined();
   });
 
   it("should throw when updating inexistent innovator", async () => {
