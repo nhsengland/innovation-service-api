@@ -80,12 +80,7 @@ class AccessorsGetAllInnovations {
       };
     } catch (error) {
       context.log.error(error);
-      context.logger(
-        `[${req.method}] ${req.url}`,
-        Severity.Error,
-        { error },
-        error
-      );
+      context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.res = Responsify.Internal();
       return;
     }

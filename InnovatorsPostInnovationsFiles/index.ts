@@ -36,12 +36,7 @@ class InnovatorsPostInnovationsFiles {
       context.res = Responsify.Created(result);
       context.log.info("Innovation File metadata was created");
     } catch (error) {
-      context.logger(
-        `[${req.method}] ${req.url}`,
-        Severity.Error,
-        { error },
-        error
-      );
+      context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
       context.res = Responsify.Internal();
       return;

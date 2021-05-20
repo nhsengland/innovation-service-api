@@ -221,7 +221,7 @@ export function AppInsights() {
       const correlationContext = insights.startOperation(context, req);
 
       return insights.wrapWithCorrelationContext(async () => {
-        const loggerFunc = (message, severity, props, error?) => {
+        const loggerFunc = (message, severity, props) => {
           const token = req.headers.authorization;
           let authenticatedUser = {};
 

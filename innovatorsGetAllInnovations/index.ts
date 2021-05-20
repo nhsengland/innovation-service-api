@@ -28,12 +28,7 @@ class InnovatorsGetAllInnovations {
         innovatorId
       );
     } catch (error) {
-      context.logger(
-        `[${req.method}] ${req.url}`,
-        Severity.Error,
-        { error },
-        error
-      );
+      context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
       context.res = Responsify.Internal();
       return;
