@@ -1,4 +1,4 @@
-/* eslint-disable */ 
+/* eslint-disable */
 import { InnovatorOrganisationRole } from "@services/index";
 import {
   createHttpTrigger,
@@ -11,7 +11,7 @@ import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
 
 jest.mock("../../utils/logging/insights", () => ({
-  start: () => {},
+  start: () => { },
   getInstance: () => ({
     startOperation: () => ({
       operation: {
@@ -22,9 +22,9 @@ jest.mock("../../utils/logging/insights", () => ({
       return func;
     },
     defaultClient: {
-      trackTrace: () => {},
-      trackRequest: () => {},
-      flush: () => {},
+      trackTrace: () => { },
+      trackRequest: () => { },
+      flush: () => { },
     },
   }),
 }));
@@ -37,6 +37,7 @@ const dummy = {
       ],
     },
   },
+  innovatorId: 'test_innovator_id'
 };
 
 describe("[HttpTrigger] innovatorsGetInnovationEvidence Suite", () => {
@@ -46,7 +47,7 @@ describe("[HttpTrigger] innovatorsGetInnovationEvidence Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
+      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
       spyOn(connection, "setupSQLConnection").and.throwError(
         "Error establishing connection with the datasource."
       );
@@ -59,15 +60,21 @@ describe("[HttpTrigger] innovatorsGetInnovationEvidence Suite", () => {
       );
     });
 
-    it("Should return 200 when Innovation Evidence is updated", async () => {
+    it("Should return 200 when get Innovation Evidence", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
       spyOn(authentication, "decodeToken").and.returnValue({
-        oid: "test_innovator_id",
+        oid: dummy.innovatorId,
       });
-      spyOn(persistence, "findInnovationEvidenceById").and.returnValue([
-        { id: "" },
-      ]);
+      spyOn(persistence, "findInnovationEvidenceById").and.returnValue(
+        {
+          id: "", innovation: {
+            owner: {
+              id: dummy.innovatorId,
+            },
+          }
+        },
+      );
 
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(200);
@@ -83,7 +90,7 @@ describe("[HttpTrigger] innovatorsGetInnovationEvidence Suite", () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(services);
       spyOn(authentication, "decodeToken").and.returnValue({
-        oid: "test_innovator_id",
+        oid: dummy.innovatorId,
       });
       spyOn(persistence, "findInnovationEvidenceById").and.returnValue([
         { id: "innovation_id" },
@@ -126,7 +133,7 @@ async function mockedRequestFactory(data?: any) {
           "http://nhse-i-aac/api/innovators/{innovatorId}/innovations/{innovationId}/evidence/{evidenceId}",
           { ...data.headers }, // headers
           {
-            innovatorId: "test_innovator_id",
+            innovatorId: dummy.innovatorId,
             innovationId: "test_innovation_id",
             evidenceId: "test_evidence_id",
           },

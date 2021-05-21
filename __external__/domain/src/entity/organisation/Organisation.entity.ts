@@ -20,6 +20,9 @@ export class Organisation extends Base {
   type: OrganisationType;
 
   @Column({ nullable: true })
+  acronym: string;
+
+  @Column({ nullable: true })
   size: string;
 
   @Column({ name: "is_shadow", nullable: false, default: false })

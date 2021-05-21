@@ -356,11 +356,11 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
   ) {
     const original: any[] = await innovation[type];
 
-    const newValues: any = data[type];
+    const newValues: string[] = data[type];
     original
-      .filter((obj) => !newValues.some((e: any) => e.id === obj.id))
-      .forEach((obj) => {
-        obj.isDeleted = true;
+      .filter((obj) => !newValues.some((code: any) => code === obj.type))
+      .forEach((_, idx) => {
+        original[idx].deletedAt = new Date();
       });
 
     newValues?.forEach((code: any) => {
@@ -370,10 +370,9 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
           type: code,
           createdBy: userId,
           updatedBy: userId,
+          createdAt: new Date(),
+          deletedAt: null,
         });
-      } else {
-        original[objectIndex].isDeleted = false;
-        original[objectIndex].updatedBy = userId;
       }
     });
 
@@ -394,7 +393,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     original
       .filter((obj) => !newValues.some((e: any) => e.id === obj.id))
       .forEach((obj) => {
-        obj.isDeleted = true;
+        obj.deletedAt = new Date();
       });
 
     newValues.forEach((obj: any) => {
@@ -453,9 +452,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
   private async getInnovationTypeArray(innovation: Innovation, type: string) {
     const original = await innovation[type];
 
-    return original
-      .filter((obj: any) => !obj.isDeleted)
-      .flatMap((obj: any) => obj.type);
+    return original.flatMap((obj: any) => obj.type);
   }
 
   private async getInnovationFilteredDependencyArray(
@@ -464,11 +461,9 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
   ) {
     const original = await innovation[dependency.type];
 
-    return original
-      .filter((obj: any) => !obj.isDeleted)
-      .map((obj: any) =>
-        this.getInnovationFilteredObject(obj, dependency.fields)
-      );
+    return original.map((obj: any) =>
+      this.getInnovationFilteredObject(obj, dependency.fields)
+    );
   }
 
   private getInnovationFilteredObject(original: any, filter: any[]) {

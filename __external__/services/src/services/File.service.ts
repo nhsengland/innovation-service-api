@@ -1,17 +1,15 @@
 import {
+  BlobClient,
   BlobSASPermissions,
   BlobSASSignatureValues,
   generateBlobSASQueryParameters,
   SASProtocol,
   SASQueryParameters,
   StorageSharedKeyCredential,
-  BlobClient,
 } from "@azure/storage-blob";
-
+import { InnovationFile } from "@domain/index";
 import * as dotenv from "dotenv";
 import * as path from "path";
-
-import { InnovationFile } from "@domain/index";
 import { Connection, getConnection } from "typeorm";
 import { BaseService } from "./Base.service";
 
@@ -96,8 +94,7 @@ export class FileService extends BaseService<InnovationFile> {
 
   async deleteFile(file: InnovationFile) {
     try {
-      file.isDeleted = true;
-      await this.update(file.id, file);
+      await this.repository.softDelete({ id: file.id });
     } catch (error) {
       throw error;
     }

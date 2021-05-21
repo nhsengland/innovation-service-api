@@ -30,16 +30,19 @@ export class InnovationEvidenceService {
       return null;
     }
 
-    const files = evidence.files
-      ?.filter((obj: InnovationFile) => !obj.isDeleted)
-      .map((obj: InnovationFile) => ({
-        id: obj.id,
-        displayFileName: obj.displayFileName,
-        url: this.fileService.getDownloadUrl(obj.id, obj.displayFileName),
-      }));
+    const files = evidence.files?.map((obj: InnovationFile) => ({
+      id: obj.id,
+      displayFileName: obj.displayFileName,
+      url: this.fileService.getDownloadUrl(obj.id, obj.displayFileName),
+    }));
 
     return {
-      ...evidence,
+      id: evidence.id,
+      innovation: evidence.innovation,
+      evidenceType: evidence.evidenceType,
+      summary: evidence.summary,
+      description: evidence.description,
+      clinicalEvidenceType: evidence.clinicalEvidenceType,
       files,
     };
   }
@@ -101,8 +104,6 @@ export class InnovationEvidenceService {
     if (!evidence) {
       throw new Error("Evidence not found!");
     }
-    evidence.updatedBy = userId;
-    evidence.isDeleted = true;
 
     try {
       await this.fileService.deleteFiles(evidence.files);
@@ -110,13 +111,13 @@ export class InnovationEvidenceService {
       throw error;
     }
 
-    return await this.evidenceRepo.save(evidence);
+    evidence.updatedBy = userId;
+    return await this.evidenceRepo.softDelete({ id: evidence.id });
   }
 
   private async findOne(id: string): Promise<InnovationEvidence> {
     const filterOptions = {
       relations: ["files", "innovation", "innovation.owner"],
-      where: { isDeleted: false },
     };
 
     return await this.evidenceRepo.findOne(id, filterOptions);
