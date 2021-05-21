@@ -10,7 +10,7 @@ import {
   SQLConnector,
   Validator,
 } from "../utils/decorators";
-import { CustomContext } from "../utils/types";
+import { CustomContext, Severity } from "../utils/types";
 
 class InnovatorsPostInnovationsFiles {
   @AppInsights()
@@ -36,6 +36,7 @@ class InnovatorsPostInnovationsFiles {
       context.res = Responsify.Created(result);
       context.log.info("Innovation File metadata was created");
     } catch (error) {
+      context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
       context.res = Responsify.Internal();
       return;

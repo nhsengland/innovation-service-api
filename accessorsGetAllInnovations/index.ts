@@ -9,7 +9,7 @@ import {
   SQLConnector,
   Validator,
 } from "../utils/decorators";
-import { CustomContext } from "../utils/types";
+import { CustomContext, Severity } from "../utils/types";
 import { AccessorOrganisationRole, Innovation } from "@services/index";
 
 class AccessorsGetAllInnovations {
@@ -31,6 +31,10 @@ class AccessorsGetAllInnovations {
     const oid = context.auth.decodedJwt.oid;
 
     if (accessorId !== oid) {
+      context.logger(
+        `[${req.method}]${req.url} Operation denied. ${accessorId} !== ${oid}`,
+        Severity.Information
+      );
       context.res = Responsify.Forbidden({ error: "Operation denied." });
       return;
     }
@@ -76,6 +80,7 @@ class AccessorsGetAllInnovations {
       };
     } catch (error) {
       context.log.error(error);
+      context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.res = Responsify.Internal();
       return;
     }

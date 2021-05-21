@@ -9,7 +9,7 @@ import {
   SQLConnector,
   Validator,
 } from "../utils/decorators";
-import { CustomContext } from "../utils/types";
+import { CustomContext, Severity } from "../utils/types";
 import { InnovatorOrganisationRole } from "@services/index";
 
 class InnovatorsGetInnovationSections {
@@ -44,6 +44,7 @@ class InnovatorsGetInnovationSections {
         section
       );
     } catch (error) {
+      context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
       context.res = Responsify.Internal();
       return;

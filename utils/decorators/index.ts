@@ -237,6 +237,7 @@ export function AppInsights() {
             },
           };
 
+          // logs all as a trace
           insights.defaultClient.trackTrace({
             message,
             severity,

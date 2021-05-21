@@ -3,7 +3,7 @@ import * as persistence from "./persistence";
 import * as Responsify from "../utils/responsify";
 import { decodeToken } from "../utils/authentication";
 import { AppInsights, JwtDecoder, SQLConnector } from "../utils/decorators";
-import { CustomContext } from "../utils/types";
+import { CustomContext, Severity } from "../utils/types";
 
 class InnovatorsGetAllInnovations {
   @AppInsights()
@@ -28,6 +28,7 @@ class InnovatorsGetAllInnovations {
         innovatorId
       );
     } catch (error) {
+      context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
       context.res = Responsify.Internal();
       return;
