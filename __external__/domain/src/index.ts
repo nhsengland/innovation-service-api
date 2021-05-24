@@ -1,6 +1,7 @@
 export { Innovation } from "./entity/innovation/Innovation.entity";
 export { InnovationAction } from "./entity/innovation/InnovationAction.entity";
 export { InnovationArea } from "./entity/innovation/InnovationArea.entity";
+export { InnovationAssessment } from "./entity/innovation/InnovationAssessment.entity";
 export { InnovationCareSetting } from "./entity/innovation/InnovationCareSetting.entity";
 export { InnovationCategory } from "./entity/innovation/InnovationCategory.entity";
 export { InnovationClinicalArea } from "./entity/innovation/InnovationClinicalArea.entity";
