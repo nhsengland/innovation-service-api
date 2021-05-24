@@ -1,10 +1,12 @@
 import { CustomContext } from "../../utils/types";
 
-export const findInnovationById = async (
+export const getAssessmentInnovationSummary = async (
   ctx: CustomContext,
   innovationId: string
 ) => {
-  const result = await ctx.services.InnovationService.find(innovationId);
+  const result = await ctx.services.InnovationService.getAssessmentInnovationSummary(
+    innovationId
+  );
 
   return result;
 };

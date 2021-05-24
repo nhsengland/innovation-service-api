@@ -18,6 +18,10 @@ export class UserService {
     this.userRepo = getRepository(User, connectionName);
   }
 
+  async getUser(id: string) {
+    return await this.userRepo.findOne(id);
+  }
+
   async updateUserDisplayName(payload, oid): Promise<boolean> {
     const accessToken = await authenticateWitGraphAPI();
     await saveB2CUser(accessToken, oid, payload);

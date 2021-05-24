@@ -1,22 +1,32 @@
 import { HttpRequest } from "@azure/functions";
 import * as persistence from "./persistence";
 import * as Responsify from "../utils/responsify";
-import { AppInsights, JwtDecoder, SQLConnector } from "../utils/decorators";
+import {
+  AllowedUserType,
+  AppInsights,
+  JwtDecoder,
+  SQLConnector,
+} from "../utils/decorators";
 import { CustomContext, Severity } from "../utils/types";
+import { UserType } from "@services/index";
 
 class AssessmentsGetInnovation {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder()
+  @AllowedUserType(UserType.ASSESSMENT)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
     const innovationId = req.params.innovationId;
-    const oid = context.auth.decodedJwt.oid;
 
     let result;
     try {
+      result = await persistence.getAssessmentInnovationSummary(
+        context,
+        innovationId
+      );
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
