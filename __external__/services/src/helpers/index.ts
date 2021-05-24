@@ -35,7 +35,7 @@ export async function getUserFromB2C(accessToken: string, id: string) {
     };
 
     const result = await axios.get(
-      `https://graph.microsoft.com/v1.0/users/${id}`,
+      `https://graph.microsoft.com/beta/users/${id}`,
       config
     );
     return result.data;

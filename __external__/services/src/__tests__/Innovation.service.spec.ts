@@ -3,18 +3,22 @@ import {
   Comment,
   Innovation,
   InnovationAction,
+  InnovationStatus,
   InnovatorOrganisationRole,
   Organisation,
   OrganisationType,
   OrganisationUser,
   User,
 } from "@domain/index";
+import { UserService } from "@services/services/User.service";
 import { getConnection } from "typeorm";
+import { closeTestsConnection, setupTestsConnection } from "..";
 import { AccessorService } from "../services/Accessor.service";
 import { CommentService } from "../services/Comment.service";
 import { InnovationService } from "../services/Innovation.service";
 import { InnovatorService } from "../services/Innovator.service";
 import { OrganisationService } from "../services/Organisation.service";
+import * as helpers from "../helpers";
 
 const dummy = {
   innovatorId: "innovatorId",
@@ -28,6 +32,7 @@ describe("Innovator Service Suite", () => {
   let innovationService: InnovationService;
   let innovatorService: InnovatorService;
   let organisationService: OrganisationService;
+  let userService: UserService;
   let qualAccessorUser: User;
   let innovatorUser: User;
   let accessorOrganisation: Organisation;
@@ -39,6 +44,7 @@ describe("Innovator Service Suite", () => {
     innovationService = new InnovationService(process.env.DB_TESTS_NAME);
     innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
     organisationService = new OrganisationService(process.env.DB_TESTS_NAME);
+    userService = new UserService(process.env.DB_TESTS_NAME);
 
     const innovator = new User();
     innovator.id = dummy.innovatorId;
@@ -313,5 +319,51 @@ describe("Innovator Service Suite", () => {
 
     expect(result).toBeDefined();
     expect(result.commentsCount).toBeGreaterThan(0);
+  });
+
+  it("should find the innovation with NEEDS_ASSESSMENT and return an assessment innovation summary", async () => {
+    const innovationObj: Innovation = Innovation.new({
+      owner: innovatorUser,
+      surveyId: "abc",
+      name: "My Innovation",
+      description: "My Description",
+      countryName: "UK",
+      status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
+    });
+
+    const innovation = await innovationService.create(innovationObj);
+
+    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      displayName: ":display_name",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "test_user@example.com",
+        },
+      ],
+      mobilePhone: "+351960000000",
+    });
+
+    spyOn(userService, "getProfile").and.returnValue({
+      id: innovation.id,
+      displayName: ":displayName",
+      type: null,
+      organisations: [
+        {
+          id: ":id_1",
+          name: ":organisation_name",
+          role: InnovatorOrganisationRole.INNOVATOR_OWNER,
+        },
+      ],
+      email: "test_user@example.com",
+      phone: "+351960000000",
+    });
+
+    const result = await innovationService.getAssessmentInnovationSummary(
+      innovation.id
+    );
+
+    expect(result).toBeDefined();
   });
 });

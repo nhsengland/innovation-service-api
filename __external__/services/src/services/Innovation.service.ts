@@ -1,18 +1,25 @@
 import {
   AccessorOrganisationRole,
   Innovation,
+  InnovationStatus,
   OrganisationUser,
 } from "@domain/index";
 import { getConnection, Connection, FindOneOptions } from "typeorm";
-import { InnovationOverviewResult } from "../models/InnovationOverviewResult";
+import {
+  AssessmentInnovationSummary,
+  InnovationOverviewResult,
+} from "../models/InnovationOverviewResult";
 import { BaseService } from "./Base.service";
+import { UserService } from "./User.service";
 
 export class InnovationService extends BaseService<Innovation> {
   private readonly connection: Connection;
+  private readonly userService: UserService;
 
   constructor(connectionName?: string) {
     super(Innovation, connectionName);
     this.connection = getConnection(connectionName);
+    this.userService = new UserService(connectionName);
   }
 
   async findAllByAccessor(
@@ -96,6 +103,38 @@ export class InnovationService extends BaseService<Innovation> {
     };
 
     return result;
+  }
+
+  async getAssessmentInnovationSummary(
+    id: string
+  ): Promise<AssessmentInnovationSummary> {
+    const innovationFilterOptions: FindOneOptions = {
+      where: { status: InnovationStatus.WAITING_NEEDS_ASSESSMENT },
+      relations: ["owner", "categories"],
+    };
+
+    const innovation = await super.find(id, innovationFilterOptions);
+    const b2cUser = await this.userService.getProfile(innovation.owner.id);
+
+    // Business Rule. One user only belongs to 1 organisation.
+    const company =
+      b2cUser.organisations.length > 0 ? b2cUser.organisations[0].name : "-";
+    const categories = await innovation.categories;
+
+    return {
+      summary: {
+        id: innovation.id,
+        company,
+        location: `${innovation.countryName}, ${innovation.postcode}`,
+        description: innovation.description,
+        categories: categories?.map((category) => category.type),
+      },
+      contact: {
+        name: b2cUser.displayName,
+        email: b2cUser.email,
+        phone: b2cUser.phone,
+      },
+    };
   }
 
   private hasAccessorRole(roleStr: string) {

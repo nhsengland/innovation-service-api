@@ -1,5 +1,5 @@
 import { HttpRequest } from "@azure/functions";
-import { OrganisationUser } from "@services/index";
+import { OrganisationUser, UserType } from "@services/index";
 import { getInstance, start } from "../logging/insights";
 import { decodeToken } from "../authentication";
 import {
@@ -251,6 +251,41 @@ export function AppInsights() {
 
         insights.defaultClient.flush();
       }, correlationContext)();
+    };
+  };
+}
+
+export function AllowedUserType(type: UserType) {
+  return function (
+    target: object,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    const decoratorId = "AllowedUserType";
+    const original = descriptor.value;
+
+    descriptor.value = async function (...args: any[]) {
+      const context: CustomContext = args[0];
+      const oid = context.auth.decodedJwt.oid;
+      const user = await context.services.UserService.getUser(oid);
+
+      if (user.type !== type) {
+        context.log.error(
+          `Invalid user. User is of wrong type for this endpoint. {oid: ${oid}}`
+        );
+        context.logger(
+          `${decoratorId}: an error has occurred. Check details.`,
+          Severity.Error,
+          {
+            error: `Invalid user. User is of wrong type for this endpoint. {oid: ${oid}}`,
+          }
+        );
+        context.res = Responsify.Forbidden();
+        return;
+      }
+
+      await original.apply(this, args);
+      return;
     };
   };
 }

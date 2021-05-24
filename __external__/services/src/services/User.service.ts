@@ -18,6 +18,10 @@ export class UserService {
     this.userRepo = getRepository(User, connectionName);
   }
 
+  async getUser(id: string) {
+    return await this.userRepo.findOne(id);
+  }
+
   async updateUserDisplayName(payload, oid): Promise<boolean> {
     const accessToken = await authenticateWitGraphAPI();
     await saveB2CUser(accessToken, oid, payload);
@@ -33,11 +37,17 @@ export class UserService {
       throw new Error("Invalid user.");
     }
 
+    const email = user.identities.find(
+      (identity) => identity.signInType === "emailAddress"
+    ).issuerAssignedId;
+
     const profile: ProfileModel = {
       id,
       displayName: user.displayName,
       type: null,
       organisations: [],
+      email,
+      phone: user.mobilePhone,
     };
 
     try {
