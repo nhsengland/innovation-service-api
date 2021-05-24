@@ -3,6 +3,12 @@ export enum YesOrNoCatalogue {
   NO = "NO",
 }
 
+export enum YesPartiallyNoCatalogue {
+  YES = "YES",
+  PARTIALLY = "PARTIALLY",
+  NO = "NO",
+}
+
 export enum CarePathwayCatalogue {
   ONLY_OPTION = "ONLY_OPTION",
   BETTER_OPTION = "BETTER_OPTION",
@@ -213,4 +219,10 @@ export enum InnovationSupportTypeCatalogue {
   EVIDENCE_EVALUATION = "EVIDENCE_EVALUATION",
   FUNDING = "FUNDING",
   INFORMATION = "INFORMATION",
+}
+
+export enum MaturityLevelCatalogue {
+  DISCOVERY = "DISCOVERY",
+  ADVANCED = "ADVANCED",
+  READY = "READY",
 }

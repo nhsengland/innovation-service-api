@@ -22,6 +22,7 @@ export {
   Innovation,
   InnovationAction,
   InnovationArea,
+  InnovationAssessment,
   InnovationCareSetting,
   InnovationCategory,
   InnovationClinicalArea,
