@@ -11,3 +11,18 @@ export interface InnovationOverviewResult {
   actionsCount: number;
   commentsCount: number;
 }
+
+export interface AssessmentInnovationSummary {
+  summary: {
+    id: string;
+    company: string;
+    location: string;
+    description: string;
+    categories: string[];
+  };
+  contact: {
+    name: string;
+    email: string;
+    phone: string;
+  };
+}

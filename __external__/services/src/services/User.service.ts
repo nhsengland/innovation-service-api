@@ -33,11 +33,17 @@ export class UserService {
       throw new Error("Invalid user.");
     }
 
+    const email = user.identities.find(
+      (identity) => identity.signInType === "emailAddress"
+    ).issuerAssignedId;
+
     const profile: ProfileModel = {
       id,
       displayName: user.displayName,
       type: null,
       organisations: [],
+      email,
+      phone: user.mobilePhone,
     };
 
     try {

@@ -6,4 +6,6 @@ export interface ProfileModel {
   displayName: string;
   type: UserType;
   organisations: OrganisationUserModel[];
+  email?: string;
+  phone?: string;
 }
