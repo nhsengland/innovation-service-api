@@ -19,5 +19,5 @@ export class Base {
   updatedBy: string;
 
   @DeleteDateColumn({ name: "deleted_at", nullable: true })
-  public deletedAt: Date;
+  deletedAt: Date;
 }

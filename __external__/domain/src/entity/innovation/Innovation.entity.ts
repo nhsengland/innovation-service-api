@@ -31,6 +31,7 @@ import { Organisation } from "../organisation/Organisation.entity";
 import { Comment } from "../user/Comment.entity";
 import { User } from "../user/User.entity";
 import { InnovationArea } from "./InnovationArea.entity";
+import { InnovationAssessment } from "./InnovationAssessment.entity";
 import { InnovationCareSetting } from "./InnovationCareSetting.entity";
 import { InnovationCategory } from "./InnovationCategory.entity";
 import { InnovationClinicalArea } from "./InnovationClinicalArea.entity";
@@ -70,6 +71,9 @@ export class Innovation extends Base {
 
   @Column({ name: "postcode", nullable: true, length: 20 })
   postcode: string;
+
+  @Column({ name: "submitted_at", nullable: true })
+  submittedAt: Date;
 
   @Column({ name: "other_main_category_description", nullable: true })
   otherMainCategoryDescription: string;
@@ -222,6 +226,12 @@ export class Innovation extends Base {
     },
   })
   organisationShares: Organisation[];
+
+  @OneToMany(() => InnovationAssessment, (record) => record.innovation, {
+    lazy: true,
+    cascade: ["insert", "update"],
+  })
+  assessments: InnovationAssessment[];
 
   @OneToMany(() => InnovationSection, (record) => record.innovation, {
     lazy: true,
