@@ -2,6 +2,7 @@ import {
   AccessorOrganisationRole,
   Innovation,
   InnovationStatus,
+  InnovationSupportStatus,
   OrganisationUser,
 } from "@domain/index";
 import { InnovationListModel } from "@services/models/InnovationListModel";
@@ -150,7 +151,11 @@ export class InnovationService extends BaseService<Innovation> {
   ): Promise<InnovationListModel> {
     const filter: FindManyOptions<Innovation> = {
       where: { status: In(statuses), deletedAt: IsNull() },
-      relations: ["assessments", "assessments.assignTo"],
+      relations: [
+        "innovationSupports",
+        "innovationSupports.organisationUnit",
+        "innovationSupports.organisationUnit.organisation",
+      ],
     };
 
     const result = await this.repository.findAndCount(filter);
@@ -165,16 +170,34 @@ export class InnovationService extends BaseService<Innovation> {
       });
 
     let res = [];
+
     if (deepUsers.length > 0) {
       res = await this.mapB2CUsers(deepUsers, result[0]);
+      res = res.map((i: Innovation) => ({
+        ...i,
+        organisations: this.extractEngagingOrganisationAcronyms(i),
+      }));
     } else {
-      res = result[0];
+      res = result[0].map((i) => ({
+        ...i,
+        organisations: this.extractEngagingOrganisationAcronyms(i),
+      }));
     }
 
     return {
       data: res,
       count: result[1],
     };
+  }
+
+  private extractEngagingOrganisationAcronyms(innovation: Innovation) {
+    // only organisation with innovationSupportStatus ENGAGING
+    return innovation.innovationSupports
+      ?.filter(
+        (innovationSupport) =>
+          innovationSupport.status === InnovationSupportStatus.ENGAGING
+      )
+      .map((s) => s.organisationUnit.organisation.acronym);
   }
 
   private hasAccessorRole(roleStr: string) {
@@ -215,12 +238,18 @@ export class InnovationService extends BaseService<Innovation> {
       // expands the Innovation object and adds a assessmentUser property
       const tmp = {
         ...innovation,
-        assessmentUser: {},
+        assessments: {
+          ...innovation.assessments,
+          user: null,
+        },
       };
 
       // maps the new value to the assessmentUser property
       innovation.assessments.forEach((a) => {
-        tmp.assessmentUser = { id: a.assignTo.id, name: b2cMap[a.assignTo.id] };
+        tmp.assessments.user = {
+          id: a.assignTo.id,
+          name: b2cMap[a.assignTo.id],
+        };
       });
 
       return tmp;

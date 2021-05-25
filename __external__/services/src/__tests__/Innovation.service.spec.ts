@@ -379,6 +379,18 @@ describe("Innovator Service Suite", () => {
       status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
     });
 
+    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
+    spyOn(helpers, "getUsersFromB2C").and.returnValue([
+      {
+        displayName: ":display_name",
+      },
+    ]);
+
+    spyOn(
+      innovationService as any,
+      "extractEngagingOrganisationAcronyms"
+    ).and.returnValue(["ABC", "FGH"]);
+
     await innovationService.create(innovationObj1);
 
     const innovationObj2: Innovation = Innovation.new({
@@ -408,6 +420,18 @@ describe("Innovator Service Suite", () => {
       countryName: "UK",
       status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
     });
+
+    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
+    spyOn(helpers, "getUsersFromB2C").and.returnValue([
+      {
+        displayName: ":display_name",
+      },
+    ]);
+
+    spyOn(
+      innovationService as any,
+      "extractEngagingOrganisationAcronyms"
+    ).and.returnValue(["ABC", "FGH"]);
 
     await innovationService.create(innovationObj1);
 
