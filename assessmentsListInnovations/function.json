@@ -6,9 +6,9 @@
       "direction": "in",
       "name": "req",
       "methods": ["get"],
-      "route": "assessments/{userId}/innovations/{innovationId}"
+      "route": "assessments/{userId}/innovations"
     },
     { "type": "http", "direction": "out", "name": "res" }
   ],
-  "scriptFile": "../dist/assessmentsGetInnovation/index.js"
+  "scriptFile": "../dist/assessmentsListInnovations/index.js"
 }

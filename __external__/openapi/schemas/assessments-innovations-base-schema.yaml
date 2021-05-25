@@ -1,0 +1,40 @@
+type: object
+properties:
+  "type":
+    type: string
+  id:
+    type: string
+    format: uuid
+  attributes:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      countryName:
+        type: string
+      postCode:
+        type: string
+      mainCategory:
+        type: string
+      assessment:
+        type: object
+        properties:
+          finishedAt:
+            type: string
+            format: date-time
+          createdAt:
+            type: string
+            format: date-time
+          assignTo:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+      organisations:
+        type: array
+        items:
+          type: string

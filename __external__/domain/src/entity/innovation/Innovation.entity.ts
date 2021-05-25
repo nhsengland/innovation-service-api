@@ -1,3 +1,4 @@
+import { InnovationSupport } from "@domain/index";
 import {
   Column,
   Entity,
@@ -307,6 +308,12 @@ export class Innovation extends Base {
 
   @OneToMany(() => Comment, (record) => record.innovation, { lazy: true })
   comments: Comment[];
+
+  @OneToMany(() => InnovationSupport, (support) => support.innovation, {
+    lazy: true,
+    cascade: ["insert", "update"],
+  })
+  innovationSupports: InnovationSupport[];
 
   // static constructor
   static new(data) {

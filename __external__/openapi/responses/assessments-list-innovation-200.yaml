@@ -7,5 +7,6 @@ headers:
       type: string
 content:
   application/json:
-    schema:
-      $ref: '../nhse-i-aac-openapi.yaml#/components/schemas/assessments-innovations-schema'
+    type: array
+    items:
+      $ref: '../nhse-i-aac-openapi.yaml#/components/schemas/assessments-innovation-schema'
