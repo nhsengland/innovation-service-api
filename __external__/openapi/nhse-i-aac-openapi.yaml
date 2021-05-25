@@ -817,6 +817,34 @@ paths:
           description: "Not Found"
         "401":
           description: "Unauthorized"
+  "/assessments/{userId}/innovations":
+    get:
+      tags:
+        - "assessment"
+        - "ListAssessmentsInnovations"
+      description: "Retrieves the Assessment Innovation List"
+      operationId: "assessments-list-innovations"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: userId
+          in: path
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - user_profile
+      responses:
+        "200":
+          $ref: "#/components/responses/assessments-list-innovations-200"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
 components:
   schemas:
     accessor-schema:
@@ -847,6 +875,8 @@ components:
       $ref: "./schemas/users-profile-base-schema.yaml"
     assessments-innovation-schema:
       $ref: "./schemas/assessments-innovation-base-schema.yaml"
+    assessments-innovations-schema:
+      $ref: "./schemas/assessments-innovations-base-schema.yaml"
     survey-get-id:
       $ref: "./schemas/survey-get-id.yaml"
 
@@ -910,6 +940,8 @@ components:
     organisations-get-all-200:
       $ref: "./responses/organisations-get-all-200.yaml"
     assessments-get-innovation-200:
+      $ref: "./responses/assessments-get-innovation-200.yaml"
+    assessments-list-innovations-200:
       $ref: "./responses/assessments-get-innovation-200.yaml"
 
   securitySchemes:
