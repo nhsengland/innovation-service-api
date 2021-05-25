@@ -5,8 +5,10 @@ import { OrganisationService } from "./Organisation.service";
 import {
   authenticateWitGraphAPI,
   getUserFromB2C,
+  getUsersFromB2C,
   saveB2CUser,
 } from "../helpers";
+import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
 
 export class UserService {
   private readonly organisationService: OrganisationService;
@@ -71,5 +73,18 @@ export class UserService {
     }
 
     return profile;
+  }
+
+  async getListOfUsers(ids: string[]): Promise<ProfileSlimModel[]> {
+    const accessToken = await authenticateWitGraphAPI();
+    const userIds = ids.map((u) => `"${u}"`).join(",");
+    const odataFilter = `$filter=id in (${userIds})`;
+
+    const user = await getUsersFromB2C(accessToken, odataFilter);
+    const result = user.map((u) => ({
+      id: u.id,
+      displayName: u.displayName,
+    }));
+    return result;
   }
 }

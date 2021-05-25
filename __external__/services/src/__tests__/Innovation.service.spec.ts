@@ -39,6 +39,7 @@ describe("Innovator Service Suite", () => {
   let organisationAccessorUser: OrganisationUser;
 
   beforeAll(async () => {
+    //await setupTestsConnection();
     accessorService = new AccessorService(process.env.DB_TESTS_NAME);
     commentService = new CommentService(process.env.DB_TESTS_NAME);
     innovationService = new InnovationService(process.env.DB_TESTS_NAME);
@@ -87,6 +88,7 @@ describe("Innovator Service Suite", () => {
     await query.from(OrganisationUser).execute();
     await query.from(Organisation).execute();
     await query.from(User).execute();
+    //closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -365,5 +367,66 @@ describe("Innovator Service Suite", () => {
     );
 
     expect(result).toBeDefined();
+  });
+
+  it("should list innovations within the list of statuses", async () => {
+    const innovationObj1: Innovation = Innovation.new({
+      owner: innovatorUser,
+      surveyId: "abc",
+      name: "My Innovation",
+      description: "My Description",
+      countryName: "UK",
+      status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
+    });
+
+    await innovationService.create(innovationObj1);
+
+    const innovationObj2: Innovation = Innovation.new({
+      owner: innovatorUser,
+      surveyId: "abc2",
+      name: "My Innovation",
+      description: "My Description",
+      countryName: "UK",
+      status: InnovationStatus.IN_PROGRESS,
+    });
+
+    await innovationService.create(innovationObj2);
+
+    const result = await innovationService.getInnovationListByState([
+      InnovationStatus.WAITING_NEEDS_ASSESSMENT,
+    ]);
+
+    expect(result.count).toBe(1);
+  });
+
+  it("should list innovations within the list of statuses (multiple)", async () => {
+    const innovationObj1: Innovation = Innovation.new({
+      owner: innovatorUser,
+      surveyId: "abc",
+      name: "My Innovation",
+      description: "My Description",
+      countryName: "UK",
+      status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
+    });
+
+    await innovationService.create(innovationObj1);
+
+    const innovationObj2: Innovation = Innovation.new({
+      owner: innovatorUser,
+      surveyId: "abc2",
+      name: "My Innovation",
+      description: "My Description",
+      countryName: "UK",
+      status: InnovationStatus.IN_PROGRESS,
+    });
+
+    await innovationService.create(innovationObj2);
+
+    const result = await innovationService.getInnovationListByState([
+      InnovationStatus.WAITING_NEEDS_ASSESSMENT,
+      InnovationStatus.IN_PROGRESS,
+    ]);
+
+    expect(result.count).toBe(2);
   });
 });

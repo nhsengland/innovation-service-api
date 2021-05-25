@@ -44,6 +44,25 @@ export async function getUserFromB2C(accessToken: string, id: string) {
   }
 }
 
+export async function getUsersFromB2C(
+  accessToken: string,
+  odataFilter: string
+) {
+  try {
+    const config = {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    };
+
+    const result = await axios.get(
+      `https://graph.microsoft.com/v1.0/users?${odataFilter}`,
+      config
+    );
+    return result.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
 export async function saveB2CUser(
   accessToken: string,
   oid: string,

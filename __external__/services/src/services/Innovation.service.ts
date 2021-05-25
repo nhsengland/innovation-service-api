@@ -4,7 +4,16 @@ import {
   InnovationStatus,
   OrganisationUser,
 } from "@domain/index";
-import { getConnection, Connection, FindOneOptions } from "typeorm";
+import { InnovationListModel } from "@services/models/InnovationListModel";
+import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
+import {
+  getConnection,
+  Connection,
+  FindOneOptions,
+  FindManyOptions,
+  In,
+  IsNull,
+} from "typeorm";
 import {
   AssessmentInnovationSummary,
   InnovationOverviewResult,
@@ -109,7 +118,6 @@ export class InnovationService extends BaseService<Innovation> {
     id: string
   ): Promise<AssessmentInnovationSummary> {
     const innovationFilterOptions: FindOneOptions = {
-      where: { status: InnovationStatus.WAITING_NEEDS_ASSESSMENT },
       relations: ["owner", "categories"],
     };
 
@@ -137,6 +145,38 @@ export class InnovationService extends BaseService<Innovation> {
     };
   }
 
+  async getInnovationListByState(
+    statuses: string[]
+  ): Promise<InnovationListModel> {
+    const filter: FindManyOptions<Innovation> = {
+      where: { status: In(statuses), deletedAt: IsNull() },
+      relations: ["assessments", "assessments.assignTo"],
+    };
+
+    const result = await this.repository.findAndCount(filter);
+
+    const deepUsers = result[0]
+      .filter(
+        (innovation) =>
+          innovation.assessments && innovation.assessments.length > 0
+      )
+      .map((innovation) => {
+        return innovation.assessments.map((a) => a.assignTo.id);
+      });
+
+    let res = [];
+    if (deepUsers.length > 0) {
+      res = await this.mapB2CUsers(deepUsers, result[0]);
+    } else {
+      res = result[0];
+    }
+
+    return {
+      data: res,
+      count: result[1],
+    };
+  }
+
   private hasAccessorRole(roleStr: string) {
     const role = AccessorOrganisationRole[roleStr];
     return (
@@ -145,5 +185,45 @@ export class InnovationService extends BaseService<Innovation> {
         AccessorOrganisationRole.ACCESSOR,
       ].indexOf(role) !== -1
     );
+  }
+
+  private async mapB2CUsers(deepUsers: string[][], innovations: Innovation[]) {
+    // create array of user ids to send to ms graph api. results in ['abc','fhdjhf', 'hfdjfhdj']
+    const assessmentUsers = deepUsers.flatMap((d) => d.map((i) => i));
+
+    // fetch B2C users by id from ms graph api
+    const b2cUsers = await this.userService.getListOfUsers(assessmentUsers);
+
+    // transforms response from B2C to a slim profile model
+    // {'id': 'value', ...}
+    const b2cMap = this.makeB2CDictionary(b2cUsers);
+
+    // remaps the innovation object with the assessment user's displayName
+    return this.applyToInnovation(innovations, b2cMap);
+  }
+
+  private makeB2CDictionary(b2cUsers: ProfileSlimModel[]) {
+    // returns object { 'abc': 'John Smith', 'cba': 'Mary Jane'}
+    return b2cUsers.reduce((map, obj) => {
+      map[obj.id] = obj.displayName;
+      return map;
+    }, {});
+  }
+
+  private applyToInnovation(innovations: Innovation[], b2cMap: any) {
+    return innovations.map((innovation) => {
+      // expands the Innovation object and adds a assessmentUser property
+      const tmp = {
+        ...innovation,
+        assessmentUser: {},
+      };
+
+      // maps the new value to the assessmentUser property
+      innovation.assessments.forEach((a) => {
+        tmp.assessmentUser = { id: a.assignTo.id, name: b2cMap[a.assignTo.id] };
+      });
+
+      return tmp;
+    });
   }
 }

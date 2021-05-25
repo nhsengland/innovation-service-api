@@ -784,7 +784,7 @@ paths:
           description: "Not Found"
         "401":
           description: "Unauthorized"
-  "/assessments/innovations/{innovationId}":
+  "/assessments/{userId}/innovations/{innovationId}":
     get:
       tags:
         - "assessment"
@@ -794,6 +794,11 @@ paths:
       parameters:
         - name: Authorization
           in: header
+          schema:
+            type: string
+          required: true
+        - name: userId
+          in: path
           schema:
             type: string
           required: true
