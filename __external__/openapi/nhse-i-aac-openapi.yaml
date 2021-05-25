@@ -797,6 +797,11 @@ paths:
           schema:
             type: string
           required: true
+        - name: innovationId
+          in: path
+          schema:
+            type: string
+          required: true
       security:
         - OpenId:
             - user_profile
