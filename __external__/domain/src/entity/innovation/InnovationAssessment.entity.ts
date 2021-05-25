@@ -36,6 +36,9 @@ export class InnovationAssessment extends Base {
   })
   maturityLevel: MaturityLevelCatalogue;
 
+  @Column({ name: "finished_at", nullable: true })
+  finishedAt: Date;
+
   @Column({
     name: "has_regulatory_approvals",
     type: "nvarchar",
