@@ -8,10 +8,10 @@ import {
 import { InnovationListModel } from "@services/models/InnovationListModel";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
 import {
-  getConnection,
   Connection,
-  FindOneOptions,
   FindManyOptions,
+  FindOneOptions,
+  getConnection,
   In,
   IsNull,
 } from "typeorm";
@@ -194,6 +194,29 @@ export class InnovationService extends BaseService<Innovation> {
       data: res,
       count: result[1],
     };
+  }
+
+  async submitInnovation(id: string, userId: string) {
+    if (!id || !userId) {
+      throw new Error(
+        "Invalid parameters. You must define the id and the userId."
+      );
+    }
+
+    const filterOptions: FindOneOptions = {
+      where: { owner: userId, status: InnovationStatus.CREATED },
+      loadRelationIds: true,
+    };
+
+    const innovation = await super.find(id, filterOptions);
+    if (!innovation) {
+      throw new Error("Innovation not found!");
+    }
+
+    return await this.repository.update(innovation.id, {
+      status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
+      updatedBy: userId,
+    });
   }
 
   private extractEngagingOrganisationAcronyms(innovation: Innovation) {

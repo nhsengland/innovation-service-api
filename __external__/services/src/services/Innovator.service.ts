@@ -51,7 +51,7 @@ export class InnovatorService extends BaseService<User> {
       innovation.owner = _innovator;
       innovation.createdBy = _innovator.id;
       innovation.updatedBy = _innovator.id;
-      innovation.status = InnovationStatus.WAITING_NEEDS_ASSESSMENT;
+      innovation.status = InnovationStatus.CREATED;
 
       organisation.type = OrganisationType.INNOVATOR;
       organisation.createdBy = _innovator.id;
