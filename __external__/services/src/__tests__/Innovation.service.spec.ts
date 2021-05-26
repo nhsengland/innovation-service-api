@@ -6,6 +6,7 @@ import {
   InnovationAssessment,
   InnovationStatus,
   InnovationSupport,
+  InnovationUserTest,
   InnovatorOrganisationRole,
   Organisation,
   OrganisationType,
@@ -399,5 +400,49 @@ describe("Innovator Service Suite", () => {
     }
 
     expect(result.count).toBe(1);
+  });
+
+  it("should submit the innovation by innovator Id and innovation Id", async () => {
+    const innovationObj: Innovation = Innovation.new({
+      owner: innovatorUser,
+      surveyId: "abc",
+      name: "My Innovation",
+      description: "My Description",
+      countryName: "UK",
+      status: InnovationStatus.CREATED,
+    });
+    const innovation = await innovationService.create(innovationObj);
+
+    await innovationService.submitInnovation(innovation.id, innovatorUser.id);
+
+    const result = await innovationService.getInnovationOverview(
+      innovation.id,
+      dummy.innovatorId
+    );
+
+    expect(result).toBeDefined();
+    expect(result.ownerId).toBe(innovatorUser.id);
+  });
+
+  it("should throw an error when submitInnovation() without id", async () => {
+    let err;
+    try {
+      await innovationService.submitInnovation(undefined, "id");
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+  });
+
+  it("should throw an error when submitInnovation() with innovation not found", async () => {
+    let err;
+    try {
+      await innovationService.submitInnovation("id", "id");
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
   });
 });
