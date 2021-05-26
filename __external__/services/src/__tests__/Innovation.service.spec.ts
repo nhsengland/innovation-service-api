@@ -44,7 +44,7 @@ describe("Innovator Service Suite", () => {
   let organisationAccessorUser: OrganisationUser;
 
   beforeAll(async () => {
-    //await setupTestsConnection();
+    // await setupTestsConnection();
     accessorService = new AccessorService(process.env.DB_TESTS_NAME);
     commentService = new CommentService(process.env.DB_TESTS_NAME);
     innovationService = new InnovationService(process.env.DB_TESTS_NAME);
@@ -94,7 +94,7 @@ describe("Innovator Service Suite", () => {
     await query.from(OrganisationUnit).execute();
     await query.from(Organisation).execute();
     await query.from(User).execute();
-    //closeTestsConnection();
+    // closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -392,7 +392,7 @@ describe("Innovator Service Suite", () => {
     let result: InnovationListModel;
     try {
       result = await innovationService.getInnovationListByState([
-        InnovationStatus.WAITING_NEEDS_ASSESSMENT,
+        InnovationStatus.NEEDS_ASSESSMENT,
       ]);
     } catch (error) {
       throw error;

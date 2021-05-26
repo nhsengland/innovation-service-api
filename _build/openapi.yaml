@@ -909,6 +909,48 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
+    put:
+      tags:
+        - Assessment
+        - Innovation
+        - UpdateInnovationAssessment
+      description: Updates an Innovation Assessment associated with the Innovation
+      operationId: assessments-update-innovation-assessment
+      security:
+        - OpenId:
+            - innovators_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: assessmentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/assessments-update-assessment-payload'
+      responses:
+        '200':
+          description: Ok
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
 components:
   schemas:
     accessor-schema:
@@ -1429,6 +1471,59 @@ components:
             properties:
               comment:
                 type: string
+    assessments-update-assessment-payload:
+      description: Innovation Assessment Create Payload
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              description:
+                type: string
+              assignToName:
+                type: string
+                format: uuid
+              innovation:
+                type: string
+              summary:
+                type: string
+              maturityLevel:
+                type: string
+              hasRegulatoryApprovals:
+                type: string
+              hasRegulatoryApprovalsComment:
+                type: string
+              hasEvidence:
+                type: string
+              hasEvidenceComment:
+                type: string
+              hasValidation:
+                type: string
+              hasValidationComment:
+                type: string
+              hasProposition:
+                type: string
+              hasPropositionComment:
+                type: string
+              hasCompetitionKnowledge:
+                type: string
+              hasCompetitionKnowledgeComment:
+                type: string
+              hasImplementationPlan:
+                type: string
+              hasImplementationPlanComment:
+                type: string
+              hasScaleResource:
+                type: string
+              hasScaleResourceComment:
+                type: string
+              organisations:
+                type: array
+                items:
+                  type: string
+              isSubmission:
+                type: boolean
   responses:
     accessor-get-innovations-200:
       description: OK

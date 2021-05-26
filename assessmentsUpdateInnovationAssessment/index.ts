@@ -12,7 +12,7 @@ import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
 
-class AssessmentsCreateInnovationAssessment {
+class AssessmentsUpdateInnovationAssessment {
   @AppInsights()
   @SQLConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
@@ -23,6 +23,7 @@ class AssessmentsCreateInnovationAssessment {
     req: HttpRequest
   ): Promise<void> {
     const assessment = req.body;
+    const id = req.params.assessmentId;
     const userId = req.params.userId;
     const innovationId = req.params.innovationId;
     const oid = context.auth.decodedJwt.oid;
@@ -37,8 +38,9 @@ class AssessmentsCreateInnovationAssessment {
 
     let result;
     try {
-      result = await persistence.createInnovationAssessment(
+      result = await persistence.updateInnovationAssessment(
         context,
+        id,
         userId,
         innovationId,
         assessment
@@ -50,8 +52,8 @@ class AssessmentsCreateInnovationAssessment {
       return;
     }
 
-    context.res = Responsify.Created({ id: result.id });
+    context.res = Responsify.Ok({ id: result.id });
   }
 }
 
-export default AssessmentsCreateInnovationAssessment.httpTrigger;
+export default AssessmentsUpdateInnovationAssessment.httpTrigger;

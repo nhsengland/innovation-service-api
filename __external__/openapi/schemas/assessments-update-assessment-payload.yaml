@@ -1,0 +1,52 @@
+description: Innovation Assessment Create Payload
+required: true
+content:
+  application/json:
+    schema:
+      type: object
+      properties:
+        description:
+          type: string
+        assignToName:
+          type: string
+          format: uuid
+        innovation:
+          type: string
+        summary:
+          type: string
+        maturityLevel:
+          type: string
+        hasRegulatoryApprovals:
+          type: string
+        hasRegulatoryApprovalsComment:
+          type: string
+        hasEvidence:
+          type: string
+        hasEvidenceComment:
+          type: string
+        hasValidation:
+          type: string
+        hasValidationComment:
+          type: string
+        hasProposition:
+          type: string
+        hasPropositionComment:
+          type: string
+        hasCompetitionKnowledge:
+          type: string
+        hasCompetitionKnowledgeComment:
+          type: string
+        hasImplementationPlan:
+          type: string
+        hasImplementationPlanComment:
+          type: string
+        hasScaleResource:
+          type: string
+        hasScaleResourceComment:
+          type: string
+        organisations:
+          type: array
+          items:
+            type: string
+        isSubmission:
+          type: boolean
