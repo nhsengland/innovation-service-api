@@ -229,7 +229,7 @@ export class Innovation extends Base {
   organisationShares: Organisation[];
 
   @OneToMany(() => InnovationAssessment, (record) => record.innovation, {
-    lazy: true,
+    //lazy: true,
     cascade: ["insert", "update"],
   })
   assessments: InnovationAssessment[];
@@ -310,7 +310,7 @@ export class Innovation extends Base {
   comments: Comment[];
 
   @OneToMany(() => InnovationSupport, (support) => support.innovation, {
-    lazy: true,
+    //lazy: true,
     cascade: ["insert", "update"],
   })
   innovationSupports: InnovationSupport[];

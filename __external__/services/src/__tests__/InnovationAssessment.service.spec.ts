@@ -47,6 +47,7 @@ describe("Innovation Assessment Suite", () => {
       description: "My Description",
       countryName: "UK",
     });
+
     innovation = await innovationService.create(innovationObj);
 
     const assessmentUser = new User();
