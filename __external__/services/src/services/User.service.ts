@@ -20,6 +20,10 @@ export class UserService {
     this.userRepo = getRepository(User, connectionName);
   }
 
+  async create(user: User) {
+    return await this.userRepo.save(user);
+  }
+
   async getUser(id: string) {
     return await this.userRepo.findOne(id);
   }

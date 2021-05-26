@@ -269,7 +269,7 @@ export function AllowedUserType(type: UserType) {
       const oid = context.auth.decodedJwt.oid;
       const user = await context.services.UserService.getUser(oid);
 
-      if (user.type !== type) {
+      if (!user || user.type !== type) {
         context.log.error(
           `Invalid user. User is of wrong type for this endpoint. {oid: ${oid}}`
         );
