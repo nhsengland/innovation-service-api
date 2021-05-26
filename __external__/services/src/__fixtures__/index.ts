@@ -120,6 +120,7 @@ export const saveInnovationsWithAssessment = async (
 
     const assessement = await assessmentService.create(
       fake.innovatorId,
+      innovation.id,
       assessmentObj
     );
 

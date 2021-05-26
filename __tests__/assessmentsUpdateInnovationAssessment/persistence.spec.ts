@@ -1,17 +1,17 @@
 import { InnovationAssessmentService } from "@services/index";
 import * as typeorm from "typeorm";
-import * as persistence from "../../assessmentsCreateInnovationAssessment/persistence";
+import * as persistence from "../../assessmentsUpdateInnovationAssessment/persistence";
 import { CustomContext } from "../../utils/types";
 
-describe("[assessmentsCreateInnovationAssessment] Persistence suite", () => {
-  describe("createInnovationAssessment", () => {
-    it("should create an innovation assessment", async () => {
+describe("[assessmentsUpdateInnovationAssessment] Persistence suite", () => {
+  describe("updateInnovationAssessment", () => {
+    it("should update an innovation assessment", async () => {
       // Arrange
       spyOn(typeorm, "getRepository");
       spyOn(typeorm, "getConnection");
       const spy = spyOn(
         InnovationAssessmentService.prototype,
-        "create"
+        "update"
       ).and.returnValue([{ id: "" }]);
 
       const ctx = {
@@ -20,13 +20,13 @@ describe("[assessmentsCreateInnovationAssessment] Persistence suite", () => {
         },
       };
       // Act
-      await persistence.createInnovationAssessment(
+      await persistence.updateInnovationAssessment(
         ctx as CustomContext,
+        "id",
         "test_assessment_user_id",
         "test_innovation_id",
         {
-          innovation: "innovation_id",
-          assignTo: "test_assessment_user_id",
+          description: "test",
         }
       );
 

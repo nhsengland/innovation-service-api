@@ -76,7 +76,7 @@ export class InnovationEvidenceService {
     }
 
     const evidenceDb = await this.findOne(id);
-    if (!evidence) {
+    if (!evidenceDb) {
       throw new Error("Evidence not found!");
     }
 

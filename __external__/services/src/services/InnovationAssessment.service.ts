@@ -1,14 +1,20 @@
-import { InnovationAssessment, Organisation } from "@domain/index";
-import { getConnection, getRepository, Repository } from "typeorm";
+import {
+  Innovation,
+  InnovationAssessment,
+  InnovationStatus,
+  Organisation,
+} from "@domain/index";
+import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { InnovationAssessmentResult } from "../models/InnovationAssessmentResult";
 import { UserService } from "./User.service";
 
 export class InnovationAssessmentService {
+  private readonly connection: Connection;
   private readonly assessmentRepo: Repository<InnovationAssessment>;
   private readonly userService: UserService;
 
   constructor(connectionName?: string) {
-    getConnection(connectionName);
+    this.connection = getConnection(connectionName);
     this.assessmentRepo = getRepository(InnovationAssessment, connectionName);
     this.userService = new UserService(connectionName);
   }
@@ -62,15 +68,64 @@ export class InnovationAssessmentService {
     };
   }
 
-  async create(userId: string, assessment: any) {
+  async create(userId: string, innovationId: string, assessment: any) {
     if (!userId || !assessment) {
       throw new Error("Invalid parameters.");
     }
 
-    assessment.createdBy = userId;
-    assessment.updatedBy = userId;
+    return await this.connection.transaction(async (transactionManager) => {
+      await transactionManager.update(
+        Innovation,
+        { id: innovationId },
+        { status: InnovationStatus.NEEDS_ASSESSMENT }
+      );
 
-    return await this.assessmentRepo.save(assessment);
+      assessment.createdBy = userId;
+      assessment.updatedBy = userId;
+
+      return await transactionManager.save(InnovationAssessment, assessment);
+    });
+  }
+
+  async update(
+    id: string,
+    userId: string,
+    innovationId: string,
+    assessment: any
+  ) {
+    if (!id || !userId || !assessment) {
+      throw new Error("Invalid parameters.");
+    }
+
+    const assessmentDb = await this.findOne(id, innovationId);
+    if (!assessmentDb) {
+      throw new Error("Assessment not found!");
+    }
+
+    return await this.connection.transaction(async (transactionManager) => {
+      if (assessment.isSubmission) {
+        assessmentDb.finishedAt = new Date();
+
+        await transactionManager.update(
+          Innovation,
+          { id: innovationId },
+          { status: InnovationStatus.IN_PROGRESS, updatedBy: userId }
+        );
+      }
+
+      delete assessment["innovation"];
+      for (const key in assessmentDb) {
+        if (key in assessment) {
+          assessmentDb[key] = assessment[key];
+        }
+      }
+      assessmentDb.updatedBy = userId;
+      assessmentDb.organisations = assessment.organisations?.map(
+        (id: string) => ({ id })
+      );
+
+      return await transactionManager.save(assessmentDb);
+    });
   }
 
   private async findOne(

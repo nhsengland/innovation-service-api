@@ -1,13 +1,12 @@
 import {
   Innovation,
   InnovationAssessment,
-  InnovatorOrganisationRole,
+  MaturityLevelCatalogue,
   User,
   UserType,
 } from "@domain/index";
 import { UserService } from "@services/services/User.service";
 import { getConnection } from "typeorm";
-import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
 import { InnovationService } from "../services/Innovation.service";
 import { InnovationAssessmentService } from "../services/InnovationAssessment.service";
@@ -88,6 +87,7 @@ describe("Innovation Assessment Suite", () => {
 
     const item = await assessmentService.create(
       dummy.innovatorId,
+      innovation.id,
       assessmentObj
     );
 
@@ -124,6 +124,7 @@ describe("Innovation Assessment Suite", () => {
 
     const assessment = await assessmentService.create(
       dummy.assessmentUserId,
+      innovation.id,
       assessmentObj
     );
 
@@ -131,5 +132,63 @@ describe("Innovation Assessment Suite", () => {
 
     expect(item).toBeDefined();
     expect(item.description).toEqual(dummy.assessment.description);
+  });
+
+  it("should update an assessment without submission", async () => {
+    const assessmentObj = {
+      ...dummy.assessment,
+      innovation: innovation.id,
+      assignTo: dummy.assessmentUserId,
+    };
+
+    const assessment = await assessmentService.create(
+      dummy.innovatorId,
+      innovation.id,
+      assessmentObj
+    );
+
+    const updAssessment = {
+      maturityLevel: MaturityLevelCatalogue.ADVANCED,
+      test: "test",
+    };
+    const item = await assessmentService.update(
+      assessment.id,
+      dummy.assessmentUserId,
+      innovation.id,
+      updAssessment
+    );
+
+    expect(item).toBeDefined();
+    expect(item.maturityLevel).toEqual(MaturityLevelCatalogue.ADVANCED);
+  });
+
+  it("should update an assessment with submission", async () => {
+    const assessmentObj = {
+      ...dummy.assessment,
+      innovation: innovation.id,
+      assignTo: dummy.assessmentUserId,
+    };
+
+    const assessment = await assessmentService.create(
+      dummy.innovatorId,
+      innovation.id,
+      assessmentObj
+    );
+
+    const updAssessment = {
+      maturityLevel: MaturityLevelCatalogue.ADVANCED,
+      isSubmission: true,
+      test: "test",
+    };
+    const item = await assessmentService.update(
+      assessment.id,
+      dummy.assessmentUserId,
+      innovation.id,
+      updAssessment
+    );
+
+    expect(item).toBeDefined();
+    expect(item.maturityLevel).toEqual(MaturityLevelCatalogue.ADVANCED);
+    expect(item.finishedAt).toBeDefined();
   });
 });
