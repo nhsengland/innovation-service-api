@@ -11,6 +11,7 @@ export { ActionService } from "../src/services/Action.service";
 export { CommentService } from "../src/services/Comment.service";
 export { FileService } from "../src/services/File.service";
 export { InnovatorService } from "../src/services/Innovator.service";
+export { InnovationAssessmentService } from "../src/services/InnovationAssessment.service";
 export { InnovationService } from "../src/services/Innovation.service";
 export { InnovationEvidenceService } from "../src/services/InnovationEvidence.service";
 export { InnovationSectionService } from "../src/services/InnovationSection.service";

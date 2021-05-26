@@ -8,8 +8,20 @@ export interface InnovationAssessmentResult {
   maturityLevel?: string;
   hasRegulatoryApprovals?: string;
   hasRegulatoryApprovalsComment?: string;
-
-  assignTo: User;
+  hasEvidence?: string;
+  hasEvidenceComment?: string;
+  hasValidation?: string;
+  hasValidationComment?: string;
+  hasProposition?: string;
+  hasPropositionComment?: string;
+  hasCompetitionKnowledge?: string;
+  hasCompetitionKnowledgeComment?: string;
+  hasImplementationPlan?: string;
+  hasImplementationPlanComment?: string;
+  hasScaleResource?: string;
+  hasScaleResourceComment?: string;
+  finishedAt?: Date;
+  assignToName: string;
   innovation: Innovation;
   organisations: OrganisationModel[];
 }

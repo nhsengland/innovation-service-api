@@ -1,13 +1,14 @@
 import { AccessorService } from "./Accessor.service";
 import { ActionService } from "./Action.service";
-import { UserService } from "./User.service";
 import { CommentService } from "./Comment.service";
+import { FileService } from "./File.service";
 import { InnovationService } from "./Innovation.service";
+import { InnovationAssessmentService } from "./InnovationAssessment.service";
+import { InnovationEvidenceService } from "./InnovationEvidence.service";
 import { InnovationSectionService } from "./InnovationSection.service";
 import { InnovatorService } from "./Innovator.service";
 import { OrganisationService } from "./Organisation.service";
-import { FileService } from "./File.service";
-import { InnovationEvidenceService } from "./InnovationEvidence.service";
+import { UserService } from "./User.service";
 
 export type Services = {
   AccessorService?: AccessorService;
@@ -15,6 +16,7 @@ export type Services = {
   UserService?: UserService;
   CommentService?: CommentService;
   FileService?: FileService;
+  InnovationAssessmentService?: InnovationAssessmentService;
   InnovationService?: InnovationService;
   InnovationEvidenceService?: InnovationEvidenceService;
   InnovationSectionService?: InnovationSectionService;
@@ -42,6 +44,7 @@ export const initializeAllServices = (connectionName?: string): Services => {
     UserService,
     CommentService,
     FileService,
+    InnovationAssessmentService,
     InnovationService,
     InnovationEvidenceService,
     InnovationSectionService,

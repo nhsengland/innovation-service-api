@@ -761,6 +761,7 @@ paths:
           description: "Not Found"
         "401":
           description: "Unauthorized"
+  
   "/organisations":
     get:
       tags:
@@ -784,6 +785,7 @@ paths:
           description: "Not Found"
         "401":
           description: "Unauthorized"
+  
   "/assessments/{userId}/innovations/{innovationId}":
     get:
       tags:
@@ -817,6 +819,7 @@ paths:
           description: "Not Found"
         "401":
           description: "Unauthorized"
+  
   "/assessments/{userId}/innovations":
     get:
       tags:
@@ -845,6 +848,88 @@ paths:
           description: "Not Found"
         "401":
           description: "Unauthorized"
+
+  "/assessments/{userId}/innovations/{innovationId}/assessments":
+    post:
+      tags:
+        - "Assessment"
+        - "Innovation"
+        - "CreateInnovationAssessment"
+      description: "Creates an Innovation Assessment associated with the Innovation"
+      operationId: "assessments-create-innovation-assessment"
+      security:
+        - OpenId:
+            - assessments_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/assessments-create-assessment-payload"
+      responses:
+        "201":
+          description: "Created"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/assessments/{userId}/innovations/{innovationId}/assessments/{assessmentId}":
+    get:
+      tags:
+        - "Assessment"
+        - "Innovation"
+        - "GetInnovationAssessment"
+      description: "Get an Innovation Assessment associated with the Innovation"
+      operationId: "assessments-get-innovation-assessment"
+      security:
+        - OpenId:
+            - innovators_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: assessmentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/assessments-get-innovation-assessment-200"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
 components:
   schemas:
     accessor-schema:
@@ -899,6 +984,8 @@ components:
       $ref: "./schemas/innovation-submit-section-payload.yaml"
     survey-create-payload:
       $ref: "./schemas/survey-create-payload.yaml"
+    assessments-create-assessment-payload:
+      $ref: "./schemas/assessments-create-assessment-payload.yaml"
 
   responses:
     accessor-get-innovations-200:
@@ -943,6 +1030,8 @@ components:
       $ref: "./responses/assessments-get-innovation-200.yaml"
     assessments-list-innovations-200:
       $ref: "./responses/assessments-get-innovation-200.yaml"
+    assessments-get-innovation-assessment-200:
+      $ref: "./responses/assessments-get-innovation-assessment-200.yaml"
 
   securitySchemes:
     OpenId:

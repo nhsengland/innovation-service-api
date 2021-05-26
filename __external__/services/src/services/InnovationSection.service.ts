@@ -52,6 +52,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     const result: InnovationSectionResult = {
       id: innovation.id,
       name: innovation.name,
+      status: innovation.status,
       sections: innovationSections,
     };
 
