@@ -152,6 +152,8 @@ export class InnovationService extends BaseService<Innovation> {
     const filter: FindManyOptions<Innovation> = {
       where: { status: In(statuses), deletedAt: IsNull() },
       relations: [
+        "assessments",
+        "assessments.assignTo",
         "innovationSupports",
         "innovationSupports.organisationUnit",
         "innovationSupports.organisationUnit.organisation",
@@ -175,11 +177,15 @@ export class InnovationService extends BaseService<Innovation> {
       res = await this.mapB2CUsers(deepUsers, result[0]);
       res = res.map((i: Innovation) => ({
         ...i,
+        assessments: i.assessments,
+        innovationSupports: i.innovationSupports,
         organisations: this.extractEngagingOrganisationAcronyms(i),
       }));
     } else {
       res = result[0].map((i) => ({
         ...i,
+        assessments: i.assessments,
+        innovationSupports: i.innovationSupports,
         organisations: this.extractEngagingOrganisationAcronyms(i),
       }));
     }
@@ -192,7 +198,8 @@ export class InnovationService extends BaseService<Innovation> {
 
   private extractEngagingOrganisationAcronyms(innovation: Innovation) {
     // only organisation with innovationSupportStatus ENGAGING
-    return innovation.innovationSupports
+    const supports = innovation.innovationSupports;
+    return supports
       ?.filter(
         (innovationSupport) =>
           innovationSupport.status === InnovationSupportStatus.ENGAGING

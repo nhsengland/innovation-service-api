@@ -3,10 +3,13 @@ import {
   Comment,
   Innovation,
   InnovationAction,
+  InnovationAssessment,
   InnovationStatus,
+  InnovationSupport,
   InnovatorOrganisationRole,
   Organisation,
   OrganisationType,
+  OrganisationUnit,
   OrganisationUser,
   User,
 } from "@domain/index";
@@ -19,6 +22,8 @@ import { InnovationService } from "../services/Innovation.service";
 import { InnovatorService } from "../services/Innovator.service";
 import { OrganisationService } from "../services/Organisation.service";
 import * as helpers from "../helpers";
+import * as fixtures from "../__fixtures__";
+import { InnovationListModel } from "@services/models/InnovationListModel";
 
 const dummy = {
   innovatorId: "innovatorId",
@@ -86,6 +91,7 @@ describe("Innovator Service Suite", () => {
       .delete();
 
     await query.from(OrganisationUser).execute();
+    await query.from(OrganisationUnit).execute();
     await query.from(Organisation).execute();
     await query.from(User).execute();
     //closeTestsConnection();
@@ -96,6 +102,8 @@ describe("Innovator Service Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(InnovationAssessment).execute();
+    await query.from(InnovationSupport).execute();
     await query.from(Comment).execute();
     await query.from(InnovationAction).execute();
     await query.from(Innovation).execute();
@@ -324,16 +332,12 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should find the innovation with NEEDS_ASSESSMENT and return an assessment innovation summary", async () => {
-    const innovationObj: Innovation = Innovation.new({
-      owner: innovatorUser,
-      surveyId: "abc",
-      name: "My Innovation",
-      description: "My Description",
-      countryName: "UK",
-      status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
-    });
-
-    const innovation = await innovationService.create(innovationObj);
+    const fakeInnovations = await fixtures.saveInnovations(
+      fixtures.generateInnovation({
+        owner: innovatorUser,
+        status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
+      })
+    );
 
     spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
     spyOn(helpers, "getUserFromB2C").and.returnValue({
@@ -348,7 +352,7 @@ describe("Innovator Service Suite", () => {
     });
 
     spyOn(userService, "getProfile").and.returnValue({
-      id: innovation.id,
+      id: fakeInnovations[0].id,
       displayName: ":displayName",
       type: null,
       organisations: [
@@ -363,94 +367,37 @@ describe("Innovator Service Suite", () => {
     });
 
     const result = await innovationService.getAssessmentInnovationSummary(
-      innovation.id
+      fakeInnovations[0].id
     );
 
     expect(result).toBeDefined();
   });
 
   it("should list innovations within the list of statuses", async () => {
-    const innovationObj1: Innovation = Innovation.new({
-      owner: innovatorUser,
-      surveyId: "abc",
-      name: "My Innovation",
-      description: "My Description",
-      countryName: "UK",
-      status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
-    });
+    const innovations: Innovation[] = await fixtures.saveInnovationsWithAssessment(
+      fixtures.generateInnovation({
+        owner: innovatorUser,
+        status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
+      })
+    );
 
-    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
-    spyOn(helpers, "getUsersFromB2C").and.returnValue([
-      {
-        displayName: ":display_name",
-      },
-    ]);
+    spyOn(helpers, "authenticateWitGraphAPI").and.stub();
+    spyOn(helpers, "getUsersFromB2C").and.returnValues(
+      innovations.map((inno) => ({
+        id: inno.assessments.map((a) => a.assignTo).join(),
+        displayName: "assessement_user_name",
+      }))
+    );
 
-    spyOn(
-      innovationService as any,
-      "extractEngagingOrganisationAcronyms"
-    ).and.returnValue(["ABC", "FGH"]);
-
-    await innovationService.create(innovationObj1);
-
-    const innovationObj2: Innovation = Innovation.new({
-      owner: innovatorUser,
-      surveyId: "abc2",
-      name: "My Innovation",
-      description: "My Description",
-      countryName: "UK",
-      status: InnovationStatus.IN_PROGRESS,
-    });
-
-    await innovationService.create(innovationObj2);
-
-    const result = await innovationService.getInnovationListByState([
-      InnovationStatus.WAITING_NEEDS_ASSESSMENT,
-    ]);
+    let result: InnovationListModel;
+    try {
+      result = await innovationService.getInnovationListByState([
+        InnovationStatus.WAITING_NEEDS_ASSESSMENT,
+      ]);
+    } catch (error) {
+      throw error;
+    }
 
     expect(result.count).toBe(1);
-  });
-
-  it("should list innovations within the list of statuses (multiple)", async () => {
-    const innovationObj1: Innovation = Innovation.new({
-      owner: innovatorUser,
-      surveyId: "abc",
-      name: "My Innovation",
-      description: "My Description",
-      countryName: "UK",
-      status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
-    });
-
-    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
-    spyOn(helpers, "getUsersFromB2C").and.returnValue([
-      {
-        displayName: ":display_name",
-      },
-    ]);
-
-    spyOn(
-      innovationService as any,
-      "extractEngagingOrganisationAcronyms"
-    ).and.returnValue(["ABC", "FGH"]);
-
-    await innovationService.create(innovationObj1);
-
-    const innovationObj2: Innovation = Innovation.new({
-      owner: innovatorUser,
-      surveyId: "abc2",
-      name: "My Innovation",
-      description: "My Description",
-      countryName: "UK",
-      status: InnovationStatus.IN_PROGRESS,
-    });
-
-    await innovationService.create(innovationObj2);
-
-    const result = await innovationService.getInnovationListByState([
-      InnovationStatus.WAITING_NEEDS_ASSESSMENT,
-      InnovationStatus.IN_PROGRESS,
-    ]);
-
-    expect(result.count).toBe(2);
   });
 });
