@@ -15,6 +15,7 @@ export interface InnovationOverviewResult {
 export interface AssessmentInnovationSummary {
   summary: {
     id: string;
+    name: string;
     status: string;
     company: string;
     location: string;
@@ -26,5 +27,9 @@ export interface AssessmentInnovationSummary {
     name: string;
     email: string;
     phone: string;
+  };
+  assessment: {
+    id: string;
+    assignToName: string;
   };
 }
