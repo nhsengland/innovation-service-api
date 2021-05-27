@@ -1,6 +1,7 @@
 import { HttpRequest } from "@azure/functions";
-import { InnovatorOrganisationRole } from "@services/index";
+import { AccessorOrganisationRole, UserType } from "@domain/index";
 import {
+  AllowedUserType,
   AppInsights,
   JwtDecoder,
   OrganisationRoleValidator,
@@ -10,37 +11,42 @@ import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 
-class InnovatorsSubmitInnovation {
+class AccessorsGetInnovationAssessment {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder()
-  @OrganisationRoleValidator(InnovatorOrganisationRole.INNOVATOR_OWNER)
+  @AllowedUserType(UserType.ACCESSOR)
+  @OrganisationRoleValidator(
+    AccessorOrganisationRole.QUALIFYING_ACCESSOR,
+    AccessorOrganisationRole.ACCESSOR
+  )
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const innovatorId = req.params.innovatorId;
+    const accessorId = req.params.accessorId;
     const innovationId = req.params.innovationId;
     const oid = context.auth.decodedJwt.oid;
 
-    if (innovatorId !== oid) {
+    if (accessorId !== oid) {
       context.res = Responsify.Forbidden({ error: "Operation denied." });
       return;
     }
 
+    const assessmentId = req.params.assessmentId;
     let result;
     try {
-      result = await persistence.submitInnovation(
+      result = await persistence.findInnovationAssessmentById(
         context,
-        innovationId,
-        innovatorId
+        assessmentId,
+        innovationId
       );
 
       if (!result) {
         context.logger(`[${req.method}] ${req.url}`, Severity.Error, {
-          error: "Innovation was not found",
+          error: "Assessment was not found",
         });
-        context.log.error("Innovation not found!");
+        context.log.error("Assessment not found!");
         context.res = Responsify.NotFound();
         return;
       }
@@ -55,4 +61,4 @@ class InnovatorsSubmitInnovation {
   }
 }
 
-export default InnovatorsSubmitInnovation.httpTrigger;
+export default AccessorsGetInnovationAssessment.httpTrigger;

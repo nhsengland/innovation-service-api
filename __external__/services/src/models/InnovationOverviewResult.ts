@@ -15,6 +15,7 @@ export interface InnovationOverviewResult {
 export interface AssessmentInnovationSummary {
   summary: {
     id: string;
+    status: string;
     company: string;
     location: string;
     description: string;
