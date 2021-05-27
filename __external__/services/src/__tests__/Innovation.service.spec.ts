@@ -45,7 +45,7 @@ describe("Innovator Service Suite", () => {
   let organisationAccessorUser: OrganisationUser;
 
   beforeAll(async () => {
-    // await setupTestsConnection();
+    //await setupTestsConnection();
     accessorService = new AccessorService(process.env.DB_TESTS_NAME);
     commentService = new CommentService(process.env.DB_TESTS_NAME);
     innovationService = new InnovationService(process.env.DB_TESTS_NAME);
@@ -95,7 +95,7 @@ describe("Innovator Service Suite", () => {
     await query.from(OrganisationUnit).execute();
     await query.from(Organisation).execute();
     await query.from(User).execute();
-    // closeTestsConnection();
+    //closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -378,7 +378,6 @@ describe("Innovator Service Suite", () => {
     const innovations: Innovation[] = await fixtures.saveInnovationsWithAssessment(
       fixtures.generateInnovation({
         owner: innovatorUser,
-        status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
       })
     );
 
@@ -400,6 +399,10 @@ describe("Innovator Service Suite", () => {
     }
 
     expect(result.count).toBe(1);
+    expect(result.data.length).toBe(1);
+    expect(result.data[0].assessment.assignTo).toEqual({
+      name: "assessement_user_name",
+    });
   });
 
   it("should submit the innovation by innovator Id and innovation Id", async () => {
