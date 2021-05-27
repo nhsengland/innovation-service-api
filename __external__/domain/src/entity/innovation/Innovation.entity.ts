@@ -318,7 +318,7 @@ export class Innovation extends Base {
   // static constructor
   static new(data) {
     const newObj = new Innovation();
-    newObj.status = InnovationStatus.WAITING_NEEDS_ASSESSMENT;
+    newObj.status = InnovationStatus.CREATED;
 
     Object.keys(data).forEach((key) => {
       newObj[key] = data[key];

@@ -291,28 +291,21 @@ export class InnovationService extends BaseService<Innovation> {
   }
 
   private mapResponse(res: any[]): InnovationViewModel[] {
-    return res.map((r) => ({
-      awaiting: {
-        id: r.id,
-        name: r.name,
-        submittedAt: r.submittedAt,
-        location: `${r.countryName}, ${r.postcode}`,
-        mainCategory: r.mainCategory,
+    const result: InnovationViewModel[] = res.map((r) => ({
+      id: r.id,
+      name: r.name,
+      submittedAt: r.submittedAt,
+      countryName: r.countryName,
+      postCode: r.postCode,
+      mainCategory: r.mainCategory,
+      assessment: {
+        createdAt: r.assessments[0]?.createdAt,
+        assignTo: { name: r.assessments?.user?.name },
+        finishedAt: r.assessments[0]?.finishedAt,
       },
-      inProgress: {
-        id: r.id,
-        name: r.name,
-        assessmentStartDate: r.assessments[0]?.createdAt,
-        assessedBy: r.assessments.user.name,
-        mainCategory: r.mainCategory,
-      },
-      assessmentComplete: {
-        id: r.id,
-        name: r.name,
-        assessmentDate: r.assessments[0]?.updatedAt,
-        engagingEntities: r.organisations,
-        mainCategory: r.mainCategory,
-      },
+      organisations: r.organisations || [],
     }));
+
+    return result;
   }
 }

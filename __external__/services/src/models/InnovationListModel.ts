@@ -6,25 +6,16 @@ export interface InnovationListModel {
 }
 
 export interface InnovationViewModel {
-  awaiting: {
-    id: string;
-    name: string;
-    submittedAt: string;
-    location: string;
-    mainCategory: string;
+  id: string;
+  name: string;
+  submittedAt: string;
+  countryName: string;
+  postCode: string;
+  mainCategory: string;
+  assessment: {
+    createdAt: string;
+    assignTo: { name: string };
+    finishedAt: string;
   };
-  inProgress: {
-    id: string;
-    name: string;
-    assessmentStartDate: string;
-    assessedBy: string;
-    mainCategory: string;
-  };
-  assessmentComplete: {
-    id: string;
-    name: string;
-    assessmentDate: string;
-    engagingEntities: string[];
-    mainCategory: string;
-  };
+  organisations: string[];
 }
