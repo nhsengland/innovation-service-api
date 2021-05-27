@@ -10,7 +10,6 @@ import {
   InnovationViewModel,
 } from "@services/models/InnovationListModel";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
-import { string } from "joi";
 import {
   Connection,
   FindManyOptions,
@@ -137,6 +136,7 @@ export class InnovationService extends BaseService<Innovation> {
     return {
       summary: {
         id: innovation.id,
+        status: innovation.status,
         company,
         location: `${innovation.countryName}, ${innovation.postcode}`,
         description: innovation.description,
@@ -214,13 +214,18 @@ export class InnovationService extends BaseService<Innovation> {
 
     const innovation = await super.find(id, filterOptions);
     if (!innovation) {
-      throw new Error("Innovation not found!");
+      return null;
     }
 
-    return await this.repository.update(innovation.id, {
+    await this.repository.update(innovation.id, {
       status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
       updatedBy: userId,
     });
+
+    return {
+      id: innovation.id,
+      status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
+    };
   }
 
   private extractEngagingOrganisationAcronyms(innovation: Innovation) {
@@ -234,7 +239,7 @@ export class InnovationService extends BaseService<Innovation> {
       .map((s) => s.organisationUnit.organisation.acronym);
   }
 
-  private hasAccessorRole(roleStr: string) {
+  hasAccessorRole(roleStr: string) {
     const role = AccessorOrganisationRole[roleStr];
     return (
       [
