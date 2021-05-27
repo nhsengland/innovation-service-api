@@ -141,6 +141,7 @@ export class InnovationService extends BaseService<Innovation> {
         location: `${innovation.countryName}, ${innovation.postcode}`,
         description: innovation.description,
         categories: categories?.map((category) => category.type),
+        otherCategoryDescription: innovation.otherCategoryDescription,
       },
       contact: {
         name: b2cUser.displayName,

@@ -20,6 +20,7 @@ export interface AssessmentInnovationSummary {
     location: string;
     description: string;
     categories: string[];
+    otherCategoryDescription: string;
   };
   contact: {
     name: string;
