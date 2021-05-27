@@ -15,15 +15,21 @@ export interface InnovationOverviewResult {
 export interface AssessmentInnovationSummary {
   summary: {
     id: string;
+    name: string;
     status: string;
     company: string;
     location: string;
     description: string;
     categories: string[];
+    otherCategoryDescription: string;
   };
   contact: {
     name: string;
     email: string;
     phone: string;
+  };
+  assessment: {
+    id: string;
+    assignToName: string;
   };
 }
