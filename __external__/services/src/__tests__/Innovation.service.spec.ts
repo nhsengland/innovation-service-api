@@ -391,9 +391,11 @@ describe("Innovator Service Suite", () => {
 
     let result: InnovationListModel;
     try {
-      result = await innovationService.getInnovationListByState([
-        InnovationStatus.NEEDS_ASSESSMENT,
-      ]);
+      result = await innovationService.getInnovationListByState(
+        [InnovationStatus.NEEDS_ASSESSMENT],
+        0,
+        10
+      );
     } catch (error) {
       throw error;
     }

@@ -136,7 +136,7 @@ async function mockedRequestFactory(data?: any) {
           { ...data.headers }, // headers
           { innovationId: "test_innovation_id" }, // ?
           {}, // payload/body
-          {status: 'user_id_1,user_id_2,user_id_3'} // querystring
+          {status: 'user_id_1,user_id_2,user_id_3', skip: 0, take: 20} // querystring
         ),
       },
       { type: "http", name: "res", direction: "out" },

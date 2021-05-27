@@ -6,12 +6,15 @@ import {
   AppInsights,
   JwtDecoder,
   SQLConnector,
+  Validator,
 } from "../utils/decorators";
 import { CustomContext, Severity } from "../utils/types";
 import { UserType } from "@services/index";
+import { ValidateQuery } from "./validation";
 
 class AssessmentsListInnovations {
   @AppInsights()
+  @Validator(ValidateQuery, "query", "Missing query fields")
   @SQLConnector()
   @JwtDecoder()
   @AllowedUserType(UserType.ASSESSMENT)
@@ -20,10 +23,16 @@ class AssessmentsListInnovations {
     req: HttpRequest
   ): Promise<void> {
     const statuses = req.query.status.split(",");
-
+    const skip = parseInt(req.query.skip);
+    const take = parseInt(req.query.take);
     let result;
     try {
-      result = await persistence.getInnovationList(context, statuses);
+      result = await persistence.getInnovationList(
+        context,
+        statuses,
+        skip,
+        take
+      );
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
