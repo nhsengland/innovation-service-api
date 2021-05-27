@@ -5,8 +5,12 @@ import {
   InnovationSupportStatus,
   OrganisationUser,
 } from "@domain/index";
-import { InnovationListModel } from "@services/models/InnovationListModel";
+import {
+  InnovationListModel,
+  InnovationViewModel,
+} from "@services/models/InnovationListModel";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
+import { string } from "joi";
 import {
   Connection,
   FindManyOptions,
@@ -191,7 +195,7 @@ export class InnovationService extends BaseService<Innovation> {
     }
 
     return {
-      data: res,
+      data: this.mapResponse(res),
       count: result[1],
     };
   }
@@ -284,5 +288,31 @@ export class InnovationService extends BaseService<Innovation> {
 
       return tmp;
     });
+  }
+
+  private mapResponse(res: any[]): InnovationViewModel[] {
+    return res.map((r) => ({
+      awaiting: {
+        id: r.id,
+        name: r.name,
+        submittedAt: r.submittedAt,
+        location: `${r.countryName}, ${r.postcode}`,
+        mainCategory: r.mainCategory,
+      },
+      inProgress: {
+        id: r.id,
+        name: r.name,
+        assessmentStartDate: r.assessments[0]?.createdAt,
+        assessedBy: r.assessments.user.name,
+        mainCategory: r.mainCategory,
+      },
+      assessmentComplete: {
+        id: r.id,
+        name: r.name,
+        assessmentDate: r.assessments[0]?.updatedAt,
+        engagingEntities: r.organisations,
+        mainCategory: r.mainCategory,
+      },
+    }));
   }
 }
