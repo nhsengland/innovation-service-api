@@ -17,7 +17,7 @@ import * as faker from "faker";
 import { getRepository } from "typeorm";
 import * as uuid from "uuid";
 
-export const generateInnovation = (args) => {
+export const generateInnovation = (args?) => {
   return Innovation.new({
     surveyId: uuid.v4(),
     name: faker.company.catchPhrase(),
@@ -38,6 +38,50 @@ export const saveInnovations = async (...innovations: Innovation[]) => {
   return result;
 };
 
+export const createInnovationSupportStatus = async () => {
+  const innovationService = new InnovationService(process.env.DB_TESTS_NAME);
+  const organisationService = new OrganisationService(
+    process.env.DB_TESTS_NAME
+  );
+
+  const innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
+  const userService = new UserService(process.env.DB_TESTS_NAME);
+  const innovatorObj = new User();
+
+  const fake = {
+    innovatorId: uuid.v4(),
+  };
+
+  innovatorObj.id = fake.innovatorId;
+  const innovator = await innovatorService.create(innovatorObj);
+
+  const organisationObj = Organisation.new({
+    name: faker.company.companyName(),
+    type: OrganisationType.ACCESSOR,
+    acronym: faker.company.companySuffix(),
+  });
+  const organisation = await organisationService.create(organisationObj);
+
+  const unitObj = OrganisationUnit.new({
+    name: faker.company.companyName(),
+    organisation,
+  });
+
+  const unit = await organisationService.addOrganisationUnit(unitObj);
+
+  const innovationObj = generateInnovation();
+  innovationObj.owner = innovator;
+  const innovation = await innovationService.create(innovationObj);
+
+  const supportObj = InnovationSupport.new({
+    status: InnovationSupportStatus.ENGAGING,
+    innovation,
+    organisationUnit: unit,
+  });
+
+  return await innovationService.addSupport(supportObj);
+};
+
 export const saveInnovationsWithAssessment = async (
   ...innovations: Innovation[]
 ) => {
@@ -47,14 +91,6 @@ export const saveInnovationsWithAssessment = async (
   );
   const innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
   const organisationService = new OrganisationService(
-    process.env.DB_TESTS_NAME
-  );
-  const supportRepo = getRepository(
-    InnovationSupport,
-    process.env.DB_TESTS_NAME
-  );
-  const orgUnitRepo = getRepository(
-    OrganisationUnit,
     process.env.DB_TESTS_NAME
   );
 
@@ -95,7 +131,7 @@ export const saveInnovationsWithAssessment = async (
       organisation,
     });
 
-    const unit = await orgUnitRepo.save(unitObj);
+    const unit = await organisationService.addOrganisationUnit(unitObj);
 
     const innovation = await innovationService.create(element);
     const assessmentObj = {
@@ -112,7 +148,7 @@ export const saveInnovationsWithAssessment = async (
 
     let supports;
     try {
-      supports = await supportRepo.save(supportObj);
+      supports = await innovationService.addSupport(supportObj);
     } catch (error) {
       console.log(error);
       throw error;

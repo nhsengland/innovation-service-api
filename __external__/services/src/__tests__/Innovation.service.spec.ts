@@ -6,6 +6,7 @@ import {
   InnovationAssessment,
   InnovationStatus,
   InnovationSupport,
+  InnovationSupportStatus,
   InnovationUserTest,
   InnovatorOrganisationRole,
   Organisation,
@@ -449,5 +450,20 @@ describe("Innovator Service Suite", () => {
     }
 
     expect(err).toBeDefined();
+  });
+
+  it("should update innovation support status", async () => {
+    // arrange
+    const support = await fixtures.createInnovationSupportStatus();
+    const expected = InnovationSupportStatus.FURTHER_INFO_REQUIRED;
+
+    // act
+    const actual = await innovationService.updateSupportStatus(
+      support.id,
+      expected
+    );
+
+    // assert
+    expect(actual.status).toBe(expected);
   });
 });

@@ -2,12 +2,14 @@ import {
   AccessorOrganisationRole,
   Organisation,
   OrganisationType,
+  OrganisationUnit,
   OrganisationUser,
   User,
 } from "@domain/index";
-import { getConnection } from "typeorm";
+import { getConnection, Repository } from "typeorm";
 import { AccessorService } from "../services/Accessor.service";
 import { OrganisationService } from "../services/Organisation.service";
+import * as faker from "faker";
 
 const dummy = {
   baseOrganisation: {
@@ -29,6 +31,7 @@ describe("Organisation Service Suite", () => {
       .createQueryBuilder()
       .delete();
     await query.from(OrganisationUser).execute();
+    await query.from(OrganisationUnit).execute();
     await query.from(Organisation).execute();
   });
 
@@ -115,5 +118,24 @@ describe("Organisation Service Suite", () => {
     const actual = await organisationService.findUserOrganisations(accessor.id);
 
     expect(actual.length).toEqual(1);
+  });
+
+  it("should add organisation unit to organisation", async () => {
+    const organisationObj = Organisation.new({
+      ...dummy.baseOrganisation,
+      type: OrganisationType.ACCESSOR,
+    });
+    const organisation = await organisationService.create(organisationObj);
+
+    const name = faker.company.companySuffix();
+    const unitObj = OrganisationUnit.new({
+      name,
+      organisation,
+    });
+
+    const unit = await organisationService.addOrganisationUnit(unitObj);
+
+    expect(unit).toBeDefined();
+    expect(unit.name).toBe(name);
   });
 });

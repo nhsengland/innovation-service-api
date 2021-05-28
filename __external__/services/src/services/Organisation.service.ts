@@ -1,14 +1,21 @@
-import { Organisation, OrganisationUser, User } from "@domain/index";
+import {
+  Organisation,
+  OrganisationUnit,
+  OrganisationUser,
+  User,
+} from "@domain/index";
 import { getConnection, Connection, getRepository, Repository } from "typeorm";
 import { BaseService } from "./Base.service";
 
 export class OrganisationService extends BaseService<Organisation> {
   private readonly connection: Connection;
+  private readonly organisationUnitRepo: Repository<OrganisationUnit>;
 
   constructor(connectionName?: string) {
     super(Organisation, connectionName);
     this.connection = getConnection(connectionName);
     this.orgUserRepo = getRepository(OrganisationUser, connectionName);
+    this.organisationUnitRepo = getRepository(OrganisationUnit, connectionName);
   }
 
   async create(organisation: Organisation): Promise<Organisation> {
@@ -54,5 +61,9 @@ export class OrganisationService extends BaseService<Organisation> {
     } catch (error) {
       throw error;
     }
+  }
+
+  async addOrganisationUnit(unit: OrganisationUnit): Promise<OrganisationUnit> {
+    return await this.organisationUnitRepo.save(unit);
   }
 }
