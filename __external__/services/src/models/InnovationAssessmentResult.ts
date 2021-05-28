@@ -22,6 +22,9 @@ export interface InnovationAssessmentResult {
   hasScaleResourceComment?: string;
   finishedAt?: Date;
   assignToName: string;
-  innovation: Innovation;
+  innovation: {
+    id: string;
+    name: string;
+  };
   organisations: OrganisationModel[];
 }
