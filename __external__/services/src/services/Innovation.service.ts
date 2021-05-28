@@ -11,7 +11,6 @@ import {
   InnovationViewModel,
 } from "@services/models/InnovationListModel";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
-import { string } from "joi";
 import {
   Connection,
   FindManyOptions,
@@ -128,30 +127,51 @@ export class InnovationService extends BaseService<Innovation> {
     id: string
   ): Promise<AssessmentInnovationSummary> {
     const innovationFilterOptions: FindOneOptions = {
-      relations: ["owner", "categories"],
+      relations: ["owner", "categories", "assessments", "assessments.assignTo"],
     };
 
     const innovation = await super.find(id, innovationFilterOptions);
-    const b2cUser = await this.userService.getProfile(innovation.owner.id);
+    const b2cOwnerUser = await this.userService.getProfile(innovation.owner.id);
 
-    // Business Rule. One user only belongs to 1 organisation.
+    // BUSINESS RULE. One user only belongs to 1 organisation.
     const company =
-      b2cUser.organisations.length > 0 ? b2cUser.organisations[0].name : "-";
+      b2cOwnerUser.organisations.length > 0
+        ? b2cOwnerUser.organisations[0].name
+        : "-";
     const categories = await innovation.categories;
+
+    const assessment = {
+      id: null,
+      assignToName: null,
+    };
+
+    // BUSINESS RULE: One innovation only has 1 assessment
+    if (innovation.assessments.length > 0) {
+      const b2cAssessmentUser = await this.userService.getProfile(
+        innovation.assessments[0].assignTo.id
+      );
+
+      assessment.id = innovation.assessments[0].id;
+      assessment.assignToName = b2cAssessmentUser.displayName;
+    }
 
     return {
       summary: {
         id: innovation.id,
+        name: innovation.name,
+        status: innovation.status,
         company,
         location: `${innovation.countryName}, ${innovation.postcode}`,
         description: innovation.description,
         categories: categories?.map((category) => category.type),
+        otherCategoryDescription: innovation.otherCategoryDescription,
       },
       contact: {
-        name: b2cUser.displayName,
-        email: b2cUser.email,
-        phone: b2cUser.phone,
+        name: b2cOwnerUser.displayName,
+        email: b2cOwnerUser.email,
+        phone: b2cOwnerUser.phone,
       },
+      assessment,
     };
   }
 
@@ -223,13 +243,19 @@ export class InnovationService extends BaseService<Innovation> {
 
     const innovation = await super.find(id, filterOptions);
     if (!innovation) {
-      throw new Error("Innovation not found!");
+      return null;
     }
 
-    return await this.repository.update(innovation.id, {
+    await this.repository.update(innovation.id, {
+      submittedAt: new Date(),
       status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
       updatedBy: userId,
     });
+
+    return {
+      id: innovation.id,
+      status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
+    };
   }
 
   async addSupport(support: InnovationSupport): Promise<InnovationSupport> {
@@ -263,7 +289,7 @@ export class InnovationService extends BaseService<Innovation> {
       .map((s) => s.organisationUnit.organisation.acronym);
   }
 
-  private hasAccessorRole(roleStr: string) {
+  hasAccessorRole(roleStr: string) {
     const role = AccessorOrganisationRole[roleStr];
     return (
       [

@@ -54,6 +54,48 @@ paths:
         "401":
           description: "Unauthorized"
 
+  "/accessors/{accessorId}/innovations/{innovationId}/assessments/{assessmentId}":
+    get:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "GetInnovationAssessment"
+      description: "Get an Innovation Assessment associated with the Innovation"
+      operationId: "accessors-get-innovation-assessment"
+      security:
+        - OpenId:
+            - innovators_details
+      parameters:
+        - name: accessorId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: assessmentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/accessor-get-innovation-assessment-200"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
   "/innovators":
     get:
       tags:
@@ -1071,6 +1113,8 @@ components:
   responses:
     accessor-get-innovations-200:
       $ref: "./responses/accessor-get-innovations-200.yaml"
+    accessor-get-innovation-assessment-200:
+      $ref: "./responses/accessor-get-innovation-assessment-200.yaml"
     innovator-get-all-200:
       $ref: "./responses/innovator-get-all-200.yaml"
     innovator-get-one-200:

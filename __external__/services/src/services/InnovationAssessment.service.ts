@@ -1,30 +1,35 @@
 import {
+  AccessorOrganisationRole,
   Innovation,
   InnovationAssessment,
   InnovationStatus,
   Organisation,
+  OrganisationUser,
 } from "@domain/index";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { InnovationAssessmentResult } from "../models/InnovationAssessmentResult";
+import { InnovationService } from "./Innovation.service";
 import { UserService } from "./User.service";
 
 export class InnovationAssessmentService {
   private readonly connection: Connection;
   private readonly assessmentRepo: Repository<InnovationAssessment>;
   private readonly userService: UserService;
+  private readonly innovationService: InnovationService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.assessmentRepo = getRepository(InnovationAssessment, connectionName);
     this.userService = new UserService(connectionName);
+    this.innovationService = new InnovationService(connectionName);
   }
 
   async find(
     id: string,
     innovationId: string
   ): Promise<InnovationAssessmentResult> {
-    if (!id) {
-      throw new Error("Invalid parameters. You must define id.");
+    if (!id || !innovationId) {
+      throw new Error("Invalid parameters.");
     }
 
     const assessment = await this.findOne(id, innovationId);
@@ -32,7 +37,7 @@ export class InnovationAssessmentService {
       return null;
     }
 
-    const b2cUser = await this.userService.getProfile(assessment.assignTo);
+    const b2cUser = await this.userService.getProfile(assessment.assignTo.id);
 
     const organisations = assessment.organisations?.map(
       (obj: Organisation) => ({
@@ -46,7 +51,10 @@ export class InnovationAssessmentService {
       id: assessment.id,
       description: assessment.description,
       assignToName: b2cUser.displayName,
-      innovation: assessment.innovation,
+      innovation: {
+        id: assessment.innovation.id,
+        name: assessment.innovation.name,
+      },
       summary: assessment.summary,
       finishedAt: assessment.finishedAt,
       maturityLevel: assessment.maturityLevel,
@@ -66,6 +74,54 @@ export class InnovationAssessmentService {
       hasScaleResourceComment: assessment.hasScaleResourceComment,
       organisations,
     };
+  }
+
+  async findByAccessor(
+    id: string,
+    innovationId: string,
+    userOrganisations: OrganisationUser[]
+  ): Promise<InnovationAssessmentResult> {
+    if (!id || !innovationId || !userOrganisations) {
+      throw new Error("Invalid parameters.");
+    }
+
+    if (!userOrganisations || userOrganisations.length == 0) {
+      throw new Error("Invalid user. User has no organisations.");
+    }
+
+    // BUSINESS RULE: An accessor has only one organization
+    const userOrganisation = userOrganisations[0];
+
+    if (!this.innovationService.hasAccessorRole(userOrganisation.role)) {
+      throw new Error("Invalid user. User has an invalid role.");
+    }
+
+    const filterOptions = {};
+    if (
+      userOrganisation.role === AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    ) {
+      filterOptions[
+        "where"
+      ] = `organisation_id = '${userOrganisation.organisation.id}'`;
+      filterOptions["relations"] = ["organisationShares"];
+    } else {
+      filterOptions["where"] = `user_id = '${userOrganisation.user.id}'`;
+      filterOptions["relations"] = [
+        "innovationSupports",
+        "innovationSupports.organisationUnitUsers",
+        "innovationSupports.organisationUnitUsers.organisationUser",
+      ];
+    }
+
+    const innovation = await this.innovationService.find(
+      innovationId,
+      filterOptions
+    );
+    if (!innovation) {
+      return null;
+    }
+
+    return await this.find(id, innovationId);
   }
 
   async create(userId: string, innovationId: string, assessment: any) {
@@ -134,8 +190,7 @@ export class InnovationAssessmentService {
   ): Promise<InnovationAssessment> {
     const filterOptions = {
       where: { innovation: innovationId },
-      loadRelationIds: true,
-      relations: ["organisations"],
+      relations: ["organisations", "innovation", "assignTo"],
     };
 
     return await this.assessmentRepo.findOne(id, filterOptions);
