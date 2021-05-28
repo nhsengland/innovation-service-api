@@ -326,7 +326,7 @@ export class InnovationService extends BaseService<Innovation> {
       name: r.name,
       submittedAt: r.submittedAt,
       countryName: r.countryName,
-      postCode: r.postCode,
+      postCode: r.postcode,
       mainCategory: r.mainCategory,
       assessment: {
         createdAt: r.assessments[0]?.createdAt,
