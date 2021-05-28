@@ -37,7 +37,7 @@ export class InnovationAssessmentService {
       return null;
     }
 
-    const b2cUser = await this.userService.getProfile(assessment.assignTo);
+    const b2cUser = await this.userService.getProfile(assessment.assignTo.id);
 
     const organisations = assessment.organisations?.map(
       (obj: Organisation) => ({
@@ -51,7 +51,10 @@ export class InnovationAssessmentService {
       id: assessment.id,
       description: assessment.description,
       assignToName: b2cUser.displayName,
-      innovation: assessment.innovation,
+      innovation: {
+        id: assessment.innovation.id,
+        name: assessment.innovation.name,
+      },
       summary: assessment.summary,
       finishedAt: assessment.finishedAt,
       maturityLevel: assessment.maturityLevel,
@@ -187,8 +190,7 @@ export class InnovationAssessmentService {
   ): Promise<InnovationAssessment> {
     const filterOptions = {
       where: { innovation: innovationId },
-      loadRelationIds: true,
-      relations: ["organisations"],
+      relations: ["organisations", "innovation", "assignTo"],
     };
 
     return await this.assessmentRepo.findOne(id, filterOptions);
