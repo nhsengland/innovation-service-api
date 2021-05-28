@@ -57,7 +57,7 @@ export async function getUsersFromB2C(
       `https://graph.microsoft.com/v1.0/users?${odataFilter}`,
       config
     );
-    return result.data;
+    return result.data.value || [];
   } catch (error) {
     throw error;
   }
