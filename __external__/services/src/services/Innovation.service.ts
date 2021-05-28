@@ -2,6 +2,7 @@ import {
   AccessorOrganisationRole,
   Innovation,
   InnovationStatus,
+  InnovationSupport,
   InnovationSupportStatus,
   OrganisationUser,
 } from "@domain/index";
@@ -16,8 +17,10 @@ import {
   FindManyOptions,
   FindOneOptions,
   getConnection,
+  getRepository,
   In,
   IsNull,
+  Repository,
 } from "typeorm";
 import {
   AssessmentInnovationSummary,
@@ -29,11 +32,13 @@ import { UserService } from "./User.service";
 export class InnovationService extends BaseService<Innovation> {
   private readonly connection: Connection;
   private readonly userService: UserService;
+  private readonly supportRepo: Repository<InnovationSupport>;
 
   constructor(connectionName?: string) {
     super(Innovation, connectionName);
     this.connection = getConnection(connectionName);
     this.userService = new UserService(connectionName);
+    this.supportRepo = getRepository(InnovationSupport, connectionName);
   }
 
   async findAllByAccessor(
@@ -225,6 +230,26 @@ export class InnovationService extends BaseService<Innovation> {
       status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
       updatedBy: userId,
     });
+  }
+
+  async addSupport(support: InnovationSupport): Promise<InnovationSupport> {
+    support.status = InnovationSupportStatus.ENGAGING;
+    return await this.supportRepo.save(support);
+  }
+
+  async updateSupportStatus(
+    id: string,
+    status: InnovationSupportStatus
+  ): Promise<InnovationSupport> {
+    const innovationSupport = await this.supportRepo.findOne(id);
+
+    if (!innovationSupport) {
+      throw new Error("Innovation Support Object not found.");
+    }
+
+    innovationSupport.status = status;
+
+    return await this.supportRepo.save(innovationSupport);
   }
 
   private extractEngagingOrganisationAcronyms(innovation: Innovation) {
