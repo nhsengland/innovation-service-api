@@ -242,6 +242,7 @@ export class InnovationService extends BaseService<Innovation> {
     }
 
     await this.repository.update(innovation.id, {
+      submittedAt: new Date(),
       status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
       updatedBy: userId,
     });

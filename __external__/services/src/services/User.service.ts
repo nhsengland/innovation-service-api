@@ -84,11 +84,13 @@ export class UserService {
     const userIds = ids.map((u) => `"${u}"`).join(",");
     const odataFilter = `$filter=id in (${userIds})`;
 
-    const user = await getUsersFromB2C(accessToken, odataFilter);
+    const user = (await getUsersFromB2C(accessToken, odataFilter)) || [];
+
     const result = user.map((u) => ({
       id: u.id,
       displayName: u.displayName,
     }));
+
     return result;
   }
 }
