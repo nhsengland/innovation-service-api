@@ -18,7 +18,8 @@ export interface AssessmentInnovationSummary {
     name: string;
     status: string;
     company: string;
-    location: string;
+    countryName: string;
+    postCode: string;
     description: string;
     categories: string[];
     otherCategoryDescription: string;
