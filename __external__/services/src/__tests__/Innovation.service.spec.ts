@@ -466,4 +466,55 @@ describe("Innovator Service Suite", () => {
     // assert
     expect(actual.status).toBe(expected);
   });
+
+  it("should not list ASSESSMENT innovations with status CREATED", async () => {
+    const innovator = await fixtures.createInnovator();
+    await fixtures.saveInnovations(
+      fixtures.generateInnovation({ owner: innovator }),
+      fixtures.generateInnovation({ owner: innovator })
+    );
+
+    spyOn(helpers, "authenticateWitGraphAPI").and.stub();
+    spyOn(helpers, "getUsersFromB2C").and.returnValues([]);
+
+    let result: InnovationListModel;
+    try {
+      result = await innovationService.getInnovationListByState(
+        [InnovationStatus.NEEDS_ASSESSMENT],
+        0,
+        10
+      );
+    } catch (error) {
+      throw error;
+    }
+
+    expect(result.count).toBe(0);
+  });
+
+  it("should list ASSESSMENT innovations with status NEEDS_ASSESSMENT and without supports and assessments", async () => {
+    const innovator = await fixtures.createInnovator();
+    await fixtures.saveInnovations(
+      fixtures.generateInnovation({
+        owner: innovator,
+        status: InnovationStatus.NEEDS_ASSESSMENT,
+      }),
+      fixtures.generateInnovation({ owner: innovator })
+    );
+
+    spyOn(helpers, "authenticateWitGraphAPI").and.stub();
+    spyOn(helpers, "getUsersFromB2C").and.returnValues([]);
+
+    let result: InnovationListModel;
+    try {
+      result = await innovationService.getInnovationListByState(
+        [InnovationStatus.NEEDS_ASSESSMENT],
+        0,
+        10
+      );
+    } catch (error) {
+      throw error;
+    }
+
+    expect(result.count).toBe(1);
+  });
 });
