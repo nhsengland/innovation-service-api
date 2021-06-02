@@ -68,7 +68,7 @@ export class InnovationService extends BaseService<Innovation> {
       userOrganisation.role === AccessorOrganisationRole.QUALIFYING_ACCESSOR
     ) {
       filterOptions.where = `organisation_id = '${userOrganisation.organisation.id}'`;
-      filterOptions.relations = ["organisationShares"];
+      filterOptions.relations = ["organisationShares", "assessments"];
     }
 
     return await this.repository.findAndCount(filterOptions);
