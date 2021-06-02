@@ -75,6 +75,10 @@ class AccessorsGetAllInnovations {
           supportStatus: tmpStatusList[Math.floor(Math.random() * 4)],
           createdAt: inno.createdAt,
           updatedAt: inno.updatedAt,
+          assessment:
+            inno.assessments.length > 0
+              ? { id: inno.assessments[0].id }
+              : { id: null },
         })),
         count: callResult[1],
       };

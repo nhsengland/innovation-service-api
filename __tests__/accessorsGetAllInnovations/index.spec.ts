@@ -74,6 +74,14 @@ describe("[HttpTrigger] accessorsGetAllInnovations Suite", () => {
             id: "innovation_id",
             description: "description",
             status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
+            assessments: [
+              {
+                id: ':assessment_a'
+              },
+              {
+                id: ':assessment_b'
+              }
+            ]
           },
         ],
         1,
