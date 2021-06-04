@@ -69,6 +69,7 @@ export class UserService {
             id: o.organisation.id,
             name: o.organisation.name,
             role: o.role,
+            isShadow: o.organisation.isShadow,
           };
         });
       }

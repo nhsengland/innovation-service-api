@@ -135,9 +135,11 @@ export class InnovationService extends BaseService<Innovation> {
 
     // BUSINESS RULE. One user only belongs to 1 organisation.
     const company =
-      b2cOwnerUser.organisations.length > 0
+      b2cOwnerUser.organisations.length > 0 &&
+      !b2cOwnerUser.organisations[0].isShadow
         ? b2cOwnerUser.organisations[0].name
-        : "-";
+        : null;
+
     const categories = await innovation.categories;
 
     const assessment = {
@@ -354,6 +356,7 @@ export class InnovationService extends BaseService<Innovation> {
       countryName: r.countryName,
       postCode: r.postcode,
       mainCategory: r.mainCategory,
+      otherMainCategoryDescription: r.otherMainCategoryDescription,
       assessment: {
         createdAt: r.assessments[0]?.createdAt,
         assignTo: { name: r.assessments?.user?.name },
