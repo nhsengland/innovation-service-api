@@ -12,6 +12,7 @@ export interface InnovationViewModel {
   countryName: string;
   postCode: string;
   mainCategory: string;
+  otherMainCategoryDescription: string;
   assessment: {
     createdAt: string;
     assignTo: { name: string };
