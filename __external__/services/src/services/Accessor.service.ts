@@ -11,7 +11,7 @@ export class AccessorService extends BaseService<User> {
   }
 
   async create(user: User): Promise<User> {
-    user.type = UserType.ACCESSOR;
+    user.type = user.type || UserType.ACCESSOR;
     return super.create(user);
   }
 }

@@ -3,13 +3,17 @@ import {
   Organisation,
   OrganisationType,
   OrganisationUnit,
+  OrganisationUnitUser,
   OrganisationUser,
   User,
+  UserType,
 } from "@domain/index";
-import { getConnection, Repository } from "typeorm";
+import * as faker from "faker";
+import { getConnection } from "typeorm";
+import * as helpers from "../helpers";
+import { closeTestsConnection, setupTestsConnection } from "..";
 import { AccessorService } from "../services/Accessor.service";
 import { OrganisationService } from "../services/Organisation.service";
-import * as faker from "faker";
 
 const dummy = {
   baseOrganisation: {
@@ -22,17 +26,25 @@ describe("Organisation Service Suite", () => {
   let accessorService: AccessorService;
 
   beforeAll(async () => {
+    // await setupTestsConnection();
     organisationService = new OrganisationService(process.env.DB_TESTS_NAME);
     accessorService = new AccessorService(process.env.DB_TESTS_NAME);
+  });
+
+  afterAll(async () => {
+    // closeTestsConnection();
   });
 
   afterEach(async () => {
     const query = getConnection(process.env.DB_TESTS_NAME)
       .createQueryBuilder()
       .delete();
+
+    await query.from(OrganisationUnitUser).execute();
     await query.from(OrganisationUser).execute();
     await query.from(OrganisationUnit).execute();
     await query.from(Organisation).execute();
+    await query.from(User).execute();
   });
 
   it("should instantiate the organisation service", async () => {
@@ -137,5 +149,65 @@ describe("Organisation Service Suite", () => {
 
     expect(unit).toBeDefined();
     expect(unit.name).toBe(name);
+  });
+
+  it("should return organisation unit users by q. accessor units", async () => {
+    spyOn(helpers, "authenticateWitGraphAPI").and.stub();
+    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+      { id: "abc-def-ghi", displayName: ":ACCESSOR" },
+      { id: "ttt-aaa-ddd", displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
+
+    const organisationObj = Organisation.new({
+      ...dummy.baseOrganisation,
+      type: OrganisationType.ACCESSOR,
+    });
+    const organisation = await organisationService.create(organisationObj);
+
+    const unitObj = OrganisationUnit.new({
+      name: "newUnit",
+      organisation,
+    });
+    const unit = await organisationService.addOrganisationUnit(unitObj);
+
+    const accessor = await accessorService.create(
+      User.new({
+        id: "abc-def-ghi",
+        type: UserType.ACCESSOR,
+      })
+    );
+
+    const qaccessor = await accessorService.create(
+      User.new({
+        id: "ttt-aaa-ddd",
+        type: UserType.ACCESSOR,
+      })
+    );
+
+    let orgUser = await organisationService.addUserToOrganisation(
+      accessor,
+      organisation,
+      AccessorOrganisationRole.ACCESSOR
+    );
+    await organisationService.addUserToOrganisationUnit(orgUser, unit);
+
+    orgUser = await organisationService.addUserToOrganisation(
+      qaccessor,
+      organisation,
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    );
+    await organisationService.addUserToOrganisationUnit(orgUser, unit);
+
+    const userOrganisations = await organisationService.findUserOrganisations(
+      qaccessor.id
+    );
+
+    const result = await organisationService.findUserOrganisationUnitUsers(
+      qaccessor.id,
+      userOrganisations
+    );
+
+    expect(result).toBeDefined();
+    expect(result.length).toEqual(2);
   });
 });

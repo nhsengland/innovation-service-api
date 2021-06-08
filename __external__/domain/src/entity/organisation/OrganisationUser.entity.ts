@@ -4,6 +4,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
 } from "typeorm";
@@ -15,6 +16,7 @@ import {
 import { Base } from "../Base.entity";
 import { User } from "../user/User.entity";
 import { Organisation } from "./Organisation.entity";
+import { OrganisationUnitUser } from "./OrganisationUnitUser.entity";
 
 let roles = Object.keys(AccessorOrganisationRole)
   .map((key) => `'${AccessorOrganisationRole[key]}'`)
@@ -43,6 +45,9 @@ export class OrganisationUser extends Base {
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: "user_id" })
   user: User;
+
+  @OneToMany(() => OrganisationUnitUser, (record) => record.organisationUser)
+  userOrganisationUnits: OrganisationUnitUser[];
 
   // static constructor
   static new(data) {

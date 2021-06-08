@@ -1,22 +1,25 @@
-import { OrganisationUser, User } from "@domain/index";
+import {
+  Organisation,
+  OrganisationUnit,
+  OrganisationUnitUser,
+  OrganisationUser,
+  User,
+} from "@domain/index";
+import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
 import { getConnection, getRepository, Repository } from "typeorm";
-import { ProfileModel } from "../models/ProfileModel";
-import { OrganisationService } from "./Organisation.service";
 import {
   authenticateWitGraphAPI,
   getUserFromB2C,
   getUsersFromB2C,
   saveB2CUser,
 } from "../helpers";
-import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
+import { ProfileModel } from "../models/ProfileModel";
 
 export class UserService {
-  private readonly organisationService: OrganisationService;
   private readonly userRepo: Repository<User>;
 
   constructor(connectionName?: string) {
     getConnection(connectionName);
-    this.organisationService = new OrganisationService(connectionName);
     this.userRepo = getRepository(User, connectionName);
   }
 
@@ -57,21 +60,37 @@ export class UserService {
     };
 
     try {
-      const user: User = await this.userRepo.findOne(id);
-      if (user) {
-        const organisations: OrganisationUser[] = await this.organisationService.findUserOrganisations(
-          id
-        );
+      const userDb: User = await this.userRepo.findOne(id, {
+        relations: [
+          "userOrganisations",
+          "userOrganisations.organisation",
+          "userOrganisations.userOrganisationUnits",
+          "userOrganisations.userOrganisationUnits.organisationUnit",
+        ],
+      });
+      if (userDb) {
+        const organisations: OrganisationUser[] = await userDb.userOrganisations;
 
-        profile.type = user.type;
-        profile.organisations = organisations?.map((o) => {
-          return {
-            id: o.organisation.id,
-            name: o.organisation.name,
-            role: o.role,
-            isShadow: o.organisation.isShadow,
-          };
-        });
+        profile.type = userDb.type;
+        profile.organisations = [];
+
+        for (let idx = 0; idx < organisations.length; idx++) {
+          const orgUser: OrganisationUser = organisations[idx];
+          const org: Organisation = orgUser.organisation;
+          const orgUnits: OrganisationUnitUser[] =
+            orgUser.userOrganisationUnits;
+
+          profile.organisations.push({
+            id: org.id,
+            name: org.name,
+            role: orgUser.role,
+            isShadow: org.isShadow,
+            organisationUnits: orgUnits?.map((ouu: OrganisationUnitUser) => ({
+              id: ouu.organisationUnit.id,
+              name: ouu.organisationUnit.name,
+            })),
+          });
+        }
       }
     } catch (error) {
       throw error;
