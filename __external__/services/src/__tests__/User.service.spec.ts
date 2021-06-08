@@ -11,6 +11,7 @@ import {
 } from "@domain/index";
 import { getConnection, getRepository } from "typeorm";
 import * as helpers from "../helpers";
+import { closeTestsConnection, setupTestsConnection } from "..";
 import { ProfileModel } from "../models/ProfileModel";
 import { AccessorService } from "../services/Accessor.service";
 import { OrganisationService } from "../services/Organisation.service";
@@ -22,9 +23,14 @@ describe("User Service Suite", () => {
   let organisationService: OrganisationService;
 
   beforeAll(async () => {
+    // await setupTestsConnection();
     adUserService = new UserService(process.env.DB_TESTS_NAME);
     accessorService = new AccessorService(process.env.DB_TESTS_NAME);
     organisationService = new OrganisationService(process.env.DB_TESTS_NAME);
+  });
+
+  afterAll(async () => {
+    // closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -75,7 +81,19 @@ describe("User Service Suite", () => {
     spyOn(
       getRepository(User, process.env.DB_TESTS_NAME),
       "findOne"
-    ).and.returnValue({ type: UserType.ACCESSOR });
+    ).and.returnValue({
+      type: UserType.ACCESSOR,
+      role: AccessorOrganisationRole.ACCESSOR,
+      userOrganisations: [
+        {
+          organisation: {
+            id: ":organisationId",
+            name: ":organisationName",
+            isShadow: false,
+          },
+        },
+      ],
+    });
 
     let actual: ProfileModel;
     let err;

@@ -24,6 +24,30 @@ paths:
         "422":
           description: "UnprocessableEntity"
 
+  "/accessors":
+    get:
+      tags:
+        - "Accessor"
+        - "List"
+      description: "Retrieves the list of all accessors"
+      operationId: "accessors-get-all"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - accessors_list
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
   "/accessors/{accessorId}/innovations":
     get:
       tags:

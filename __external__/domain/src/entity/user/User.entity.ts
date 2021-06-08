@@ -1,7 +1,8 @@
-import { Column, Entity, PrimaryColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
 import { UserType } from "../../enums/user.enums";
 
 import { Base } from "../Base.entity";
+import { OrganisationUser } from "../organisation/OrganisationUser.entity";
 
 @Entity("user")
 export class User extends Base {
@@ -17,6 +18,10 @@ export class User extends Base {
   type: UserType;
 
   //relationships
+  @OneToMany(() => OrganisationUser, (record) => record.user, {
+    lazy: true,
+  })
+  userOrganisations: OrganisationUser[];
 
   //static constructor
   static new(data) {

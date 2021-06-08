@@ -3,10 +3,12 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Base } from "../Base.entity";
 import { Organisation } from "./Organisation.entity";
+import { OrganisationUnitUser } from "./OrganisationUnitUser.entity";
 
 @Entity("organisation_unit")
 export class OrganisationUnit extends Base {
@@ -21,6 +23,11 @@ export class OrganisationUnit extends Base {
   @ManyToOne(() => Organisation, { nullable: false })
   @JoinColumn({ name: "organisation_id" })
   organisation: Organisation;
+
+  @OneToMany(() => OrganisationUnitUser, (record) => record.organisationUnit, {
+    lazy: true,
+  })
+  organisationUnitUsers: OrganisationUnitUser[];
 
   //static constructor
   static new(data) {
