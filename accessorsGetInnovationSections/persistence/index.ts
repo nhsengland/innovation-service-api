@@ -1,15 +1,16 @@
 import { CustomContext } from "../../utils/types";
 
-export const findInnovationSectionByInnovator = async (
+export const findInnovationSectionByAccessor = async (
   ctx: CustomContext,
   innovationId: string,
-  innovatorId: string,
+  accessorId: string,
   section: string
 ) => {
   const result = await ctx.services.InnovationSectionService.findSection(
     innovationId,
-    innovatorId,
-    section
+    accessorId,
+    section,
+    ctx.auth.userOrganisations
   );
 
   return result;

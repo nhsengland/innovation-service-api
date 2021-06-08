@@ -46,7 +46,7 @@ describe("Innovator Service Suite", () => {
   let organisationAccessorUser: OrganisationUser;
 
   beforeAll(async () => {
-    //await setupTestsConnection();
+    // await setupTestsConnection();
     accessorService = new AccessorService(process.env.DB_TESTS_NAME);
     commentService = new CommentService(process.env.DB_TESTS_NAME);
     innovationService = new InnovationService(process.env.DB_TESTS_NAME);
@@ -96,7 +96,7 @@ describe("Innovator Service Suite", () => {
     await query.from(OrganisationUnit).execute();
     await query.from(Organisation).execute();
     await query.from(User).execute();
-    //closeTestsConnection();
+    // closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -304,33 +304,6 @@ describe("Innovator Service Suite", () => {
     }
 
     expect(err).toBeDefined();
-  });
-
-  it("should find the innovation with comments by innovator Id and innovation Id when getInnovationOverview()", async () => {
-    const innovationObj: Innovation = Innovation.new({
-      owner: innovatorUser,
-      surveyId: "abc",
-      name: "My Innovation",
-      description: "My Description",
-      countryName: "UK",
-    });
-
-    const innovation = await innovationService.create(innovationObj);
-
-    const commentObj = Comment.new({
-      message: "myNewComment",
-      user: innovatorUser,
-      innovation,
-    });
-    await commentService.create(commentObj);
-
-    const result = await innovationService.getInnovationOverview(
-      innovation.id,
-      dummy.innovatorId
-    );
-
-    expect(result).toBeDefined();
-    expect(result.commentsCount).toBeGreaterThan(0);
   });
 
   it("should find the innovation with NEEDS_ASSESSMENT and return an assessment innovation summary", async () => {

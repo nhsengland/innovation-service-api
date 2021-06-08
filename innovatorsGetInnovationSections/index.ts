@@ -41,6 +41,7 @@ class InnovatorsGetInnovationSections {
       result = await persistence.findInnovationSectionByInnovator(
         context,
         innovationId,
+        innovatorId,
         section
       );
     } catch (error) {

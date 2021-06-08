@@ -4,8 +4,10 @@ import {
   InnovationStatus,
   InnovationSupport,
   InnovationSupportStatus,
+  InnovatorOrganisationRole,
   OrganisationUser,
 } from "@domain/index";
+import { hasAccessorRole } from "@services/helpers";
 import {
   InnovationListModel,
   InnovationViewModel,
@@ -29,15 +31,71 @@ import { BaseService } from "./Base.service";
 import { UserService } from "./User.service";
 
 export class InnovationService extends BaseService<Innovation> {
-  private readonly connection: Connection;
   private readonly userService: UserService;
   private readonly supportRepo: Repository<InnovationSupport>;
 
   constructor(connectionName?: string) {
     super(Innovation, connectionName);
-    this.connection = getConnection(connectionName);
+    getConnection(connectionName);
+
     this.userService = new UserService(connectionName);
     this.supportRepo = getRepository(InnovationSupport, connectionName);
+  }
+
+  async findInnovation(
+    innovationId: string,
+    userId: string,
+    filter?: any,
+    userOrganisations?: OrganisationUser[]
+  ) {
+    if (!userId || !innovationId) {
+      throw new Error(
+        "Invalid params. You must define the user id and the innovation id."
+      );
+    }
+
+    // BUSINESS RULE: An user has only one organization
+    let role;
+    let userOrganisation;
+    const filterRelations = filter && filter.relations ? filter.relations : [];
+
+    if (userOrganisations && userOrganisations.length > 0) {
+      userOrganisation = userOrganisations[0];
+      role = userOrganisation.role;
+    } else {
+      role = InnovatorOrganisationRole.INNOVATOR_OWNER;
+    }
+
+    let filterOptions;
+    switch (role) {
+      case InnovatorOrganisationRole.INNOVATOR_OWNER:
+        filterOptions = filter
+          ? filter
+          : {
+              where: { owner: userId },
+              loadRelationIds: true,
+            };
+        break;
+      case AccessorOrganisationRole.ACCESSOR:
+        // BUSINESS RULE: An user has only one organization unit
+        const organisationUnit = userOrganisation.userOrganisationUnits[0];
+
+        filterOptions = {
+          relations: ["innovationSupports", ...filterRelations],
+          where: `organisation_unit_id = '${organisationUnit.id}'`,
+        };
+        break;
+      case AccessorOrganisationRole.QUALIFYING_ACCESSOR:
+        filterOptions = {
+          relations: ["organisationShares", "assessments", ...filterRelations],
+          where: `organisation_id = '${userOrganisation.organisation.id}'`,
+        };
+        break;
+      default:
+        throw new Error("Invalid user role.");
+    }
+
+    return super.find(innovationId, filterOptions);
   }
 
   async findAllByAccessor(
@@ -56,7 +114,7 @@ export class InnovationService extends BaseService<Innovation> {
     // BUSINESS RULE: An accessor has only one organization
     const userOrganisation = userOrganisations[0];
 
-    if (!this.hasAccessorRole(userOrganisation.role)) {
+    if (!hasAccessorRole(userOrganisation.role)) {
       throw new Error("Invalid user. User has an invalid role.");
     }
 
@@ -92,7 +150,8 @@ export class InnovationService extends BaseService<Innovation> {
 
   async getInnovationOverview(
     id: string,
-    userId: string
+    userId: string,
+    userOrganisations?: OrganisationUser[]
   ): Promise<InnovationOverviewResult> {
     if (!id || !userId) {
       throw new Error(
@@ -100,13 +159,12 @@ export class InnovationService extends BaseService<Innovation> {
       );
     }
 
-    const filterOptions: FindOneOptions = {
-      where: { owner: userId },
-      loadRelationIds: true,
-    };
-
-    const innovation = await super.find(id, filterOptions);
-    const comments = await innovation.comments;
+    const innovation = await this.findInnovation(
+      id,
+      userId,
+      null,
+      userOrganisations
+    );
 
     const result: InnovationOverviewResult = {
       id: innovation.id,
@@ -116,8 +174,6 @@ export class InnovationService extends BaseService<Innovation> {
       postcode: innovation.postcode,
       ownerId: innovation.owner,
       status: innovation.status,
-      commentsCount: comments.length,
-      actionsCount: 0,
     };
 
     return result;
@@ -244,7 +300,7 @@ export class InnovationService extends BaseService<Innovation> {
       loadRelationIds: true,
     };
 
-    const innovation = await super.find(id, filterOptions);
+    const innovation = await this.findInnovation(id, userId, filterOptions);
     if (!innovation) {
       return null;
     }
@@ -290,16 +346,6 @@ export class InnovationService extends BaseService<Innovation> {
           innovationSupport.status === InnovationSupportStatus.ENGAGING
       )
       .map((s) => s.organisationUnit.organisation.acronym);
-  }
-
-  hasAccessorRole(roleStr: string) {
-    const role = AccessorOrganisationRole[roleStr];
-    return (
-      [
-        AccessorOrganisationRole.QUALIFYING_ACCESSOR,
-        AccessorOrganisationRole.ACCESSOR,
-      ].indexOf(role) !== -1
-    );
   }
 
   private async mapB2CUsers(deepUsers: string[][], innovations: Innovation[]) {

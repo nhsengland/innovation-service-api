@@ -1,4 +1,4 @@
-import * as persistence from "../../innovatorsGetInnovationSections/persistence";
+import * as persistence from "../../accessorsGetInnovationSections/persistence";
 import {
   InnovationSectionCatalogue,
   InnovationSectionService,
@@ -6,8 +6,8 @@ import {
 import * as typeorm from "typeorm";
 import { CustomContext } from "../../utils/types";
 
-describe("[innovatorsGetInnovationSection] Persistence suite", () => {
-  describe("findInnovationSectionByInnovator", () => {
+describe("[accessorsGetInnovationSection] Persistence suite", () => {
+  describe("findInnovationSectionByAccessor", () => {
     it("should assess if an innovation section exists", async () => {
       // Arrange
       spyOn(typeorm, "getRepository");
@@ -26,10 +26,10 @@ describe("[innovatorsGetInnovationSection] Persistence suite", () => {
         },
       };
       // Act
-      await persistence.findInnovationSectionByInnovator(
+      await persistence.findInnovationSectionByAccessor(
         ctx as CustomContext,
         "test_innovator_id",
-        "test_innovator_id",
+        "test_accessor_id",
         InnovationSectionCatalogue.INNOVATION_DESCRIPTION
       );
 

@@ -8,8 +8,6 @@ export interface InnovationOverviewResult {
   postcode?: string;
   ownerId: User;
   status: InnovationStatus;
-  actionsCount: number;
-  commentsCount: number;
 }
 
 export interface AssessmentInnovationSummary {

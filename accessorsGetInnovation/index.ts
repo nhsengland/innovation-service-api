@@ -1,31 +1,41 @@
 import { HttpRequest } from "@azure/functions";
 import * as persistence from "./persistence";
-import { AppInsights, JwtDecoder, SQLConnector } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
+import {
+  AppInsights,
+  JwtDecoder,
+  OrganisationRoleValidator,
+  SQLConnector,
+} from "../utils/decorators";
 import { CustomContext, Severity } from "../utils/types";
+import { AccessorOrganisationRole } from "@domain/index";
 
-class InnovatorsGetInnovationSectionSummary {
+class AccessorsGetInnovation {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder()
+  @OrganisationRoleValidator(
+    AccessorOrganisationRole.ACCESSOR,
+    AccessorOrganisationRole.QUALIFYING_ACCESSOR
+  )
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const innovatorId = req.params.innovatorId;
+    const accessorId = req.params.accessorId;
     const innovationId = req.params.innovationId;
     const oid = context.auth.decodedJwt.oid;
 
-    if (innovatorId !== oid) {
+    if (accessorId !== oid) {
       context.res = Responsify.Forbidden({ error: "Operation denied." });
       return;
     }
 
     let result;
     try {
-      result = await persistence.findAllInnovationSections(
+      result = await persistence.findInnovationOverview(
         context,
-        innovatorId,
+        accessorId,
         innovationId
       );
     } catch (error) {
@@ -39,4 +49,4 @@ class InnovatorsGetInnovationSectionSummary {
   }
 }
 
-export default InnovatorsGetInnovationSectionSummary.httpTrigger;
+export default AccessorsGetInnovation.httpTrigger;
