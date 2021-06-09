@@ -35,7 +35,7 @@ export class InnovationSupport extends Base {
   innovation: Innovation;
 
   @ManyToOne(() => OrganisationUnit, { nullable: false })
-  @JoinColumn({ name: "organisation_user_id" })
+  @JoinColumn({ name: "organisation_unit_id" })
   organisationUnit: OrganisationUnit;
 
   @ManyToMany(

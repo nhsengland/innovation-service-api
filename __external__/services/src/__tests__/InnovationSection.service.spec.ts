@@ -110,7 +110,7 @@ describe("Innovation Section Service Suite", () => {
     const innovation = await innovationService.create(innovationObj);
 
     // Act
-    const result = await innovationSectionService.findAllInnovationSectionsByInnovator(
+    const result = await innovationSectionService.findAllInnovationSections(
       innovation.id,
       dummy.innovatorId
     );
@@ -120,13 +120,10 @@ describe("Innovation Section Service Suite", () => {
     expect(result.sections.length).toEqual(14);
   });
 
-  it("should throw when id is null in findAllInnovationSectionsByInnovator()", async () => {
+  it("should throw when id is null in findAllInnovationSections()", async () => {
     let err;
     try {
-      await innovationSectionService.findAllInnovationSectionsByInnovator(
-        null,
-        null
-      );
+      await innovationSectionService.findAllInnovationSections(null, null);
     } catch (error) {
       err = error;
     }
@@ -137,10 +134,10 @@ describe("Innovation Section Service Suite", () => {
     );
   });
 
-  it("should throw when user id or innovator id are invalid in findAllInnovationSectionsByInnovator()", async () => {
+  it("should throw when user id or innovator id are invalid in findAllInnovationSections()", async () => {
     let err;
     try {
-      await innovationSectionService.findAllInnovationSectionsByInnovator(
+      await innovationSectionService.findAllInnovationSections(
         "D58C433E-F36B-1410-80E0-0032FE5B194B",
         "invalid"
       );
@@ -195,6 +192,7 @@ describe("Innovation Section Service Suite", () => {
     // Act
     const result = await innovationSectionService.findSection(
       innovation.id,
+      innovatorUser.id,
       InnovationSectionCatalogue.UNDERSTANDING_OF_BENEFITS
     );
 
@@ -258,6 +256,7 @@ describe("Innovation Section Service Suite", () => {
     // Act
     const result = await innovationSectionService.findSection(
       innovation.id,
+      innovatorUser.id,
       InnovationSectionCatalogue.EVIDENCE_OF_EFFECTIVENESS
     );
 
@@ -268,7 +267,7 @@ describe("Innovation Section Service Suite", () => {
   it("should throw when id is null in findSection()", async () => {
     let err;
     try {
-      await innovationSectionService.findSection(null, null);
+      await innovationSectionService.findSection(null, null, null);
     } catch (error) {
       err = error;
     }
@@ -284,6 +283,7 @@ describe("Innovation Section Service Suite", () => {
     try {
       await innovationSectionService.findSection(
         "D58C433E-F36B-1410-80E0-0032FE5B194B",
+        "T85C433E-F36B-1410-80E0-0032FE5B194B",
         InnovationSectionCatalogue.INNOVATION_DESCRIPTION
       );
     } catch (error) {
@@ -299,6 +299,7 @@ describe("Innovation Section Service Suite", () => {
     try {
       await innovationSectionService.findSection(
         "D58C433E-F36B-1410-80E0-0032FE5B194B",
+        "T85C433E-F36B-1410-80E0-0032FE5B194B",
         "invalid"
       );
     } catch (error) {
@@ -524,6 +525,7 @@ describe("Innovation Section Service Suite", () => {
     // Act
     const result = await innovationSectionService.findSection(
       innovation.id,
+      dummy.innovatorId,
       InnovationSectionCatalogue.REGULATIONS_AND_STANDARDS
     );
 
@@ -607,7 +609,7 @@ describe("Innovation Section Service Suite", () => {
       ]
     );
 
-    const result = await innovationSectionService.findAllInnovationSectionsByInnovator(
+    const result = await innovationSectionService.findAllInnovationSections(
       innovation.id,
       dummy.innovatorId
     );

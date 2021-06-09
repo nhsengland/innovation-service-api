@@ -6,6 +6,7 @@ import {
   Organisation,
   OrganisationUser,
 } from "@domain/index";
+import { hasAccessorRole } from "@services/helpers";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { InnovationAssessmentResult } from "../models/InnovationAssessmentResult";
 import { InnovationService } from "./Innovation.service";
@@ -92,7 +93,7 @@ export class InnovationAssessmentService {
     // BUSINESS RULE: An accessor has only one organization
     const userOrganisation = userOrganisations[0];
 
-    if (!this.innovationService.hasAccessorRole(userOrganisation.role)) {
+    if (!hasAccessorRole(userOrganisation.role)) {
       throw new Error("Invalid user. User has an invalid role.");
     }
 

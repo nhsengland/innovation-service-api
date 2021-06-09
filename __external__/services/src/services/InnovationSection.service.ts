@@ -4,6 +4,7 @@ import {
   InnovationSection,
   InnovationSectionCatalogue,
   InnovationSectionStatus,
+  OrganisationUser,
 } from "@domain/index";
 import * as sectionBodySchema from "@services/config/innovation-section-body.config.json";
 import * as sectionResponseSchema from "@services/config/innovation-section-response.config.json";
@@ -24,9 +25,10 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     this.innovationService = new InnovationService(connectionName);
   }
 
-  async findAllInnovationSectionsByInnovator(
+  async findAllInnovationSections(
     innovationId: string,
-    userId: string
+    userId: string,
+    userOrganisations?: OrganisationUser[]
   ) {
     if (!innovationId || !userId) {
       throw new Error(
@@ -37,9 +39,11 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     const filterOptions: FindOneOptions = {
       where: { owner: userId },
     };
-    const innovation = await this.innovationService.find(
+    const innovation = await this.innovationService.findInnovation(
       innovationId,
-      filterOptions
+      userId,
+      filterOptions,
+      userOrganisations
     );
 
     if (!innovation) {
@@ -59,7 +63,12 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     return result;
   }
 
-  async findSection(innovationId: string, section: string) {
+  async findSection(
+    innovationId: string,
+    userId: string,
+    section: string,
+    userOrganisations?: OrganisationUser[]
+  ) {
     // VALIDATIONS
     if (!innovationId || !section) {
       throw new Error(
@@ -75,9 +84,11 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     const filterOptions: FindOneOptions = {
       relations: ["sections", "sections.files", "owner"],
     };
-    const innovation = await this.innovationService.find(
+    const innovation = await this.innovationService.findInnovation(
       innovationId,
-      filterOptions
+      userId,
+      filterOptions,
+      userOrganisations
     );
 
     if (!innovation) {

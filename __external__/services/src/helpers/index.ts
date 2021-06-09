@@ -1,3 +1,4 @@
+import { AccessorOrganisationRole } from "@domain/index";
 import axios from "axios";
 
 export async function authenticateWitGraphAPI() {
@@ -93,4 +94,14 @@ export function uriEncodeObject(obj) {
   }, "");
 
   return formData.substring(1);
+}
+
+export function hasAccessorRole(roleStr: string) {
+  const role = AccessorOrganisationRole[roleStr];
+  return (
+    [
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR,
+      AccessorOrganisationRole.ACCESSOR,
+    ].indexOf(role) !== -1
+  );
 }

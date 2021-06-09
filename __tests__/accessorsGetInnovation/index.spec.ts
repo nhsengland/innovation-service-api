@@ -1,6 +1,7 @@
 /* eslint-disable */ 
-import * as persistence from "../../innovatorsGetInnovationSectionSummary/persistence";
-import innovatorsGetInnovationSectionSummary from "../../innovatorsGetInnovationSectionSummary";
+import { AccessorOrganisationRole } from "@services/index";
+import * as persistence from "../../accessorsGetInnovation/persistence";
+import accessorsGetInnovation from "../../accessorsGetInnovation";
 import * as connection from "../../utils/connection";
 import * as authentication from "../../utils/authentication";
 import * as service_loader from "../../utils/serviceLoader";
@@ -28,7 +29,18 @@ jest.mock("../../utils/logging/insights", () => ({
     },
   }),
 }));
-describe("[HttpTrigger] innovatorsGetInnovation Suite", () => {
+
+const dummy = {
+  services: {
+    OrganisationService: {
+      findUserOrganisations: () => [
+        { role: AccessorOrganisationRole.QUALIFYING_ACCESSOR },
+      ],
+    },
+  }
+};
+
+describe("[HttpTrigger] accessorsGetInnovation Suite", () => {
   describe("Function Handler", () => {
     afterEach(() => {
       jest.resetAllMocks();
@@ -48,31 +60,29 @@ describe("[HttpTrigger] innovatorsGetInnovation Suite", () => {
       );
     });
 
-    it("Should return 200 when Innovations and sections are found", async () => {
+    it("Should return 200 when Innovations is found", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
       spyOn(authentication, "decodeToken").and.returnValue({
-        oid: "test_innovator_id",
+        oid: "test_accessor_id",
       });
-      spyOn(
-        persistence,
-        "findAllInnovationSections"
-      ).and.returnValue([{ innovation: "test_innovator_id" }]);
+      spyOn(persistence, "findInnovationOverview").and.returnValue([
+        { innovation: "test_accessor_id" },
+      ]);
 
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(200);
     });
 
-    it("Should throw error when oid is different from innovatorId", async () => {
+    it("Should throw error when oid is different from accessorId", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: "test",
       });
-      spyOn(
-        persistence,
-        "findAllInnovationSections"
-      ).and.returnValue([{ id: "innovation_id" }]);
+      spyOn(persistence, "findInnovationOverview").and.returnValue([
+        { id: "innovation_id" },
+      ]);
 
       const { res } = await mockedRequestFactory({
         headers: { authorization: ":access_token" },
@@ -84,7 +94,7 @@ describe("[HttpTrigger] innovatorsGetInnovation Suite", () => {
 
 async function mockedRequestFactory(data?: any) {
   return runStubFunctionFromBindings(
-    innovatorsGetInnovationSectionSummary,
+    accessorsGetInnovation,
     [
       {
         type: "httpTrigger",
@@ -92,10 +102,10 @@ async function mockedRequestFactory(data?: any) {
         direction: "in",
         data: createHttpTrigger(
           "GET",
-          "http://nhse-i-aac/api/innovators/{innovatorId}/innovations/{innovationId}/section-summary",
+          "http://nhse-i-aac/api/accessors/{accessorId}/innovations/{innovationId}",
           { ...data.headers }, // headers
           {
-            innovatorId: "test_innovator_id",
+            accessorId: "test_accessor_id",
             innovationId: "test_innovation_id",
           }, // ?
           {}, // payload/body
