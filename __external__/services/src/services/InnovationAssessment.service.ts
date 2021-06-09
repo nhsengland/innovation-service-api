@@ -1,12 +1,10 @@
 import {
-  AccessorOrganisationRole,
   Innovation,
   InnovationAssessment,
   InnovationStatus,
   Organisation,
   OrganisationUser,
 } from "@domain/index";
-import { hasAccessorRole } from "@services/helpers";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { InnovationAssessmentResult } from "../models/InnovationAssessmentResult";
 import { InnovationService } from "./Innovation.service";
@@ -90,34 +88,13 @@ export class InnovationAssessmentService {
       throw new Error("Invalid user. User has no organisations.");
     }
 
-    // BUSINESS RULE: An accessor has only one organization
-    const userOrganisation = userOrganisations[0];
-
-    if (!hasAccessorRole(userOrganisation.role)) {
-      throw new Error("Invalid user. User has an invalid role.");
-    }
-
-    const filterOptions = {};
-    if (
-      userOrganisation.role === AccessorOrganisationRole.QUALIFYING_ACCESSOR
-    ) {
-      filterOptions[
-        "where"
-      ] = `organisation_id = '${userOrganisation.organisation.id}'`;
-      filterOptions["relations"] = ["organisationShares"];
-    } else {
-      filterOptions["where"] = `user_id = '${userOrganisation.user.id}'`;
-      filterOptions["relations"] = [
-        "innovationSupports",
-        "innovationSupports.organisationUnitUsers",
-        "innovationSupports.organisationUnitUsers.organisationUser",
-      ];
-    }
-
-    const innovation = await this.innovationService.find(
+    const innovation = await this.innovationService.findInnovation(
       innovationId,
-      filterOptions
+      id,
+      null,
+      userOrganisations
     );
+
     if (!innovation) {
       return null;
     }
@@ -131,6 +108,8 @@ export class InnovationAssessmentService {
     }
 
     return await this.connection.transaction(async (transactionManager) => {
+      // TODO add comments save
+
       await transactionManager.update(
         Innovation,
         { id: innovationId },

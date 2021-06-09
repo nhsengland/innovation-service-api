@@ -1,5 +1,5 @@
 import { User, UserType } from "@domain/index";
-import { getConnection, Connection } from "typeorm";
+import { Connection, getConnection } from "typeorm";
 import { BaseService } from "./Base.service";
 
 export class AccessorService extends BaseService<User> {

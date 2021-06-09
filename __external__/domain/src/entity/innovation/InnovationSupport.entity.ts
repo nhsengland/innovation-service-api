@@ -8,7 +8,6 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from "typeorm";
-
 import { Base } from "../Base.entity";
 import { Innovation } from "./Innovation.entity";
 import { OrganisationUnit } from "../organisation/OrganisationUnit.entity";

@@ -1,6 +1,5 @@
 import {
   Organisation,
-  OrganisationUnit,
   OrganisationUnitUser,
   OrganisationUser,
   User,

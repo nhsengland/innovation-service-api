@@ -1,0 +1,15 @@
+description: Innovation Support Update Payload
+required: true
+content:
+  application/json:
+    schema:
+      type: object
+      properties:
+        comment:
+          type: string
+        status:
+          type: string
+        accessors:
+          type: array
+          items:
+            type: string

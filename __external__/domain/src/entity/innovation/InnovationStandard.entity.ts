@@ -27,8 +27,6 @@ export class InnovationStandard extends Base {
   @Column({ name: "has_met", type: "nvarchar" })
   hasMet: StandardMetCatalogue;
 
-  // TODO CREATE FILE RELATION
-
   //relationships
   @ManyToOne(() => Innovation, { nullable: false })
   @JoinColumn({ name: "innovation_id" })

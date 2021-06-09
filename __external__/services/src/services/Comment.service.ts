@@ -1,5 +1,5 @@
 import { Comment } from "@domain/index";
-import { getConnection, Connection } from "typeorm";
+import { Connection, getConnection } from "typeorm";
 import { BaseService } from "./Base.service";
 
 export class CommentService extends BaseService<Comment> {

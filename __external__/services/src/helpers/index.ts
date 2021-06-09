@@ -84,6 +84,19 @@ export async function saveB2CUser(
   }
 }
 
+export function getMergedArray(arrayA: any[], arrayB: any[]) {
+  const arr = arrayA.concat(arrayB);
+
+  for (let i = 0; i < arr.length; ++i) {
+    for (let j = i + 1; j < arr.length; ++j) {
+      if (arr[i] === arr[j]) {
+        arr.splice(j, 1);
+      }
+    }
+  }
+  return arr;
+}
+
 export function uriEncodeObject(obj) {
   const formData = Object.keys(obj).reduce((acc, key) => {
     const value = obj[key];

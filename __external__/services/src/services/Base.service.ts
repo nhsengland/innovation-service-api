@@ -1,7 +1,6 @@
 import {
   EntityTarget,
   FindOneOptions,
-  getConnection,
   getRepository,
   Repository,
 } from "typeorm";

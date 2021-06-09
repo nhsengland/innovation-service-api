@@ -100,17 +100,9 @@ export class OrganisationService extends BaseService<Organisation> {
     );
 
     // Get user personal information from b2c
-    const userIds = organisationUnitUsers.map(
-      (organisationUnitUser: OrganisationUnitUser) =>
-        organisationUnitUser.organisationUser.user.id
+    const b2cMap = await this.getOrganisationUnitUsersNames(
+      organisationUnitUsers
     );
-    const b2cUsers = await this.userService.getListOfUsers(userIds);
-    if (!b2cUsers) return [];
-
-    const b2cMap = b2cUsers.reduce((map, obj) => {
-      map[obj.id] = obj.displayName;
-      return map;
-    }, {});
 
     // create response
     return organisationUnitUsers.map(
@@ -118,11 +110,27 @@ export class OrganisationService extends BaseService<Organisation> {
         const organisationUser = organisationUnitUser.organisationUser;
 
         return {
-          id: organisationUser.id,
+          id: organisationUnitUser.id,
           name: b2cMap[organisationUser.user.id],
         };
       }
     );
+  }
+
+  async getOrganisationUnitUsersNames(
+    organisationUnitUsers: OrganisationUnitUser[]
+  ) {
+    const userIds = organisationUnitUsers.map(
+      (organisationUnitUser: OrganisationUnitUser) =>
+        organisationUnitUser.organisationUser.user.id
+    );
+    const b2cUsers = await this.userService.getListOfUsers(userIds);
+    if (!b2cUsers) return [];
+
+    return b2cUsers.reduce((map, obj) => {
+      map[obj.id] = obj.displayName;
+      return map;
+    }, {});
   }
 
   async addUserToOrganisation(
