@@ -11,7 +11,7 @@ describe("[accessorsGetInnovation] Persistence suite", () => {
       spyOn(typeorm, "getConnection");
       const spy = spyOn(
         InnovationService.prototype,
-        "getInnovationOverview"
+        "getAccessorInnovationSummary"
       ).and.returnValue({ id: "innovationA" });
       const ctx = {
         services: {

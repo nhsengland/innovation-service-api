@@ -12,6 +12,7 @@ import {
   InnovationListModel,
   InnovationViewModel,
 } from "@services/models/InnovationListModel";
+import { ProfileModel } from "@services/models/ProfileModel";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
 import {
   FindManyOptions,
@@ -23,9 +24,10 @@ import {
   Repository,
 } from "typeorm";
 import {
+  AccessorInnovationSummary,
   AssessmentInnovationSummary,
-  InnovationOverviewResult,
-} from "../models/InnovationOverviewResult";
+  InnovatorInnovationSummary,
+} from "../models/InnovationSummaryResult";
 import { BaseService } from "./Base.service";
 import { UserService } from "./User.service";
 
@@ -94,7 +96,7 @@ export class InnovationService extends BaseService<Innovation> {
             ["organisationShares", "assessments"],
             filterRelations
           ),
-          where: `organisation_id = '${userOrganisation.organisation.id}'`,
+          where: `Innovation_Innovation__organisationShares.organisation_id = '${userOrganisation.organisation.id}'`,
         };
         break;
       default:
@@ -158,21 +160,16 @@ export class InnovationService extends BaseService<Innovation> {
     id: string,
     userId: string,
     userOrganisations?: OrganisationUser[]
-  ): Promise<InnovationOverviewResult> {
+  ): Promise<InnovatorInnovationSummary> {
     if (!id || !userId) {
       throw new Error(
         "Invalid parameters. You must define the id and the userId."
       );
     }
 
-    const innovation = await this.findInnovation(
-      id,
-      userId,
-      null,
-      userOrganisations
-    );
+    const innovation = await this.findInnovation(id, userId);
 
-    const result: InnovationOverviewResult = {
+    const result: InnovatorInnovationSummary = {
       id: innovation.id,
       name: innovation.name,
       description: innovation.description,
@@ -185,6 +182,89 @@ export class InnovationService extends BaseService<Innovation> {
     return result;
   }
 
+  async getAccessorInnovationSummary(
+    id: string,
+    userId: string,
+    userOrganisations: OrganisationUser[]
+  ): Promise<AccessorInnovationSummary> {
+    if (!id || !userId) {
+      throw new Error(
+        "Invalid parameters. You must define the id and the userId."
+      );
+    }
+
+    if (!userOrganisations || userOrganisations.length == 0) {
+      throw new Error("Invalid user. User has no organisations.");
+    }
+
+    const filterOptions = {
+      relations: [
+        "owner",
+        "innovationSupports",
+        "innovationSupports.organisationUnit",
+        "categories",
+        "assessments",
+      ],
+    };
+    const innovation = await this.findInnovation(
+      id,
+      userId,
+      filterOptions,
+      userOrganisations
+    );
+    if (!innovation) {
+      throw new Error("Invalid parameters. Innovation not found for the user.");
+    }
+
+    const b2cOwnerUser = await this.userService.getProfile(innovation.owner.id);
+    const categories = await innovation.categories;
+
+    // BUSINESS RULE: One innovation only has 1 assessment
+    const assessment = {
+      id: null,
+    };
+
+    if (innovation.assessments.length > 0) {
+      assessment.id = innovation.assessments[0].id;
+    }
+
+    // BUSINESS RULE: An user has only one organization unit
+    const organisationUnit =
+      userOrganisations[0].userOrganisationUnits[0].organisationUnit;
+
+    const support = {
+      id: null,
+      status: null,
+    };
+    const innovationSupport: InnovationSupport = innovation?.innovationSupports.find(
+      (is: InnovationSupport) => is.organisationUnit.id === organisationUnit.id
+    );
+
+    if (innovationSupport) {
+      support.id = innovationSupport.id;
+      support.status = innovationSupport.status;
+    }
+
+    return {
+      summary: {
+        id: innovation.id,
+        name: innovation.name,
+        status: innovation.status,
+        company: this.getUserOrganisationName(b2cOwnerUser),
+        countryName: innovation.countryName,
+        postCode: innovation.postcode,
+        description: innovation.description,
+        categories: categories?.map((category) => category.type),
+        otherCategoryDescription: innovation.otherCategoryDescription,
+      },
+      contact: {
+        name: b2cOwnerUser.displayName,
+      },
+      assessment,
+      support,
+    };
+  }
+
   async getAssessmentInnovationSummary(
     id: string
   ): Promise<AssessmentInnovationSummary> {
@@ -194,14 +274,6 @@ export class InnovationService extends BaseService<Innovation> {
 
     const innovation = await super.find(id, innovationFilterOptions);
     const b2cOwnerUser = await this.userService.getProfile(innovation.owner.id);
-
-    // BUSINESS RULE. One user only belongs to 1 organisation.
-    const company =
-      b2cOwnerUser.organisations.length > 0 &&
-      !b2cOwnerUser.organisations[0].isShadow
-        ? b2cOwnerUser.organisations[0].name
-        : null;
-
     const categories = await innovation.categories;
 
     const assessment = {
@@ -224,7 +296,7 @@ export class InnovationService extends BaseService<Innovation> {
         id: innovation.id,
         name: innovation.name,
         status: innovation.status,
-        company,
+        company: this.getUserOrganisationName(b2cOwnerUser),
         countryName: innovation.countryName,
         postCode: innovation.postcode,
         description: innovation.description,
@@ -341,6 +413,13 @@ export class InnovationService extends BaseService<Innovation> {
     innovationSupport.status = status;
 
     return await this.supportRepo.save(innovationSupport);
+  }
+
+  private getUserOrganisationName(user: ProfileModel) {
+    // BUSINESS RULE. One user only belongs to 1 organisation.
+    return user.organisations.length > 0 && !user.organisations[0].isShadow
+      ? user.organisations[0].name
+      : null;
   }
 
   private extractEngagingOrganisationAcronyms(innovation: Innovation) {

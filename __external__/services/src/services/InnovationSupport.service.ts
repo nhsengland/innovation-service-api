@@ -53,7 +53,7 @@ export class InnovationSupportService {
     const organisationUnitUsers = innovationSupport.organisationUnitUsers;
 
     let b2cMap;
-    if (organisationUnitUsers) {
+    if (organisationUnitUsers && organisationUnitUsers.length > 0) {
       b2cMap = await this.organisationService.getOrganisationUnitUsersNames(
         organisationUnitUsers
       );
