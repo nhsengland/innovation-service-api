@@ -8,8 +8,7 @@ import {
   User,
   UserType,
 } from "@domain/index";
-
-import { getConnection, Connection } from "typeorm";
+import { Connection, getConnection } from "typeorm";
 import { TransactionResult } from "../models/InnovatorTransactionResult";
 import { BaseService } from "./Base.service";
 

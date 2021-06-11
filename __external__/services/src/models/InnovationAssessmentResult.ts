@@ -1,4 +1,3 @@
-import { Innovation, User } from "@domain/index";
 import { OrganisationModel } from "./OrganisationModel";
 
 export interface InnovationAssessmentResult {

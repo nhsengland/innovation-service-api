@@ -1,18 +1,18 @@
-/* eslint-disable */ 
-import { InnovatorOrganisationRole } from "@services/index";
+/* eslint-disable */
+import { AccessorOrganisationRole } from "@services/index";
 import {
   createHttpTrigger,
-  runStubFunctionFromBindings,
+  runStubFunctionFromBindings
 } from "stub-azure-function-context";
-import innovatorsCreateInnovationEvidence from "../../innovatorsCreateInnovationEvidence";
-import * as persistence from "../../innovatorsCreateInnovationEvidence/persistence";
-import * as validation from "../../innovatorsCreateInnovationEvidence/validation";
+import accessorsCreateInnovationSupport from "../../accessorsCreateInnovationSupport";
+import * as persistence from "../../accessorsCreateInnovationSupport/persistence";
+import * as validation from "../../accessorsCreateInnovationSupport/validation";
 import * as authentication from "../../utils/authentication";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
 
 jest.mock("../../utils/logging/insights", () => ({
-  start: () => {},
+  start: () => { },
   getInstance: () => ({
     startOperation: () => ({
       operation: {
@@ -23,9 +23,9 @@ jest.mock("../../utils/logging/insights", () => ({
       return func;
     },
     defaultClient: {
-      trackTrace: () => {},
-      trackRequest: () => {},
-      flush: () => {},
+      trackTrace: () => { },
+      trackRequest: () => { },
+      flush: () => { },
     },
   }),
 }));
@@ -34,22 +34,22 @@ const dummy = {
   services: {
     OrganisationService: {
       findUserOrganisations: () => [
-        { role: InnovatorOrganisationRole.INNOVATOR_OWNER },
+        { role: AccessorOrganisationRole.QUALIFYING_ACCESSOR },
       ],
     },
   },
   innovationId: "test_innovation_id",
-  innovatorId: "test_innovator_id",
+  accessorId: "test_accessor_id",
 };
 
-describe("[HttpTrigger] innovatorsCreateInnovationEvidence Suite", () => {
+describe("[HttpTrigger] accessorsCreateInnovationSupport Suite", () => {
   describe("Function Handler", () => {
     afterEach(() => {
       jest.resetAllMocks();
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
+      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
       spyOn(connection, "setupSQLConnection").and.throwError(
         "Error establishing connection with the datasource."
       );
@@ -62,22 +62,22 @@ describe("[HttpTrigger] innovatorsCreateInnovationEvidence Suite", () => {
       );
     });
 
-    it("Should return 201 when Innovation Evidence is created", async () => {
+    it("Should return 201 when Innovation Support is created", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
       spyOn(validation, "ValidatePayload").and.returnValue({});
       spyOn(authentication, "decodeToken").and.returnValue({
-        oid: dummy.innovatorId,
+        oid: dummy.accessorId,
       });
-      spyOn(persistence, "createInnovationEvidence").and.returnValue([
-        { id: "evidence_id" },
+      spyOn(persistence, "createInnovationSupport").and.returnValue([
+        { id: "support_id" },
       ]);
 
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(201);
     });
 
-    it("Should return 403 when innovator has an invalid role", async () => {
+    it("Should return 403 when accessor has an invalid role", async () => {
       const services = {
         OrganisationService: {
           findUserOrganisations: () => [{ role: "other" }],
@@ -88,10 +88,10 @@ describe("[HttpTrigger] innovatorsCreateInnovationEvidence Suite", () => {
       spyOn(service_loader, "loadAllServices").and.returnValue(services);
       spyOn(validation, "ValidatePayload").and.returnValue({});
       spyOn(authentication, "decodeToken").and.returnValue({
-        oid: dummy.innovatorId,
+        oid: dummy.accessorId,
       });
-      spyOn(persistence, "createInnovationEvidence").and.returnValue([
-        { id: "evidence_id" },
+      spyOn(persistence, "createInnovationSupport").and.returnValue([
+        { id: "support_id" },
       ]);
 
       const { res } = await mockedRequestFactory({
@@ -100,15 +100,15 @@ describe("[HttpTrigger] innovatorsCreateInnovationEvidence Suite", () => {
       expect(res.status).toBe(403);
     });
 
-    it("Should throw error when oid is different from innovatorId", async () => {
+    it("Should throw error when oid is different from accessorId", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
       spyOn(validation, "ValidatePayload").and.returnValue({});
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: "other",
       });
-      spyOn(persistence, "createInnovationEvidence").and.returnValue([
-        { id: "evidence_id" },
+      spyOn(persistence, "createInnovationSupport").and.returnValue([
+        { id: "support_id" },
       ]);
 
       const { res } = await mockedRequestFactory({
@@ -121,7 +121,7 @@ describe("[HttpTrigger] innovatorsCreateInnovationEvidence Suite", () => {
 
 async function mockedRequestFactory(data?: any) {
   return runStubFunctionFromBindings(
-    innovatorsCreateInnovationEvidence,
+    accessorsCreateInnovationSupport,
     [
       {
         type: "httpTrigger",
@@ -129,18 +129,16 @@ async function mockedRequestFactory(data?: any) {
         direction: "in",
         data: createHttpTrigger(
           "POST",
-          "http://nhse-i-aac/api/innovators/{innovatorId}/innovations/{innovationId}/evidence",
+          "http://nhse-i-aac/api/accessors/{accessorId}/innovations/{innovationId}/support",
           { ...data.headers }, // headers
           {
-            innovatorId: dummy.innovatorId,
+            accessorId: dummy.accessorId,
             innovationId: dummy.innovationId,
           },
           {
-            evidenceType: "CLINICAL",
-            clinicalEvidenceType: "DATA_PUBLISHED",
-            description: "",
-            summary: "upd 2",
-            files: [],
+            status: "NOT_YET",
+            comment: ":comment",
+            accessors: [],
           }, // payload/body
           null // querystring
         ),

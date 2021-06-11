@@ -1,5 +1,3 @@
-import { Innovation } from "@domain/index";
-
 export interface InnovationListModel {
   data: InnovationViewModel[];
   count: number;

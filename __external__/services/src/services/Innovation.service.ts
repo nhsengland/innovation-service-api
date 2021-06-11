@@ -7,14 +7,13 @@ import {
   InnovatorOrganisationRole,
   OrganisationUser,
 } from "@domain/index";
-import { hasAccessorRole } from "@services/helpers";
+import { getMergedArray, hasAccessorRole } from "@services/helpers";
 import {
   InnovationListModel,
   InnovationViewModel,
 } from "@services/models/InnovationListModel";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
 import {
-  Connection,
   FindManyOptions,
   FindOneOptions,
   getConnection,
@@ -54,11 +53,11 @@ export class InnovationService extends BaseService<Innovation> {
       );
     }
 
-    // BUSINESS RULE: An user has only one organization
     let role;
     let userOrganisation;
     const filterRelations = filter && filter.relations ? filter.relations : [];
 
+    // BUSINESS RULE: An user has only one organization
     if (userOrganisations && userOrganisations.length > 0) {
       userOrganisation = userOrganisations[0];
       role = userOrganisation.role;
@@ -78,16 +77,23 @@ export class InnovationService extends BaseService<Innovation> {
         break;
       case AccessorOrganisationRole.ACCESSOR:
         // BUSINESS RULE: An user has only one organization unit
-        const organisationUnit = userOrganisation.userOrganisationUnits[0];
+        const organisationUnit =
+          userOrganisation.userOrganisationUnits[0].organisationUnit;
 
         filterOptions = {
-          relations: ["innovationSupports", ...filterRelations],
+          relations: getMergedArray(
+            ["innovationSupports", "assessments"],
+            filterRelations
+          ),
           where: `organisation_unit_id = '${organisationUnit.id}'`,
         };
         break;
       case AccessorOrganisationRole.QUALIFYING_ACCESSOR:
         filterOptions = {
-          relations: ["organisationShares", "assessments", ...filterRelations],
+          relations: getMergedArray(
+            ["organisationShares", "assessments"],
+            filterRelations
+          ),
           where: `organisation_id = '${userOrganisation.organisation.id}'`,
         };
         break;

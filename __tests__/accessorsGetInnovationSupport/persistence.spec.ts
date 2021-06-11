@@ -1,0 +1,36 @@
+import { InnovationSupportService, InnovationService } from "@services/index";
+import * as typeorm from "typeorm";
+import * as persistence from "../../accessorsGetInnovationSupport/persistence";
+import { CustomContext } from "../../utils/types";
+
+describe("[accessorsGetInnovationSupport] Persistence suite", () => {
+  describe("getInnovationSupport", () => {
+    it("should get an innovation support", async () => {
+      // Arrange
+      spyOn(typeorm, "getRepository");
+      spyOn(typeorm, "getConnection");
+      const spy = spyOn(
+        InnovationSupportService.prototype,
+        "find"
+      ).and.returnValue([{ id: "" }]);
+
+      const ctx = {
+        services: {
+          InnovationSupportService: new InnovationSupportService(),
+        },
+        auth: {
+          userOrganisations: [],
+        },
+      };
+      // Act
+      await persistence.findInnovationSupport(
+        ctx as CustomContext,
+        "E362433E-F36B-1410-80DE-0032FE5B194B",
+        "F362433E-F36B-1410-80DE-0032FE5B194B",
+        "G362433E-F36B-1410-80DE-0032FE5B194B"
+      );
+
+      expect(spy).toHaveBeenCalled();
+    });
+  });
+});
