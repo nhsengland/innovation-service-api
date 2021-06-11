@@ -5,7 +5,7 @@ export const findInnovationOverview = async (
   accessorId: string,
   innovationId: string
 ) => {
-  const result = await ctx.services.InnovationService.getInnovationOverview(
+  const result = await ctx.services.InnovationService.getAccessorInnovationSummary(
     innovationId,
     accessorId,
     ctx.auth.userOrganisations
