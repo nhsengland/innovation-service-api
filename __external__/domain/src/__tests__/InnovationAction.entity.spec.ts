@@ -121,7 +121,7 @@ describe("Innovation Action Test Suite", () => {
       );
 
       const innovationActionObj = InnovationAction.new({
-        message: "myNewInnovationAction",
+        description: "myNewInnovationAction",
         innovationSection,
         innovationSupport,
         status: InnovationActionStatus.REQUESTED,

@@ -17,7 +17,6 @@ import { InnovationEvidenceService } from "../services/InnovationEvidence.servic
 import { InnovationSectionService } from "../services/InnovationSection.service";
 import { InnovatorService } from "../services/Innovator.service";
 import * as storage_blob from "@azure/storage-blob";
-import { executePromisesSequentially } from "@azure/core-http";
 
 const dummy = {
   innovatorId: "innovatorId",

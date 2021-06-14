@@ -3,9 +3,9 @@ import { AccessorOrganisationRole } from "@services/index";
 import {
   runStubFunctionFromBindings, createHttpTrigger
 } from "stub-azure-function-context";
-import accessorsUpdateInnovationSupport from "../../accessorsUpdateInnovationSupport";
-import * as persistence from "../../accessorsUpdateInnovationSupport/persistence";
-import * as validation from "../../accessorsUpdateInnovationSupport/validation";
+import accessorsUpdateInnovationAction from "../../accessorsUpdateInnovationAction";
+import * as persistence from "../../accessorsUpdateInnovationAction/persistence";
+import * as validation from "../../accessorsUpdateInnovationAction/validation";
 import * as authentication from "../../utils/authentication";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
@@ -37,12 +37,12 @@ const dummy = {
       ],
     },
   },
-  supportId: "test_support_id",
+  actionId: "test_action_id",
   innovationId: "test_innovation_id",
   accessorId: "test_accessor_id",
 };
 
-describe("[HttpTrigger] accessorsUpdateInnovationSupport Suite", () => {
+describe("[HttpTrigger] accessorsUpdateInnovationAction Suite", () => {
   describe("Function Handler", () => {
     afterEach(() => {
       jest.resetAllMocks();
@@ -62,15 +62,15 @@ describe("[HttpTrigger] accessorsUpdateInnovationSupport Suite", () => {
       );
     });
 
-    it("Should return 200 when Innovation Support is updated", async () => {
+    it("Should return 200 when Innovation Action is updated", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
       spyOn(validation, "ValidatePayload").and.returnValue({});
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: dummy.accessorId,
       });
-      spyOn(persistence, "updateInnovationSupport").and.returnValue([
-        { id: dummy.supportId },
+      spyOn(persistence, "updateInnovationAction").and.returnValue([
+        { id: dummy.actionId },
       ]);
 
       const { res } = await mockedRequestFactory({});
@@ -90,8 +90,8 @@ describe("[HttpTrigger] accessorsUpdateInnovationSupport Suite", () => {
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: dummy.accessorId,
       });
-      spyOn(persistence, "updateInnovationSupport").and.returnValue([
-        { id: dummy.supportId },
+      spyOn(persistence, "updateInnovationAction").and.returnValue([
+        { id: dummy.actionId },
       ]);
 
       const { res } = await mockedRequestFactory({
@@ -107,8 +107,8 @@ describe("[HttpTrigger] accessorsUpdateInnovationSupport Suite", () => {
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: "other",
       });
-      spyOn(persistence, "updateInnovationSupport").and.returnValue([
-        { id: dummy.supportId },
+      spyOn(persistence, "updateInnovationAction").and.returnValue([
+        { id: dummy.actionId },
       ]);
 
       const { res } = await mockedRequestFactory({
@@ -121,7 +121,7 @@ describe("[HttpTrigger] accessorsUpdateInnovationSupport Suite", () => {
 
 async function mockedRequestFactory(data?: any) {
   return runStubFunctionFromBindings(
-    accessorsUpdateInnovationSupport,
+    accessorsUpdateInnovationAction,
     [
       {
         type: "httpTrigger",
@@ -129,17 +129,16 @@ async function mockedRequestFactory(data?: any) {
         direction: "in",
         data: createHttpTrigger(
           "PUT",
-          "http://nhse-i-aac/api/accessors/{accessorId}/innovations/{innovationId}/supports/{supportId}",
+          "http://nhse-i-aac/api/accessors/{accessorId}/innovations/{innovationId}/actions/{actionId}",
           { ...data.headers }, // headers
           {
-            supportId: dummy.supportId,
+            actionId: dummy.actionId,
             accessorId: dummy.accessorId,
             innovationId: dummy.innovationId,
           },
           {
-            status: "NOT_YET",
+            status: "DELETED",
             comment: ":comment",
-            accessors: [],
           }, // payload/body
           null // querystring
         ),

@@ -33,14 +33,12 @@ import { UserService } from "./User.service";
 
 export class InnovationService extends BaseService<Innovation> {
   private readonly userService: UserService;
-  private readonly supportRepo: Repository<InnovationSupport>;
 
   constructor(connectionName?: string) {
     super(Innovation, connectionName);
     getConnection(connectionName);
 
     this.userService = new UserService(connectionName);
-    this.supportRepo = getRepository(InnovationSupport, connectionName);
   }
 
   async findInnovation(
@@ -158,8 +156,7 @@ export class InnovationService extends BaseService<Innovation> {
 
   async getInnovationOverview(
     id: string,
-    userId: string,
-    userOrganisations?: OrganisationUser[]
+    userId: string
   ): Promise<InnovatorInnovationSummary> {
     if (!id || !userId) {
       throw new Error(
@@ -393,26 +390,6 @@ export class InnovationService extends BaseService<Innovation> {
       id: innovation.id,
       status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
     };
-  }
-
-  async addSupport(support: InnovationSupport): Promise<InnovationSupport> {
-    support.status = InnovationSupportStatus.ENGAGING;
-    return await this.supportRepo.save(support);
-  }
-
-  async updateSupportStatus(
-    id: string,
-    status: InnovationSupportStatus
-  ): Promise<InnovationSupport> {
-    const innovationSupport = await this.supportRepo.findOne(id);
-
-    if (!innovationSupport) {
-      throw new Error("Innovation Support Object not found.");
-    }
-
-    innovationSupport.status = status;
-
-    return await this.supportRepo.save(innovationSupport);
   }
 
   private getUserOrganisationName(user: ProfileModel) {
