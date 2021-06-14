@@ -6,9 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { InnovationActionStatus } from "../../enums/innovation.enums";
-
 import { Base } from "../Base.entity";
-import { User } from "../user/User.entity";
 import { InnovationSection } from "./InnovationSection.entity";
 import { InnovationSupport } from "./InnovationSupport.entity";
 
@@ -19,7 +17,7 @@ export class InnovationAction extends Base {
   id: string;
 
   @Column()
-  message: string;
+  description: string;
 
   @Column({
     type: "simple-enum",
@@ -36,10 +34,6 @@ export class InnovationAction extends Base {
   @ManyToOne(() => InnovationSupport, { nullable: false })
   @JoinColumn({ name: "innovation_support_id" })
   innovationSupport: InnovationSupport;
-
-  @ManyToOne(() => User, { nullable: false })
-  @JoinColumn({ name: "assign_to_id" })
-  assignTo: User;
 
   //static constructor
   static new(data) {

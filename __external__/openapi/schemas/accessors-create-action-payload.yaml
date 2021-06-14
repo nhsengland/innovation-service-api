@@ -1,0 +1,11 @@
+description: Innovation Action Create Payload
+required: true
+content:
+  application/json:
+    schema:
+      type: object
+      properties:
+        description:
+          type: string
+        section:
+          type: string

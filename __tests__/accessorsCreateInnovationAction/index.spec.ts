@@ -1,11 +1,12 @@
 /* eslint-disable */
-import { AccessorOrganisationRole } from "@services/index";
+import { AccessorOrganisationRole, InnovationSectionCatalogue } from "@services/index";
 import {
-  runStubFunctionFromBindings, createHttpTrigger
+  createHttpTrigger,
+  runStubFunctionFromBindings
 } from "stub-azure-function-context";
-import accessorsUpdateInnovationSupport from "../../accessorsUpdateInnovationSupport";
-import * as persistence from "../../accessorsUpdateInnovationSupport/persistence";
-import * as validation from "../../accessorsUpdateInnovationSupport/validation";
+import accessorsCreateInnovationAction from "../../accessorsCreateInnovationAction";
+import * as persistence from "../../accessorsCreateInnovationAction/persistence";
+import * as validation from "../../accessorsCreateInnovationAction/validation";
 import * as authentication from "../../utils/authentication";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
@@ -37,12 +38,11 @@ const dummy = {
       ],
     },
   },
-  supportId: "test_support_id",
   innovationId: "test_innovation_id",
   accessorId: "test_accessor_id",
 };
 
-describe("[HttpTrigger] accessorsUpdateInnovationSupport Suite", () => {
+describe("[HttpTrigger] accessorsCreateInnovationAction Suite", () => {
   describe("Function Handler", () => {
     afterEach(() => {
       jest.resetAllMocks();
@@ -62,19 +62,19 @@ describe("[HttpTrigger] accessorsUpdateInnovationSupport Suite", () => {
       );
     });
 
-    it("Should return 200 when Innovation Support is updated", async () => {
+    it("Should return 201 when Innovation Action is created", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
       spyOn(validation, "ValidatePayload").and.returnValue({});
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: dummy.accessorId,
       });
-      spyOn(persistence, "updateInnovationSupport").and.returnValue([
-        { id: dummy.supportId },
+      spyOn(persistence, "createInnovationAction").and.returnValue([
+        { id: "action_id" },
       ]);
 
       const { res } = await mockedRequestFactory({});
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(201);
     });
 
     it("Should return 403 when accessor has an invalid role", async () => {
@@ -90,8 +90,8 @@ describe("[HttpTrigger] accessorsUpdateInnovationSupport Suite", () => {
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: dummy.accessorId,
       });
-      spyOn(persistence, "updateInnovationSupport").and.returnValue([
-        { id: dummy.supportId },
+      spyOn(persistence, "createInnovationAction").and.returnValue([
+        { id: "action_id" },
       ]);
 
       const { res } = await mockedRequestFactory({
@@ -107,8 +107,8 @@ describe("[HttpTrigger] accessorsUpdateInnovationSupport Suite", () => {
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: "other",
       });
-      spyOn(persistence, "updateInnovationSupport").and.returnValue([
-        { id: dummy.supportId },
+      spyOn(persistence, "createInnovationAction").and.returnValue([
+        { id: "action_id" },
       ]);
 
       const { res } = await mockedRequestFactory({
@@ -121,25 +121,23 @@ describe("[HttpTrigger] accessorsUpdateInnovationSupport Suite", () => {
 
 async function mockedRequestFactory(data?: any) {
   return runStubFunctionFromBindings(
-    accessorsUpdateInnovationSupport,
+    accessorsCreateInnovationAction,
     [
       {
         type: "httpTrigger",
         name: "req",
         direction: "in",
         data: createHttpTrigger(
-          "PUT",
-          "http://nhse-i-aac/api/accessors/{accessorId}/innovations/{innovationId}/supports/{supportId}",
+          "POST",
+          "http://nhse-i-aac/api/accessors/{accessorId}/innovations/{innovationId}/actions",
           { ...data.headers }, // headers
           {
-            supportId: dummy.supportId,
             accessorId: dummy.accessorId,
             innovationId: dummy.innovationId,
           },
           {
-            status: "NOT_YET",
-            comment: ":comment",
-            accessors: [],
+            description: ":description",
+            section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION
           }, // payload/body
           null // querystring
         ),

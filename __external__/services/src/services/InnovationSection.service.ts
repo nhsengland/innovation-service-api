@@ -318,6 +318,23 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     return await this.repository.save(innovSections);
   }
 
+  async createSection(
+    innovationId: string,
+    userId: string,
+    section: InnovationSectionCatalogue,
+    status?: InnovationSectionStatus
+  ) {
+    const innovationSection = InnovationSection.new({
+      innovation: { id: innovationId },
+      section,
+      status: status || InnovationSectionStatus.NOT_STARTED,
+      createdBy: userId,
+      updatedBy: userId,
+    });
+
+    return this.create(innovationSection);
+  }
+
   private getInnovationSections(
     sections: InnovationSection[]
   ): InnovationSectionModel[] {

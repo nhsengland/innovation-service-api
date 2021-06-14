@@ -298,6 +298,87 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
+  '/accessors/{accessorId}/innovations/{innovationId}/actions':
+    post:
+      tags:
+        - Accessor
+        - Innovation
+        - CreateInnovationAction
+      description: Creates an Innovation Action associated with the Innovation
+      operationId: accessors-create-innovation-action
+      security:
+        - OpenId:
+            - actions_write
+      parameters:
+        - name: accessorId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/accessors-create-action-payload'
+      responses:
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/accessors/{accessorId}/innovations/{innovationId}/actions/{actionId}':
+    put:
+      tags:
+        - Accessor
+        - Innovation
+        - UpdateInnovationAction
+      description: Updates an Innovation Action associated with the Innovation
+      operationId: accessors-update-innovation-action
+      security:
+        - OpenId:
+            - innovators_write
+      parameters:
+        - name: accessorId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: actionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/accessors-update-action-payload'
+      responses:
+        '200':
+          description: Ok
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
   '/accessors/{accessorId}/innovations/{innovationId}/evidence/{evidenceId}':
     get:
       tags:
@@ -1682,6 +1763,30 @@ components:
                 type: array
                 items:
                   type: string
+    accessors-create-action-payload:
+      description: Innovation Action Create Payload
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              description:
+                type: string
+              section:
+                type: string
+    accessors-update-action-payload:
+      description: Innovation Action Update Payload
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              comment:
+                type: string
+              status:
+                type: string
     innovator-create-payload:
       description: Innovator Create Payload
       required: true

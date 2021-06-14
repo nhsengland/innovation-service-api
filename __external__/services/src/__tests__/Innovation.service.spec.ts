@@ -6,26 +6,21 @@ import {
   InnovationAssessment,
   InnovationStatus,
   InnovationSupport,
-  InnovationSupportStatus,
-  InnovationUserTest,
   InnovatorOrganisationRole,
   Organisation,
   OrganisationType,
   OrganisationUnit,
+  OrganisationUnitUser,
   OrganisationUser,
   User,
 } from "@domain/index";
+import { InnovationListModel } from "@services/models/InnovationListModel";
 import { UserService } from "@services/services/User.service";
 import { getConnection } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
-import { AccessorService } from "../services/Accessor.service";
-import { CommentService } from "../services/Comment.service";
-import { InnovationService } from "../services/Innovation.service";
-import { InnovatorService } from "../services/Innovator.service";
-import { OrganisationService } from "../services/Organisation.service";
 import * as helpers from "../helpers";
+import { InnovationService } from "../services/Innovation.service";
 import * as fixtures from "../__fixtures__";
-import { InnovationListModel } from "@services/models/InnovationListModel";
 
 const dummy = {
   innovatorId: "innovatorId",
@@ -33,57 +28,44 @@ const dummy = {
 };
 
 describe("Innovator Service Suite", () => {
-  let accessorService: AccessorService;
-  // let actionService: ActionService;
-  let commentService: CommentService;
   let innovationService: InnovationService;
-  let innovatorService: InnovatorService;
-  let organisationService: OrganisationService;
   let userService: UserService;
   let qualAccessorUser: User;
   let innovatorUser: User;
   let accessorOrganisation: Organisation;
-  let organisationAccessorUser: OrganisationUser;
+  let organisationQAccessorUser: OrganisationUser;
 
   beforeAll(async () => {
     // await setupTestsConnection();
-    accessorService = new AccessorService(process.env.DB_TESTS_NAME);
-    commentService = new CommentService(process.env.DB_TESTS_NAME);
     innovationService = new InnovationService(process.env.DB_TESTS_NAME);
-    innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
-    organisationService = new OrganisationService(process.env.DB_TESTS_NAME);
     userService = new UserService(process.env.DB_TESTS_NAME);
 
-    const innovator = new User();
-    innovator.id = dummy.innovatorId;
-    innovatorUser = await innovatorService.create(innovator);
-
-    let organisationObj = Organisation.new({
-      name: "my inno org",
-      type: OrganisationType.INNOVATOR,
-    });
-    const innovatorOrganisation = await organisationService.create(
-      organisationObj
+    innovatorUser = await fixtures.createInnovatorUser();
+    const innovatorOrganisation = await fixtures.createOrganisation(
+      OrganisationType.INNOVATOR
     );
-    await organisationService.addUserToOrganisation(
+    await fixtures.addUserToOrganisation(
       innovatorUser,
       innovatorOrganisation,
       InnovatorOrganisationRole.INNOVATOR_OWNER
     );
 
-    const qualAccessor = new User();
-    qualAccessor.id = dummy.accessorId;
-    qualAccessorUser = await accessorService.create(qualAccessor);
-
-    organisationObj = Organisation.new({
-      name: "my org name",
-      type: OrganisationType.ACCESSOR,
-    });
-    accessorOrganisation = await organisationService.create(organisationObj);
-    organisationAccessorUser = await organisationService.addUserToOrganisation(
+    qualAccessorUser = await fixtures.createAccessorUser();
+    accessorOrganisation = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
+    );
+    organisationQAccessorUser = await fixtures.addUserToOrganisation(
       qualAccessorUser,
       accessorOrganisation,
       AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    );
+
+    const organisationUnit = await fixtures.createOrganisationUnit(
+      accessorOrganisation
+    );
+    await fixtures.addOrganisationUserToOrganisationUnit(
+      organisationQAccessorUser,
+      organisationUnit
     );
   });
 
@@ -92,8 +74,9 @@ describe("Innovator Service Suite", () => {
       .createQueryBuilder()
       .delete();
 
-    await query.from(OrganisationUser).execute();
+    await query.from(OrganisationUnitUser).execute();
     await query.from(OrganisationUnit).execute();
+    await query.from(OrganisationUser).execute();
     await query.from(Organisation).execute();
     await query.from(User).execute();
     // closeTestsConnection();
@@ -138,19 +121,12 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should find all innovations by innovator Id when findAllByInnovator()", async () => {
-    const innovation: Innovation = Innovation.new({
-      owner: innovatorUser,
-      surveyId: "abc",
-      name: "My Innovation",
-      description: "My Description",
-      countryName: "UK",
-    });
-
-    await innovationService.create(innovation);
+    const innovation = fixtures.generateInnovation({ owner: innovatorUser });
+    await fixtures.saveInnovations(innovation);
 
     const result = await innovationService.findAllByInnovator(
-      dummy.innovatorId,
-      { name: "My Innovation" }
+      innovatorUser.id,
+      { name: innovation.name }
     );
 
     expect(result.length).toBeGreaterThan(0);
@@ -169,28 +145,20 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should find all innovations by qualifying accessor when findAllByAccessor()", async () => {
-    let innovation: Innovation = Innovation.new({
+    const innovationA = fixtures.generateInnovation({
       owner: innovatorUser,
-      surveyId: "abc",
-      name: "My Innovation",
-      description: "My Description",
-      countryName: "UK",
       organisationShares: [{ id: accessorOrganisation.id }],
     });
-    await innovationService.create(innovation);
 
-    innovation = Innovation.new({
+    const innovationB = fixtures.generateInnovation({
       owner: innovatorUser,
-      surveyId: "newAbc",
-      name: "Innovation without sharing",
-      description: "My Description",
-      countryName: "UK",
     });
-    await innovationService.create(innovation);
+
+    await fixtures.saveInnovations(innovationA, innovationB);
 
     const result = await innovationService.findAllByAccessor(
       qualAccessorUser.id,
-      [organisationAccessorUser]
+      [organisationQAccessorUser]
     );
 
     expect(result[0].length).toEqual(1);
@@ -198,24 +166,24 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should find and paginate innovations by qualifying accessor when findAllByAccessor()", async () => {
-    let tmpInnovation;
+    const innovations = [];
     for (let i = 0; i < 20; i++) {
-      tmpInnovation = Innovation.new({
+      innovations[i] = fixtures.generateInnovation({
         owner: innovatorUser,
         surveyId: `survey_${i}`,
         name: `innovation_${i}`,
         description: `description_${i}`,
-        countryName: "UK",
         organisationShares: [{ id: accessorOrganisation.id }],
       });
-      await innovationService.create(tmpInnovation);
     }
+
+    await fixtures.saveInnovations(...innovations);
 
     const count = 10;
     const page = 2;
     const result = await innovationService.findAllByAccessor(
       qualAccessorUser.id,
-      [organisationAccessorUser],
+      [organisationQAccessorUser],
       {
         take: count,
         skip: (page - 1) * count,
@@ -265,19 +233,12 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should find the innovation by innovator Id and innovation Id when getInnovationOverview()", async () => {
-    const innovationObj: Innovation = Innovation.new({
-      owner: innovatorUser,
-      surveyId: "abc",
-      name: "My Innovation",
-      description: "My Description",
-      countryName: "UK",
-    });
-
-    const innovation = await innovationService.create(innovationObj);
+    const innovationObj = fixtures.generateInnovation({ owner: innovatorUser });
+    const innovation = await fixtures.saveInnovations(innovationObj);
 
     const result = await innovationService.getInnovationOverview(
-      innovation.id,
-      dummy.innovatorId
+      innovation[0].id,
+      innovatorUser.id
     );
 
     expect(result).toBeDefined();
@@ -304,6 +265,43 @@ describe("Innovator Service Suite", () => {
     }
 
     expect(err).toBeDefined();
+  });
+
+  it("should find the innovation with QUALIFYING_ACCESSOR and return an innovation summary", async () => {
+    const fakeInnovations = await fixtures.saveInnovations(
+      fixtures.generateInnovation({
+        owner: innovatorUser,
+        status: InnovationStatus.IN_PROGRESS,
+        organisationShares: [{ id: accessorOrganisation.id }],
+      })
+    );
+    const qAccessorOrganisations = await fixtures.findUserOrganisations(
+      qualAccessorUser.id
+    );
+
+    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      displayName: ":display_name",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "test_user@example.com",
+        },
+      ],
+      mobilePhone: "+351960000000",
+    });
+    spyOn(userService, "getProfile").and.returnValue({
+      id: fakeInnovations[0].id,
+      displayName: ":displayName",
+    });
+
+    const result = await innovationService.getAccessorInnovationSummary(
+      fakeInnovations[0].id,
+      qualAccessorUser.id,
+      qAccessorOrganisations
+    );
+
+    expect(result).toBeDefined();
   });
 
   it("should find the innovation with NEEDS_ASSESSMENT and return an assessment innovation summary", async () => {
@@ -382,21 +380,20 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should submit the innovation by innovator Id and innovation Id", async () => {
-    const innovationObj: Innovation = Innovation.new({
+    const innovationObj = fixtures.generateInnovation({
       owner: innovatorUser,
       surveyId: "abc",
-      name: "My Innovation",
-      description: "My Description",
-      countryName: "UK",
-      status: InnovationStatus.CREATED,
     });
-    const innovation = await innovationService.create(innovationObj);
+    const innovations = await fixtures.saveInnovations(innovationObj);
 
-    await innovationService.submitInnovation(innovation.id, innovatorUser.id);
+    await innovationService.submitInnovation(
+      innovations[0].id,
+      innovatorUser.id
+    );
 
     const result = await innovationService.getInnovationOverview(
-      innovation.id,
-      dummy.innovatorId
+      innovations[0].id,
+      innovatorUser.id
     );
 
     expect(result).toBeDefined();
@@ -425,23 +422,8 @@ describe("Innovator Service Suite", () => {
     expect(err).toBeDefined();
   });
 
-  it("should update innovation support status", async () => {
-    // arrange
-    const support = await fixtures.createInnovationSupportStatus();
-    const expected = InnovationSupportStatus.FURTHER_INFO_REQUIRED;
-
-    // act
-    const actual = await innovationService.updateSupportStatus(
-      support.id,
-      expected
-    );
-
-    // assert
-    expect(actual.status).toBe(expected);
-  });
-
   it("should not list ASSESSMENT innovations with status CREATED", async () => {
-    const innovator = await fixtures.createInnovator();
+    const innovator = await fixtures.createInnovatorUser();
     await fixtures.saveInnovations(
       fixtures.generateInnovation({ owner: innovator }),
       fixtures.generateInnovation({ owner: innovator })
@@ -465,7 +447,7 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should list ASSESSMENT innovations with status NEEDS_ASSESSMENT and without supports and assessments", async () => {
-    const innovator = await fixtures.createInnovator();
+    const innovator = await fixtures.createInnovatorUser();
     await fixtures.saveInnovations(
       fixtures.generateInnovation({
         owner: innovator,

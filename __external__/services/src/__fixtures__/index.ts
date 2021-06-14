@@ -1,21 +1,32 @@
 import {
+  AccessorOrganisationRole,
   Innovation,
+  InnovationSection,
+  InnovationSectionCatalogue,
   InnovationSupport,
   InnovationSupportStatus,
   Organisation,
   OrganisationType,
   OrganisationUnit,
+  OrganisationUnitUser,
+  OrganisationUser,
   User,
   UserType,
 } from "@domain/index";
+import { AccessorService } from "@services/services/Accessor.service";
 import { InnovationService } from "@services/services/Innovation.service";
 import { InnovationAssessmentService } from "@services/services/InnovationAssessment.service";
+import { InnovationSectionService } from "@services/services/InnovationSection.service";
+import { InnovationSupportService } from "@services/services/InnovationSupport.service";
 import { InnovatorService } from "@services/services/Innovator.service";
 import { OrganisationService } from "@services/services/Organisation.service";
 import { UserService } from "@services/services/User.service";
 import * as faker from "faker";
 import * as uuid from "uuid";
 
+// ****************************
+// Innovation
+// ****************************
 export const generateInnovation = (args?) => {
   return Innovation.new({
     surveyId: uuid.v4(),
@@ -37,7 +48,51 @@ export const saveInnovations = async (...innovations: Innovation[]) => {
   return result;
 };
 
-export const createInnovator = async () => {
+export const createInnovationWithSupportStatus = async () => {
+  const innovationService = new InnovationService(process.env.DB_TESTS_NAME);
+
+  const innovator = await createInnovatorUser();
+  const qAccessor = await createAccessorUser();
+
+  const organisation = await createOrganisation(OrganisationType.ACCESSOR);
+  const unit = await addUnitToOrganisation(organisation);
+  const innovationObj = generateInnovation();
+
+  innovationObj.owner = innovator;
+  const innovation = await innovationService.create(innovationObj);
+
+  const organisationUser = await addUserToOrganisation(
+    qAccessor,
+    organisation,
+    AccessorOrganisationRole.QUALIFYING_ACCESSOR
+  );
+  const organisationUnitUser = await addOrganisationUserToOrganisationUnit(
+    organisationUser,
+    unit
+  );
+
+  await createSupportInInnovation(
+    innovation,
+    qAccessor,
+    organisationUser,
+    organisationUnitUser
+  );
+
+  return innovation;
+};
+
+// ****************************
+// USER CREATION
+// ****************************
+export const createAccessorUser = async () => {
+  const qAccessor = new User();
+  const accessorService = new AccessorService(process.env.DB_TESTS_NAME);
+  qAccessor.type = UserType.ACCESSOR;
+  qAccessor.id = uuid.v4();
+  return await accessorService.create(qAccessor);
+};
+
+export const createInnovatorUser = async () => {
   const innovator = new User();
   const innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
   innovator.id = uuid.v4();
@@ -52,6 +107,9 @@ export const createAssessmentUser = async () => {
   return await userService.create(usr);
 };
 
+// ****************************
+// Organisation
+// ****************************
 export const createOrganisation = async (
   type: OrganisationType
 ): Promise<Organisation> => {
@@ -66,13 +124,13 @@ export const createOrganisation = async (
   return await organisationService.create(organisationObj);
 };
 
-export const createOrganisationWithUnit = async (
-  type: OrganisationType
+export const createOrganisationUnit = async (
+  organisation: Organisation
 ): Promise<OrganisationUnit> => {
   const organisationService = new OrganisationService(
     process.env.DB_TESTS_NAME
   );
-  const organisation = await createOrganisation(type);
+
   const unitObj = OrganisationUnit.new({
     name: faker.company.companyName(),
     organisation,
@@ -96,39 +154,96 @@ export const addUnitToOrganisation = async (
   return await organisationService.addOrganisationUnit(unitObj);
 };
 
-export const createInnovationSupportStatus = async () => {
-  const innovationService = new InnovationService(process.env.DB_TESTS_NAME);
-  const innovator = await createInnovator();
-  const organisation = await createOrganisation(OrganisationType.ACCESSOR);
-  const unit = await addUnitToOrganisation(organisation);
-  const innovationObj = generateInnovation();
+export const addUserToOrganisation = async (
+  user: User,
+  organisation: Organisation,
+  role: string
+): Promise<OrganisationUser> => {
+  const organisationService = new OrganisationService(
+    process.env.DB_TESTS_NAME
+  );
 
-  innovationObj.owner = innovator;
-  const innovation = await innovationService.create(innovationObj);
-
-  const supportObj = InnovationSupport.new({
-    status: InnovationSupportStatus.ENGAGING,
-    innovation,
-    organisationUnit: unit,
-  });
-
-  return await innovationService.addSupport(supportObj);
+  return await organisationService.addUserToOrganisation(
+    user,
+    organisation,
+    role
+  );
 };
 
-export const addSupportsToInnovation = async (
-  innovation: Innovation,
+export const addOrganisationUserToOrganisationUnit = async (
+  organisationUser: OrganisationUser,
   organisationUnit: OrganisationUnit
-) => {
-  const innovationService = new InnovationService(process.env.DB_TESTS_NAME);
-  const supportObj = InnovationSupport.new({
-    status: InnovationSupportStatus.ENGAGING,
-    innovation,
-    organisationUnit,
-  });
+): Promise<OrganisationUnitUser> => {
+  const organisationService = new OrganisationService(
+    process.env.DB_TESTS_NAME
+  );
 
-  return await innovationService.addSupport(supportObj);
+  return await organisationService.addUserToOrganisationUnit(
+    organisationUser,
+    organisationUnit
+  );
 };
 
+export const findUserOrganisations = async (
+  userId: string
+): Promise<OrganisationUser[]> => {
+  const organisationService = new OrganisationService(
+    process.env.DB_TESTS_NAME
+  );
+
+  return await organisationService.findUserOrganisations(userId);
+};
+
+// ****************************
+// Innovation Section
+// ****************************
+export const createSectionInInnovation = async (
+  innovation: Innovation,
+  innovator: User,
+  section: InnovationSectionCatalogue,
+  data: any
+) => {
+  const innovationSectionService = new InnovationSectionService(
+    process.env.DB_TESTS_NAME
+  );
+
+  return await innovationSectionService.saveSection(
+    innovation.id,
+    innovator.id,
+    section,
+    data
+  );
+};
+
+// ****************************
+// Innovation Support
+// ****************************
+export const createSupportInInnovation = async (
+  innovation: Innovation,
+  qAccessor: User,
+  organisationUser: OrganisationUser,
+  organisationUnitUser: OrganisationUnitUser
+): Promise<InnovationSupport> => {
+  const innovationSupportService = new InnovationSupportService(
+    process.env.DB_TESTS_NAME
+  );
+
+  const supportObj = InnovationSupport.new({
+    status: InnovationSupportStatus.ENGAGING,
+    accessors: [organisationUnitUser.id],
+  });
+
+  return await innovationSupportService.create(
+    qAccessor.id,
+    innovation.id,
+    supportObj,
+    [organisationUser]
+  );
+};
+
+// ****************************
+// Assessment
+// ****************************
 export const createAssessment = async (
   innovator: User,
   innovation: Innovation,
@@ -157,6 +272,7 @@ export const createAssessment = async (
     assessmentObj
   );
 };
+
 export const saveInnovationsWithAssessment = async (
   ...innovations: Innovation[]
 ) => {
@@ -164,20 +280,14 @@ export const saveInnovationsWithAssessment = async (
 
   const result = [];
 
-  const innovator = await createInnovator();
+  const innovator = await createInnovatorUser();
   const assessmentUser = await createAssessmentUser();
 
   for (let index = 0; index < innovations.length; index++) {
     const element = innovations[index];
     element.owner = innovator;
 
-    const organisation = await createOrganisation(OrganisationType.ACCESSOR);
-
-    const unit = await addUnitToOrganisation(organisation);
-
     const innovation = await innovationService.create(element);
-
-    const supports = await addSupportsToInnovation(innovation, unit);
 
     const assessment = await createAssessment(
       innovator,
@@ -188,7 +298,7 @@ export const saveInnovationsWithAssessment = async (
     result.push({
       ...innovation,
       assessments: [assessment],
-      innovationSupports: [supports],
+      innovationSupports: [],
     });
   }
 

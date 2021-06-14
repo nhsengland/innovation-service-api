@@ -7,10 +7,10 @@ export {
   Services,
 } from "../src/services";
 export { AccessorService } from "../src/services/Accessor.service";
-export { ActionService } from "../src/services/Action.service";
 export { CommentService } from "../src/services/Comment.service";
 export { FileService } from "../src/services/File.service";
 export { InnovatorService } from "../src/services/Innovator.service";
+export { InnovationActionService } from "../src/services/InnovationAction.service";
 export { InnovationAssessmentService } from "../src/services/InnovationAssessment.service";
 export { InnovationService } from "../src/services/Innovation.service";
 export { InnovationEvidenceService } from "../src/services/InnovationEvidence.service";

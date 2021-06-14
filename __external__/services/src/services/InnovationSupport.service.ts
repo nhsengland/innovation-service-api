@@ -133,8 +133,6 @@ export class InnovationSupportService {
         organisationUnitUsers: support.accessors?.map((id) => ({ id })),
       };
 
-      console.log(innovationSupport);
-
       return await transactionManager.save(
         InnovationSupport,
         innovationSupport
@@ -194,6 +192,8 @@ export class InnovationSupportService {
           user: { id: userId },
           innovation: innovation,
           message: support.comment,
+          createdBy: userId,
+          updatedBy: userId,
         });
         await transactionManager.save(Comment, comment);
       }

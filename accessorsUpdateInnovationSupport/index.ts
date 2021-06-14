@@ -12,7 +12,7 @@ import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
 
-class InnovatorsCreateInnovationEvidence {
+class InnovatorsUpdateInnovationSupport {
   @AppInsights()
   @SQLConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
@@ -53,4 +53,4 @@ class InnovatorsCreateInnovationEvidence {
   }
 }
 
-export default InnovatorsCreateInnovationEvidence.httpTrigger;
+export default InnovatorsUpdateInnovationSupport.httpTrigger;

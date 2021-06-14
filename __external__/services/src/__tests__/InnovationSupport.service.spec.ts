@@ -11,26 +11,19 @@ import {
   OrganisationUser,
   User,
 } from "@domain/index";
-import { AccessorService } from "@services/services/Accessor.service";
-import { OrganisationService } from "@services/services/Organisation.service";
 import { UserService } from "@services/services/User.service";
 import { getConnection } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
-import { InnovationService } from "../services/Innovation.service";
 import { InnovationSupportService } from "../services/InnovationSupport.service";
-import { InnovatorService } from "../services/Innovator.service";
-
-const dummy = {
-  qAccessorId: "qAccessorId",
-  accessorId: "accessorId",
-  innovatorId: "innovatorId",
-};
+import * as fixtures from "../__fixtures__";
 
 describe("Innovation Support Suite", () => {
   let supportService: InnovationSupportService;
-  let userService: UserService;
   let innovation: Innovation;
+  let innovatorUser: User;
+  let accessorUser: User;
+  let qualAccessorUser: User;
   let organisationQuaAccessorUnitUser: OrganisationUnitUser;
   let organisationAccessorUnitUser: OrganisationUnitUser;
   let qAccessorUserOrganisations: OrganisationUser[];
@@ -38,87 +31,60 @@ describe("Innovation Support Suite", () => {
 
   beforeAll(async () => {
     // await setupTestsConnection();
-    const accessorService = new AccessorService(process.env.DB_TESTS_NAME);
-    const innovationService = new InnovationService(process.env.DB_TESTS_NAME);
-    const innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
-    const organisationService = new OrganisationService(
-      process.env.DB_TESTS_NAME
-    );
-
     supportService = new InnovationSupportService(process.env.DB_TESTS_NAME);
-    userService = new UserService(process.env.DB_TESTS_NAME);
 
-    const innovator = new User();
-    innovator.id = dummy.innovatorId;
-    const innovatorUser = await innovatorService.create(innovator);
+    innovatorUser = await fixtures.createInnovatorUser();
+    qualAccessorUser = await fixtures.createAccessorUser();
+    accessorUser = await fixtures.createAccessorUser();
 
-    const qualAccessor = new User();
-    qualAccessor.id = dummy.qAccessorId;
-    const qualAccessorUser = await accessorService.create(qualAccessor);
-
-    const accessor = new User();
-    accessor.id = dummy.accessorId;
-    const accessorUser = await accessorService.create(accessor);
-
-    const organisationObj = Organisation.new({
-      name: "my org name",
-      type: OrganisationType.ACCESSOR,
-    });
-    const accessorOrganisation = await organisationService.create(
-      organisationObj
+    const accessorOrganisation = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
     );
-    const organisationQuaAccessorUser = await organisationService.addUserToOrganisation(
+    const organisationQuaAccessorUser = await fixtures.addUserToOrganisation(
       qualAccessorUser,
       accessorOrganisation,
       AccessorOrganisationRole.QUALIFYING_ACCESSOR
     );
-
-    const organisationAccessorUser = await organisationService.addUserToOrganisation(
+    const organisationAccessorUser = await fixtures.addUserToOrganisation(
       accessorUser,
       accessorOrganisation,
       AccessorOrganisationRole.ACCESSOR
     );
 
-    const orgUnit = OrganisationUnit.new({
-      name: "org Unit",
-      organisation: accessorOrganisation,
-    });
-    const organisationUnit = await organisationService.addOrganisationUnit(
-      orgUnit
+    const organisationUnit = await fixtures.createOrganisationUnit(
+      accessorOrganisation
     );
-    organisationQuaAccessorUnitUser = await organisationService.addUserToOrganisationUnit(
+    organisationQuaAccessorUnitUser = await fixtures.addOrganisationUserToOrganisationUnit(
       organisationQuaAccessorUser,
       organisationUnit
     );
-    organisationAccessorUnitUser = await organisationService.addUserToOrganisationUnit(
+    organisationAccessorUnitUser = await fixtures.addOrganisationUserToOrganisationUnit(
       organisationAccessorUser,
       organisationUnit
     );
 
-    const innovationObj = Innovation.new({
+    const innovationObj = fixtures.generateInnovation({
       owner: innovatorUser,
       surveyId: "abc",
-      name: "My Innovation",
-      description: "My Description",
-      countryName: "UK",
       organisationShares: [{ id: accessorOrganisation.id }],
     });
+    const innovations = await fixtures.saveInnovations(innovationObj);
+    innovation = innovations[0];
 
-    innovation = await innovationService.create(innovationObj);
     spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
     spyOn(helpers, "getUserFromB2C").and.returnValue({
       displayName: "Q Accessor A",
     });
     spyOn(helpers, "getUsersFromB2C").and.returnValues([
-      { id: dummy.accessorId, displayName: ":ACCESSOR" },
-      { id: dummy.qAccessorId, displayName: ":QUALIFYING_ACCESSOR" },
+      { id: accessorUser.id, displayName: ":ACCESSOR" },
+      { id: qualAccessorUser.id, displayName: ":QUALIFYING_ACCESSOR" },
     ]);
 
-    qAccessorUserOrganisations = await organisationService.findUserOrganisations(
-      qualAccessor.id
+    qAccessorUserOrganisations = await fixtures.findUserOrganisations(
+      qualAccessorUser.id
     );
-    accessorUserOrganisations = await organisationService.findUserOrganisations(
-      accessor.id
+    accessorUserOrganisations = await fixtures.findUserOrganisations(
+      accessorUser.id
     );
   });
 
@@ -154,7 +120,7 @@ describe("Innovation Support Suite", () => {
     };
 
     const item = await supportService.create(
-      dummy.qAccessorId,
+      qualAccessorUser.id,
       innovation.id,
       supportObj,
       qAccessorUserOrganisations
@@ -171,7 +137,7 @@ describe("Innovation Support Suite", () => {
     };
 
     const support = await supportService.create(
-      dummy.qAccessorId,
+      qualAccessorUser.id,
       innovation.id,
       supportObj,
       qAccessorUserOrganisations
@@ -179,7 +145,7 @@ describe("Innovation Support Suite", () => {
 
     const item = await supportService.find(
       support.id,
-      dummy.innovatorId,
+      innovatorUser.id,
       innovation.id,
       null
     );
@@ -196,7 +162,7 @@ describe("Innovation Support Suite", () => {
     };
 
     const support = await supportService.create(
-      dummy.qAccessorId,
+      qualAccessorUser.id,
       innovation.id,
       supportObj,
       qAccessorUserOrganisations
@@ -204,7 +170,7 @@ describe("Innovation Support Suite", () => {
 
     const item = await supportService.find(
       support.id,
-      dummy.qAccessorId,
+      qualAccessorUser.id,
       innovation.id,
       qAccessorUserOrganisations
     );
@@ -221,7 +187,7 @@ describe("Innovation Support Suite", () => {
     };
 
     const support = await supportService.create(
-      dummy.qAccessorId,
+      qualAccessorUser.id,
       innovation.id,
       supportObj,
       qAccessorUserOrganisations
@@ -229,7 +195,7 @@ describe("Innovation Support Suite", () => {
 
     const item = await supportService.find(
       support.id,
-      dummy.accessorId,
+      accessorUser.id,
       innovation.id,
       accessorUserOrganisations
     );
@@ -247,7 +213,7 @@ describe("Innovation Support Suite", () => {
     };
 
     const support = await supportService.create(
-      dummy.qAccessorId,
+      qualAccessorUser.id,
       innovation.id,
       supportObj,
       qAccessorUserOrganisations
@@ -263,7 +229,7 @@ describe("Innovation Support Suite", () => {
     };
     await supportService.update(
       support.id,
-      dummy.qAccessorId,
+      qualAccessorUser.id,
       innovation.id,
       supportObj,
       qAccessorUserOrganisations
@@ -271,7 +237,7 @@ describe("Innovation Support Suite", () => {
 
     const item = await supportService.find(
       support.id,
-      dummy.innovatorId,
+      innovatorUser.id,
       innovation.id
     );
 
@@ -288,7 +254,7 @@ describe("Innovation Support Suite", () => {
     };
 
     const support = await supportService.create(
-      dummy.qAccessorId,
+      qualAccessorUser.id,
       innovation.id,
       supportObj,
       qAccessorUserOrganisations
@@ -304,7 +270,7 @@ describe("Innovation Support Suite", () => {
     };
     await supportService.update(
       support.id,
-      dummy.qAccessorId,
+      qualAccessorUser.id,
       innovation.id,
       supportObj,
       qAccessorUserOrganisations
@@ -312,7 +278,7 @@ describe("Innovation Support Suite", () => {
 
     const item = await supportService.find(
       support.id,
-      dummy.innovatorId,
+      innovatorUser.id,
       innovation.id
     );
 
