@@ -19,6 +19,9 @@ export class InnovationAction extends Base {
   @Column()
   description: string;
 
+  @Column({ name: "display_id", length: 5 })
+  displayId: string;
+
   @Column({
     type: "simple-enum",
     enum: InnovationActionStatus,

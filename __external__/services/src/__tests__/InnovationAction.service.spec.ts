@@ -96,6 +96,12 @@ describe("Innovation Action Suite", () => {
     spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
     spyOn(helpers, "getUserFromB2C").and.returnValue({
       displayName: "Q Accessor A",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "test_user@example.com",
+        },
+      ],
     });
     spyOn(helpers, "getUsersFromB2C").and.returnValues([
       { id: accessorUser.id, displayName: ":ACCESSOR" },
@@ -163,6 +169,30 @@ describe("Innovation Action Suite", () => {
     expect(item.status).toEqual(InnovationActionStatus.REQUESTED);
   });
 
+  it("should throw when create with invalid params", async () => {
+    let err;
+    try {
+      await actionService.create(null, null, null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err.message).toContain("Invalid parameters.");
+  });
+
+  it("should throw when create without user organisations", async () => {
+    let err;
+    try {
+      await actionService.create("a", "a", {}, []);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err.message).toContain("Invalid user. User has no organisations.");
+  });
+
   it("should update an action by accessor", async () => {
     const actionCreateObj = {
       description: "missing good descriptions",
@@ -190,5 +220,187 @@ describe("Innovation Action Suite", () => {
 
     expect(item).toBeDefined();
     expect(item.status).toEqual(InnovationActionStatus.DELETED);
+  });
+
+  it("should throw when update with invalid params", async () => {
+    let err;
+    try {
+      await actionService.update(null, null, null, null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err.message).toContain("Invalid parameters.");
+  });
+
+  it("should throw when update without user organisations", async () => {
+    let err;
+    try {
+      await actionService.update("a", "a", "a", {}, []);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err.message).toContain("Invalid user. User has no organisations.");
+  });
+
+  it("should find all innovation actions if Innovator", async () => {
+    await actionService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+      },
+      qAccessorUserOrganisations
+    );
+
+    await actionService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.MARKET_RESEARCH,
+      },
+      qAccessorUserOrganisations
+    );
+
+    const item = await actionService.findAllByInnovation(
+      innovatorUser.id,
+      innovation.id,
+      null
+    );
+
+    expect(item).toBeDefined();
+    expect(item.length).toEqual(2);
+  });
+
+  it("should find all innovation actions if Accessor in a support unit", async () => {
+    await actionService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+      },
+      qAccessorUserOrganisations
+    );
+
+    await actionService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.MARKET_RESEARCH,
+      },
+      qAccessorUserOrganisations
+    );
+
+    const item = await actionService.findAllByInnovation(
+      accessorUser.id,
+      innovation.id,
+      accessorUserOrganisations
+    );
+
+    expect(item).toBeDefined();
+    expect(item.length).toEqual(2);
+  });
+
+  it("should find all innovation actions if Q. Accessor in a shared organisation", async () => {
+    await actionService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+      },
+      qAccessorUserOrganisations
+    );
+
+    await actionService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.MARKET_RESEARCH,
+      },
+      qAccessorUserOrganisations
+    );
+
+    const item = await actionService.findAllByInnovation(
+      qualAccessorUser.id,
+      innovation.id,
+      qAccessorUserOrganisations
+    );
+
+    expect(item).toBeDefined();
+    expect(item.length).toEqual(2);
+  });
+
+  it("should find one innovation action if Innovator by ID", async () => {
+    const action = await actionService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+      },
+      qAccessorUserOrganisations
+    );
+
+    const item = await actionService.find(
+      action.id,
+      innovatorUser.id,
+      innovation.id
+    );
+
+    expect(item).toBeDefined();
+    expect(item.id).toEqual(action.id);
+  });
+
+  it("should find one innovation action if Accessor in a support unit by ID", async () => {
+    const action = await actionService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+      },
+      qAccessorUserOrganisations
+    );
+
+    const item = await actionService.find(
+      action.id,
+      accessorUser.id,
+      innovation.id,
+      accessorUserOrganisations
+    );
+
+    expect(item).toBeDefined();
+    expect(item.id).toEqual(action.id);
+  });
+
+  it("should find one innovation action if Q. Accessor in a shared organisation by ID", async () => {
+    const action = await actionService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+      },
+      qAccessorUserOrganisations
+    );
+
+    const item = await actionService.find(
+      action.id,
+      qualAccessorUser.id,
+      innovation.id,
+      qAccessorUserOrganisations
+    );
+
+    expect(item).toBeDefined();
+    expect(item.id).toEqual(action.id);
   });
 });

@@ -5,15 +5,24 @@ import {
   InnovationSupport,
   OrganisationUser,
 } from "@domain/index";
-import { Connection, getConnection, getRepository, Repository } from "typeorm";
+import { InnovationActionModel } from "@services/models/InnovationActionModel";
+import {
+  Connection,
+  FindManyOptions,
+  getConnection,
+  getRepository,
+  Repository,
+} from "typeorm";
 import { InnovationService } from "./Innovation.service";
 import { InnovationSectionService } from "./InnovationSection.service";
+import { UserService } from "./User.service";
 
 export class InnovationActionService {
   private readonly connection: Connection;
   private readonly actionRepo: Repository<InnovationAction>;
   private readonly innovationService: InnovationService;
   private readonly innovationSectionService: InnovationSectionService;
+  private readonly userService: UserService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -22,6 +31,7 @@ export class InnovationActionService {
     this.innovationSectionService = new InnovationSectionService(
       connectionName
     );
+    this.userService = new UserService(connectionName);
   }
 
   async create(
@@ -30,7 +40,7 @@ export class InnovationActionService {
     action: any,
     userOrganisations: OrganisationUser[]
   ) {
-    if (!userId || !action) {
+    if (!userId || !action || !innovationId) {
       throw new Error("Invalid parameters.");
     }
 
@@ -169,12 +179,97 @@ export class InnovationActionService {
     });
   }
 
+  async find(
+    id: string,
+    userId: string,
+    innovationId: string,
+    userOrganisations?: OrganisationUser[]
+  ): Promise<InnovationActionModel> {
+    if (!userId || !innovationId) {
+      throw new Error("Invalid parameters.");
+    }
+
+    const innovation = await this.innovationService.findInnovation(
+      innovationId,
+      userId,
+      null,
+      userOrganisations
+    );
+    if (!innovation) {
+      throw new Error("Invalid parameters. Innovation not found for the user.");
+    }
+
+    const innovationAction = await this.findOne(id);
+    if (!innovationAction) {
+      throw new Error("Invalid parameters. Innovation action not found.");
+    }
+
+    const b2cCreatorUser = await this.userService.getProfile(
+      innovationAction.createdBy
+    );
+    const organisationUnit =
+      innovationAction.innovationSupport.organisationUnit;
+
+    return {
+      id: innovationAction.id,
+      displayId: innovationAction.displayId,
+      status: innovationAction.status,
+      description: innovationAction.description,
+      section: innovationAction.innovationSection.section,
+      createdAt: innovationAction.createdAt,
+      updatedAt: innovationAction.updatedAt,
+      createdBy: {
+        id: innovationAction.createdBy,
+        name: b2cCreatorUser.displayName,
+        organisationName: organisationUnit.organisation.name,
+        organisationUnitName: organisationUnit.name,
+      },
+    };
+  }
+
+  async findAllByInnovation(
+    userId: string,
+    innovationId: string,
+    userOrganisations?: OrganisationUser[]
+  ): Promise<InnovationActionModel[]> {
+    if (!userId || !innovationId) {
+      throw new Error("Invalid parameters.");
+    }
+
+    const innovation = await this.innovationService.findInnovation(
+      innovationId,
+      userId,
+      null,
+      userOrganisations
+    );
+    if (!innovation) {
+      throw new Error("Invalid parameters. Innovation not found for the user.");
+    }
+
+    const filterOptions: FindManyOptions<InnovationAction> = {
+      relations: ["innovationSection"],
+      where: `innovation_id = '${innovation.id}'`,
+    };
+    const innovationActions = await this.actionRepo.find(filterOptions);
+
+    return innovationActions.map((ia: InnovationAction) => ({
+      id: ia.id,
+      displayId: ia.displayId,
+      status: ia.status,
+      description: ia.description,
+      section: ia.innovationSection.section,
+      createdAt: ia.createdAt,
+      updatedAt: ia.updatedAt,
+    }));
+  }
+
   private async findOne(id: string): Promise<InnovationAction> {
     const filterOptions = {
       relations: [
         "innovationSection",
         "innovationSupport",
         "innovationSupport.organisationUnit",
+        "innovationSupport.organisationUnit.organisation",
       ],
     };
 
