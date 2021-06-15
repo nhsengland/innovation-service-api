@@ -13,9 +13,11 @@ import {
   OrganisationUser,
   User,
   UserType,
+  InnovationAction,
 } from "@domain/index";
 import { AccessorService } from "@services/services/Accessor.service";
 import { InnovationService } from "@services/services/Innovation.service";
+import { InnovationActionService } from "@services/services/InnovationAction.service";
 import { InnovationAssessmentService } from "@services/services/InnovationAssessment.service";
 import { InnovationSectionService } from "@services/services/InnovationSection.service";
 import { InnovationSupportService } from "@services/services/InnovationSupport.service";
@@ -36,6 +38,12 @@ export const generateInnovation = (args?) => {
     countryName: faker.address.countryCode(),
     ...args,
   });
+};
+
+export const saveInnovation = async (innovation: Innovation) => {
+  const innovationService = new InnovationService(process.env.DB_TESTS_NAME);
+
+  return await innovationService.create(innovation);
 };
 
 export const saveInnovations = async (...innovations: Innovation[]) => {
@@ -238,6 +246,31 @@ export const createSupportInInnovation = async (
     qAccessor.id,
     innovation.id,
     supportObj,
+    [organisationUser]
+  );
+};
+
+// ****************************
+// Innovation Action
+// ****************************
+export const createInnovationAction = async (
+  innovation: Innovation,
+  accessor: User,
+  organisationUser: OrganisationUser
+): Promise<InnovationAction> => {
+  const innovationActionService = new InnovationActionService(
+    process.env.DB_TESTS_NAME
+  );
+
+  const actionObj = {
+    section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+    description: faker.lorem.sentence(),
+  };
+
+  return await innovationActionService.create(
+    accessor.id,
+    innovation.id,
+    actionObj,
     [organisationUser]
   );
 };

@@ -5,6 +5,7 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
 } from "typeorm";
@@ -13,6 +14,7 @@ import { Innovation } from "./Innovation.entity";
 import { OrganisationUnit } from "../organisation/OrganisationUnit.entity";
 import { OrganisationUnitUser } from "../organisation/OrganisationUnitUser.entity";
 import { InnovationSupportStatus } from "../../enums/innovation.enums";
+import { InnovationAction } from "./InnovationAction.entity";
 
 @Entity("innovation_support")
 @Unique("uc_inno_support_org_unit_inno_idx", ["organisationUnit", "innovation"])
@@ -56,6 +58,11 @@ export class InnovationSupport extends Base {
     },
   })
   organisationUnitUsers: OrganisationUnitUser[];
+
+  @OneToMany(() => InnovationAction, (record) => record.innovationSupport, {
+    lazy: true,
+  })
+  actions: InnovationAction[];
 
   //static constructor
   static new(data) {

@@ -1,5 +1,7 @@
 import {
   Innovation,
+  InnovationAction,
+  InnovationActionStatus,
   InnovationFile,
   InnovationSection,
   InnovationSectionCatalogue,
@@ -8,7 +10,7 @@ import {
 } from "@domain/index";
 import * as sectionBodySchema from "@services/config/innovation-section-body.config.json";
 import * as sectionResponseSchema from "@services/config/innovation-section-response.config.json";
-import { FindOneOptions } from "typeorm";
+import { Connection, FindOneOptions, getConnection } from "typeorm";
 import { InnovationSectionModel } from "../models/InnovationSectionModel";
 import { InnovationSectionResult } from "../models/InnovationSectionResult";
 import { BaseService } from "./Base.service";
@@ -16,11 +18,13 @@ import { FileService } from "./File.service";
 import { InnovationService } from "./Innovation.service";
 
 export class InnovationSectionService extends BaseService<InnovationSection> {
+  private readonly connection: Connection;
   private readonly fileService: FileService;
   private readonly innovationService: InnovationService;
 
   constructor(connectionName?: string) {
     super(InnovationSection, connectionName);
+    this.connection = getConnection(connectionName);
     this.fileService = new FileService(connectionName);
     this.innovationService = new InnovationService(connectionName);
   }
@@ -294,28 +298,48 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
 
     const innovSections = await innovation.sections;
 
-    sections.forEach((key: InnovationSectionCatalogue) => {
-      const secIdx = innovSections.findIndex((obj) => obj.section === key);
+    return await this.connection.transaction(async (transactionManager) => {
+      for (let i = 0; i < sections.length; i++) {
+        const secKey = sections[i];
+        const secIdx = innovSections.findIndex((obj) => obj.section === secKey);
 
-      if (secIdx === -1) {
-        innovSections.push(
-          InnovationSection.new({
+        if (secIdx === -1) {
+          const innovSectionObj = InnovationSection.new({
             innovation,
-            section: InnovationSectionCatalogue[key],
+            section: InnovationSectionCatalogue[secKey],
             status: InnovationSectionStatus.SUBMITTED,
             createdBy: userId,
             updatedBy: userId,
             submittedAt: new Date(),
-          })
-        );
-      } else {
-        innovSections[secIdx].updatedBy = userId;
-        innovSections[secIdx].status = InnovationSectionStatus.SUBMITTED;
-        innovSections[secIdx].submittedAt = new Date();
+          });
+
+          await transactionManager.save(InnovationSection, innovSectionObj);
+        } else {
+          const innovationActions = await innovSections[secIdx].actions;
+          const actions = innovationActions.filter(
+            (ia: InnovationAction) =>
+              ia.status === InnovationActionStatus.REQUESTED
+          );
+          for (let i = 0; i < actions.length; i++) {
+            await transactionManager.update(
+              InnovationAction,
+              { id: actions[i].id },
+              { status: InnovationActionStatus.IN_REVIEW, updatedBy: userId }
+            );
+          }
+
+          await transactionManager.update(
+            InnovationSection,
+            { id: innovSections[secIdx].id },
+            {
+              status: InnovationSectionStatus.SUBMITTED,
+              updatedBy: userId,
+              submittedAt: new Date(),
+            }
+          );
+        }
       }
     });
-
-    return await this.repository.save(innovSections);
   }
 
   async createSection(

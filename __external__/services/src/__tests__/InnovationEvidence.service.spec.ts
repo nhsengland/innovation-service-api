@@ -1,3 +1,4 @@
+import * as storage_blob from "@azure/storage-blob";
 import {
   ClinicalEvidenceTypeCatalogue,
   EvidenceTypeCatalogue,
@@ -12,14 +13,10 @@ import {
 import { FileService } from "@services/services/File.service";
 import { getConnection } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
-import { InnovationService } from "../services/Innovation.service";
 import { InnovationEvidenceService } from "../services/InnovationEvidence.service";
-import { InnovationSectionService } from "../services/InnovationSection.service";
-import { InnovatorService } from "../services/Innovator.service";
-import * as storage_blob from "@azure/storage-blob";
+import * as fixtures from "../__fixtures__";
 
 const dummy = {
-  innovatorId: "innovatorId",
   evidence: {
     summary: "test evidence",
     evidenceType: EvidenceTypeCatalogue.CLINICAL,
@@ -31,37 +28,25 @@ describe("Innovation Evidence Suite", () => {
   let evidenceService: InnovationEvidenceService;
   let fileService: FileService;
   let innovation: Innovation;
+  let innovatorUser: User;
 
   beforeAll(async () => {
     // await setupTestsConnection();
-    const innovationService = new InnovationService(process.env.DB_TESTS_NAME);
-    const innovationSectionService = new InnovationSectionService(
-      process.env.DB_TESTS_NAME
-    );
-    const innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
     evidenceService = new InnovationEvidenceService(process.env.DB_TESTS_NAME);
     fileService = new FileService(process.env.DB_TESTS_NAME);
 
-    const innovator = new User();
-    innovator.id = dummy.innovatorId;
-    const innovatorUser = await innovatorService.create(innovator);
+    innovatorUser = await fixtures.createInnovatorUser();
 
-    const innovationObj = Innovation.new({
+    const innovationObj = fixtures.generateInnovation({
       owner: innovatorUser,
       surveyId: "abc",
-      name: "My Innovation",
-      description: "My Description",
-      countryName: "UK",
     });
-    innovation = await innovationService.create(innovationObj);
-
-    await innovationSectionService.saveSection(
-      innovation.id,
-      innovatorUser.id,
+    innovation = await fixtures.saveInnovation(innovationObj);
+    await fixtures.createSectionInInnovation(
+      innovation,
+      innovatorUser,
       InnovationSectionCatalogue.EVIDENCE_OF_EFFECTIVENESS,
-      {
-        hasEvidence: YesOrNoCatalogue.YES,
-      }
+      { hasEvidence: YesOrNoCatalogue.YES }
     );
   });
 
@@ -97,7 +82,7 @@ describe("Innovation Evidence Suite", () => {
     });
 
     const item = await evidenceService.create(
-      dummy.innovatorId,
+      innovatorUser.id,
       evidence,
       InnovationSectionCatalogue.EVIDENCE_OF_EFFECTIVENESS
     );
@@ -127,7 +112,7 @@ describe("Innovation Evidence Suite", () => {
     });
 
     const evidence = await evidenceService.create(
-      dummy.innovatorId,
+      innovatorUser.id,
       evidenceObj,
       InnovationSectionCatalogue.EVIDENCE_OF_EFFECTIVENESS
     );
@@ -157,7 +142,7 @@ describe("Innovation Evidence Suite", () => {
     });
 
     const evidence = await evidenceService.create(
-      dummy.innovatorId,
+      innovatorUser.id,
       evidenceObj,
       InnovationSectionCatalogue.EVIDENCE_OF_EFFECTIVENESS
     );
@@ -169,7 +154,7 @@ describe("Innovation Evidence Suite", () => {
 
     await evidenceService.update(
       evidence.id,
-      dummy.innovatorId,
+      innovatorUser.id,
       evidence,
       InnovationSectionCatalogue.EVIDENCE_OF_EFFECTIVENESS
     );
@@ -187,12 +172,12 @@ describe("Innovation Evidence Suite", () => {
     });
 
     const evidence = await evidenceService.create(
-      dummy.innovatorId,
+      innovatorUser.id,
       evidenceObj,
       InnovationSectionCatalogue.EVIDENCE_OF_EFFECTIVENESS
     );
 
-    await evidenceService.delete(evidence.id, dummy.innovatorId);
+    await evidenceService.delete(evidence.id, innovatorUser.id);
 
     const result = await evidenceService.find(evidence.id);
 

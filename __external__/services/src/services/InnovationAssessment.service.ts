@@ -1,4 +1,5 @@
 import {
+  Comment,
   Innovation,
   InnovationAssessment,
   InnovationStatus,
@@ -108,7 +109,16 @@ export class InnovationAssessmentService {
     }
 
     return await this.connection.transaction(async (transactionManager) => {
-      // TODO add comments save
+      if (assessment.comment) {
+        const comment = Comment.new({
+          user: { id: userId },
+          innovation: { id: innovationId },
+          message: assessment.comment,
+          createdBy: userId,
+          updatedBy: userId,
+        });
+        await transactionManager.save(Comment, comment);
+      }
 
       await transactionManager.update(
         Innovation,
@@ -116,10 +126,15 @@ export class InnovationAssessmentService {
         { status: InnovationStatus.NEEDS_ASSESSMENT }
       );
 
-      assessment.createdBy = userId;
-      assessment.updatedBy = userId;
+      const assessmentObj = InnovationAssessment.new({
+        description: assessment.description,
+        innovation: { id: innovationId },
+        assignTo: userId,
+        createdBy: userId,
+        updatedBy: userId,
+      });
 
-      return await transactionManager.save(InnovationAssessment, assessment);
+      return await transactionManager.save(InnovationAssessment, assessmentObj);
     });
   }
 

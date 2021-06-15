@@ -10,7 +10,11 @@ import {
   Validator,
 } from "../utils/decorators";
 import { CustomContext, Severity } from "../utils/types";
-import { AccessorOrganisationRole, Innovation } from "@services/index";
+import {
+  AccessorOrganisationRole,
+  Innovation,
+  InnovationSupportStatus,
+} from "@services/index";
 
 class AccessorsGetAllInnovations {
   @AppInsights()
@@ -58,21 +62,15 @@ class AccessorsGetAllInnovations {
 
       const innovations = callResult[0] as Innovation[];
 
-      // TODO : remove after accessor assign task
-      const tmpStatusList = [
-        "UNNASSIGNED",
-        "FURTHER_INFO_REQUIRED",
-        "WAITING",
-        "ENGAGING",
-      ];
-      // end temporary code
-
       result = {
         data: innovations?.map((inno: Innovation) => ({
           id: inno.id,
           status: inno.status,
           name: inno.name,
-          supportStatus: tmpStatusList[Math.floor(Math.random() * 4)],
+          supportStatus:
+            inno.innovationSupports && inno.innovationSupports.length > 0
+              ? inno.innovationSupports[0].status
+              : InnovationSupportStatus.UNNASSIGNED,
           createdAt: inno.createdAt,
           updatedAt: inno.updatedAt,
           assessment:
