@@ -114,6 +114,7 @@ export class InnovationSupportService {
 
     const organisationUnit =
       userOrganisation.userOrganisationUnits[0].organisationUnit;
+
     return await this.connection.transaction(async (transactionManager) => {
       if (support.comment) {
         const comment = Comment.new({

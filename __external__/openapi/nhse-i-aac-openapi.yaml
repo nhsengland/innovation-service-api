@@ -309,6 +309,41 @@ paths:
           description: "Forbidden"
 
   "/accessors/{accessorId}/innovations/{innovationId}/actions":
+    get:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "GetInnovationActions"
+      description: "Get Innovation Actions associated with the Innovation"
+      operationId: "accessors-get-innovation-actions"
+      security:
+        - OpenId:
+            - innovation_details
+      parameters:
+        - name: accessorId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
     post:
       tags:
         - "Accessor"
@@ -348,6 +383,46 @@ paths:
           description: "Forbidden"
 
   "/accessors/{accessorId}/innovations/{innovationId}/actions/{actionId}":
+    get:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "GetInnovationAction"
+      description: "Get an Innovation Action associated with the Innovation"
+      operationId: "accessors-get-innovation-action"
+      security:
+        - OpenId:
+            - innovation_details
+      parameters:
+        - name: accessorId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: actionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
     put:
       tags:
         - "Accessor"
@@ -1148,6 +1223,85 @@ paths:
           description: "Not Found"
         "401":
           description: "Unauthorized"
+
+  "/innovators/{innovatorId}/innovations/{innovationId}/actions/{actionId}":
+    get:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "GetInnovationAction"
+      description: "Get an Innovation Action associated with the Innovation"
+      operationId: "innovators-get-innovation-action"
+      security:
+        - OpenId:
+            - innovation_details
+      parameters:
+        - name: innovatorId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: actionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/innovators/{innovatorId}/innovations/{innovationId}/actions":
+    get:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "GetInnovationActions"
+      description: "Get Innovation Actions associated with the Innovation"
+      operationId: "innovators-get-innovation-actions"
+      security:
+        - OpenId:
+            - innovation_details
+      parameters:
+        - name: innovatorId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
 
   "/innovators/{innovatorId}/innovations/{innovationId}/upload":
     post:
