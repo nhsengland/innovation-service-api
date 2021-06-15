@@ -3,6 +3,7 @@ import {
   InnovationAction,
   InnovationActionStatus,
   InnovationSupport,
+  InnovationSectionAliasCatalogue,
   OrganisationUser,
 } from "@domain/index";
 import { InnovationActionModel } from "@services/models/InnovationActionModel";
@@ -77,6 +78,8 @@ export class InnovationActionService {
     }
 
     const sections = await innovation.sections;
+    let actionsCounter = 0;
+
     let innovationSection = sections.find(
       (sec) => sec.section === action.section
     );
@@ -86,6 +89,9 @@ export class InnovationActionService {
         userId,
         action.section
       );
+    } else {
+      const actions = await innovationSection.actions;
+      actionsCounter = actions.length;
     }
 
     // BUSINESS RULE: An user has only one organization unit
@@ -100,6 +106,7 @@ export class InnovationActionService {
     }
 
     const actionObj = {
+      displayId: this.getActionDisplayId(action.section, actionsCounter),
       description: action.description,
       status: InnovationActionStatus.REQUESTED,
       innovationSection: { id: innovationSection.id },
@@ -274,5 +281,10 @@ export class InnovationActionService {
     };
 
     return await this.actionRepo.findOne(id, filterOptions);
+  }
+
+  private getActionDisplayId(section: string, counter: number) {
+    const alias = InnovationSectionAliasCatalogue[section] || "ZZ";
+    return alias + (++counter).toString().slice(-2).padStart(2, "0");
   }
 }

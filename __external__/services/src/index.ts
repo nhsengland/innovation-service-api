@@ -72,6 +72,7 @@ export {
   InnovationSectionStatus,
   InnovationSupportStatus,
   InnovationSectionCatalogue,
+  InnovationSectionAliasCatalogue,
   OrganisationType,
   AccessorOrganisationRole,
   InnovatorOrganisationRole,
