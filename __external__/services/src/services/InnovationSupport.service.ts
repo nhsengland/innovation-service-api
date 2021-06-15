@@ -1,6 +1,8 @@
 import {
   AccessorOrganisationRole,
   Comment,
+  InnovationAction,
+  InnovationActionStatus,
   InnovationSupport,
   InnovationSupportStatus,
   OrganisationUnitUser,
@@ -204,7 +206,20 @@ export class InnovationSupportService {
         innovationSupport.status !== support.status
       ) {
         innovationSupport.organisationUnitUsers = [];
-        // TODO ACTIONS SIDE EFFECT
+        const innovationActions = await innovationSupport.actions;
+
+        const actions = innovationActions.filter(
+          (ia: InnovationAction) =>
+            ia.status === InnovationActionStatus.REQUESTED
+        );
+
+        for (let i = 0; i < actions.length; i++) {
+          await transactionManager.update(
+            InnovationAction,
+            { id: actions[i].id },
+            { status: InnovationActionStatus.DELETED, updatedBy: userId }
+          );
+        }
       } else {
         innovationSupport.organisationUnitUsers = support.accessors?.map(
           (id) => ({ id })

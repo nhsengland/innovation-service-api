@@ -18,10 +18,8 @@ import {
   FindManyOptions,
   FindOneOptions,
   getConnection,
-  getRepository,
   In,
   IsNull,
-  Repository,
 } from "typeorm";
 import {
   AccessorInnovationSummary,
@@ -132,7 +130,18 @@ export class InnovationService extends BaseService<Innovation> {
       userOrganisation.role === AccessorOrganisationRole.QUALIFYING_ACCESSOR
     ) {
       filterOptions.where = `organisation_id = '${userOrganisation.organisation.id}'`;
-      filterOptions.relations = ["organisationShares", "assessments"];
+      filterOptions.relations = [
+        "organisationShares",
+        "assessments",
+        "innovationSupports",
+      ];
+    } else {
+      // BUSINESS RULE: An user has only one organization unit
+      const organisationUnit =
+        userOrganisation.userOrganisationUnits[0].organisationUnit;
+
+      filterOptions.where = `organisation_unit_id = '${organisationUnit.id}'`;
+      filterOptions.relations = ["innovationSupports", "assessments"];
     }
 
     return await this.repository.findAndCount(filterOptions);

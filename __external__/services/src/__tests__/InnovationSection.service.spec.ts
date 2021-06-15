@@ -1,8 +1,10 @@
 import {
+  AccessorOrganisationRole,
   ClinicalEvidenceTypeCatalogue,
   EvidenceTypeCatalogue,
   HasRegulationKnowledegeCatalogue,
   HasSubgroupsCatalogue,
+  Comment,
   Innovation,
   InnovationArea,
   InnovationAreaCatalogue,
@@ -22,41 +24,37 @@ import {
   InnovationStatus,
   InnovationSubgroup,
   InnovationUserTest,
+  OrganisationType,
   StandardMetCatalogue,
   User,
   YesOrNoCatalogue,
+  OrganisationUnitUser,
+  OrganisationUnit,
+  OrganisationUser,
+  Organisation,
+  InnovationAction,
+  InnovationSupport,
 } from "@domain/index";
 import { InnovationSectionModel } from "@services/models/InnovationSectionModel";
 import { getConnection } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
 import { FileService } from "../services/File.service";
-import { InnovationService } from "../services/Innovation.service";
 import { InnovationSectionService } from "../services/InnovationSection.service";
-import { InnovatorService } from "../services/Innovator.service";
-
-const dummy = {
-  innovatorId: "innovatorId",
-};
+import * as fixtures from "../__fixtures__";
 
 describe("Innovation Section Service Suite", () => {
   let fileService: FileService;
-  let innovationService: InnovationService;
   let innovationSectionService: InnovationSectionService;
-  let innovatorService: InnovatorService;
   let innovatorUser: User;
 
   beforeAll(async () => {
     // await setupTestsConnection();
     fileService = new FileService(process.env.DB_TESTS_NAME);
-    innovationService = new InnovationService(process.env.DB_TESTS_NAME);
     innovationSectionService = new InnovationSectionService(
       process.env.DB_TESTS_NAME
     );
-    innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
 
-    const innovator = new User();
-    innovator.id = dummy.innovatorId;
-    innovatorUser = await innovatorService.create(innovator);
+    innovatorUser = await fixtures.createInnovatorUser();
   });
 
   afterAll(async () => {
@@ -73,6 +71,7 @@ describe("Innovation Section Service Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(Comment).execute();
     await query.from(InnovationDeploymentPlan).execute();
     await query.from(InnovationRevenue).execute();
     await query.from(InnovationUserTest).execute();
@@ -84,7 +83,13 @@ describe("Innovation Section Service Suite", () => {
     await query.from(InnovationClinicalArea).execute();
     await query.from(InnovationEvidence).execute();
     await query.from(InnovationSubgroup).execute();
+    await query.from(InnovationAction).execute();
     await query.from(InnovationSection).execute();
+    await query.from(InnovationSupport).execute();
+    await query.from(OrganisationUnitUser).execute();
+    await query.from(OrganisationUnit).execute();
+    await query.from(OrganisationUser).execute();
+    await query.from(Organisation).execute();
     await query.from(Innovation).execute();
   });
 
@@ -98,21 +103,18 @@ describe("Innovation Section Service Suite", () => {
       status: InnovationSectionStatus.DRAFT,
     });
 
-    const innovationObj = Innovation.new({
+    const innovationObj = fixtures.generateInnovation({
       owner: innovatorUser,
       surveyId: "abc",
-      name: "My Innovation",
-      description: "My Description",
-      countryName: "UK",
       sections: [sectionObj],
       status: InnovationStatus.IN_PROGRESS,
     });
-    const innovation = await innovationService.create(innovationObj);
+    const innovation = await fixtures.saveInnovation(innovationObj);
 
     // Act
     const result = await innovationSectionService.findAllInnovationSections(
       innovation.id,
-      dummy.innovatorId
+      innovatorUser.id
     );
 
     // Assert
@@ -175,19 +177,16 @@ describe("Innovation Section Service Suite", () => {
       description: "other description",
     });
 
-    const innovationObj = Innovation.new({
+    const innovationObj = fixtures.generateInnovation({
       owner: innovatorUser,
       surveyId: "abc",
-      name: "My Innovation",
-      description: "My Description",
-      countryName: "UK",
       hasSubgroups: HasSubgroupsCatalogue.YES,
       status: InnovationStatus.IN_PROGRESS,
       subgroups: [subgroup],
       evidence: [evidence],
       categories: [category, category2],
     });
-    const innovation = await innovationService.create(innovationObj);
+    const innovation = await fixtures.saveInnovation(innovationObj);
 
     // Act
     const result = await innovationSectionService.findSection(
@@ -216,18 +215,15 @@ describe("Innovation Section Service Suite", () => {
       benefits: "subgroup benefits",
     });
 
-    const innovationObj = Innovation.new({
+    const innovationObj = fixtures.generateInnovation({
       owner: innovatorUser,
       surveyId: "abc",
-      name: "My Innovation",
-      description: "My Description",
-      countryName: "UK",
       hasSubgroups: HasSubgroupsCatalogue.YES,
       status: InnovationStatus.IN_PROGRESS,
       subgroups: [subgroup],
       categories: [category, category2],
     });
-    const innovation = await innovationService.create(innovationObj);
+    const innovation = await fixtures.saveInnovation(innovationObj);
 
     const file = await fileService.getUploadUrl(
       "test.txt",
@@ -237,7 +233,7 @@ describe("Innovation Section Service Suite", () => {
 
     await innovationSectionService.saveSection(
       innovation.id,
-      dummy.innovatorId,
+      innovatorUser.id,
       InnovationSectionCatalogue.EVIDENCE_OF_EFFECTIVENESS,
       {
         hasEvidence: YesOrNoCatalogue.YES,
@@ -316,22 +312,20 @@ describe("Innovation Section Service Suite", () => {
       status: InnovationSectionStatus.DRAFT,
     });
 
-    const innovationObj = Innovation.new({
+    const innovationObj = fixtures.generateInnovation({
       owner: innovatorUser,
-      surveyId: "abc",
       name: "My Innovation",
-      description: "My Description",
-      countryName: "UK",
+      surveyId: "abc",
       hasSubgroups: HasSubgroupsCatalogue.NO,
       status: InnovationStatus.IN_PROGRESS,
       sections: [sectionObj],
     });
-    const innovation = await innovationService.create(innovationObj);
+    const innovation = await fixtures.saveInnovation(innovationObj);
 
     // Act
     const result = await innovationSectionService.saveSection(
       innovation.id,
-      dummy.innovatorId,
+      innovatorUser.id,
       InnovationSectionCatalogue.UNDERSTANDING_OF_NEEDS,
       {
         hasSubgroups: HasSubgroupsCatalogue.YES,
@@ -362,24 +356,22 @@ describe("Innovation Section Service Suite", () => {
       conditions: "subgroup conditions",
     });
 
-    const innovationObj = Innovation.new({
+    const innovationObj = fixtures.generateInnovation({
       owner: innovatorUser,
-      surveyId: "abc",
       name: "My Innovation",
-      description: "My Description",
-      countryName: "UK",
+      surveyId: "abc",
       hasSubgroups: HasSubgroupsCatalogue.YES,
       hasBenefits: YesOrNoCatalogue.YES,
       status: InnovationStatus.IN_PROGRESS,
       subgroups: [subgroup],
     });
-    const innovation = await innovationService.create(innovationObj);
+    const innovation = await fixtures.saveInnovation(innovationObj);
     let subgroups = await innovation.subgroups;
 
     // Act
     const result = await innovationSectionService.saveSection(
       innovation.id,
-      dummy.innovatorId,
+      innovatorUser.id,
       InnovationSectionCatalogue.UNDERSTANDING_OF_BENEFITS,
       {
         hasBenefits: YesOrNoCatalogue.YES,
@@ -406,28 +398,20 @@ describe("Innovation Section Service Suite", () => {
   });
 
   it("should save EVIDENCE_OF_EFFECTIVENESS section with correct properties", async () => {
-    const innovationObj = Innovation.new({
+    const innovationObj = fixtures.generateInnovation({
       owner: innovatorUser,
-      surveyId: "abc",
       name: "My Innovation",
-      description: "My Description",
-      countryName: "UK",
+      surveyId: "abc",
       hasSubgroups: HasSubgroupsCatalogue.YES,
       hasEvidence: YesOrNoCatalogue.NO,
       status: InnovationStatus.IN_PROGRESS,
     });
-    const innovation = await innovationService.create(innovationObj);
-
-    const file = await fileService.getUploadUrl(
-      "test.txt",
-      innovation.id,
-      "INNOVATION_EVIDENCE"
-    );
+    const innovation = await fixtures.saveInnovation(innovationObj);
 
     // Act
     const result = await innovationSectionService.saveSection(
       innovation.id,
-      dummy.innovatorId,
+      innovatorUser.id,
       InnovationSectionCatalogue.EVIDENCE_OF_EFFECTIVENESS,
       {
         hasEvidence: YesOrNoCatalogue.YES,
@@ -443,23 +427,21 @@ describe("Innovation Section Service Suite", () => {
   });
 
   it("should save INNOVATION_DESCRIPTION section with correct properties", async () => {
-    const innovationObj = Innovation.new({
+    const innovationObj = fixtures.generateInnovation({
       owner: innovatorUser,
-      surveyId: "abc",
       name: "My Innovation",
-      description: "My Description",
-      countryName: "UK",
+      surveyId: "abc",
       hasFinalProduct: YesOrNoCatalogue.NO,
       hasSubgroups: HasSubgroupsCatalogue.YES,
       hasEvidence: YesOrNoCatalogue.NO,
       status: InnovationStatus.IN_PROGRESS,
     });
-    const innovation = await innovationService.create(innovationObj);
+    const innovation = await fixtures.saveInnovation(innovationObj);
 
     // Act
     const result = await innovationSectionService.saveSection(
       innovation.id,
-      dummy.innovatorId,
+      innovatorUser.id,
       InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
       {
         name: "should not update name",
@@ -485,18 +467,16 @@ describe("Innovation Section Service Suite", () => {
   });
 
   it("should save REGULATIONS_AND_STANDARDS section with correct properties", async () => {
-    const innovationObj = Innovation.new({
+    const innovationObj = fixtures.generateInnovation({
       owner: innovatorUser,
-      surveyId: "abc",
       name: "My Innovation",
-      description: "My Description",
-      countryName: "UK",
+      surveyId: "abc",
       hasFinalProduct: YesOrNoCatalogue.NO,
       hasSubgroups: HasSubgroupsCatalogue.YES,
       hasEvidence: YesOrNoCatalogue.NO,
       status: InnovationStatus.IN_PROGRESS,
     });
-    const innovation = await innovationService.create(innovationObj);
+    const innovation = await fixtures.saveInnovation(innovationObj);
 
     const file = await fileService.getUploadUrl(
       "test.txt",
@@ -507,7 +487,7 @@ describe("Innovation Section Service Suite", () => {
     // Act
     await innovationSectionService.saveSection(
       innovation.id,
-      dummy.innovatorId,
+      innovatorUser.id,
       InnovationSectionCatalogue.REGULATIONS_AND_STANDARDS,
       {
         hasRegulationKnowledge: HasRegulationKnowledegeCatalogue.YES_ALL,
@@ -525,7 +505,7 @@ describe("Innovation Section Service Suite", () => {
     // Act
     const result = await innovationSectionService.findSection(
       innovation.id,
-      dummy.innovatorId,
+      innovatorUser.id,
       InnovationSectionCatalogue.REGULATIONS_AND_STANDARDS
     );
 
@@ -581,28 +561,26 @@ describe("Innovation Section Service Suite", () => {
     expect(err.message).toContain("Invalid parameters. Section not found.");
   });
 
-  it("should submmit sections with correct properties", async () => {
+  it("should submmit sections with correct properties without actions", async () => {
     const sectionObj = InnovationSection.new({
       section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
       status: InnovationSectionStatus.DRAFT,
     });
 
-    const innovationObj = Innovation.new({
+    const innovationObj = fixtures.generateInnovation({
       owner: innovatorUser,
-      surveyId: "abc",
       name: "My Innovation",
-      description: "My Description",
-      countryName: "UK",
+      surveyId: "abc",
       hasSubgroups: HasSubgroupsCatalogue.NO,
       status: InnovationStatus.IN_PROGRESS,
       sections: [sectionObj],
     });
-    const innovation = await innovationService.create(innovationObj);
+    const innovation = await fixtures.saveInnovation(innovationObj);
 
     // Act
     await innovationSectionService.submitSections(
       innovation.id,
-      dummy.innovatorId,
+      innovatorUser.id,
       [
         InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
         InnovationSectionCatalogue.UNDERSTANDING_OF_NEEDS,
@@ -611,7 +589,82 @@ describe("Innovation Section Service Suite", () => {
 
     const result = await innovationSectionService.findAllInnovationSections(
       innovation.id,
-      dummy.innovatorId
+      innovatorUser.id
+    );
+    const count = result.sections.reduce(
+      (counter: number, obj: InnovationSectionModel) => {
+        if (obj.status === InnovationSectionStatus.SUBMITTED) counter += 1;
+        return counter;
+      },
+      0
+    );
+
+    // Assert
+    expect(count).toEqual(2);
+  });
+
+  it("should submmit sections with correct properties with actions", async () => {
+    const sectionObj = InnovationSection.new({
+      section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+      status: InnovationSectionStatus.DRAFT,
+    });
+
+    const qualAccessorUser = await fixtures.createAccessorUser();
+    const accessorOrganisation = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
+    );
+    const qAccessorUserOrganisation = await fixtures.addUserToOrganisation(
+      qualAccessorUser,
+      accessorOrganisation,
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    );
+    const organisationUnit = await fixtures.createOrganisationUnit(
+      accessorOrganisation
+    );
+    const organisationQuaAccessorUnitUser = await fixtures.addOrganisationUserToOrganisationUnit(
+      qAccessorUserOrganisation,
+      organisationUnit
+    );
+    const qAccessorUserOrganisations = await fixtures.findUserOrganisations(
+      qualAccessorUser.id
+    );
+
+    const innovationObj = fixtures.generateInnovation({
+      owner: innovatorUser,
+      name: "My Innovation",
+      surveyId: "abc",
+      hasSubgroups: HasSubgroupsCatalogue.NO,
+      status: InnovationStatus.IN_PROGRESS,
+      sections: [sectionObj],
+      organisationShares: [accessorOrganisation],
+    });
+    const innovation = await fixtures.saveInnovation(innovationObj);
+
+    await fixtures.createSupportInInnovation(
+      innovation,
+      qualAccessorUser,
+      qAccessorUserOrganisations[0],
+      organisationQuaAccessorUnitUser
+    );
+    await fixtures.createInnovationAction(
+      innovation,
+      qualAccessorUser,
+      qAccessorUserOrganisations[0]
+    );
+
+    // Act
+    await innovationSectionService.submitSections(
+      innovation.id,
+      innovatorUser.id,
+      [
+        InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+        InnovationSectionCatalogue.UNDERSTANDING_OF_NEEDS,
+      ]
+    );
+
+    const result = await innovationSectionService.findAllInnovationSections(
+      innovation.id,
+      innovatorUser.id
     );
     const count = result.sections.reduce(
       (counter: number, obj: InnovationSectionModel) => {

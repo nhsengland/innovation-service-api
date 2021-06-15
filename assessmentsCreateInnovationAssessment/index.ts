@@ -32,9 +32,6 @@ class AssessmentsCreateInnovationAssessment {
       return;
     }
 
-    assessment.innovation = innovationId;
-    assessment.assignTo = userId;
-
     let result;
     try {
       result = await persistence.createInnovationAssessment(

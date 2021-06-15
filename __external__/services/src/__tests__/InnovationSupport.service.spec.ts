@@ -2,6 +2,8 @@ import {
   AccessorOrganisationRole,
   Comment,
   Innovation,
+  InnovationAction,
+  InnovationSection,
   InnovationSupport,
   InnovationSupportStatus,
   Organisation,
@@ -11,7 +13,6 @@ import {
   OrganisationUser,
   User,
 } from "@domain/index";
-import { UserService } from "@services/services/User.service";
 import { getConnection } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
@@ -109,6 +110,8 @@ describe("Innovation Support Suite", () => {
       .delete();
 
     await query.from(Comment).execute();
+    await query.from(InnovationAction).execute();
+    await query.from(InnovationSection).execute();
     await query.from(InnovationSupport).execute();
   });
 
@@ -246,7 +249,54 @@ describe("Innovation Support Suite", () => {
     expect(item.accessors.length).toEqual(2);
   });
 
-  it("should update an support status to a non engaging status", async () => {
+  it("should update an support status to a non engaging status with actions", async () => {
+    let supportObj = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [organisationAccessorUnitUser.id],
+      comment: "test comment",
+    };
+
+    const support = await supportService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      supportObj,
+      qAccessorUserOrganisations
+    );
+
+    await fixtures.createInnovationAction(
+      innovation,
+      qualAccessorUser,
+      qAccessorUserOrganisations[0]
+    );
+
+    supportObj = {
+      status: InnovationSupportStatus.NOT_YET,
+      accessors: [
+        organisationAccessorUnitUser.id,
+        organisationQuaAccessorUnitUser.id,
+      ],
+      comment: null,
+    };
+    await supportService.update(
+      support.id,
+      qualAccessorUser.id,
+      innovation.id,
+      supportObj,
+      qAccessorUserOrganisations
+    );
+
+    const item = await supportService.find(
+      support.id,
+      innovatorUser.id,
+      innovation.id
+    );
+
+    expect(item).toBeDefined();
+    expect(item.status).toEqual(InnovationSupportStatus.NOT_YET);
+    expect(item.accessors.length).toEqual(0);
+  });
+
+  it("should update an support status to a non engaging status without actions", async () => {
     let supportObj = {
       status: InnovationSupportStatus.ENGAGING,
       accessors: [organisationAccessorUnitUser.id],
