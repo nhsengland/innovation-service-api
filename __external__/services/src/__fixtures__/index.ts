@@ -3,6 +3,7 @@ import {
   Innovation,
   InnovationSection,
   InnovationSectionCatalogue,
+  InnovationSectionAliasCatalogue,
   InnovationSupport,
   InnovationSupportStatus,
   Organisation,

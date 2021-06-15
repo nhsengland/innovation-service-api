@@ -166,6 +166,7 @@ describe("Innovation Action Suite", () => {
     );
 
     expect(item).toBeDefined();
+    expect(item.displayId).toEqual("CP01");
     expect(item.status).toEqual(InnovationActionStatus.REQUESTED);
   });
 
