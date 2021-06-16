@@ -129,7 +129,7 @@ export class InnovationService extends BaseService<Innovation> {
     if (
       userOrganisation.role === AccessorOrganisationRole.QUALIFYING_ACCESSOR
     ) {
-      filterOptions.where = `organisation_id = '${userOrganisation.organisation.id}'`;
+      filterOptions.where = `organisation_id = '${userOrganisation.organisation.id}' and Innovation.status = '${InnovationStatus.IN_PROGRESS}'`;
       filterOptions.relations = [
         "organisationShares",
         "assessments",
@@ -140,7 +140,7 @@ export class InnovationService extends BaseService<Innovation> {
       const organisationUnit =
         userOrganisation.userOrganisationUnits[0].organisationUnit;
 
-      filterOptions.where = `organisation_unit_id = '${organisationUnit.id}'`;
+      filterOptions.where = `organisation_unit_id = '${organisationUnit.id}' and Innovation.status = '${InnovationStatus.IN_PROGRESS}'`;
       filterOptions.relations = ["innovationSupports", "assessments"];
     }
 
