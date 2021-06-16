@@ -4,6 +4,7 @@ import {
   Innovation,
   InnovationAction,
   InnovationAssessment,
+  InnovationSection,
   InnovationStatus,
   InnovationSupport,
   InnovatorOrganisationRole,
@@ -87,10 +88,11 @@ describe("Innovator Service Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(Comment).execute();
     await query.from(InnovationAssessment).execute();
     await query.from(InnovationSupport).execute();
-    await query.from(Comment).execute();
     await query.from(InnovationAction).execute();
+    await query.from(InnovationSection).execute();
     await query.from(Innovation).execute();
   });
 
@@ -148,6 +150,7 @@ describe("Innovator Service Suite", () => {
     const innovationA = fixtures.generateInnovation({
       owner: innovatorUser,
       organisationShares: [{ id: accessorOrganisation.id }],
+      status: InnovationStatus.IN_PROGRESS,
     });
 
     const innovationB = fixtures.generateInnovation({
@@ -174,6 +177,7 @@ describe("Innovator Service Suite", () => {
         name: `innovation_${i}`,
         description: `description_${i}`,
         organisationShares: [{ id: accessorOrganisation.id }],
+        status: InnovationStatus.IN_PROGRESS,
       });
     }
 
