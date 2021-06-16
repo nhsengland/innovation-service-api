@@ -150,7 +150,7 @@ describe("Innovator Service Suite", () => {
     const innovationA = fixtures.generateInnovation({
       owner: innovatorUser,
       organisationShares: [{ id: accessorOrganisation.id }],
-      status: InnovationStatus.IN_PROGRESS
+      status: InnovationStatus.IN_PROGRESS,
     });
 
     const innovationB = fixtures.generateInnovation({
@@ -177,7 +177,7 @@ describe("Innovator Service Suite", () => {
         name: `innovation_${i}`,
         description: `description_${i}`,
         organisationShares: [{ id: accessorOrganisation.id }],
-        status: InnovationStatus.IN_PROGRESS
+        status: InnovationStatus.IN_PROGRESS,
       });
     }
 
