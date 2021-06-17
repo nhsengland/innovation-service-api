@@ -67,6 +67,42 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     return result;
   }
 
+  async findAllInnovationSectionsByAssessment(
+    innovationId: string,
+    userId: string
+  ) {
+    if (!innovationId || !userId) {
+      throw new Error(
+        "Invalid parameters. You must define the innovation id and the userId."
+      );
+    }
+
+    const filterOptions: FindOneOptions = {
+      relations: ["assessments"],
+    };
+    const innovation = await this.innovationService.findInnovation(
+      innovationId,
+      userId,
+      filterOptions
+    );
+
+    if (!innovation) {
+      throw new Error("Invalid parameters. Innovation not found for the user.");
+    }
+
+    const sections = await innovation.sections;
+    const innovationSections = this.getInnovationSections(sections);
+
+    const result: InnovationSectionResult = {
+      id: innovation.id,
+      name: innovation.name,
+      status: innovation.status,
+      sections: innovationSections,
+    };
+
+    return result;
+  }
+
   async findSection(
     innovationId: string,
     userId: string,
