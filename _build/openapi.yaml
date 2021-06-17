@@ -124,7 +124,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: accessorId
+        - name: innovationId
           in: path
           required: true
           schema:
@@ -1544,6 +1544,117 @@ paths:
       responses:
         '200':
           description: Ok
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/assessments/{userId}/innovations/{innovationId}/evidence/{evidenceId}':
+    get:
+      tags:
+        - Assessment
+        - Innovation
+        - GetInnovationEvidence
+      description: Get an Innovation Evidence associated with the Innovation
+      operationId: assessments-get-innovation-evidence
+      security:
+        - OpenId:
+            - innovators_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: evidenceId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/assessments/{userId}/innovations/{innovationId}/section-summary':
+    get:
+      tags:
+        - Assessment
+        - Innovation
+        - GetInnovationSectionSummary
+      description: Gets an Innovation Sections
+      operationId: assessments-get-innovation-section-summary
+      security:
+        - OpenId:
+            - assessments_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+  '/assessments/{userId}/innovations/{innovationId}/sections':
+    get:
+      tags:
+        - Assessment
+        - Innovation
+        - GetInnovationSection
+      description: Get an Innovation Section
+      operationId: assessments-get-innovation-sections
+      security:
+        - OpenId:
+            - assessments_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
         '401':
           description: Unauthorized
         '403':
