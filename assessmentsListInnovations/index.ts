@@ -25,13 +25,21 @@ class AssessmentsListInnovations {
     const statuses = req.query.status.split(",");
     const skip = parseInt(req.query.skip);
     const take = parseInt(req.query.take);
+    let order;
+    const query: any = req.query;
+
+    if (query.order) {
+      order = JSON.parse(query.order);
+    }
+
     let result;
     try {
       result = await persistence.getInnovationList(
         context,
         statuses,
         skip,
-        take
+        take,
+        order
       );
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });

@@ -321,7 +321,8 @@ export class InnovationService extends BaseService<Innovation> {
   async getInnovationListByState(
     statuses: string[],
     skip: number,
-    take: number
+    take: number,
+    order?: { [key: string]: string }
   ): Promise<InnovationListModel> {
     const filter: FindManyOptions<Innovation> = {
       where: { status: In(statuses), deletedAt: IsNull() },
@@ -334,6 +335,7 @@ export class InnovationService extends BaseService<Innovation> {
       ],
       skip,
       take,
+      order: order || { createdAt: "DESC" },
     };
 
     const result = await this.repository.findAndCount(filter);
