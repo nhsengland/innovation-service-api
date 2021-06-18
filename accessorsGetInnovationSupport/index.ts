@@ -40,19 +40,10 @@ class AccessorsGetInnovationSupport {
         accessorId,
         innovationId
       );
-
-      if (!result) {
-        context.logger(`[${req.method}] ${req.url}`, Severity.Error, {
-          error: "Innovation Support was not found",
-        });
-        context.log.error("Innovation Support not found!");
-        context.res = Responsify.NotFound();
-        return;
-      }
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
-      context.res = Responsify.Internal();
+      context.res = Responsify.ErroHandling(error);
       return;
     }
 

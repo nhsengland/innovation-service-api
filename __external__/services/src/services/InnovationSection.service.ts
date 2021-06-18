@@ -10,6 +10,12 @@ import {
 } from "@domain/index";
 import * as sectionBodySchema from "@services/config/innovation-section-body.config.json";
 import * as sectionResponseSchema from "@services/config/innovation-section-response.config.json";
+import {
+  InnovationNotFoundError,
+  InvalidDataError,
+  InvalidParamsError,
+  SectionNotFoundError,
+} from "@services/errors";
 import { Connection, FindOneOptions, getConnection } from "typeorm";
 import { InnovationSectionModel } from "../models/InnovationSectionModel";
 import { InnovationSectionResult } from "../models/InnovationSectionResult";
@@ -35,7 +41,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     userOrganisations?: OrganisationUser[]
   ) {
     if (!innovationId || !userId) {
-      throw new Error(
+      throw new InvalidParamsError(
         "Invalid parameters. You must define the innovation id and the userId."
       );
     }
@@ -51,7 +57,9 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     );
 
     if (!innovation) {
-      throw new Error("Invalid parameters. Innovation not found for the user.");
+      throw new InnovationNotFoundError(
+        "Invalid parameters. Innovation not found for the user."
+      );
     }
 
     const sections = await innovation.sections;
@@ -72,7 +80,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     userId: string
   ) {
     if (!innovationId || !userId) {
-      throw new Error(
+      throw new InvalidParamsError(
         "Invalid parameters. You must define the innovation id and the userId."
       );
     }
@@ -87,7 +95,9 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     );
 
     if (!innovation) {
-      throw new Error("Invalid parameters. Innovation not found for the user.");
+      throw new InnovationNotFoundError(
+        "Invalid parameters. Innovation not found for the user."
+      );
     }
 
     const sections = await innovation.sections;
@@ -111,14 +121,14 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
   ) {
     // VALIDATIONS
     if (!innovationId || !section) {
-      throw new Error(
+      throw new InvalidParamsError(
         "Invalid parameters. You must define innovation id and section."
       );
     }
 
     const sectionFields = sectionResponseSchema[section];
     if (!sectionFields) {
-      throw new Error("Invalid parameters. Section not found.");
+      throw new SectionNotFoundError("Invalid parameters. Section not found.");
     }
 
     const filterOptions: FindOneOptions = {
@@ -132,7 +142,9 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     );
 
     if (!innovation) {
-      throw new Error("Invalid parameters. Innovation not found.");
+      throw new InnovationNotFoundError(
+        "Invalid parameters. Innovation not found."
+      );
     }
 
     const sections = await innovation.sections;
@@ -204,12 +216,12 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
   ) {
     // VALIDATIONS
     if (!innovationId || !userId || !section || !data) {
-      throw new Error("Invalid parameters.");
+      throw new InvalidParamsError("Invalid parameters.");
     }
 
     const sectionFields = sectionBodySchema[section];
     if (!sectionFields) {
-      throw new Error("Invalid parameters. Section not found.");
+      throw new SectionNotFoundError("Invalid parameters. Section not found.");
     }
 
     const filterOptions: FindOneOptions = {
@@ -221,7 +233,9 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
       filterOptions
     );
     if (!innovation) {
-      throw new Error("Invalid parameters. Innovation not found for the user.");
+      throw new InnovationNotFoundError(
+        "Invalid parameters. Innovation not found for the user."
+      );
     }
 
     // UPDATE INNOVATION FIELDS
@@ -263,7 +277,6 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
         try {
           await this.fileService.deleteFiles(deletedFiles);
         } catch (error) {
-          console.error(error);
           throw error;
         }
 
@@ -318,7 +331,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     sections: InnovationSectionCatalogue[]
   ) {
     if (!innovationId || !userId || !sections) {
-      throw new Error("Invalid parameters.");
+      throw new InvalidParamsError("Invalid parameters.");
     }
 
     const filterOptions: FindOneOptions = {
@@ -329,7 +342,9 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
       filterOptions
     );
     if (!innovation) {
-      throw new Error("Invalid parameters. Innovation not found for the user.");
+      throw new InnovationNotFoundError(
+        "Invalid parameters. Innovation not found for the user."
+      );
     }
 
     const innovSections = await innovation.sections;
@@ -497,7 +512,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
         const objectIndex = original.findIndex((e: any) => e.id === obj.id);
 
         if (objectIndex === -1) {
-          throw new Error("Invalid object id");
+          throw new InvalidDataError("Invalid object id");
         }
 
         newObject = this.getUpdatedInnovationObject(

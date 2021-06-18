@@ -36,15 +36,6 @@ class InnovatorsGetInnovationEvidence {
         evidenceId
       );
 
-      if (!result) {
-        context.logger(`[${req.method}] ${req.url}`, Severity.Error, {
-          error: "Evidence was not found",
-        });
-        context.log.error("Evidence not found!");
-        context.res = Responsify.NotFound();
-        return;
-      }
-
       if (result.innovation.owner.id !== innovatorId) {
         context.res = Responsify.Forbidden({ error: "Operation denied." });
         return;
@@ -54,7 +45,7 @@ class InnovatorsGetInnovationEvidence {
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
-      context.res = Responsify.Internal();
+      context.res = Responsify.ErroHandling(error);
       return;
     }
 

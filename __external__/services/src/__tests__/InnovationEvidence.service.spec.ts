@@ -10,6 +10,7 @@ import {
   User,
   YesOrNoCatalogue,
 } from "@domain/index";
+import { ResourceNotFoundError } from "@services/errors";
 import { FileService } from "@services/services/File.service";
 import { getConnection } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
@@ -179,8 +180,14 @@ describe("Innovation Evidence Suite", () => {
 
     await evidenceService.delete(evidence.id, innovatorUser.id);
 
-    const result = await evidenceService.find(evidence.id);
+    let err;
+    try {
+      await evidenceService.find(evidence.id);
+    } catch (error) {
+      err = error;
+    }
 
-    expect(result).toBeNull();
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(ResourceNotFoundError);
   });
 });

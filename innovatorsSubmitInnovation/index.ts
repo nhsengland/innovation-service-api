@@ -35,19 +35,10 @@ class InnovatorsSubmitInnovation {
         innovationId,
         innovatorId
       );
-
-      if (!result) {
-        context.logger(`[${req.method}] ${req.url}`, Severity.Error, {
-          error: "Innovation was not found",
-        });
-        context.log.error("Innovation not found!");
-        context.res = Responsify.NotFound();
-        return;
-      }
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
-      context.res = Responsify.Internal();
+      context.res = Responsify.ErroHandling(error);
       return;
     }
 

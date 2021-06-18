@@ -50,20 +50,11 @@ class AccessorsGetInnovationEvidence {
         evidenceId
       );
 
-      if (!result) {
-        context.logger(`[${req.method}] ${req.url}`, Severity.Error, {
-          error: "Evidence was not found",
-        });
-        context.log.error("Evidence not found!");
-        context.res = Responsify.NotFound();
-        return;
-      }
-
       result.innovation = innovationId;
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
-      context.res = Responsify.Internal();
+      context.res = Responsify.ErroHandling(error);
       return;
     }
 

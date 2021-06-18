@@ -7,6 +7,12 @@ import {
   InnovatorOrganisationRole,
   OrganisationUser,
 } from "@domain/index";
+import {
+  InnovationNotFoundError,
+  InvalidParamsError,
+  InvalidUserRoleError,
+  MissingUserOrganisationError,
+} from "@services/errors";
 import { getMergedArray, hasAccessorRole } from "@services/helpers";
 import {
   InnovationListModel,
@@ -46,7 +52,7 @@ export class InnovationService extends BaseService<Innovation> {
     userOrganisations?: OrganisationUser[]
   ) {
     if (!userId || !innovationId) {
-      throw new Error(
+      throw new InvalidParamsError(
         "Invalid params. You must define the user id and the innovation id."
       );
     }
@@ -96,7 +102,7 @@ export class InnovationService extends BaseService<Innovation> {
         };
         break;
       default:
-        throw new Error("Invalid user role.");
+        throw new InvalidUserRoleError("Invalid user role.");
     }
 
     return super.find(innovationId, filterOptions);
@@ -108,18 +114,22 @@ export class InnovationService extends BaseService<Innovation> {
     filter?: any
   ): Promise<[Innovation[], number]> {
     if (!userId) {
-      throw new Error("Invalid userId. You must define the accessor id.");
+      throw new InvalidParamsError(
+        "Invalid userId. You must define the accessor id."
+      );
     }
 
     if (!userOrganisations || userOrganisations.length == 0) {
-      throw new Error("Invalid user. User has no organisations.");
+      throw new MissingUserOrganisationError(
+        "Invalid user. User has no organisations."
+      );
     }
 
     // BUSINESS RULE: An accessor has only one organization
     const userOrganisation = userOrganisations[0];
 
     if (!hasAccessorRole(userOrganisation.role)) {
-      throw new Error("Invalid user. User has an invalid role.");
+      throw new InvalidUserRoleError("Invalid user. User has an invalid role.");
     }
 
     const filterOptions = {
@@ -152,7 +162,9 @@ export class InnovationService extends BaseService<Innovation> {
     filter?: any
   ): Promise<Innovation[]> {
     if (!userId) {
-      throw new Error("Invalid userId. You must define the owner.");
+      throw new InvalidParamsError(
+        "Invalid userId. You must define the owner."
+      );
     }
 
     const filterOptions = {
@@ -168,7 +180,7 @@ export class InnovationService extends BaseService<Innovation> {
     userId: string
   ): Promise<InnovatorInnovationSummary> {
     if (!id || !userId) {
-      throw new Error(
+      throw new InvalidParamsError(
         "Invalid parameters. You must define the id and the userId."
       );
     }
@@ -194,13 +206,15 @@ export class InnovationService extends BaseService<Innovation> {
     userOrganisations: OrganisationUser[]
   ): Promise<AccessorInnovationSummary> {
     if (!id || !userId) {
-      throw new Error(
+      throw new InvalidParamsError(
         "Invalid parameters. You must define the id and the userId."
       );
     }
 
     if (!userOrganisations || userOrganisations.length == 0) {
-      throw new Error("Invalid user. User has no organisations.");
+      throw new MissingUserOrganisationError(
+        "Invalid user. User has no organisations."
+      );
     }
 
     const filterOptions = {
@@ -219,7 +233,7 @@ export class InnovationService extends BaseService<Innovation> {
       userOrganisations
     );
     if (!innovation) {
-      throw new Error("Invalid parameters. Innovation not found for the user.");
+      throw new InnovationNotFoundError("Innovation not found for the user.");
     }
 
     const b2cOwnerUser = await this.userService.getProfile(innovation.owner.id);
@@ -376,7 +390,7 @@ export class InnovationService extends BaseService<Innovation> {
 
   async submitInnovation(id: string, userId: string) {
     if (!id || !userId) {
-      throw new Error(
+      throw new InvalidParamsError(
         "Invalid parameters. You must define the id and the userId."
       );
     }
@@ -388,7 +402,7 @@ export class InnovationService extends BaseService<Innovation> {
 
     const innovation = await this.findInnovation(id, userId, filterOptions);
     if (!innovation) {
-      return null;
+      throw new InnovationNotFoundError("Innovation not found for the user.");
     }
 
     await this.repository.update(innovation.id, {
