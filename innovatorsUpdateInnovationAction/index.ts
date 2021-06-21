@@ -1,9 +1,9 @@
 import { HttpRequest } from "@azure/functions";
-import { AccessorOrganisationRole } from "@domain/index";
+import { UserType } from "@domain/index";
 import {
+  AllowedUserType,
   AppInsights,
   JwtDecoder,
-  OrganisationRoleValidator,
   SQLConnector,
   Validator,
 } from "../utils/decorators";
@@ -12,26 +12,23 @@ import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
 
-class AccessorsUpdateInnovationAction {
+class InnovatorsUpdateInnovationAction {
   @AppInsights()
   @SQLConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
   @JwtDecoder()
-  @OrganisationRoleValidator(
-    AccessorOrganisationRole.QUALIFYING_ACCESSOR,
-    AccessorOrganisationRole.ACCESSOR
-  )
+  @AllowedUserType(UserType.INNOVATOR)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
     const action = req.body;
     const actionId = req.params.actionId;
-    const accessorId = req.params.accessorId;
+    const innovatorId = req.params.innovatorId;
     const innovationId = req.params.innovationId;
     const oid = context.auth.decodedJwt.oid;
 
-    if (accessorId !== oid) {
+    if (innovatorId !== oid) {
       context.res = Responsify.Forbidden({ error: "Operation denied." });
       return;
     }
@@ -41,7 +38,7 @@ class AccessorsUpdateInnovationAction {
       result = await persistence.updateInnovationAction(
         context,
         actionId,
-        accessorId,
+        innovatorId,
         innovationId,
         action
       );
@@ -56,4 +53,4 @@ class AccessorsUpdateInnovationAction {
   }
 }
 
-export default AccessorsUpdateInnovationAction.httpTrigger;
+export default InnovatorsUpdateInnovationAction.httpTrigger;

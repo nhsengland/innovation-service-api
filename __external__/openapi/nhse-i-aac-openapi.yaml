@@ -1275,6 +1275,48 @@ paths:
           description: "Unauthorized"
         "403":
           description: "Forbidden"
+    put:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "UpdateInnovationAction"
+      description: "Updates an Innovation Action associated with the Innovation"
+      operationId: "innovators-update-innovation-action"
+      security:
+        - OpenId:
+            - innovators_write
+      parameters:
+        - name: innovatorId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: actionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/innovator-update-action-payload"
+      responses:
+        "200":
+          description: "Ok"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
 
   "/innovators/{innovatorId}/innovations/{innovationId}/actions":
     get:
@@ -1756,6 +1798,8 @@ components:
       $ref: "./schemas/innovator-create-payload.yaml"
     innovator-update-payload:
       $ref: "./schemas/innovator-update-payload.yaml"
+    innovator-update-action-payload:
+      $ref: "./schemas/innovator-update-action-payload.yaml"
     innovation-create-payload:
       $ref: "./schemas/innovation-create-payload.yaml"
     innovation-update-payload:

@@ -217,7 +217,7 @@ describe("Innovation Action Suite", () => {
       status: InnovationActionStatus.DELETED,
       comment: "new comment",
     };
-    const item = await actionService.update(
+    const item = await actionService.updateByAccessor(
       action.id,
       qualAccessorUser.id,
       innovation.id,
@@ -229,10 +229,10 @@ describe("Innovation Action Suite", () => {
     expect(item.status).toEqual(InnovationActionStatus.DELETED);
   });
 
-  it("should throw when update with invalid params", async () => {
+  it("should throw when accessor update with invalid params", async () => {
     let err;
     try {
-      await actionService.update(null, null, null, null, null);
+      await actionService.updateByAccessor(null, null, null, null, null);
     } catch (error) {
       err = error;
     }
@@ -242,10 +242,10 @@ describe("Innovation Action Suite", () => {
     expect(err.message).toContain("Invalid parameters.");
   });
 
-  it("should throw when update without user organisations", async () => {
+  it("should throw when accessor update without user organisations", async () => {
     let err;
     try {
-      await actionService.update("a", "a", "a", {}, []);
+      await actionService.updateByAccessor("a", "a", "a", {}, []);
     } catch (error) {
       err = error;
     }
@@ -253,6 +253,47 @@ describe("Innovation Action Suite", () => {
     expect(err).toBeDefined();
     expect(err).toBeInstanceOf(MissingUserOrganisationError);
     expect(err.message).toContain("Invalid user. User has no organisations.");
+  });
+
+  it("should update an action by innovator", async () => {
+    const actionCreateObj = {
+      description: "missing good descriptions",
+      section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+    };
+
+    const action = await actionService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      actionCreateObj,
+      qAccessorUserOrganisations
+    );
+
+    const actionUpdObj = {
+      status: InnovationActionStatus.DECLINED,
+      comment: "new comment",
+    };
+    const item = await actionService.updateByInnovator(
+      action.id,
+      innovatorUser.id,
+      innovation.id,
+      actionUpdObj
+    );
+
+    expect(item).toBeDefined();
+    expect(item.status).toEqual(InnovationActionStatus.DECLINED);
+  });
+
+  it("should throw when innovator update with invalid params", async () => {
+    let err;
+    try {
+      await actionService.updateByInnovator(null, null, null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+    expect(err.message).toContain("Invalid parameters.");
   });
 
   it("should find all innovation actions if Innovator", async () => {
@@ -489,7 +530,7 @@ describe("Innovation Action Suite", () => {
       },
       qAccessorUserOrganisations
     );
-    await actionService.update(
+    await actionService.updateByAccessor(
       action.id,
       qualAccessorUser.id,
       innovation.id,
@@ -531,7 +572,7 @@ describe("Innovation Action Suite", () => {
       },
       qAccessorUserOrganisations
     );
-    await actionService.update(
+    await actionService.updateByAccessor(
       action.id,
       qualAccessorUser.id,
       innovation.id,
