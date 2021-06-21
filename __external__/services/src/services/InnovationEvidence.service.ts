@@ -4,6 +4,11 @@ import {
   InnovationSectionCatalogue,
   InnovationSectionStatus,
 } from "@domain/index";
+import {
+  InvalidParamsError,
+  ResourceNotFoundError,
+  SectionNotFoundError,
+} from "@services/errors";
 import { getConnection, getRepository, Repository } from "typeorm";
 import { FileService } from "./File.service";
 import { InnovationSectionService } from "./InnovationSection.service";
@@ -22,12 +27,12 @@ export class InnovationEvidenceService {
 
   async find(id: string) {
     if (!id) {
-      throw new Error("Invalid parameters. You must define id.");
+      throw new InvalidParamsError("Invalid parameters. You must define id.");
     }
 
     const evidence = await this.findOne(id);
     if (!evidence) {
-      return null;
+      throw new ResourceNotFoundError("Evidence not found.");
     }
 
     const files = evidence.files?.map((obj: InnovationFile) => ({
@@ -53,7 +58,7 @@ export class InnovationEvidenceService {
     section: InnovationSectionCatalogue
   ) {
     if (!evidence || !section) {
-      throw new Error("Invalid parameters.");
+      throw new InvalidParamsError("Invalid parameters.");
     }
 
     await this.updateSectionStatus(evidence.innovation, section);
@@ -72,12 +77,12 @@ export class InnovationEvidenceService {
     section: InnovationSectionCatalogue
   ) {
     if (!id || !evidence || !section) {
-      throw new Error("Invalid parameters.");
+      throw new InvalidParamsError("Invalid parameters.");
     }
 
     const evidenceDb = await this.findOne(id);
     if (!evidenceDb) {
-      throw new Error("Evidence not found!");
+      throw new ResourceNotFoundError("Evidence not found!");
     }
 
     const deletedFiles = evidenceDb.files.filter(
@@ -97,12 +102,12 @@ export class InnovationEvidenceService {
 
   async delete(id: string, userId: string) {
     if (!id) {
-      throw new Error("Invalid parameters.");
+      throw new InvalidParamsError("Invalid parameters.");
     }
 
     const evidence = await this.findOne(id);
     if (!evidence) {
-      throw new Error("Evidence not found!");
+      throw new ResourceNotFoundError("Evidence not found!");
     }
 
     try {
@@ -136,7 +141,7 @@ export class InnovationEvidenceService {
     );
 
     if (innovationSections.length === 0) {
-      throw new Error("Invalid section name.");
+      throw new SectionNotFoundError("Invalid section name.");
     }
 
     const innovationSection = innovationSections[0];

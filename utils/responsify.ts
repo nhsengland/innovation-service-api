@@ -1,3 +1,15 @@
+import {
+  InnovationNotFoundError,
+  InnovationSupportNotFoundError,
+  InvalidDataError,
+  InvalidParamsError,
+  InvalidUserRoleError,
+  MissingUserOrganisationError,
+  MissingUserOrganisationUnitError,
+  ResourceNotFoundError,
+  SectionNotFoundError,
+} from "@services/errors";
+
 /* internal */
 const defaultRes = {
   headers: {
@@ -65,3 +77,31 @@ export const Internal = (data?: any, headers?: any) => {
 };
 
 /*****************/
+
+export const ErroHandling = (error: Error) => {
+  if (
+    error instanceof InvalidParamsError ||
+    error instanceof InnovationNotFoundError ||
+    error instanceof InnovationSupportNotFoundError ||
+    error instanceof SectionNotFoundError ||
+    error instanceof InvalidDataError
+  ) {
+    return BadRequest({
+      error: error.name,
+    });
+  } else if (error instanceof ResourceNotFoundError) {
+    return NotFound({
+      error: error.name,
+    });
+  } else if (
+    error instanceof MissingUserOrganisationError ||
+    error instanceof MissingUserOrganisationUnitError ||
+    error instanceof InvalidUserRoleError
+  ) {
+    return Forbidden({
+      error: error.name,
+    });
+  } else {
+    return Internal();
+  }
+};

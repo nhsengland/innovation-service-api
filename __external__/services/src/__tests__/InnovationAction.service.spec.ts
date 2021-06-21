@@ -14,6 +14,10 @@ import {
   OrganisationUser,
   User,
 } from "@domain/index";
+import {
+  InvalidParamsError,
+  MissingUserOrganisationError,
+} from "@services/errors";
 import { getConnection } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
@@ -179,6 +183,7 @@ describe("Innovation Action Suite", () => {
     }
 
     expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
     expect(err.message).toContain("Invalid parameters.");
   });
 
@@ -191,6 +196,7 @@ describe("Innovation Action Suite", () => {
     }
 
     expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(MissingUserOrganisationError);
     expect(err.message).toContain("Invalid user. User has no organisations.");
   });
 
@@ -232,6 +238,7 @@ describe("Innovation Action Suite", () => {
     }
 
     expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
     expect(err.message).toContain("Invalid parameters.");
   });
 
@@ -244,6 +251,7 @@ describe("Innovation Action Suite", () => {
     }
 
     expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(MissingUserOrganisationError);
     expect(err.message).toContain("Invalid user. User has no organisations.");
   });
 

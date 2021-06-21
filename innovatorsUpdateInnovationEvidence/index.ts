@@ -59,7 +59,7 @@ class InnovatorsUpdateInnovationEvidence {
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
-      context.res = Responsify.Internal();
+      context.res = Responsify.ErroHandling(error);
       return;
     }
 

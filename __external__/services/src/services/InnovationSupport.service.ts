@@ -8,6 +8,14 @@ import {
   OrganisationUnitUser,
   OrganisationUser,
 } from "@domain/index";
+import {
+  InnovationNotFoundError,
+  InnovationSupportNotFoundError,
+  InvalidParamsError,
+  InvalidUserRoleError,
+  MissingUserOrganisationError,
+  MissingUserOrganisationUnitError,
+} from "@services/errors";
 import { InnovationSupportModel } from "@services/models/InnovationSupportModel";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { InnovationService } from "./Innovation.service";
@@ -33,7 +41,7 @@ export class InnovationSupportService {
     userOrganisations?: OrganisationUser[]
   ): Promise<InnovationSupportModel> {
     if (!id || !userId || !innovationId) {
-      throw new Error("Invalid parameters.");
+      throw new InvalidParamsError("Invalid parameters.");
     }
 
     const innovation = await this.innovationService.findInnovation(
@@ -43,12 +51,16 @@ export class InnovationSupportService {
       userOrganisations
     );
     if (!innovation) {
-      return null;
+      throw new InnovationNotFoundError(
+        "Invalid parameters. Innovation not found."
+      );
     }
 
     const innovationSupport = await this.findOne(id, innovationId);
     if (!innovationSupport) {
-      return null;
+      throw new InnovationSupportNotFoundError(
+        "Invalid parameters. Innovation Support not found."
+      );
     }
 
     // Get user personal information from b2c
@@ -80,11 +92,13 @@ export class InnovationSupportService {
     userOrganisations: OrganisationUser[]
   ) {
     if (!userId || !support) {
-      throw new Error("Invalid parameters.");
+      throw new InvalidParamsError("Invalid parameters.");
     }
 
     if (!userOrganisations || userOrganisations.length == 0) {
-      throw new Error("Invalid user. User has no organisations.");
+      throw new MissingUserOrganisationError(
+        "Invalid user. User has no organisations."
+      );
     }
 
     // BUSINESS RULE: An accessor has only one organization
@@ -94,13 +108,15 @@ export class InnovationSupportService {
       !userOrganisation.userOrganisationUnits ||
       userOrganisation.userOrganisationUnits.length == 0
     ) {
-      throw new Error("Invalid user. User has no organisation units.");
+      throw new MissingUserOrganisationUnitError(
+        "Invalid user. User has no organisation units."
+      );
     }
 
     if (
       userOrganisation.role !== AccessorOrganisationRole.QUALIFYING_ACCESSOR
     ) {
-      throw new Error("Invalid user. User has an invalid role.");
+      throw new InvalidUserRoleError("Invalid user. User has an invalid role.");
     }
 
     // BUSINESS RULE: An accessor has only one organization unit
@@ -111,7 +127,9 @@ export class InnovationSupportService {
       userOrganisations
     );
     if (!innovation) {
-      throw new Error("Invalid parameters. Innovation not found for the user.");
+      throw new InnovationNotFoundError(
+        "Invalid parameters. Innovation not found for the user."
+      );
     }
 
     const organisationUnit =
@@ -151,11 +169,13 @@ export class InnovationSupportService {
     userOrganisations: OrganisationUser[]
   ) {
     if (!id || !userId || !innovationId || !support) {
-      throw new Error("Invalid parameters.");
+      throw new InvalidParamsError("Invalid parameters.");
     }
 
     if (!userOrganisations || userOrganisations.length == 0) {
-      throw new Error("Invalid user. User has no organisations.");
+      throw new MissingUserOrganisationError(
+        "Invalid user. User has no organisations."
+      );
     }
 
     // BUSINESS RULE: An accessor has only one organization
@@ -165,13 +185,15 @@ export class InnovationSupportService {
       !userOrganisation.userOrganisationUnits ||
       userOrganisation.userOrganisationUnits.length == 0
     ) {
-      throw new Error("Invalid user. User has no organisation units.");
+      throw new MissingUserOrganisationUnitError(
+        "Invalid user. User has no organisation units."
+      );
     }
 
     if (
       userOrganisation.role !== AccessorOrganisationRole.QUALIFYING_ACCESSOR
     ) {
-      throw new Error("Invalid user. User has an invalid role.");
+      throw new InvalidUserRoleError("Invalid user. User has an invalid role.");
     }
 
     const innovation = await this.innovationService.findInnovation(
@@ -210,7 +232,9 @@ export class InnovationSupportService {
 
         const actions = innovationActions.filter(
           (ia: InnovationAction) =>
-            ia.status === InnovationActionStatus.REQUESTED
+            ia.status === InnovationActionStatus.REQUESTED ||
+            ia.status === InnovationActionStatus.STARTED ||
+            ia.status === InnovationActionStatus.IN_REVIEW
         );
 
         for (let i = 0; i < actions.length; i++) {

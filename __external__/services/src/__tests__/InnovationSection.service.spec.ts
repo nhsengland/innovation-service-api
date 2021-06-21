@@ -35,6 +35,11 @@ import {
   InnovationAction,
   InnovationSupport,
 } from "@domain/index";
+import {
+  InnovationNotFoundError,
+  InvalidParamsError,
+  SectionNotFoundError,
+} from "@services/errors";
 import { InnovationSectionModel } from "@services/models/InnovationSectionModel";
 import { getConnection } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
@@ -131,6 +136,7 @@ describe("Innovation Section Service Suite", () => {
     }
 
     expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
     expect(err.message).toContain(
       "Invalid parameters. You must define the innovation id and the userId."
     );
@@ -148,6 +154,7 @@ describe("Innovation Section Service Suite", () => {
     }
 
     expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationNotFoundError);
     expect(err.message).toContain(
       "Invalid parameters. Innovation not found for the user."
     );
@@ -269,6 +276,7 @@ describe("Innovation Section Service Suite", () => {
     }
 
     expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
     expect(err.message).toContain(
       "Invalid parameters. You must define innovation id and section."
     );
@@ -287,6 +295,7 @@ describe("Innovation Section Service Suite", () => {
     }
 
     expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationNotFoundError);
     expect(err.message).toContain("Invalid parameters. Innovation not found.");
   });
 
@@ -303,6 +312,7 @@ describe("Innovation Section Service Suite", () => {
     }
 
     expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(SectionNotFoundError);
     expect(err.message).toContain("Invalid parameters. Section not found.");
   });
 
@@ -522,6 +532,7 @@ describe("Innovation Section Service Suite", () => {
     }
 
     expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
     expect(err.message).toContain("Invalid parameters.");
   });
 
@@ -539,6 +550,7 @@ describe("Innovation Section Service Suite", () => {
     }
 
     expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationNotFoundError);
     expect(err.message).toContain(
       "Invalid parameters. Innovation not found for the user."
     );
@@ -558,6 +570,7 @@ describe("Innovation Section Service Suite", () => {
     }
 
     expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(SectionNotFoundError);
     expect(err.message).toContain("Invalid parameters. Section not found.");
   });
 
@@ -687,6 +700,7 @@ describe("Innovation Section Service Suite", () => {
     }
 
     expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
     expect(err.message).toContain("Invalid parameters.");
   });
 
@@ -703,6 +717,7 @@ describe("Innovation Section Service Suite", () => {
     }
 
     expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationNotFoundError);
     expect(err.message).toContain(
       "Invalid parameters. Innovation not found for the user."
     );

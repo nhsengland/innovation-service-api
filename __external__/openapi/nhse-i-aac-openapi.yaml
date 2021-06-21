@@ -551,29 +551,6 @@ paths:
           description: "Forbidden"
 
   "/innovators":
-    get:
-      tags:
-        - "Innovator"
-        - "List"
-      description: "Retrieves the list of all innovators"
-      operationId: "innovators-get-all"
-      parameters:
-        - name: Authorization
-          in: header
-          schema:
-            type: string
-          required: true
-      security:
-        - OpenId:
-            - innovators_list
-      responses:
-        "200":
-          $ref: "#/components/responses/innovator-get-all-200"
-        "404":
-          description: "Not Found"
-        "401":
-          description: "Unauthorized"
-
     post:
       tags:
         - "Innovator"
@@ -1770,8 +1747,6 @@ components:
       $ref: "./responses/accessor-get-innovations-200.yaml"
     accessor-get-innovation-assessment-200:
       $ref: "./responses/accessor-get-innovation-assessment-200.yaml"
-    innovator-get-all-200:
-      $ref: "./responses/innovator-get-all-200.yaml"
     innovator-get-one-200:
       $ref: "./responses/innovator-get-one-200.yaml"
     innovator-create-201:

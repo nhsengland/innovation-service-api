@@ -1,9 +1,14 @@
 import { HttpRequest } from "@azure/functions";
-import { InnovatorOrganisationRole } from "@domain/index";
+import { UserType } from "@domain/index";
 import {
+  InnovationNotFoundError,
+  InvalidParamsError,
+  ResourceNotFoundError,
+} from "@services/errors";
+import {
+  AllowedUserType,
   AppInsights,
   JwtDecoder,
-  OrganisationRoleValidator,
   SQLConnector,
 } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
@@ -14,7 +19,7 @@ class InnovatorsGetInnovationAction {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder()
-  @OrganisationRoleValidator(InnovatorOrganisationRole.INNOVATOR_OWNER)
+  @AllowedUserType(UserType.INNOVATOR)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
@@ -40,7 +45,8 @@ class InnovatorsGetInnovationAction {
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
-      context.res = Responsify.Internal();
+      context.res = Responsify.ErroHandling(error);
+
       return;
     }
 

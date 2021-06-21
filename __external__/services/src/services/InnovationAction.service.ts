@@ -2,10 +2,19 @@ import {
   Comment,
   InnovationAction,
   InnovationActionStatus,
-  InnovationSupport,
   InnovationSectionAliasCatalogue,
+  InnovationSupport,
   OrganisationUser,
 } from "@domain/index";
+import {
+  InnovationNotFoundError,
+  InnovationSupportNotFoundError,
+  InvalidDataError,
+  InvalidParamsError,
+  MissingUserOrganisationError,
+  MissingUserOrganisationUnitError,
+  ResourceNotFoundError,
+} from "@services/errors";
 import { InnovationActionModel } from "@services/models/InnovationActionModel";
 import {
   Connection,
@@ -42,11 +51,13 @@ export class InnovationActionService {
     userOrganisations: OrganisationUser[]
   ) {
     if (!userId || !action || !innovationId) {
-      throw new Error("Invalid parameters.");
+      throw new InvalidParamsError("Invalid parameters.");
     }
 
     if (!userOrganisations || userOrganisations.length == 0) {
-      throw new Error("Invalid user. User has no organisations.");
+      throw new MissingUserOrganisationError(
+        "Invalid user. User has no organisations."
+      );
     }
 
     // BUSINESS RULE: An accessor has only one organization
@@ -56,7 +67,9 @@ export class InnovationActionService {
       !userOrganisation.userOrganisationUnits ||
       userOrganisation.userOrganisationUnits.length == 0
     ) {
-      throw new Error("Invalid user. User has no organisation units.");
+      throw new MissingUserOrganisationUnitError(
+        "Invalid user. User has no organisation units."
+      );
     }
 
     // BUSINESS RULE: An accessor has only one organization unit
@@ -74,7 +87,9 @@ export class InnovationActionService {
       userOrganisations
     );
     if (!innovation) {
-      throw new Error("Invalid parameters. Innovation not found for the user.");
+      throw new InnovationNotFoundError(
+        "Invalid parameters. Innovation not found for the user."
+      );
     }
 
     const sections = await innovation.sections;
@@ -102,7 +117,9 @@ export class InnovationActionService {
       (is: InnovationSupport) => is.organisationUnit.id === organisationUnit.id
     );
     if (!innovationSupport) {
-      throw new Error("Invalid parameters. Innovation Support not found.");
+      throw new InnovationSupportNotFoundError(
+        "Invalid parameters. Innovation Support not found."
+      );
     }
 
     const actionObj = {
@@ -126,11 +143,13 @@ export class InnovationActionService {
     userOrganisations: OrganisationUser[]
   ) {
     if (!id || !userId || !action) {
-      throw new Error("Invalid parameters.");
+      throw new InvalidParamsError("Invalid parameters.");
     }
 
     if (!userOrganisations || userOrganisations.length == 0) {
-      throw new Error("Invalid user. User has no organisations.");
+      throw new MissingUserOrganisationError(
+        "Invalid user. User has no organisations."
+      );
     }
 
     // BUSINESS RULE: An accessor has only one organization
@@ -140,7 +159,9 @@ export class InnovationActionService {
       !userOrganisation.userOrganisationUnits ||
       userOrganisation.userOrganisationUnits.length == 0
     ) {
-      throw new Error("Invalid user. User has no organisation units.");
+      throw new MissingUserOrganisationUnitError(
+        "Invalid user. User has no organisation units."
+      );
     }
 
     // BUSINESS RULE: An user has only one organization unit
@@ -154,7 +175,9 @@ export class InnovationActionService {
       userOrganisations
     );
     if (!innovation) {
-      throw new Error("Invalid parameters. Innovation not found for the user.");
+      throw new InvalidParamsError(
+        "Invalid parameters. Innovation not found for the user."
+      );
     }
 
     const innovationAction = await this.findOne(id);
@@ -163,7 +186,7 @@ export class InnovationActionService {
       innovationAction.innovationSupport.organisationUnit.id !==
         organisationUnit.id
     ) {
-      throw new Error("Invalid action data.");
+      throw new InvalidDataError("Invalid action data.");
     }
 
     return await this.connection.transaction(async (transactionManager) => {
@@ -193,7 +216,7 @@ export class InnovationActionService {
     userOrganisations?: OrganisationUser[]
   ): Promise<InnovationActionModel> {
     if (!userId || !innovationId) {
-      throw new Error("Invalid parameters.");
+      throw new InvalidParamsError("Invalid parameters.");
     }
 
     const innovation = await this.innovationService.findInnovation(
@@ -203,12 +226,16 @@ export class InnovationActionService {
       userOrganisations
     );
     if (!innovation) {
-      throw new Error("Invalid parameters. Innovation not found for the user.");
+      throw new InnovationNotFoundError(
+        "Invalid parameters. Innovation not found for the user."
+      );
     }
 
     const innovationAction = await this.findOne(id);
     if (!innovationAction) {
-      throw new Error("Invalid parameters. Innovation action not found.");
+      throw new ResourceNotFoundError(
+        "Invalid parameters. Innovation action not found."
+      );
     }
 
     const b2cCreatorUser = await this.userService.getProfile(
@@ -240,7 +267,7 @@ export class InnovationActionService {
     userOrganisations?: OrganisationUser[]
   ): Promise<InnovationActionModel[]> {
     if (!userId || !innovationId) {
-      throw new Error("Invalid parameters.");
+      throw new InvalidParamsError("Invalid parameters.");
     }
 
     const innovation = await this.innovationService.findInnovation(
@@ -250,7 +277,9 @@ export class InnovationActionService {
       userOrganisations
     );
     if (!innovation) {
-      throw new Error("Invalid parameters. Innovation not found for the user.");
+      throw new InnovationNotFoundError(
+        "Invalid parameters. Innovation not found for the user."
+      );
     }
 
     const filterOptions: FindManyOptions<InnovationAction> = {

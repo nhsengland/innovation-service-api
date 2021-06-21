@@ -41,19 +41,10 @@ class AccessorsGetInnovationAssessment {
         assessmentId,
         innovationId
       );
-
-      if (!result) {
-        context.logger(`[${req.method}] ${req.url}`, Severity.Error, {
-          error: "Assessment was not found",
-        });
-        context.log.error("Assessment not found!");
-        context.res = Responsify.NotFound();
-        return;
-      }
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
-      context.res = Responsify.Internal();
+      context.res = Responsify.ErroHandling(error);
       return;
     }
 

@@ -15,6 +15,11 @@ import {
   OrganisationUser,
   User,
 } from "@domain/index";
+import {
+  InnovationNotFoundError,
+  InvalidParamsError,
+  InvalidUserRoleError,
+} from "@services/errors";
 import { InnovationListModel } from "@services/models/InnovationListModel";
 import { UserService } from "@services/services/User.service";
 import { getConnection } from "typeorm";
@@ -143,6 +148,7 @@ describe("Innovator Service Suite", () => {
     }
 
     expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
     expect(err.message).toContain("Invalid userId. You must define the owner.");
   });
 
@@ -207,6 +213,7 @@ describe("Innovator Service Suite", () => {
     }
 
     expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
   });
 
   it("should return empty when findAllByAccessor() with a user without organisations", async () => {
@@ -234,6 +241,7 @@ describe("Innovator Service Suite", () => {
     }
 
     expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidUserRoleError);
   });
 
   it("should find the innovation by innovator Id and innovation Id when getInnovationOverview()", async () => {
@@ -258,6 +266,7 @@ describe("Innovator Service Suite", () => {
     }
 
     expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
   });
 
   it("should throw an error when getInnovationOverview() without innovatorId", async () => {
@@ -269,6 +278,7 @@ describe("Innovator Service Suite", () => {
     }
 
     expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
   });
 
   it("should find the innovation with QUALIFYING_ACCESSOR and return an innovation summary", async () => {
@@ -413,17 +423,22 @@ describe("Innovator Service Suite", () => {
     }
 
     expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
   });
 
   it("should throw an error when submitInnovation() with innovation not found", async () => {
     let err;
     try {
-      await innovationService.submitInnovation("id", "id");
+      await innovationService.submitInnovation(
+        "62e5c505-afe4-47be-9b46-0f0b79dca954",
+        "id"
+      );
     } catch (error) {
       err = error;
     }
 
     expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationNotFoundError);
   });
 
   it("should not list ASSESSMENT innovations with status CREATED", async () => {

@@ -6,6 +6,12 @@ import {
   Organisation,
   OrganisationUser,
 } from "@domain/index";
+import {
+  InnovationNotFoundError,
+  InvalidParamsError,
+  MissingUserOrganisationError,
+  ResourceNotFoundError,
+} from "@services/errors";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { InnovationAssessmentResult } from "../models/InnovationAssessmentResult";
 import { InnovationService } from "./Innovation.service";
@@ -29,12 +35,12 @@ export class InnovationAssessmentService {
     innovationId: string
   ): Promise<InnovationAssessmentResult> {
     if (!id || !innovationId) {
-      throw new Error("Invalid parameters.");
+      throw new InvalidParamsError("Invalid parameters.");
     }
 
     const assessment = await this.findOne(id, innovationId);
     if (!assessment) {
-      return null;
+      throw new ResourceNotFoundError("Assessment not found!");
     }
 
     const b2cUser = await this.userService.getProfile(assessment.assignTo.id);
@@ -82,11 +88,13 @@ export class InnovationAssessmentService {
     userOrganisations: OrganisationUser[]
   ): Promise<InnovationAssessmentResult> {
     if (!id || !innovationId || !userOrganisations) {
-      throw new Error("Invalid parameters.");
+      throw new InvalidParamsError("Invalid parameters.");
     }
 
     if (!userOrganisations || userOrganisations.length == 0) {
-      throw new Error("Invalid user. User has no organisations.");
+      throw new MissingUserOrganisationError(
+        "Invalid user. User has no organisations."
+      );
     }
 
     const innovation = await this.innovationService.findInnovation(
@@ -97,7 +105,7 @@ export class InnovationAssessmentService {
     );
 
     if (!innovation) {
-      return null;
+      throw new InnovationNotFoundError("Innovation not found for the user.");
     }
 
     return await this.find(id, innovationId);
@@ -105,7 +113,7 @@ export class InnovationAssessmentService {
 
   async create(userId: string, innovationId: string, assessment: any) {
     if (!userId || !assessment) {
-      throw new Error("Invalid parameters.");
+      throw new InvalidParamsError("Invalid parameters.");
     }
 
     return await this.connection.transaction(async (transactionManager) => {
@@ -145,12 +153,12 @@ export class InnovationAssessmentService {
     assessment: any
   ) {
     if (!id || !userId || !assessment) {
-      throw new Error("Invalid parameters.");
+      throw new InvalidParamsError("Invalid parameters.");
     }
 
     const assessmentDb = await this.findOne(id, innovationId);
     if (!assessmentDb) {
-      throw new Error("Assessment not found!");
+      throw new ResourceNotFoundError("Assessment not found!");
     }
 
     return await this.connection.transaction(async (transactionManager) => {
