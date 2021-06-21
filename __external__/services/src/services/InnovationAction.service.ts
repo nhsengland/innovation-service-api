@@ -1,4 +1,5 @@
 import {
+  AccessorOrganisationRole,
   Comment,
   InnovationAction,
   InnovationActionStatus,
@@ -11,10 +12,12 @@ import {
   InnovationSupportNotFoundError,
   InvalidDataError,
   InvalidParamsError,
+  InvalidUserRoleError,
   MissingUserOrganisationError,
   MissingUserOrganisationUnitError,
   ResourceNotFoundError,
 } from "@services/errors";
+import { hasAccessorRole } from "@services/helpers";
 import { InnovationActionModel } from "@services/models/InnovationActionModel";
 import {
   Connection,
@@ -261,6 +264,86 @@ export class InnovationActionService {
     };
   }
 
+  async findAllByAccessor(
+    userId: string,
+    userOrganisations: OrganisationUser[],
+    openActions: boolean,
+    skip: number,
+    take: number,
+    order?: { [key: string]: string }
+  ) {
+    if (!userId) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+
+    if (!userOrganisations || userOrganisations.length == 0) {
+      throw new MissingUserOrganisationError(
+        "Invalid user. User has no organisations."
+      );
+    }
+
+    // BUSINESS RULE: An accessor has only one organization
+    const userOrganisation = userOrganisations[0];
+
+    if (!hasAccessorRole(userOrganisation.role)) {
+      throw new InvalidUserRoleError("Invalid user. User has an invalid role.");
+    }
+
+    const statuses = this.getFilterStatusByOpen(openActions);
+    const filterOptions: FindManyOptions<InnovationAction> = {
+      relations: [],
+      where: {},
+      skip,
+      take,
+      order: order || { createdAt: "DESC" },
+    };
+
+    if (
+      userOrganisation.role === AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    ) {
+      filterOptions.relations = [
+        "innovationSection",
+        "innovationSection.innovation",
+        "innovationSection.innovation.organisationShares",
+      ];
+      filterOptions.where = `organisation_id = '${
+        userOrganisation.organisation.id
+      }' and InnovationAction.status in (${statuses.toString()})`;
+    } else {
+      // BUSINESS RULE: An user has only one organization unit
+      const organisationUnit =
+        userOrganisation.userOrganisationUnits[0].organisationUnit;
+
+      filterOptions.relations = [
+        "innovationSection",
+        "innovationSection.innovation",
+        "innovationSection.innovation.innovationSupports",
+      ];
+      filterOptions.where = `organisation_unit_id = '${
+        organisationUnit.id
+      }' and InnovationAction.status in (${statuses.toString()})`;
+    }
+
+    const result = await this.actionRepo.findAndCount(filterOptions);
+    const actions = result[0]?.map((ia: InnovationAction) => ({
+      id: ia.id,
+      displayId: ia.displayId,
+      innovation: {
+        id: ia.innovationSection.innovation.id,
+        name: ia.innovationSection.innovation.name,
+      },
+      status: ia.status,
+      section: ia.innovationSection.section,
+      createdAt: ia.createdAt,
+      updatedAt: ia.updatedAt,
+    }));
+
+    return {
+      data: actions,
+      count: result[1],
+    };
+  }
+
   async findAllByInnovation(
     userId: string,
     innovationId: string,
@@ -315,5 +398,22 @@ export class InnovationActionService {
   private getActionDisplayId(section: string, counter: number) {
     const alias = InnovationSectionAliasCatalogue[section] || "ZZ";
     return alias + (++counter).toString().slice(-2).padStart(2, "0");
+  }
+
+  private getFilterStatusByOpen(openActions: boolean) {
+    if (openActions) {
+      return [
+        `'${InnovationActionStatus.IN_REVIEW}'`,
+        `'${InnovationActionStatus.REQUESTED}'`,
+        `'${InnovationActionStatus.CONTINUE}'`,
+        `'${InnovationActionStatus.STARTED}'`,
+      ];
+    } else {
+      return [
+        `'${InnovationActionStatus.COMPLETED}'`,
+        `'${InnovationActionStatus.DECLINED}'`,
+        `'${InnovationActionStatus.DELETED}'`,
+      ];
+    }
   }
 }

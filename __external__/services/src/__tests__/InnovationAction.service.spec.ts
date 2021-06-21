@@ -412,4 +412,154 @@ describe("Innovation Action Suite", () => {
     expect(item).toBeDefined();
     expect(item.id).toEqual(action.id);
   });
+
+  it("should find all open actions if Qual. Accessor", async () => {
+    await actionService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+      },
+      qAccessorUserOrganisations
+    );
+
+    await actionService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.MARKET_RESEARCH,
+      },
+      qAccessorUserOrganisations
+    );
+
+    const item = await actionService.findAllByAccessor(
+      qualAccessorUser.id,
+      qAccessorUserOrganisations,
+      true,
+      0,
+      10
+    );
+
+    expect(item).toBeDefined();
+    expect(item.count).toEqual(2);
+  });
+
+  it("should find all open actions if Accessor", async () => {
+    await actionService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+      },
+      qAccessorUserOrganisations
+    );
+
+    await actionService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.MARKET_RESEARCH,
+      },
+      qAccessorUserOrganisations
+    );
+
+    const item = await actionService.findAllByAccessor(
+      accessorUser.id,
+      accessorUserOrganisations,
+      true,
+      0,
+      10
+    );
+
+    expect(item).toBeDefined();
+    expect(item.count).toEqual(2);
+  });
+
+  it("should find all close actions if Qual. Accessor", async () => {
+    const action = await actionService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+      },
+      qAccessorUserOrganisations
+    );
+    await actionService.update(
+      action.id,
+      qualAccessorUser.id,
+      innovation.id,
+      {
+        status: InnovationActionStatus.COMPLETED,
+      },
+      qAccessorUserOrganisations
+    );
+
+    await actionService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.MARKET_RESEARCH,
+      },
+      qAccessorUserOrganisations
+    );
+
+    const item = await actionService.findAllByAccessor(
+      qualAccessorUser.id,
+      qAccessorUserOrganisations,
+      false,
+      0,
+      10
+    );
+
+    expect(item).toBeDefined();
+    expect(item.count).toEqual(1);
+  });
+
+  it("should find all close actions if Accessor", async () => {
+    const action = await actionService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+      },
+      qAccessorUserOrganisations
+    );
+    await actionService.update(
+      action.id,
+      qualAccessorUser.id,
+      innovation.id,
+      {
+        status: InnovationActionStatus.COMPLETED,
+      },
+      qAccessorUserOrganisations
+    );
+
+    await actionService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.MARKET_RESEARCH,
+      },
+      qAccessorUserOrganisations
+    );
+
+    const item = await actionService.findAllByAccessor(
+      accessorUser.id,
+      accessorUserOrganisations,
+      false,
+      0,
+      10
+    );
+
+    expect(item).toBeDefined();
+    expect(item.count).toEqual(1);
+  });
 });
