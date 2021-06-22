@@ -114,7 +114,7 @@ describe("Innovation Action Test Suite", () => {
       const innovationSupportObj = InnovationSupport.new({
         organisationUnit,
         innovation,
-        status: InnovationSupportStatus.UNNASSIGNED,
+        status: InnovationSupportStatus.UNASSIGNED,
       });
       const innovationSupport = await innovationSupportRepo.save(
         innovationSupportObj

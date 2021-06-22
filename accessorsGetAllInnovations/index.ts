@@ -70,7 +70,7 @@ class AccessorsGetAllInnovations {
           supportStatus:
             inno.innovationSupports && inno.innovationSupports.length > 0
               ? inno.innovationSupports[0].status
-              : InnovationSupportStatus.UNNASSIGNED,
+              : InnovationSupportStatus.UNASSIGNED,
           createdAt: inno.createdAt,
           updatedAt: inno.updatedAt,
           assessment:

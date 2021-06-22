@@ -1073,6 +1073,80 @@ paths:
         "403":
           description: "Forbidden"
 
+  "/innovators/{innovatorId}/innovations/{innovationId}/shares":
+    get:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "GetInnovationShares"
+      description: "Get Innovation Shares associated with the Innovation"
+      operationId: "innovators-get-innovation-shares"
+      security:
+        - OpenId:
+            - innovation_details
+      parameters:
+        - name: innovatorId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+    put:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "UpdateInnovationShares"
+      description: "Updates Innovation Shares associated with the Innovation"
+      operationId: "innovators-update-innovation-shares"
+      security:
+        - OpenId:
+            - innovation_write
+      parameters:
+        - name: innovatorId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/innovation-update-shares-payload"
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
   "/innovators/{innovatorId}/innovations/{innovationId}/evidence":
     post:
       tags:
@@ -1806,6 +1880,8 @@ components:
       $ref: "./schemas/innovation-update-payload.yaml"
     innovation-update-section-payload:
       $ref: "./schemas/innovation-update-section-payload.yaml"
+    innovation-update-shares-payload:
+      $ref: "./schemas/innovation-update-shares-payload.yaml"
     innovation-update-evidence-payload:
       $ref: "./schemas/innovation-update-evidence-payload.yaml"
     innovation-create-evidence-payload:

@@ -1,10 +1,13 @@
 import {
   AccessorOrganisationRole,
   Innovation,
+  InnovationAction,
+  InnovationActionStatus,
   InnovationStatus,
   InnovationSupport,
   InnovationSupportStatus,
   InnovatorOrganisationRole,
+  Organisation,
   OrganisationUser,
 } from "@domain/index";
 import {
@@ -21,6 +24,7 @@ import {
 import { ProfileModel } from "@services/models/ProfileModel";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
 import {
+  Connection,
   FindManyOptions,
   FindOneOptions,
   getConnection,
@@ -36,11 +40,12 @@ import { BaseService } from "./Base.service";
 import { UserService } from "./User.service";
 
 export class InnovationService extends BaseService<Innovation> {
+  private readonly connection: Connection;
   private readonly userService: UserService;
 
   constructor(connectionName?: string) {
     super(Innovation, connectionName);
-    getConnection(connectionName);
+    this.connection = getConnection(connectionName);
 
     this.userService = new UserService(connectionName);
   }
@@ -415,6 +420,158 @@ export class InnovationService extends BaseService<Innovation> {
       id: innovation.id,
       status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
     };
+  }
+
+  async getOrganisationShares(innovationId: string, userId: string) {
+    if (!innovationId || !userId) {
+      throw new InvalidParamsError(
+        "Invalid parameters. You must define the innovationId and the userId."
+      );
+    }
+
+    const filterOptions = {
+      relations: [
+        "organisationShares",
+        "innovationSupports",
+        "innovationSupports.organisationUnit",
+        "innovationSupports.organisationUnit.organisation",
+      ],
+      where: { owner: userId },
+    };
+    const innovation = await this.findInnovation(
+      innovationId,
+      userId,
+      filterOptions
+    );
+    if (!innovation) {
+      throw new InnovationNotFoundError("Innovation not found for the user.");
+    }
+
+    const supports = innovation.innovationSupports;
+    const shares = innovation.organisationShares;
+
+    const result = shares?.map((os: Organisation) => {
+      const organisationSupports = supports.filter(
+        (is: InnovationSupport) => is.organisationUnit.organisation.id === os.id
+      );
+
+      let status: InnovationSupportStatus = InnovationSupportStatus.UNASSIGNED;
+      if (organisationSupports.length === 1) {
+        status = organisationSupports[0].status;
+      } else if (organisationSupports.length > 1) {
+        const idx = organisationSupports.findIndex(
+          (is: InnovationSupport) =>
+            is.status != InnovationSupportStatus.COMPLETE &&
+            is.status != InnovationSupportStatus.WITHDRAWN &&
+            is.status != InnovationSupportStatus.UNSUITABLE
+        );
+
+        if (idx !== -1) {
+          status = organisationSupports[idx].status;
+        } else {
+          status = organisationSupports[0].status;
+        }
+      }
+
+      return {
+        id: os.id,
+        status,
+      };
+    });
+
+    return result;
+  }
+
+  async updateOrganisationShares(
+    innovationId: string,
+    userId: string,
+    organisations: string[]
+  ) {
+    if (!innovationId || !userId) {
+      throw new InvalidParamsError(
+        "Invalid parameters. You must define the innovationId and the userId."
+      );
+    }
+
+    if (!organisations || organisations.length < 1) {
+      throw new InvalidParamsError(
+        "Invalid parameters. You must define at least one organisation."
+      );
+    }
+
+    const filterOptions = {
+      relations: [
+        "organisationShares",
+        "innovationSupports",
+        "innovationSupports.organisationUnit",
+        "innovationSupports.organisationUnit.organisation",
+      ],
+      where: { owner: userId },
+    };
+    const innovation = await this.findInnovation(
+      innovationId,
+      userId,
+      filterOptions
+    );
+    if (!innovation) {
+      throw new InnovationNotFoundError("Innovation not found for the user.");
+    }
+
+    const supports = innovation.innovationSupports;
+    const shares = innovation.organisationShares;
+
+    const deletedShares = shares.filter(
+      (org: Organisation) => !organisations.includes(org.id)
+    );
+
+    return await this.connection.transaction(async (transactionManager) => {
+      for (let orgIdx = 0; orgIdx < deletedShares.length; orgIdx++) {
+        const organisationSupports = supports.filter(
+          (ia: InnovationSupport) =>
+            ia.organisationUnit.organisation.id === deletedShares[orgIdx].id
+        );
+
+        if (organisationSupports.length > 0) {
+          for (
+            let orgSupIdx = 0;
+            orgSupIdx < organisationSupports.length;
+            orgSupIdx++
+          ) {
+            const innovationSupport = organisationSupports[orgSupIdx];
+            innovationSupport.organisationUnitUsers = [];
+
+            const innovationActions = await innovationSupport.actions;
+            const actions = innovationActions.filter(
+              (ia: InnovationAction) =>
+                ia.status === InnovationActionStatus.REQUESTED ||
+                ia.status === InnovationActionStatus.STARTED ||
+                ia.status === InnovationActionStatus.IN_REVIEW
+            );
+
+            for (let actionIdx = 0; actionIdx < actions.length; actionIdx++) {
+              await transactionManager.update(
+                InnovationAction,
+                { id: actions[actionIdx].id },
+                { status: InnovationActionStatus.DECLINED, updatedBy: userId }
+              );
+            }
+
+            innovationSupport.status = InnovationSupportStatus.UNASSIGNED;
+            innovationSupport.updatedBy = userId;
+            innovationSupport.deletedAt = new Date();
+
+            await transactionManager.save(InnovationSupport, innovationSupport);
+          }
+        }
+      }
+
+      innovation.updatedBy = userId;
+      innovation.organisationShares = organisations.map((id: string) =>
+        Organisation.new({ id })
+      );
+
+      return await transactionManager.save(Innovation, innovation);
+    });
   }
 
   private getUserOrganisationName(user: ProfileModel) {

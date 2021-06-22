@@ -7,6 +7,7 @@ import {
   InnovationSection,
   InnovationStatus,
   InnovationSupport,
+  InnovationSupportStatus,
   InnovatorOrganisationRole,
   Organisation,
   OrganisationType,
@@ -40,6 +41,7 @@ describe("Innovator Service Suite", () => {
   let innovatorUser: User;
   let accessorOrganisation: Organisation;
   let organisationQAccessorUser: OrganisationUser;
+  let organisationUnitQAccessorUser: OrganisationUnitUser;
 
   beforeAll(async () => {
     // await setupTestsConnection();
@@ -69,7 +71,7 @@ describe("Innovator Service Suite", () => {
     const organisationUnit = await fixtures.createOrganisationUnit(
       accessorOrganisation
     );
-    await fixtures.addOrganisationUserToOrganisationUnit(
+    organisationUnitQAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
       organisationQAccessorUser,
       organisationUnit
     );
@@ -95,8 +97,8 @@ describe("Innovator Service Suite", () => {
 
     await query.from(Comment).execute();
     await query.from(InnovationAssessment).execute();
-    await query.from(InnovationSupport).execute();
     await query.from(InnovationAction).execute();
+    await query.from(InnovationSupport).execute();
     await query.from(InnovationSection).execute();
     await query.from(Innovation).execute();
   });
@@ -490,5 +492,113 @@ describe("Innovator Service Suite", () => {
     }
 
     expect(result.count).toBe(1);
+  });
+
+  it("should throw an error when getOrganisationShares() with invalid params", async () => {
+    let err;
+    try {
+      await innovationService.getInnovationOverview(undefined, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should find the innovation organisation shares", async () => {
+    const fakeInnovation = await fixtures.saveInnovation(
+      fixtures.generateInnovation({
+        owner: innovatorUser,
+        status: InnovationStatus.IN_PROGRESS,
+        organisationShares: [{ id: accessorOrganisation.id }],
+      })
+    );
+
+    const qAccessorOrganisations = await fixtures.findUserOrganisations(
+      qualAccessorUser.id
+    );
+
+    await fixtures.createSupportInInnovation(
+      fakeInnovation,
+      qualAccessorUser,
+      qAccessorOrganisations[0],
+      organisationUnitQAccessorUser
+    );
+
+    const result = await innovationService.getOrganisationShares(
+      fakeInnovation.id,
+      innovatorUser.id
+    );
+
+    expect(result).toBeDefined();
+    expect(result[0].status).toEqual(InnovationSupportStatus.ENGAGING);
+  });
+
+  it("should throw an error when updateOrganisationShares() with invalid params", async () => {
+    let err;
+    try {
+      await innovationService.updateOrganisationShares(undefined, null, []);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw an error when updateOrganisationShares() without organisations", async () => {
+    let err;
+    try {
+      await innovationService.updateOrganisationShares("a", "b", []);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should update the innovation organisation shares", async () => {
+    const fakeInnovation = await fixtures.saveInnovation(
+      fixtures.generateInnovation({
+        owner: innovatorUser,
+        status: InnovationStatus.IN_PROGRESS,
+        organisationShares: [{ id: accessorOrganisation.id }],
+      })
+    );
+
+    const qAccessorOrganisations = await fixtures.findUserOrganisations(
+      qualAccessorUser.id
+    );
+
+    await fixtures.createSupportInInnovation(
+      fakeInnovation,
+      qualAccessorUser,
+      qAccessorOrganisations[0],
+      organisationUnitQAccessorUser
+    );
+
+    await fixtures.createInnovationAction(
+      fakeInnovation,
+      qualAccessorUser,
+      qAccessorOrganisations[0]
+    );
+
+    const org = await fixtures.createOrganisation(OrganisationType.ACCESSOR);
+
+    await innovationService.updateOrganisationShares(
+      fakeInnovation.id,
+      innovatorUser.id,
+      [org.id]
+    );
+
+    const search = await innovationService.getOrganisationShares(
+      fakeInnovation.id,
+      innovatorUser.id
+    );
+
+    expect(search).toBeDefined();
+    expect(search[0].status).toEqual(InnovationSupportStatus.UNASSIGNED);
   });
 });

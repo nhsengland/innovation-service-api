@@ -8,10 +8,15 @@ import {
   User,
   UserType,
 } from "@domain/index";
+import {
+  InvalidParamsError,
+  InvalidUserRoleError,
+  MissingUserOrganisationError,
+} from "@services/errors";
 import * as faker from "faker";
 import { getConnection } from "typeorm";
-import * as helpers from "../helpers";
 import { closeTestsConnection, setupTestsConnection } from "..";
+import * as helpers from "../helpers";
 import { AccessorService } from "../services/Accessor.service";
 import { OrganisationService } from "../services/Organisation.service";
 
@@ -73,6 +78,18 @@ describe("Organisation Service Suite", () => {
     expect(item.id).toEqual(organisation.id);
   });
 
+  it("should throw when findAll() with invalid params", async () => {
+    let err;
+    try {
+      await organisationService.findAll({});
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
   it("should return all accessor organisations when findAll() with type accessor", async () => {
     let organisation = Organisation.new({
       ...dummy.baseOrganisation,
@@ -93,21 +110,6 @@ describe("Organisation Service Suite", () => {
     const actual = await organisationService.findAll(filter);
 
     expect(actual.length).toEqual(2);
-  });
-
-  it("should fail when findAll() without type", async () => {
-    const filter = {
-      aaa: "test",
-    };
-
-    let err;
-    try {
-      await organisationService.findAll(filter);
-    } catch (error) {
-      err = error;
-    }
-
-    expect(err).toBeDefined();
   });
 
   it("should return all user organisations when findUserOrganisations()", async () => {
@@ -149,6 +151,47 @@ describe("Organisation Service Suite", () => {
 
     expect(unit).toBeDefined();
     expect(unit.name).toBe(name);
+  });
+
+  it("should throw when findUserOrganisationUnitUsers() with invalid params", async () => {
+    let err;
+    try {
+      await organisationService.findUserOrganisationUnitUsers(null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw when findUserOrganisationUnitUsers() without user organisations", async () => {
+    let err;
+    try {
+      await organisationService.findUserOrganisationUnitUsers(
+        ":accessorId",
+        []
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(MissingUserOrganisationError);
+  });
+
+  it("should throw when findUserOrganisationUnitUsers() with user organisation role", async () => {
+    let err;
+    try {
+      await organisationService.findUserOrganisationUnitUsers(":accessorId", [
+        OrganisationUser.new({ role: AccessorOrganisationRole.ACCESSOR }),
+      ]);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidUserRoleError);
   });
 
   it("should return organisation unit users by q. accessor units", async () => {
