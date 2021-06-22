@@ -1,9 +1,9 @@
 /* eslint-disable */
 import { UserType } from "@services/index";
 import { createHttpTrigger, runStubFunctionFromBindings } from "stub-azure-function-context";
-import innovatorsUpdateInnovationAction from "../../innovatorsUpdateInnovationAction";
-import * as persistence from "../../innovatorsUpdateInnovationAction/persistence";
-import * as validation from "../../innovatorsUpdateInnovationAction/validation";
+import innovatorsUpdateInnovationShares from "../../innovatorsUpdateInnovationShares";
+import * as persistence from "../../innovatorsUpdateInnovationShares/persistence";
+import * as validation from "../../innovatorsUpdateInnovationShares/validation";
 import * as authentication from "../../utils/authentication";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
@@ -35,12 +35,11 @@ const dummy = {
       }),
     },
   },
-  actionId: "test_action_id",
   innovationId: "test_innovation_id",
   innovatorId: "test_innovator_id",
 };
 
-describe("[HttpTrigger] innovatorsUpdateInnovationAction Suite", () => {
+describe("[HttpTrigger] innovatorsUpdateInnovationShares Suite", () => {
   describe("Function Handler", () => {
     afterEach(() => {
       jest.resetAllMocks();
@@ -60,15 +59,15 @@ describe("[HttpTrigger] innovatorsUpdateInnovationAction Suite", () => {
       );
     });
 
-    it("Should return 200 when Innovation Action is updated", async () => {
+    it("Should return 200 when Innovation Shares is updated", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
       spyOn(validation, "ValidatePayload").and.returnValue({});
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: dummy.innovatorId,
       });
-      spyOn(persistence, "updateInnovationAction").and.returnValue([
-        { id: dummy.actionId },
+      spyOn(persistence, "updateInnovationShares").and.returnValue([
+        { id: '' },
       ]);
 
       const { res } = await mockedRequestFactory({});
@@ -90,8 +89,8 @@ describe("[HttpTrigger] innovatorsUpdateInnovationAction Suite", () => {
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: dummy.innovatorId,
       });
-      spyOn(persistence, "updateInnovationAction").and.returnValue([
-        { id: dummy.actionId },
+      spyOn(persistence, "updateInnovationShares").and.returnValue([
+        { id: '' },
       ]);
 
       const { res } = await mockedRequestFactory({
@@ -107,8 +106,8 @@ describe("[HttpTrigger] innovatorsUpdateInnovationAction Suite", () => {
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: "other",
       });
-      spyOn(persistence, "updateInnovationAction").and.returnValue([
-        { id: dummy.actionId },
+      spyOn(persistence, "updateInnovationShares").and.returnValue([
+        { id: '' },
       ]);
 
       const { res } = await mockedRequestFactory({
@@ -121,7 +120,7 @@ describe("[HttpTrigger] innovatorsUpdateInnovationAction Suite", () => {
 
 async function mockedRequestFactory(data?: any) {
   return runStubFunctionFromBindings(
-    innovatorsUpdateInnovationAction,
+    innovatorsUpdateInnovationShares,
     [
       {
         type: "httpTrigger",
@@ -129,16 +128,14 @@ async function mockedRequestFactory(data?: any) {
         direction: "in",
         data: createHttpTrigger(
           "PUT",
-          "http://nhse-i-aac/api/innovators/{innovatorId}/innovations/{innovationId}/actions/{actionId}",
+          "http://nhse-i-aac/api/innovators/{innovatorId}/innovations/{innovationId}/shares",
           { ...data.headers }, // headers
           {
-            actionId: dummy.actionId,
             innovatorId: dummy.innovatorId,
             innovationId: dummy.innovationId,
           },
           {
-            status: "DECLINED",
-            comment: ":comment",
+            organisations: ["AAA-BBB-CCC-DDD"],
           }, // payload/body
           null // querystring
         ),

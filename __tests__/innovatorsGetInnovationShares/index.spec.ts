@@ -1,9 +1,10 @@
 /* eslint-disable */
 import { UserType } from "@services/index";
-import { createHttpTrigger, runStubFunctionFromBindings } from "stub-azure-function-context";
-import innovatorsUpdateInnovationAction from "../../innovatorsUpdateInnovationAction";
-import * as persistence from "../../innovatorsUpdateInnovationAction/persistence";
-import * as validation from "../../innovatorsUpdateInnovationAction/validation";
+import {
+  createHttpTrigger, runStubFunctionFromBindings
+} from "stub-azure-function-context";
+import innovatorsGetInnovationShares from "../../innovatorsGetInnovationShares";
+import * as persistence from "../../innovatorsGetInnovationShares/persistence";
 import * as authentication from "../../utils/authentication";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
@@ -35,12 +36,9 @@ const dummy = {
       }),
     },
   },
-  actionId: "test_action_id",
-  innovationId: "test_innovation_id",
-  innovatorId: "test_innovator_id",
 };
 
-describe("[HttpTrigger] innovatorsUpdateInnovationAction Suite", () => {
+describe("[HttpTrigger] innovatorsGetInnovationShares Suite", () => {
   describe("Function Handler", () => {
     afterEach(() => {
       jest.resetAllMocks();
@@ -60,15 +58,14 @@ describe("[HttpTrigger] innovatorsUpdateInnovationAction Suite", () => {
       );
     });
 
-    it("Should return 200 when Innovation Action is updated", async () => {
+    it("Should return 200 when Innovation Shares is found", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
-      spyOn(validation, "ValidatePayload").and.returnValue({});
       spyOn(authentication, "decodeToken").and.returnValue({
-        oid: dummy.innovatorId,
+        oid: ":innovator_id",
       });
-      spyOn(persistence, "updateInnovationAction").and.returnValue([
-        { id: dummy.actionId },
+      spyOn(persistence, "findInnovationShares").and.returnValue([
+        { id: ":share_id" },
       ]);
 
       const { res } = await mockedRequestFactory({});
@@ -86,12 +83,11 @@ describe("[HttpTrigger] innovatorsUpdateInnovationAction Suite", () => {
 
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(services);
-      spyOn(validation, "ValidatePayload").and.returnValue({});
       spyOn(authentication, "decodeToken").and.returnValue({
-        oid: dummy.innovatorId,
+        oid: "test_innovator_id",
       });
-      spyOn(persistence, "updateInnovationAction").and.returnValue([
-        { id: dummy.actionId },
+      spyOn(persistence, "findInnovationShares").and.returnValue([
+        { id: ":share_id" },
       ]);
 
       const { res } = await mockedRequestFactory({
@@ -103,12 +99,11 @@ describe("[HttpTrigger] innovatorsUpdateInnovationAction Suite", () => {
     it("Should throw error when oid is different from innovatorId", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
-      spyOn(validation, "ValidatePayload").and.returnValue({});
       spyOn(authentication, "decodeToken").and.returnValue({
-        oid: "other",
+        oid: "test",
       });
-      spyOn(persistence, "updateInnovationAction").and.returnValue([
-        { id: dummy.actionId },
+      spyOn(persistence, "findInnovationShares").and.returnValue([
+        { id: ":share_id" },
       ]);
 
       const { res } = await mockedRequestFactory({
@@ -121,26 +116,22 @@ describe("[HttpTrigger] innovatorsUpdateInnovationAction Suite", () => {
 
 async function mockedRequestFactory(data?: any) {
   return runStubFunctionFromBindings(
-    innovatorsUpdateInnovationAction,
+    innovatorsGetInnovationShares,
     [
       {
         type: "httpTrigger",
         name: "req",
         direction: "in",
         data: createHttpTrigger(
-          "PUT",
-          "http://nhse-i-aac/api/innovators/{innovatorId}/innovations/{innovationId}/actions/{actionId}",
+          "GET",
+          "http://nhse-i-aac/api/innovators/{innovatorId}/innovations/{innovationId}/shares",
           { ...data.headers }, // headers
           {
-            actionId: dummy.actionId,
-            innovatorId: dummy.innovatorId,
-            innovationId: dummy.innovationId,
-          },
-          {
-            status: "DECLINED",
-            comment: ":comment",
-          }, // payload/body
-          null // querystring
+            innovatorId: ":innovator_id",
+            innovationId: ":innovation_id",
+          }, // pathparams
+          {}, // payload/body
+          {} // querystring
         ),
       },
       { type: "http", name: "res", direction: "out" },

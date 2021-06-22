@@ -15,6 +15,7 @@ import {
   InvalidUserRoleError,
   MissingUserOrganisationError,
   MissingUserOrganisationUnitError,
+  ResourceNotFoundError,
 } from "@services/errors";
 import { InnovationSupportModel } from "@services/models/InnovationSupportModel";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
@@ -208,7 +209,7 @@ export class InnovationSupportService {
 
     const innovationSupport = await this.findOne(id, innovationId);
     if (!innovationSupport) {
-      return null;
+      throw new ResourceNotFoundError("Innovation Support not found!");
     }
 
     return await this.connection.transaction(async (transactionManager) => {

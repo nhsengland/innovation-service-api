@@ -6,6 +6,11 @@ import {
   OrganisationUser,
   User,
 } from "@domain/index";
+import {
+  InvalidParamsError,
+  InvalidUserRoleError,
+  MissingUserOrganisationError,
+} from "@services/errors";
 import { OrganisationUnitUserModel } from "@services/models/OrganisationUnitUserModel";
 import {
   Connection,
@@ -39,7 +44,9 @@ export class OrganisationService extends BaseService<Organisation> {
 
   async findAll(filter: any): Promise<Organisation[]> {
     if (!filter.type) {
-      throw new Error("Invalid filter. You must define the organisation type.");
+      throw new InvalidParamsError(
+        "Invalid filter. You must define the organisation type."
+      );
     }
 
     const filterOptions = {
@@ -68,11 +75,15 @@ export class OrganisationService extends BaseService<Organisation> {
     userOrganisations: OrganisationUser[]
   ): Promise<OrganisationUnitUserModel[]> {
     if (!userId) {
-      throw new Error("Invalid userId. You must define the user id.");
+      throw new InvalidParamsError(
+        "Invalid userId. You must define the user id."
+      );
     }
 
     if (!userOrganisations || userOrganisations.length == 0) {
-      throw new Error("Invalid user. User has no organisations.");
+      throw new MissingUserOrganisationError(
+        "Invalid user. User has no organisations."
+      );
     }
 
     // BUSINESS RULE: An accessor has only one organization
@@ -81,7 +92,7 @@ export class OrganisationService extends BaseService<Organisation> {
     if (
       userOrganisation.role !== AccessorOrganisationRole.QUALIFYING_ACCESSOR
     ) {
-      throw new Error("Invalid user. User has an invalid role.");
+      throw new InvalidUserRoleError("Invalid user. User has an invalid role.");
     }
 
     // Get all user organisation units
