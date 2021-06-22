@@ -138,7 +138,7 @@ export class InnovationActionService {
     return this.actionRepo.save(actionObj);
   }
 
-  async update(
+  async updateByAccessor(
     id: string,
     userId: string,
     innovationId: string,
@@ -192,24 +192,30 @@ export class InnovationActionService {
       throw new InvalidDataError("Invalid action data.");
     }
 
-    return await this.connection.transaction(async (transactionManager) => {
-      if (action.comment) {
-        const comment = Comment.new({
-          user: { id: userId },
-          innovation: innovation,
-          message: action.comment,
-          innovationAction: { id: innovationAction.id },
-          createdBy: userId,
-          updatedBy: userId,
-        });
-        await transactionManager.save(Comment, comment);
-      }
+    return this.update(innovationAction, innovationId, userId, action);
+  }
 
-      innovationAction.status = action.status;
-      innovationAction.updatedBy = userId;
+  async updateByInnovator(
+    id: string,
+    userId: string,
+    innovationId: string,
+    action: any
+  ) {
+    if (!id || !userId || !action) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
 
-      return await transactionManager.save(InnovationAction, innovationAction);
-    });
+    const filterOptions = {
+      relations: ["innovationSection", "innovationSection.innovation"],
+      where: `owner_id = '${userId}'`,
+    };
+
+    const innovationAction = await this.actionRepo.findOne(id, filterOptions);
+    if (!innovationAction) {
+      throw new ResourceNotFoundError("Invalid parameters.");
+    }
+
+    return this.update(innovationAction, innovationId, userId, action);
   }
 
   async find(
@@ -380,6 +386,32 @@ export class InnovationActionService {
       createdAt: ia.createdAt,
       updatedAt: ia.updatedAt,
     }));
+  }
+
+  private async update(
+    innovationAction: InnovationAction,
+    innovationId: string,
+    userId: string,
+    action: any
+  ) {
+    return await this.connection.transaction(async (transactionManager) => {
+      if (action.comment) {
+        const comment = Comment.new({
+          user: { id: userId },
+          innovation: { id: innovationId },
+          message: action.comment,
+          innovationAction: { id: innovationAction.id },
+          createdBy: userId,
+          updatedBy: userId,
+        });
+        await transactionManager.save(Comment, comment);
+      }
+
+      innovationAction.status = action.status;
+      innovationAction.updatedBy = userId;
+
+      return await transactionManager.save(InnovationAction, innovationAction);
+    });
   }
 
   private async findOne(id: string): Promise<InnovationAction> {
