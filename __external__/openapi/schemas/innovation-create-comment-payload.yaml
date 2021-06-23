@@ -1,0 +1,11 @@
+description: Innovation Evidence Create Payload
+required: true
+content:
+  application/json:
+    schema:
+      type: object
+      properties:
+        comment:
+          type: string
+        replyTo:
+          type: string
