@@ -5,6 +5,7 @@ import {
   InnovationActionStatus,
   InnovationSectionAliasCatalogue,
   InnovationSupport,
+  OrganisationUnit,
   OrganisationUser,
 } from "@domain/index";
 import {
@@ -192,7 +193,13 @@ export class InnovationActionService {
       throw new InvalidDataError("Invalid action data.");
     }
 
-    return this.update(innovationAction, innovationId, userId, action);
+    return this.update(
+      innovationAction,
+      innovationId,
+      userId,
+      action,
+      organisationUnit
+    );
   }
 
   async updateByInnovator(
@@ -392,7 +399,8 @@ export class InnovationActionService {
     innovationAction: InnovationAction,
     innovationId: string,
     userId: string,
-    action: any
+    action: any,
+    organisationUnit?: OrganisationUnit
   ) {
     return await this.connection.transaction(async (transactionManager) => {
       if (action.comment) {
@@ -403,6 +411,7 @@ export class InnovationActionService {
           innovationAction: { id: innovationAction.id },
           createdBy: userId,
           updatedBy: userId,
+          organisationUnit,
         });
         await transactionManager.save(Comment, comment);
       }

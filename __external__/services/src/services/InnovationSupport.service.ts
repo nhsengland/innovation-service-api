@@ -142,6 +142,7 @@ export class InnovationSupportService {
           user: { id: userId },
           innovation: innovation,
           message: support.comment,
+          organisationUnit,
         });
         await transactionManager.save(Comment, comment);
       }
@@ -204,13 +205,18 @@ export class InnovationSupportService {
       userOrganisations
     );
     if (!innovation) {
-      return null;
+      throw new InnovationNotFoundError(
+        "Invalid parameters. Innovation not found for the user."
+      );
     }
 
     const innovationSupport = await this.findOne(id, innovationId);
     if (!innovationSupport) {
       throw new ResourceNotFoundError("Innovation Support not found!");
     }
+
+    const organisationUnit =
+      userOrganisation.userOrganisationUnits[0].organisationUnit;
 
     return await this.connection.transaction(async (transactionManager) => {
       if (support.comment) {
@@ -220,6 +226,7 @@ export class InnovationSupportService {
           message: support.comment,
           createdBy: userId,
           updatedBy: userId,
+          organisationUnit,
         });
         await transactionManager.save(Comment, comment);
       }

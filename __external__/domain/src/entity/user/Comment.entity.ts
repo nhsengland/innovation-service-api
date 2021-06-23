@@ -8,6 +8,7 @@ import {
 import { Base } from "../Base.entity";
 import { Innovation } from "../innovation/Innovation.entity";
 import { InnovationAction } from "../innovation/InnovationAction.entity";
+import { OrganisationUnit } from "../organisation/OrganisationUnit.entity";
 import { User } from "./User.entity";
 
 @Entity("comment")
@@ -28,13 +29,17 @@ export class Comment extends Base {
   @JoinColumn({ name: "innovation_id" })
   innovation: Innovation;
 
+  @ManyToOne(() => Comment, { nullable: true })
+  @JoinColumn({ name: "reply_to_id" })
+  replyTo: Comment;
+
   @ManyToOne(() => InnovationAction, { nullable: true })
   @JoinColumn({ name: "innovation_action_id" })
   innovationAction: InnovationAction;
 
-  @ManyToOne(() => Comment, { nullable: true })
-  @JoinColumn({ name: "reply_to_id" })
-  replyTo: Comment;
+  @ManyToOne(() => OrganisationUnit, { nullable: true })
+  @JoinColumn({ name: "organisation_unit_id" })
+  organisationUnit: OrganisationUnit;
 
   //static constructor
   static new(data) {

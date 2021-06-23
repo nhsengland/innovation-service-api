@@ -12,7 +12,7 @@ import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
 
-class AccessorsCreateInnovationSupport {
+class AccessorsCreateInnovationComment {
   @AppInsights()
   @SQLConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
@@ -22,7 +22,7 @@ class AccessorsCreateInnovationSupport {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const support = req.body;
+    const body = req.body;
     const accessorId = req.params.accessorId;
     const innovationId = req.params.innovationId;
     const oid = context.auth.decodedJwt.oid;
@@ -34,11 +34,12 @@ class AccessorsCreateInnovationSupport {
 
     let result;
     try {
-      result = await persistence.createInnovationSupport(
+      result = await persistence.createInnovationComment(
         context,
         accessorId,
         innovationId,
-        support
+        body.comment,
+        body.replyTo
       );
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
@@ -51,4 +52,4 @@ class AccessorsCreateInnovationSupport {
   }
 }
 
-export default AccessorsCreateInnovationSupport.httpTrigger;
+export default AccessorsCreateInnovationComment.httpTrigger;
