@@ -1,54 +1,58 @@
 import { HttpRequest } from "@azure/functions";
-import { AccessorOrganisationRole } from "@domain/index";
+import { UserType } from "@domain/index";
 import {
+  AllowedUserType,
   AppInsights,
   JwtDecoder,
-  OrganisationRoleValidator,
   SQLConnector,
-  Validator,
 } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
-import * as validation from "./validation";
 
-class AccessorsCreateInnovationSupport {
+class InnovatorsGetInnovationComments {
   @AppInsights()
   @SQLConnector()
-  @Validator(validation.ValidatePayload, "body", "Invalid Payload")
   @JwtDecoder()
-  @OrganisationRoleValidator(AccessorOrganisationRole.QUALIFYING_ACCESSOR)
+  @AllowedUserType(UserType.INNOVATOR)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const support = req.body;
-    const accessorId = req.params.accessorId;
+    const innovatorId = req.params.innovatorId;
     const innovationId = req.params.innovationId;
     const oid = context.auth.decodedJwt.oid;
 
-    if (accessorId !== oid) {
+    if (innovatorId !== oid) {
       context.res = Responsify.Forbidden({ error: "Operation denied." });
       return;
     }
 
+    let order;
+    const query: any = req.query;
+
+    if (query.order) {
+      order = JSON.parse(query.order);
+    }
+
     let result;
     try {
-      result = await persistence.createInnovationSupport(
+      result = await persistence.findInnovationComments(
         context,
-        accessorId,
         innovationId,
-        support
+        innovatorId,
+        order
       );
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
       context.res = Responsify.ErroHandling(error);
+
       return;
     }
 
-    context.res = Responsify.Created({ id: result.id });
+    context.res = Responsify.Ok(result);
   }
 }
 
-export default AccessorsCreateInnovationSupport.httpTrigger;
+export default InnovatorsGetInnovationComments.httpTrigger;

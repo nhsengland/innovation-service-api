@@ -100,7 +100,8 @@ export class UserService {
 
   async getListOfUsers(ids: string[]): Promise<ProfileSlimModel[]> {
     const accessToken = await authenticateWitGraphAPI();
-    const userIds = ids.map((u) => `"${u}"`).join(",");
+    const uniqueUserIds = ids.filter((x, i, a) => a.indexOf(x) == i);
+    const userIds = uniqueUserIds.map((u) => `"${u}"`).join(",");
     const odataFilter = `$filter=id in (${userIds})`;
 
     const user = (await getUsersFromB2C(accessToken, odataFilter)) || [];

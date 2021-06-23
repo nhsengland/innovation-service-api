@@ -1,0 +1,14 @@
+{
+  "bindings": [
+    {
+      "authLevel": "anonymous",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": ["post"],
+      "route": "accessors/{accessorId}/innovations/{innovationId}/comments"
+    },
+    { "type": "http", "direction": "out", "name": "res" }
+  ],
+  "scriptFile": "../dist/accessorsCreateInnovationComment/index.js"
+}
