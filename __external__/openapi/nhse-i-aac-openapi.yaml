@@ -646,7 +646,7 @@ paths:
             type: string
           required: true
       requestBody:
-        $ref: "#/components/requestBodies/accessors-create-comment-payload"
+        $ref: "#/components/requestBodies/innovation-create-comment-payload"
       responses:
         "201":
           description: "Created"
@@ -1613,7 +1613,7 @@ paths:
             type: string
           required: true
       requestBody:
-        $ref: "#/components/requestBodies/innovators-create-comment-payload"
+        $ref: "#/components/requestBodies/innovation-create-comment-payload"
       responses:
         "201":
           description: "Created"
@@ -2014,8 +2014,6 @@ components:
       $ref: "./schemas/accessors-update-support-payload.yaml"
     accessors-create-action-payload:
       $ref: "./schemas/accessors-create-action-payload.yaml"
-    accessors-create-comment-payload:
-      $ref: "./schemas/accessors-create-comment-payload.yaml"
     accessors-update-action-payload:
       $ref: "./schemas/accessors-update-action-payload.yaml"
     innovator-create-payload:
@@ -2038,8 +2036,8 @@ components:
       $ref: "./schemas/innovation-create-evidence-payload.yaml"
     innovation-submit-section-payload:
       $ref: "./schemas/innovation-submit-section-payload.yaml"
-    innovators-create-comment-payload:
-      $ref: "./schemas/innovators-create-comment-payload.yaml"
+    innovation-create-comment-payload:
+      $ref: "./schemas/innovation-create-comment-payload.yaml"
     survey-create-payload:
       $ref: "./schemas/survey-create-payload.yaml"
     assessments-create-assessment-payload:
