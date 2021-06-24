@@ -8,6 +8,7 @@ import {
   InnovationSupportStatus,
   InnovatorOrganisationRole,
   Organisation,
+  OrganisationUnitUser,
   OrganisationUser,
 } from "@domain/index";
 import {
@@ -113,11 +114,15 @@ export class InnovationService extends BaseService<Innovation> {
     return super.find(innovationId, filterOptions);
   }
 
-  async findAllByAccessor(
+  async findAllByAccessorAndSupportStatus(
     userId: string,
     userOrganisations: OrganisationUser[],
-    filter?: any
-  ): Promise<[Innovation[], number]> {
+    supportStatus: string,
+    assignedToMe: boolean,
+    skip: number,
+    take: number,
+    order?: { [key: string]: string }
+  ) {
     if (!userId) {
       throw new InvalidParamsError(
         "Invalid userId. You must define the accessor id."
@@ -137,29 +142,129 @@ export class InnovationService extends BaseService<Innovation> {
       throw new InvalidUserRoleError("Invalid user. User has an invalid role.");
     }
 
+    // BUSINESS RULE: An user has only one organization unit
+    const organisationUnit =
+      userOrganisation.userOrganisationUnits[0].organisationUnit;
+
     const filterOptions = {
-      ...filter,
+      relations: [
+        "innovationSupports",
+        "innovationSupports.organisationUnit",
+        "innovationSupports.organisationUnitUsers",
+        "innovationSupports.organisationUnitUsers.organisationUser",
+        "innovationSupports.organisationUnitUsers.organisationUser.user",
+        "assessments",
+      ],
+      where: {},
+      skip,
+      take,
+      order: order || { createdAt: "DESC" },
     };
 
     if (
       userOrganisation.role === AccessorOrganisationRole.QUALIFYING_ACCESSOR
     ) {
-      filterOptions.where = `organisation_id = '${userOrganisation.organisation.id}' and Innovation.status = '${InnovationStatus.IN_PROGRESS}'`;
-      filterOptions.relations = [
-        "organisationShares",
-        "assessments",
-        "innovationSupports",
-      ];
-    } else {
-      // BUSINESS RULE: An user has only one organization unit
-      const organisationUnit =
-        userOrganisation.userOrganisationUnits[0].organisationUnit;
+      filterOptions.where = `Innovation_Innovation__organisationShares.organisation_id = '${userOrganisation.organisation.id}'`;
+      filterOptions.where += ` and Innovation.status = '${InnovationStatus.IN_PROGRESS}'`;
 
-      filterOptions.where = `organisation_unit_id = '${organisationUnit.id}' and Innovation.status = '${InnovationStatus.IN_PROGRESS}'`;
-      filterOptions.relations = ["innovationSupports", "assessments"];
+      // With status UNASSIGNED should pick innovations without a record on the table innovation_support for the unit
+      if (supportStatus === InnovationSupportStatus.UNASSIGNED) {
+        filterOptions.relations = ["organisationShares", "assessments"];
+        filterOptions.where += ` and NOT EXISTS(SELECT 1 FROM innovation_support tmp WHERE tmp.innovation_id = Innovation.id and tmp.organisation_unit_id = '${organisationUnit.id}')`;
+      } else {
+        filterOptions.relations = [
+          "organisationShares",
+          ...filterOptions.relations,
+        ];
+
+        filterOptions.where += ` and Innovation__innovationSupports.status = '${supportStatus}'`;
+        filterOptions.where += ` and Innovation__innovationSupports.organisation_unit_id = '${organisationUnit.id}'`;
+      }
+    } else {
+      filterOptions.where = `Innovation__innovationSupports.organisation_unit_id = '${organisationUnit.id}'`;
+      filterOptions.where += ` and Innovation.status = '${InnovationStatus.IN_PROGRESS}'`;
+      filterOptions.where += ` and Innovation__innovationSupports.status = '${supportStatus}'`;
     }
 
-    return await this.repository.findAndCount(filterOptions);
+    // Filter assignedToMe innovations (innovation_support_user)
+    if (assignedToMe && supportStatus !== InnovationSupportStatus.UNASSIGNED) {
+      filterOptions.where += ` and user_id = '${userId}'`;
+    }
+
+    const innovations = await this.repository.findAndCount(filterOptions);
+    // If no records = quick return
+    if (innovations[1] === 0) {
+      return {
+        data: [],
+        count: 0,
+      };
+    }
+
+    let b2cUserNames: { [key: string]: string };
+    if (
+      supportStatus === InnovationSupportStatus.ENGAGING ||
+      supportStatus === InnovationSupportStatus.COMPLETE
+    ) {
+      const userIds = innovations[0].flatMap((inno: Innovation) => {
+        const innovationSupport = inno.innovationSupports.find(
+          (is: InnovationSupport) =>
+            is.organisationUnit.id === organisationUnit.id
+        );
+
+        return innovationSupport.organisationUnitUsers.map(
+          (ouu: OrganisationUnitUser) => ouu.organisationUser.user.id
+        );
+      });
+
+      const b2cUsers = await this.userService.getListOfUsers(userIds);
+      b2cUserNames = b2cUsers.reduce((map, obj) => {
+        map[obj.id] = obj.displayName;
+        return map;
+      }, {});
+    }
+
+    const result = {
+      data: innovations[0]?.map((inno: Innovation) => {
+        const innovationSupport = inno.innovationSupports?.find(
+          (is: InnovationSupport) =>
+            is.organisationUnit.id === organisationUnit.id
+        );
+
+        const support = innovationSupport
+          ? {
+              id: innovationSupport.id,
+              status: innovationSupport.status,
+              createdAt: innovationSupport.createdAt,
+              updatedAt: innovationSupport.updatedAt,
+              accessors: innovationSupport.organisationUnitUsers?.map(
+                (oou: OrganisationUnitUser) => ({
+                  id: oou.organisationUser.id,
+                  name: b2cUserNames[oou.organisationUser.user.id],
+                })
+              ),
+            }
+          : { status: InnovationSupportStatus.UNASSIGNED };
+
+        return {
+          id: inno.id,
+          name: inno.name,
+          submittedAt: inno.submittedAt,
+          mainCategory: inno.mainCategory,
+          otherMainCategoryDescription: inno.otherMainCategoryDescription,
+          countryName: inno.countryName,
+          postcode: inno.postcode,
+          support,
+          assessment:
+            inno.assessments.length > 0
+              ? { id: inno.assessments[0].id }
+              : { id: null },
+          organisations: [], // TODO add engaging organisations
+        };
+      }),
+      count: innovations[1],
+    };
+
+    return result;
   }
 
   async findAllByInnovator(

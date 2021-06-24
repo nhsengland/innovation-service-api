@@ -1,7 +1,9 @@
 import { HttpRequest } from "@azure/functions";
-import * as persistence from "./persistence";
-import * as Responsify from "../utils/responsify";
-import * as validation from "./validation";
+import {
+  AccessorOrganisationRole,
+  Innovation,
+  InnovationSupportStatus,
+} from "@services/index";
 import {
   AppInsights,
   JwtDecoder,
@@ -9,12 +11,10 @@ import {
   SQLConnector,
   Validator,
 } from "../utils/decorators";
+import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
-import {
-  AccessorOrganisationRole,
-  Innovation,
-  InnovationSupportStatus,
-} from "@services/index";
+import * as persistence from "./persistence";
+import * as validation from "./validation";
 
 class AccessorsGetAllInnovations {
   @AppInsights()
@@ -25,7 +25,10 @@ class AccessorsGetAllInnovations {
     "Invalid querystring parameters."
   )
   @JwtDecoder()
-  @OrganisationRoleValidator(AccessorOrganisationRole.QUALIFYING_ACCESSOR)
+  @OrganisationRoleValidator(
+    AccessorOrganisationRole.QUALIFYING_ACCESSOR,
+    AccessorOrganisationRole.ACCESSOR
+  )
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest,
@@ -44,42 +47,29 @@ class AccessorsGetAllInnovations {
     }
 
     const query: any = req.query;
-    if (query.order) {
-      query.order = JSON.parse(query.order);
-    }
+    const supportStatus = query.supportStatus;
+    const assignedToMe = query.assignedToMe
+      ? query.assignedToMe.toLocaleLowerCase() === "true"
+      : false;
+    const skip = parseInt(query.skip);
+    const take = parseInt(query.take);
 
-    const filter = {
-      ...query,
-    };
+    let order;
+    if (query.order) {
+      order = JSON.parse(query.order);
+    }
 
     let result;
     try {
-      const callResult = await persistence.findAllInnovationsByAccessor(
+      result = await persistence.findAllInnovationsByAccessor(
         context,
         accessorId,
-        filter
+        supportStatus,
+        assignedToMe,
+        skip,
+        take,
+        order
       );
-
-      const innovations = callResult[0] as Innovation[];
-
-      result = {
-        data: innovations?.map((inno: Innovation) => ({
-          id: inno.id,
-          status: inno.status,
-          name: inno.name,
-          supportStatus:
-            inno.innovationSupports && inno.innovationSupports.length > 0
-              ? inno.innovationSupports[0].status
-              : InnovationSupportStatus.UNASSIGNED,
-          createdAt: inno.createdAt,
-          updatedAt: inno.updatedAt,
-          assessment:
-            inno.assessments.length > 0
-              ? { id: inno.assessments[0].id }
-              : { id: null },
-        })),
-        count: callResult[1],
-      };
     } catch (error) {
       context.log.error(error);
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });

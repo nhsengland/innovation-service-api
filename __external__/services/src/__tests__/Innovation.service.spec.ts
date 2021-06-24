@@ -37,11 +37,16 @@ const dummy = {
 describe("Innovator Service Suite", () => {
   let innovationService: InnovationService;
   let userService: UserService;
+  let accessorUser: User;
   let qualAccessorUser: User;
   let innovatorUser: User;
   let accessorOrganisation: Organisation;
   let organisationQAccessorUser: OrganisationUser;
+  let organisationAccessorUser: OrganisationUser;
   let organisationUnitQAccessorUser: OrganisationUnitUser;
+  let organisationUnitAccessorUser: OrganisationUnitUser;
+  let qAccessorUserOrganisations: OrganisationUser[];
+  let accessorUserOrganisations: OrganisationUser[];
 
   beforeAll(async () => {
     // await setupTestsConnection();
@@ -59,6 +64,8 @@ describe("Innovator Service Suite", () => {
     );
 
     qualAccessorUser = await fixtures.createAccessorUser();
+    accessorUser = await fixtures.createAccessorUser();
+
     accessorOrganisation = await fixtures.createOrganisation(
       OrganisationType.ACCESSOR
     );
@@ -67,6 +74,11 @@ describe("Innovator Service Suite", () => {
       accessorOrganisation,
       AccessorOrganisationRole.QUALIFYING_ACCESSOR
     );
+    organisationAccessorUser = await fixtures.addUserToOrganisation(
+      accessorUser,
+      accessorOrganisation,
+      AccessorOrganisationRole.ACCESSOR
+    );
 
     const organisationUnit = await fixtures.createOrganisationUnit(
       accessorOrganisation
@@ -74,6 +86,17 @@ describe("Innovator Service Suite", () => {
     organisationUnitQAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
       organisationQAccessorUser,
       organisationUnit
+    );
+    organisationUnitAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
+      organisationAccessorUser,
+      organisationUnit
+    );
+
+    qAccessorUserOrganisations = await fixtures.findUserOrganisations(
+      qualAccessorUser.id
+    );
+    accessorUserOrganisations = await fixtures.findUserOrganisations(
+      accessorUser.id
     );
   });
 
@@ -154,7 +177,7 @@ describe("Innovator Service Suite", () => {
     expect(err.message).toContain("Invalid userId. You must define the owner.");
   });
 
-  it("should find all innovations by qualifying accessor when findAllByAccessor()", async () => {
+  it("should find all innovations by q. accessor when findAllByAccessorAndSupportStatus() with status UNASSIGNED", async () => {
     const innovationA = fixtures.generateInnovation({
       owner: innovatorUser,
       organisationShares: [{ id: accessorOrganisation.id }],
@@ -167,49 +190,153 @@ describe("Innovator Service Suite", () => {
 
     await fixtures.saveInnovations(innovationA, innovationB);
 
-    const result = await innovationService.findAllByAccessor(
+    const result = await innovationService.findAllByAccessorAndSupportStatus(
       qualAccessorUser.id,
-      [organisationQAccessorUser]
+      qAccessorUserOrganisations,
+      InnovationSupportStatus.UNASSIGNED,
+      false,
+      0,
+      10
     );
 
-    expect(result[0].length).toEqual(1);
-    expect(result[1]).toEqual(1);
+    expect(result.data.length).toEqual(1);
+    expect(result.count).toEqual(1);
   });
 
-  it("should find and paginate innovations by qualifying accessor when findAllByAccessor()", async () => {
-    const innovations = [];
-    for (let i = 0; i < 20; i++) {
-      innovations[i] = fixtures.generateInnovation({
-        owner: innovatorUser,
-        surveyId: `survey_${i}`,
-        name: `innovation_${i}`,
-        description: `description_${i}`,
-        organisationShares: [{ id: accessorOrganisation.id }],
-        status: InnovationStatus.IN_PROGRESS,
-      });
-    }
+  it("should find all innovations by q. accessor when findAllByAccessorAndSupportStatus() with status ENGAGING and assignedToMe", async () => {
+    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      displayName: "Q Accessor A",
+    });
+    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+      { id: accessorUser.id, displayName: ":ACCESSOR" },
+      { id: qualAccessorUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
 
-    await fixtures.saveInnovations(...innovations);
+    const innovationA = fixtures.generateInnovation({
+      owner: innovatorUser,
+      organisationShares: [{ id: accessorOrganisation.id }],
+      status: InnovationStatus.IN_PROGRESS,
+    });
 
-    const count = 10;
-    const page = 2;
-    const result = await innovationService.findAllByAccessor(
-      qualAccessorUser.id,
-      [organisationQAccessorUser],
-      {
-        take: count,
-        skip: (page - 1) * count,
-      }
+    const innovationB = fixtures.generateInnovation({
+      owner: innovatorUser,
+    });
+
+    await fixtures.saveInnovations(innovationA, innovationB);
+    await fixtures.createSupportInInnovation(
+      innovationA,
+      qualAccessorUser,
+      qAccessorUserOrganisations[0],
+      organisationUnitQAccessorUser
     );
 
-    expect(result[0].length).toEqual(10);
-    expect(result[1]).toEqual(20);
+    const result = await innovationService.findAllByAccessorAndSupportStatus(
+      qualAccessorUser.id,
+      qAccessorUserOrganisations,
+      InnovationSupportStatus.ENGAGING,
+      true,
+      0,
+      10
+    );
+
+    expect(result.data.length).toEqual(1);
+    expect(result.count).toEqual(1);
   });
 
-  it("should throw an error when findAllByAccessor() without userId", async () => {
+  it("should find all innovations by accessor when findAllByAccessorAndSupportStatus() without assignedToMe", async () => {
+    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      displayName: "Q Accessor A",
+    });
+    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+      { id: accessorUser.id, displayName: ":ACCESSOR" },
+      { id: qualAccessorUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
+
+    const innovationA = fixtures.generateInnovation({
+      owner: innovatorUser,
+      organisationShares: [{ id: accessorOrganisation.id }],
+      status: InnovationStatus.IN_PROGRESS,
+    });
+
+    const innovationB = fixtures.generateInnovation({
+      owner: innovatorUser,
+    });
+
+    await fixtures.saveInnovations(innovationA, innovationB);
+    await fixtures.createSupportInInnovation(
+      innovationA,
+      qualAccessorUser,
+      qAccessorUserOrganisations[0],
+      organisationUnitQAccessorUser
+    );
+
+    const result = await innovationService.findAllByAccessorAndSupportStatus(
+      accessorUser.id,
+      accessorUserOrganisations,
+      InnovationSupportStatus.ENGAGING,
+      false,
+      0,
+      10
+    );
+
+    expect(result.data.length).toEqual(1);
+    expect(result.count).toEqual(1);
+  });
+
+  it("should find all innovations by accessor when findAllByAccessorAndSupportStatus() with assignedToMe", async () => {
+    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      displayName: "Q Accessor A",
+    });
+    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+      { id: accessorUser.id, displayName: ":ACCESSOR" },
+      { id: qualAccessorUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
+
+    const innovationA = fixtures.generateInnovation({
+      owner: innovatorUser,
+      organisationShares: [{ id: accessorOrganisation.id }],
+      status: InnovationStatus.IN_PROGRESS,
+    });
+
+    const innovationB = fixtures.generateInnovation({
+      owner: innovatorUser,
+    });
+
+    await fixtures.saveInnovations(innovationA, innovationB);
+    await fixtures.createSupportInInnovation(
+      innovationA,
+      qualAccessorUser,
+      qAccessorUserOrganisations[0],
+      organisationUnitQAccessorUser
+    );
+
+    const result = await innovationService.findAllByAccessorAndSupportStatus(
+      accessorUser.id,
+      accessorUserOrganisations,
+      InnovationSupportStatus.ENGAGING,
+      true,
+      0,
+      10
+    );
+
+    expect(result.data.length).toEqual(0);
+    expect(result.count).toEqual(0);
+  });
+
+  it("should throw an error when findAllByAccessor() with invalid params", async () => {
     let err;
     try {
-      await innovationService.findAllByAccessor(undefined, []);
+      await innovationService.findAllByAccessorAndSupportStatus(
+        undefined,
+        [],
+        null,
+        null,
+        null,
+        null
+      );
     } catch (error) {
       err = error;
     }
@@ -221,7 +348,14 @@ describe("Innovator Service Suite", () => {
   it("should return empty when findAllByAccessor() with a user without organisations", async () => {
     let err;
     try {
-      await innovationService.findAllByAccessor("userId", []);
+      await innovationService.findAllByAccessorAndSupportStatus(
+        "userId",
+        [],
+        null,
+        null,
+        null,
+        null
+      );
     } catch (error) {
       err = error;
     }
@@ -237,7 +371,14 @@ describe("Innovator Service Suite", () => {
     });
 
     try {
-      await innovationService.findAllByAccessor(dummy.innovatorId, [orgUser]);
+      await innovationService.findAllByAccessorAndSupportStatus(
+        dummy.innovatorId,
+        [orgUser],
+        InnovationSupportStatus.ENGAGING,
+        false,
+        0,
+        10
+      );
     } catch (error) {
       err = error;
     }
@@ -291,9 +432,6 @@ describe("Innovator Service Suite", () => {
         organisationShares: [{ id: accessorOrganisation.id }],
       })
     );
-    const qAccessorOrganisations = await fixtures.findUserOrganisations(
-      qualAccessorUser.id
-    );
 
     spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
     spyOn(helpers, "getUserFromB2C").and.returnValue({
@@ -310,6 +448,10 @@ describe("Innovator Service Suite", () => {
       id: fakeInnovations[0].id,
       displayName: ":displayName",
     });
+
+    const qAccessorOrganisations = await fixtures.findUserOrganisations(
+      qualAccessorUser.id
+    );
 
     const result = await innovationService.getAccessorInnovationSummary(
       fakeInnovations[0].id,
@@ -515,14 +657,10 @@ describe("Innovator Service Suite", () => {
       })
     );
 
-    const qAccessorOrganisations = await fixtures.findUserOrganisations(
-      qualAccessorUser.id
-    );
-
     await fixtures.createSupportInInnovation(
       fakeInnovation,
       qualAccessorUser,
-      qAccessorOrganisations[0],
+      qAccessorUserOrganisations[0],
       organisationUnitQAccessorUser
     );
 
@@ -568,21 +706,17 @@ describe("Innovator Service Suite", () => {
       })
     );
 
-    const qAccessorOrganisations = await fixtures.findUserOrganisations(
-      qualAccessorUser.id
-    );
-
     await fixtures.createSupportInInnovation(
       fakeInnovation,
       qualAccessorUser,
-      qAccessorOrganisations[0],
+      qAccessorUserOrganisations[0],
       organisationUnitQAccessorUser
     );
 
     await fixtures.createInnovationAction(
       fakeInnovation,
       qualAccessorUser,
-      qAccessorOrganisations[0]
+      qAccessorUserOrganisations[0]
     );
 
     const org = await fixtures.createOrganisation(OrganisationType.ACCESSOR);
