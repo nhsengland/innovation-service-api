@@ -9,18 +9,18 @@ import {
   InnovatorOrganisationRole,
   Organisation,
   OrganisationUnitUser,
-  OrganisationUser,
+  OrganisationUser
 } from "@domain/index";
 import {
   InnovationNotFoundError,
   InvalidParamsError,
   InvalidUserRoleError,
-  MissingUserOrganisationError,
+  MissingUserOrganisationError
 } from "@services/errors";
 import { getMergedArray, hasAccessorRole } from "@services/helpers";
 import {
   InnovationListModel,
-  InnovationViewModel,
+  InnovationViewModel
 } from "@services/models/InnovationListModel";
 import { ProfileModel } from "@services/models/ProfileModel";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
@@ -29,13 +29,15 @@ import {
   FindManyOptions,
   FindOneOptions,
   getConnection,
+  getRepository,
   In,
   IsNull,
+  Repository
 } from "typeorm";
 import {
   AccessorInnovationSummary,
   AssessmentInnovationSummary,
-  InnovatorInnovationSummary,
+  InnovatorInnovationSummary
 } from "../models/InnovationSummaryResult";
 import { BaseService } from "./Base.service";
 import { UserService } from "./User.service";
@@ -43,12 +45,14 @@ import { UserService } from "./User.service";
 export class InnovationService extends BaseService<Innovation> {
   private readonly connection: Connection;
   private readonly userService: UserService;
+  private readonly supportRepo: Repository<InnovationSupport>;
 
   constructor(connectionName?: string) {
     super(Innovation, connectionName);
     this.connection = getConnection(connectionName);
 
     this.userService = new UserService(connectionName);
+    this.supportRepo = getRepository(InnovationSupport, connectionName);
   }
 
   async findInnovation(
@@ -223,6 +227,16 @@ export class InnovationService extends BaseService<Innovation> {
       }, {});
     }
 
+    // GRAB THE ORGANISATION MAP THAT SHOULD LOOK LIKE THIS:
+    /*
+      {
+        'ABC-DEF-GHI-JKL': ['ASHN', 'NICE'],
+        'XPT-OFG-JKH-IUO': ['NICE'],
+        ...
+      }
+    */
+    const organisationsMap = await this.getOrganisationsMap(innovations[0])
+
     const result = {
       data: innovations[0]?.map((inno: Innovation) => {
         const innovationSupport = inno.innovationSupports?.find(
@@ -230,14 +244,6 @@ export class InnovationService extends BaseService<Innovation> {
             is.organisationUnit.id === organisationUnit.id
         );
 
-        const organisations = inno.innovationSupports?.filter((support) => {
-          if (
-            support.status.toLocaleLowerCase() ===
-            supportStatus.toLocaleLowerCase()
-          ) {
-            return support.organisationUnit.name;
-          }
-        });
 
         const support = innovationSupport
           ? {
@@ -267,7 +273,8 @@ export class InnovationService extends BaseService<Innovation> {
             inno.assessments.length > 0
               ? { id: inno.assessments[0].id }
               : { id: null },
-          organisations, // TODO add engaging organisations
+          // GRAB THE ORGANISATION ACRONYMS ARRAY FROM THE MAP BY THE KEY = INNOVATION ID
+          organisations: organisationsMap[inno.id] || [],
         };
       }),
       count: innovations[1],
@@ -770,5 +777,57 @@ export class InnovationService extends BaseService<Innovation> {
     }));
 
     return result;
+  }
+
+  private async getOrganisationsMap(innovations: Innovation[]): Promise<{[key:string]: string[]} | []> {
+
+    const innovationIds: string[] = innovations.map(o => o.id);
+    //return await this.supportRepo.findByInnovationIds(innovationIds) || [];
+    // FROM THE INNOVATIONS PASSED IN
+    // GRAB THE SUPPORTS WITH THE STATUS = ENGAGING
+
+    const supports = await this.supportRepo.find({
+      where: {
+        innovation: In( innovationIds ),
+        status:  InnovationSupportStatus.ENGAGING
+      },
+      relations: [
+        'innovation',
+        'organisationUnit',
+        'organisationUnit.organisation'
+      ]
+    });
+
+    let supportMap =  { };
+
+    // IF ANY SUPPORT MEETS THE CRITERIA
+    // LOOP THROUGH THE RESULTS
+    for (let index = 0; index < supports.length; index++) {
+      // GRAB THE SUPPORT ELEMENT
+      const element = supports[index];
+      // GRAB THE ORG ACRONYM
+      const organisation = element.organisationUnit.organisation.acronym;
+      // TRY TO GET KEY VALUE
+      const entry = supportMap[element.innovation.id];
+      // IF IT IS NON EXISTENT CREATE AN ENTRY IN THE ARRAY
+      if (!entry) {
+        supportMap[element.innovation.id] = {
+          organisations: [ organisation ]
+        }
+      } else {
+        // OTHERWISE PUSH THE ACRONYM INTO THE ARRAY
+        supportMap[element.innovation.id].push(organisation);
+      }
+    }
+
+    /*
+      RETURN THE MAP WHICH SHOULD LOOK LIKE
+      {
+        'ABC-DEF-GHI-JKL': ['ASHN', 'NICE'],
+        'XPT-OFG-JKH-IUO': ['NICE'],
+        ...
+      }
+    */
+    return supportMap;
   }
 }
