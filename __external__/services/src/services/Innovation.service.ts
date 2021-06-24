@@ -230,6 +230,15 @@ export class InnovationService extends BaseService<Innovation> {
             is.organisationUnit.id === organisationUnit.id
         );
 
+        const organisations = inno.innovationSupports?.filter((support) => {
+          if (
+            support.status.toLocaleLowerCase() ===
+            supportStatus.toLocaleLowerCase()
+          ) {
+            return support.organisationUnit.name;
+          }
+        });
+
         const support = innovationSupport
           ? {
               id: innovationSupport.id,
@@ -258,7 +267,7 @@ export class InnovationService extends BaseService<Innovation> {
             inno.assessments.length > 0
               ? { id: inno.assessments[0].id }
               : { id: null },
-          organisations: [], // TODO add engaging organisations
+          organisations, // TODO add engaging organisations
         };
       }),
       count: innovations[1],
