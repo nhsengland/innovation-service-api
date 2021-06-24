@@ -11,7 +11,7 @@ export class InnovationNotFoundError extends Error {
 export class InnovationSupportNotFoundError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "InnovationNotFoundError";
+    this.name = "InnovationSupportNotFoundError";
   }
 }
 
@@ -25,14 +25,14 @@ export class SectionNotFoundError extends Error {
 export class MissingUserOrganisationError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "ResourceNotFoundError";
+    this.name = "MissingUserOrganisationError";
   }
 }
 
 export class MissingUserOrganisationUnitError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "ResourceNotFoundError";
+    this.name = "MissingUserOrganisationUnitError";
     this.message = message || "Innovation not found for the user.";
   }
 }

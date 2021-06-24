@@ -2,12 +2,20 @@ import { CustomContext } from "../../utils/types";
 export const findAllInnovationsByAccessor = async (
   ctx: CustomContext,
   accessorId: string,
-  filter: any
+  supportStatus: string,
+  assignedToMe: boolean,
+  skip: number,
+  take: number,
+  order?: { [key: string]: string }
 ) => {
-  const result = await ctx.services.InnovationService.findAllByAccessor(
+  const result = await ctx.services.InnovationService.findAllByAccessorAndSupportStatus(
     accessorId,
     ctx.auth.userOrganisations,
-    filter
+    supportStatus,
+    assignedToMe,
+    skip,
+    take,
+    order
   );
   return result;
 };

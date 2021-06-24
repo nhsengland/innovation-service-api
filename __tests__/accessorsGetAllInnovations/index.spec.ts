@@ -97,7 +97,7 @@ describe("[HttpTrigger] accessorsGetAllInnovations Suite", () => {
       const services = {
         OrganisationService: {
           findUserOrganisations: () => [
-            { role: AccessorOrganisationRole.ACCESSOR },
+            { role: 'OTHER' },
           ],
         },
       };
@@ -151,7 +151,13 @@ async function mockedRequestFactory(data?: any) {
           { ...data.headers }, // headers
           { accessorId: "test_accessor_id" }, // ?
           {}, // payload/body
-          { take: 10, skip: 0, order: '{"name": "asc"}' } // querystring
+          { 
+            take: 10, 
+            skip: 0, 
+            supportStatus: 'ENGAGING', 
+            assignedToMe: 'true',
+            order: '{"name": "asc"}' 
+          } // querystring
         ),
       },
       { type: "http", name: "res", direction: "out" },

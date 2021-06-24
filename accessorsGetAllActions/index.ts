@@ -32,12 +32,13 @@ class AccessorsGetAllActions {
       context.res = Responsify.Forbidden({ error: "Operation denied." });
       return;
     }
-    const openActions = req.query.openActions.toLocaleLowerCase() === "true";
-    const skip = parseInt(req.query.skip);
-    const take = parseInt(req.query.take);
-    let order;
-    const query: any = req.query;
 
+    const query: any = req.query;
+    const openActions = query.openActions.toLocaleLowerCase() === "true";
+    const skip = parseInt(query.skip);
+    const take = parseInt(query.take);
+
+    let order;
     if (query.order) {
       order = JSON.parse(query.order);
     }

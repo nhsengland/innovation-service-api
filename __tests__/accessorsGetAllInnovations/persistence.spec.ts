@@ -11,7 +11,7 @@ describe("[accessorsGetAllInnovations] Persistence suite", () => {
       spyOn(typeorm, "getConnection");
       const spy = spyOn(
         InnovationService.prototype,
-        "findAllByAccessor"
+        "findAllByAccessorAndSupportStatus"
       ).and.returnValue([{ id: "innovationA" }, { id: "innovationB" }]);
 
       const ctx = {
@@ -26,7 +26,10 @@ describe("[accessorsGetAllInnovations] Persistence suite", () => {
       await persistence.findAllInnovationsByAccessor(
         ctx as CustomContext,
         "test_accessor_id",
-        {}
+        "ENGAGING",
+        true,
+        0,
+        10
       );
 
       expect(spy).toHaveBeenCalled();
