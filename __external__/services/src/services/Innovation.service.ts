@@ -9,18 +9,18 @@ import {
   InnovatorOrganisationRole,
   Organisation,
   OrganisationUnitUser,
-  OrganisationUser
+  OrganisationUser,
 } from "@domain/index";
 import {
   InnovationNotFoundError,
   InvalidParamsError,
   InvalidUserRoleError,
-  MissingUserOrganisationError
+  MissingUserOrganisationError,
 } from "@services/errors";
 import { getMergedArray, hasAccessorRole } from "@services/helpers";
 import {
   InnovationListModel,
-  InnovationViewModel
+  InnovationViewModel,
 } from "@services/models/InnovationListModel";
 import { ProfileModel } from "@services/models/ProfileModel";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
@@ -32,12 +32,12 @@ import {
   getRepository,
   In,
   IsNull,
-  Repository
+  Repository,
 } from "typeorm";
 import {
   AccessorInnovationSummary,
   AssessmentInnovationSummary,
-  InnovatorInnovationSummary
+  InnovatorInnovationSummary,
 } from "../models/InnovationSummaryResult";
 import { BaseService } from "./Base.service";
 import { UserService } from "./User.service";
@@ -235,7 +235,7 @@ export class InnovationService extends BaseService<Innovation> {
         ...
       }
     */
-    const organisationsMap = await this.getOrganisationsMap(innovations[0])
+    const organisationsMap = await this.getOrganisationsMap(innovations[0]);
 
     const result = {
       data: innovations[0]?.map((inno: Innovation) => {
@@ -243,7 +243,6 @@ export class InnovationService extends BaseService<Innovation> {
           (is: InnovationSupport) =>
             is.organisationUnit.id === organisationUnit.id
         );
-
 
         const support = innovationSupport
           ? {
@@ -779,26 +778,27 @@ export class InnovationService extends BaseService<Innovation> {
     return result;
   }
 
-  private async getOrganisationsMap(innovations: Innovation[]): Promise<{[key:string]: string[]} | []> {
-
-    const innovationIds: string[] = innovations.map(o => o.id);
+  private async getOrganisationsMap(
+    innovations: Innovation[]
+  ): Promise<{ [key: string]: string[] } | []> {
+    const innovationIds: string[] = innovations.map((o) => o.id);
     //return await this.supportRepo.findByInnovationIds(innovationIds) || [];
     // FROM THE INNOVATIONS PASSED IN
     // GRAB THE SUPPORTS WITH THE STATUS = ENGAGING
 
     const supports = await this.supportRepo.find({
       where: {
-        innovation: In( innovationIds ),
-        status:  InnovationSupportStatus.ENGAGING
+        innovation: In(innovationIds),
+        status: InnovationSupportStatus.ENGAGING,
       },
       relations: [
-        'innovation',
-        'organisationUnit',
-        'organisationUnit.organisation'
-      ]
+        "innovation",
+        "organisationUnit",
+        "organisationUnit.organisation",
+      ],
     });
 
-    let supportMap =  { };
+    const supportMap = {};
 
     // IF ANY SUPPORT MEETS THE CRITERIA
     // LOOP THROUGH THE RESULTS
@@ -811,12 +811,15 @@ export class InnovationService extends BaseService<Innovation> {
       const entry = supportMap[element.innovation.id];
       // IF IT IS NON EXISTENT CREATE AN ENTRY IN THE ARRAY
       if (!entry) {
-        supportMap[element.innovation.id] = {
-          organisations: [ organisation ]
-        }
+        supportMap[element.innovation.id] = [organisation];
       } else {
         // OTHERWISE PUSH THE ACRONYM INTO THE ARRAY
-        supportMap[element.innovation.id].push(organisation);
+        // BUT
+        // FIRST CHECK IF THE ACRONYM ALREADY EXISTS
+        const exists = supportMap[element.innovation.id].find(
+          (x) => x === organisation
+        );
+        if (!exists) supportMap[element.innovation.id].push(organisation);
       }
     }
 
