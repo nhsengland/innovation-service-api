@@ -768,6 +768,7 @@ export class InnovationService extends BaseService<Innovation> {
       mainCategory: r.mainCategory,
       otherMainCategoryDescription: r.otherMainCategoryDescription,
       assessment: {
+        id: r.assessments[0]?.id,
         createdAt: r.assessments[0]?.createdAt,
         assignTo: { name: r.assessments?.user?.name },
         finishedAt: r.assessments[0]?.finishedAt,
