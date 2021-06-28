@@ -389,15 +389,15 @@ describe("Innovator Service Suite", () => {
 
   it("should find the innovation by innovator Id and innovation Id when getInnovationOverview()", async () => {
     const innovationObj = fixtures.generateInnovation({ owner: innovatorUser });
-    const innovation = await fixtures.saveInnovations(innovationObj);
+    const innovation = await fixtures.saveInnovation(innovationObj);
 
     const result = await innovationService.getInnovationOverview(
-      innovation[0].id,
+      innovation.id,
       innovatorUser.id
     );
 
     expect(result).toBeDefined();
-    expect(result.ownerId).toBe(innovatorUser.id);
+    expect(result.id).toBe(innovation.id);
   });
 
   it("should throw an error when getInnovationOverview() without id", async () => {
@@ -542,20 +542,17 @@ describe("Innovator Service Suite", () => {
       owner: innovatorUser,
       surveyId: "abc",
     });
-    const innovations = await fixtures.saveInnovations(innovationObj);
+    const innovation = await fixtures.saveInnovation(innovationObj);
 
-    await innovationService.submitInnovation(
-      innovations[0].id,
-      innovatorUser.id
-    );
+    await innovationService.submitInnovation(innovation.id, innovatorUser.id);
 
     const result = await innovationService.getInnovationOverview(
-      innovations[0].id,
+      innovation.id,
       innovatorUser.id
     );
 
     expect(result).toBeDefined();
-    expect(result.ownerId).toBe(innovatorUser.id);
+    expect(result.id).toBe(innovation.id);
   });
 
   it("should throw an error when submitInnovation() without id", async () => {

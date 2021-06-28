@@ -3,6 +3,7 @@ import {
   Innovation,
   InnovationAction,
   InnovationActionStatus,
+  InnovationSection,
   InnovationStatus,
   InnovationSupport,
   InnovationSupportStatus,
@@ -310,7 +311,47 @@ export class InnovationService extends BaseService<Innovation> {
       );
     }
 
-    const innovation = await this.findInnovation(id, userId);
+    const query = this.repository
+      .createQueryBuilder("innovation")
+      .leftJoinAndSelect("innovation.assessments", "assessments")
+      .leftJoinAndSelect("innovation.sections", "sections")
+      .leftJoinAndSelect("sections.actions", "actions")
+      .where("innovation.id = :id and innovation.owner_id = :userId", {
+        id,
+        userId,
+      });
+
+    const innovation = await query.getOne();
+    if (!innovation) {
+      throw new InnovationNotFoundError(
+        "Invalid parameters. Innovation not found for the user."
+      );
+    }
+
+    // BUSINESS RULE: One innovation only has 1 assessment
+    const assessment = {
+      id: null,
+    };
+
+    if (innovation.assessments.length > 0) {
+      assessment.id = innovation.assessments[0].id;
+    }
+
+    const sections = await innovation.sections;
+    const actions = {
+      requestedCount: 0,
+      inReviewCount: 0,
+    };
+
+    sections?.forEach((section: any) => {
+      section.__actions__?.forEach((action: InnovationAction) => {
+        if (action.status === InnovationActionStatus.IN_REVIEW) {
+          actions.requestedCount++;
+        } else if (action.status === InnovationActionStatus.REQUESTED) {
+          actions.inReviewCount++;
+        }
+      });
+    });
 
     const result: InnovatorInnovationSummary = {
       id: innovation.id,
@@ -320,6 +361,8 @@ export class InnovationService extends BaseService<Innovation> {
       postcode: innovation.postcode,
       ownerId: innovation.owner,
       status: innovation.status,
+      assessment,
+      actions,
     };
 
     return result;

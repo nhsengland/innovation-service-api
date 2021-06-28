@@ -487,6 +487,45 @@ describe("Innovation Action Suite", () => {
     expect(item.count).toEqual(2);
   });
 
+  it("should find all open actions if Qual. Accessor with column order", async () => {
+    await actionService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+      },
+      qAccessorUserOrganisations
+    );
+
+    await actionService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.MARKET_RESEARCH,
+      },
+      qAccessorUserOrganisations
+    );
+
+    const item = await actionService.findAllByAccessor(
+      qualAccessorUser.id,
+      qAccessorUserOrganisations,
+      true,
+      0,
+      10,
+      {
+        createdAt: "ASC",
+        innovationName: "ASC",
+        section: "ASC",
+        status: "DESC",
+      }
+    );
+
+    expect(item).toBeDefined();
+    expect(item.count).toEqual(2);
+  });
+
   it("should find all open actions if Accessor", async () => {
     await actionService.create(
       qualAccessorUser.id,

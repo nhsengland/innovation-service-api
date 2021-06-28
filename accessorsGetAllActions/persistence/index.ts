@@ -6,7 +6,7 @@ export const findAllActions = async (
   openActions: boolean,
   skip: number,
   take: number,
-  order?: { [key: string]: string }
+  order?: { [key: string]: "ASC" | "DESC" }
 ) => {
   const result = await ctx.services.InnovationActionService.findAllByAccessor(
     accessorId,
