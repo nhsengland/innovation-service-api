@@ -283,7 +283,7 @@ export class InnovationActionService {
     openActions: boolean,
     skip: number,
     take: number,
-    order?: { [key: string]: string }
+    order?: { [key: string]: "ASC" | "DESC" }
   ) {
     if (!userId) {
       throw new InvalidParamsError("Invalid parameters.");
@@ -302,43 +302,63 @@ export class InnovationActionService {
       throw new InvalidUserRoleError("Invalid user. User has an invalid role.");
     }
 
-    const statuses = this.getFilterStatusByOpen(openActions);
-    const filterOptions: FindManyOptions<InnovationAction> = {
-      relations: [],
-      where: {},
-      skip,
-      take,
-      order: order || { createdAt: "DESC" },
-    };
+    const query = this.actionRepo
+      .createQueryBuilder("innovationAction")
+      .innerJoinAndSelect(
+        "innovationAction.innovationSection",
+        "innovationSection"
+      )
+      .innerJoinAndSelect("innovationSection.innovation", "innovation")
+      .where("InnovationAction.status IN (:...statuses)", {
+        statuses: this.getFilterStatusList(openActions),
+      })
+      .take(take)
+      .skip(skip);
+
+    if (order) {
+      order["displayId"] &&
+        query.orderBy("innovationAction.displayId", order["displayId"]);
+      order["section"] &&
+        query.orderBy("innovationSection.section", order["section"]);
+      order["innovationName"] &&
+        query.orderBy("innovation.name", order["innovationName"]);
+      order["createdAt"] &&
+        query.orderBy("innovationAction.createdAt", order["createdAt"]);
+      order["status"] &&
+        query.orderBy("innovationAction.status", order["status"]);
+    } else {
+      query.orderBy("innovationAction.createdAt", "DESC");
+    }
 
     if (
       userOrganisation.role === AccessorOrganisationRole.QUALIFYING_ACCESSOR
     ) {
-      filterOptions.relations = [
-        "innovationSection",
-        "innovationSection.innovation",
-        "innovationSection.innovation.organisationShares",
-      ];
-      filterOptions.where = `organisation_id = '${
-        userOrganisation.organisation.id
-      }' and InnovationAction.status in (${statuses.toString()})`;
+      query
+        .innerJoinAndSelect(
+          "innovation.organisationShares",
+          "organisationShares"
+        )
+        .andWhere("organisation_id = :organisationId", {
+          organisationId: userOrganisation.organisation.id,
+        });
     } else {
       // BUSINESS RULE: An user has only one organization unit
       const organisationUnit =
         userOrganisation.userOrganisationUnits[0].organisationUnit;
 
-      filterOptions.relations = [
-        "innovationSection",
-        "innovationSection.innovation",
-        "innovationSection.innovation.innovationSupports",
-      ];
-      filterOptions.where = `organisation_unit_id = '${
-        organisationUnit.id
-      }' and InnovationAction.status in (${statuses.toString()})`;
+      query
+        .innerJoinAndSelect(
+          "innovation.innovationSupports",
+          "innovationSupports"
+        )
+        .andWhere("organisation_unit_id = :organisationUnitId", {
+          organisationUnitId: organisationUnit.id,
+        });
     }
 
-    const result = await this.actionRepo.findAndCount(filterOptions);
-    const actions = result[0]?.map((ia: InnovationAction) => ({
+    const [innovationActions, count] = await query.getManyAndCount();
+
+    const actions = innovationActions?.map((ia: InnovationAction) => ({
       id: ia.id,
       displayId: ia.displayId,
       innovation: {
@@ -353,7 +373,7 @@ export class InnovationActionService {
 
     return {
       data: actions,
-      count: result[1],
+      count: count,
     };
   }
 
@@ -441,19 +461,19 @@ export class InnovationActionService {
     return alias + (++counter).toString().slice(-2).padStart(2, "0");
   }
 
-  private getFilterStatusByOpen(openActions: boolean) {
+  private getFilterStatusList(openActions: boolean) {
     if (openActions) {
       return [
-        `'${InnovationActionStatus.IN_REVIEW}'`,
-        `'${InnovationActionStatus.REQUESTED}'`,
-        `'${InnovationActionStatus.CONTINUE}'`,
-        `'${InnovationActionStatus.STARTED}'`,
+        InnovationActionStatus.IN_REVIEW,
+        InnovationActionStatus.REQUESTED,
+        InnovationActionStatus.CONTINUE,
+        InnovationActionStatus.STARTED,
       ];
     } else {
       return [
-        `'${InnovationActionStatus.COMPLETED}'`,
-        `'${InnovationActionStatus.DECLINED}'`,
-        `'${InnovationActionStatus.DELETED}'`,
+        InnovationActionStatus.COMPLETED,
+        InnovationActionStatus.DECLINED,
+        InnovationActionStatus.DELETED,
       ];
     }
   }
