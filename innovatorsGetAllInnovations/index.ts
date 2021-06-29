@@ -1,14 +1,20 @@
 import { HttpRequest } from "@azure/functions";
-import * as persistence from "./persistence";
+import { UserType } from "@domain/index";
+import {
+  AllowedUserType,
+  AppInsights,
+  JwtDecoder,
+  SQLConnector,
+} from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
-import { decodeToken } from "../utils/authentication";
-import { AppInsights, JwtDecoder, SQLConnector } from "../utils/decorators";
 import { CustomContext, Severity } from "../utils/types";
+import * as persistence from "./persistence";
 
 class InnovatorsGetAllInnovations {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder()
+  @AllowedUserType(UserType.INNOVATOR)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest

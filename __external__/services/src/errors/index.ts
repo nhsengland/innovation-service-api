@@ -64,6 +64,6 @@ export class InvalidParamsError extends Error {
 export class InvalidUserRoleError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "InvalidRoleError";
+    this.name = "InvalidUserRoleError";
   }
 }

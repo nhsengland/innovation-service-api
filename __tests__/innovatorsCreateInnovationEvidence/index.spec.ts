@@ -1,8 +1,8 @@
-/* eslint-disable */ 
-import { InnovatorOrganisationRole } from "@services/index";
+/* eslint-disable */
+import { UserType } from "@services/index";
 import {
   createHttpTrigger,
-  runStubFunctionFromBindings,
+  runStubFunctionFromBindings
 } from "stub-azure-function-context";
 import innovatorsCreateInnovationEvidence from "../../innovatorsCreateInnovationEvidence";
 import * as persistence from "../../innovatorsCreateInnovationEvidence/persistence";
@@ -12,7 +12,7 @@ import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
 
 jest.mock("../../utils/logging/insights", () => ({
-  start: () => {},
+  start: () => { },
   getInstance: () => ({
     startOperation: () => ({
       operation: {
@@ -23,19 +23,19 @@ jest.mock("../../utils/logging/insights", () => ({
       return func;
     },
     defaultClient: {
-      trackTrace: () => {},
-      trackRequest: () => {},
-      flush: () => {},
+      trackTrace: () => { },
+      trackRequest: () => { },
+      flush: () => { },
     },
   }),
 }));
 
 const dummy = {
   services: {
-    OrganisationService: {
-      findUserOrganisations: () => [
-        { role: InnovatorOrganisationRole.INNOVATOR_OWNER },
-      ],
+    UserService: {
+      getUser: () => ({
+        type: UserType.INNOVATOR,
+      }),
     },
   },
   innovationId: "test_innovation_id",
@@ -49,7 +49,7 @@ describe("[HttpTrigger] innovatorsCreateInnovationEvidence Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
+      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
       spyOn(connection, "setupSQLConnection").and.throwError(
         "Error establishing connection with the datasource."
       );
@@ -77,10 +77,12 @@ describe("[HttpTrigger] innovatorsCreateInnovationEvidence Suite", () => {
       expect(res.status).toBe(201);
     });
 
-    it("Should return 403 when innovator has an invalid role", async () => {
+    it("Should return 403 when innovator has an invalid user type", async () => {
       const services = {
-        OrganisationService: {
-          findUserOrganisations: () => [{ role: "other" }],
+        UserService: {
+          getUser: () => ({
+            type: UserType.ACCESSOR,
+          }),
         },
       };
 

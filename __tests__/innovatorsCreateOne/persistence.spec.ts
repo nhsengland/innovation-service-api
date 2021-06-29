@@ -7,7 +7,6 @@ import {
 } from "@services/index";
 import * as typeorm from "typeorm";
 import * as persistence from "../../innovatorsCreateOne/persistence";
-import { Survey } from "../../schemas/Survey";
 import { CustomContext } from "../../utils/types";
 
 describe("[innovatorsCreateOne] Persistence suite", () => {

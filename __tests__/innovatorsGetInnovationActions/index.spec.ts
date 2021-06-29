@@ -1,18 +1,16 @@
-/* eslint-disable */ 
-import * as persistence from "../../innovatorsGetInnovationActions/persistence";
+/* eslint-disable */
+import { UserType } from "@services/index";
+import {
+  createHttpTrigger, runStubFunctionFromBindings
+} from "stub-azure-function-context";
 import innovatorsGetInnovationActions from "../../innovatorsGetInnovationActions";
-import * as connection from "../../utils/connection";
+import * as persistence from "../../innovatorsGetInnovationActions/persistence";
 import * as authentication from "../../utils/authentication";
+import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
 
-import {
-  runStubFunctionFromBindings,
-  createHttpTrigger,
-} from "stub-azure-function-context";
-import { InnovatorOrganisationRole } from "@services/index";
-
 jest.mock("../../utils/logging/insights", () => ({
-  start: () => {},
+  start: () => { },
   getInstance: () => ({
     startOperation: () => ({
       operation: {
@@ -23,21 +21,21 @@ jest.mock("../../utils/logging/insights", () => ({
       return func;
     },
     defaultClient: {
-      trackTrace: () => {},
-      trackRequest: () => {},
-      flush: () => {},
+      trackTrace: () => { },
+      trackRequest: () => { },
+      flush: () => { },
     },
   }),
 }));
 
 const dummy = {
   services: {
-    OrganisationService: {
-      findUserOrganisations: () => [
-        { role: InnovatorOrganisationRole.INNOVATOR_OWNER },
-      ],
+    UserService: {
+      getUser: () => ({
+        type: UserType.INNOVATOR,
+      }),
     },
-  },
+  }
 };
 
 describe("[HttpTrigger] innovatorsGetInnovationActions Suite", () => {
@@ -47,7 +45,7 @@ describe("[HttpTrigger] innovatorsGetInnovationActions Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
+      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
       spyOn(connection, "setupSQLConnection").and.throwError(
         "Error establishing connection with the datasource."
       );
@@ -76,8 +74,10 @@ describe("[HttpTrigger] innovatorsGetInnovationActions Suite", () => {
 
     it("Should return 403 when innovator has an invalid role", async () => {
       const services = {
-        OrganisationService: {
-          findUserOrganisations: () => [{ role: "other" }],
+        UserService: {
+          getUser: () => ({
+            type: UserType.ACCESSOR,
+          }),
         },
       };
 

@@ -1,6 +1,6 @@
-import * as persistence from "../../innovatorsHeadOne/persistence";
 import { InnovatorService } from "@services/index";
 import * as typeorm from "typeorm";
+import * as persistence from "../../innovatorsHeadOne/persistence";
 import { CustomContext } from "../../utils/types";
 
 describe("[innovatorsHeadOne] Persistence suite", () => {

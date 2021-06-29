@@ -1,11 +1,6 @@
 import { HttpRequest } from "@azure/functions";
 import { UserType } from "@domain/index";
 import {
-  InnovationNotFoundError,
-  InvalidParamsError,
-  ResourceNotFoundError,
-} from "@services/errors";
-import {
   AllowedUserType,
   AppInsights,
   JwtDecoder,

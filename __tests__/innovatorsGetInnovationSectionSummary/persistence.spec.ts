@@ -1,6 +1,6 @@
-import * as persistence from "../../innovatorsGetInnovationSectionSummary/persistence";
 import { InnovationSectionService } from "@services/index";
 import * as typeorm from "typeorm";
+import * as persistence from "../../innovatorsGetInnovationSectionSummary/persistence";
 import { CustomContext } from "../../utils/types";
 
 describe("[innovatorsGetInnovation] Persistence suite", () => {

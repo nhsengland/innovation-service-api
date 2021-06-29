@@ -1,9 +1,9 @@
 import { HttpRequest } from "@azure/functions";
-import { InnovatorOrganisationRole } from "@domain/index";
+import { UserType } from "@domain/index";
 import {
+  AllowedUserType,
   AppInsights,
   JwtDecoder,
-  OrganisationRoleValidator,
   SQLConnector,
 } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
@@ -14,7 +14,7 @@ class InnovatorsGetInnovationEvidence {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder()
-  @OrganisationRoleValidator(InnovatorOrganisationRole.INNOVATOR_OWNER)
+  @AllowedUserType(UserType.INNOVATOR)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest

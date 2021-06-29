@@ -1,9 +1,9 @@
 import { HttpRequest } from "@azure/functions";
-import { InnovatorOrganisationRole } from "@services/index";
+import { UserType } from "@services/index";
 import {
+  AllowedUserType,
   AppInsights,
   JwtDecoder,
-  OrganisationRoleValidator,
   SQLConnector,
   Validator,
 } from "../utils/decorators";
@@ -17,7 +17,7 @@ class InnovatorsSubmitInnovationSections {
   @SQLConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
   @JwtDecoder()
-  @OrganisationRoleValidator(InnovatorOrganisationRole.INNOVATOR_OWNER)
+  @AllowedUserType(UserType.INNOVATOR)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest

@@ -1,8 +1,8 @@
 /* eslint-disable */
-import { InnovatorOrganisationRole } from "@services/index";
+import { UserType } from "@services/index";
 import {
   createHttpTrigger,
-  runStubFunctionFromBindings,
+  runStubFunctionFromBindings
 } from "stub-azure-function-context";
 import innovatorsUpdateInnovationEvidence from "../../innovatorsGetInnovationEvidence";
 import * as persistence from "../../innovatorsGetInnovationEvidence/persistence";
@@ -31,10 +31,10 @@ jest.mock("../../utils/logging/insights", () => ({
 
 const dummy = {
   services: {
-    OrganisationService: {
-      findUserOrganisations: () => [
-        { role: InnovatorOrganisationRole.INNOVATOR_OWNER },
-      ],
+    UserService: {
+      getUser: () => ({
+        type: UserType.INNOVATOR,
+      }),
     },
   },
   innovatorId: 'test_innovator_id'
@@ -80,10 +80,12 @@ describe("[HttpTrigger] innovatorsGetInnovationEvidence Suite", () => {
       expect(res.status).toBe(200);
     });
 
-    it("Should return 403 when innovator has an invalid role", async () => {
+    it("Should return 403 when innovator has an invalid user type", async () => {
       const services = {
-        OrganisationService: {
-          findUserOrganisations: () => [{ role: "other" }],
+        UserService: {
+          getUser: () => ({
+            type: UserType.ACCESSOR,
+          }),
         },
       };
 
