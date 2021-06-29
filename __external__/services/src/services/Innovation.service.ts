@@ -346,9 +346,9 @@ export class InnovationService extends BaseService<Innovation> {
     sections?.forEach((section: any) => {
       section.__actions__?.forEach((action: InnovationAction) => {
         if (action.status === InnovationActionStatus.IN_REVIEW) {
-          actions.requestedCount++;
-        } else if (action.status === InnovationActionStatus.REQUESTED) {
           actions.inReviewCount++;
+        } else if (action.status === InnovationActionStatus.REQUESTED) {
+          actions.requestedCount++;
         }
       });
     });
