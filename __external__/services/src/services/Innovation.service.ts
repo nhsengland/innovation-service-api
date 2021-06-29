@@ -3,7 +3,6 @@ import {
   Innovation,
   InnovationAction,
   InnovationActionStatus,
-  InnovationSection,
   InnovationStatus,
   InnovationSupport,
   InnovationSupportStatus,
@@ -361,6 +360,7 @@ export class InnovationService extends BaseService<Innovation> {
       postcode: innovation.postcode,
       ownerId: innovation.owner,
       status: innovation.status,
+      submittedAt: innovation.submittedAt,
       assessment,
       actions,
     };

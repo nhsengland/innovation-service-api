@@ -21,18 +21,21 @@ import { InnovationSupportModel } from "@services/models/InnovationSupportModel"
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { InnovationService } from "./Innovation.service";
 import { OrganisationService } from "./Organisation.service";
+import { UserService } from "./User.service";
 
 export class InnovationSupportService {
   private readonly connection: Connection;
   private readonly supportRepo: Repository<InnovationSupport>;
   private readonly innovationService: InnovationService;
   private readonly organisationService: OrganisationService;
+  private readonly userService: UserService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.supportRepo = getRepository(InnovationSupport, connectionName);
     this.innovationService = new InnovationService(connectionName);
     this.organisationService = new OrganisationService(connectionName);
+    this.userService = new UserService(connectionName);
   }
 
   async find(
@@ -84,6 +87,86 @@ export class InnovationSupportService {
         })
       ),
     };
+  }
+
+  async findAllByInnovation(
+    userId: string,
+    innovationId: string
+  ): Promise<InnovationSupportModel[]> {
+    if (!userId || !innovationId) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+
+    const filterOptions = {
+      relations: [
+        "innovationSupports",
+        "innovationSupports.organisationUnit",
+        "innovationSupports.organisationUnit.organisation",
+        "innovationSupports.organisationUnitUsers",
+        "innovationSupports.organisationUnitUsers.organisationUser",
+        "innovationSupports.organisationUnitUsers.organisationUser.user",
+      ],
+      where: { owner: userId },
+    };
+    const innovation = await this.innovationService.findInnovation(
+      innovationId,
+      userId,
+      filterOptions
+    );
+    if (!innovation) {
+      throw new InnovationNotFoundError(
+        "Invalid parameters. Innovation not found."
+      );
+    }
+    const innovationSupports = innovation.innovationSupports;
+    if (!innovationSupports || innovationSupports.length === 0) {
+      return [];
+    }
+
+    const userIds = innovationSupports.flatMap((sup: InnovationSupport) => {
+      if (sup.status === InnovationSupportStatus.ENGAGING) {
+        return sup.organisationUnitUsers.map(
+          (ouu: OrganisationUnitUser) => ouu.organisationUser.user.id
+        );
+      } else {
+        return [];
+      }
+    });
+    const b2cUsers = await this.userService.getListOfUsers(userIds);
+    const b2cUserNames = b2cUsers.reduce((map, obj) => {
+      map[obj.id] = obj.displayName;
+      return map;
+    }, {});
+
+    return innovationSupports.map((sup: InnovationSupport) => {
+      const organisationUnit = sup.organisationUnit;
+      const organisation = organisationUnit.organisation;
+      let accessors = [];
+
+      if (sup.status === InnovationSupportStatus.ENGAGING) {
+        accessors = sup.organisationUnitUsers?.map(
+          (organisationUnitUser: OrganisationUnitUser) => ({
+            id: organisationUnitUser.id,
+            name: b2cUserNames[organisationUnitUser.organisationUser.user.id],
+          })
+        );
+      }
+
+      return {
+        id: sup.id,
+        status: sup.status,
+        organisation: {
+          id: organisation.id,
+          name: organisation.name,
+          acronym: organisation.acronym,
+        },
+        organisationUnit: {
+          id: organisationUnit.id,
+          name: organisationUnit.name,
+        },
+        accessors,
+      };
+    });
   }
 
   async create(

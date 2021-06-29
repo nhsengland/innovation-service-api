@@ -13,6 +13,10 @@ import {
   OrganisationUser,
   User,
 } from "@domain/index";
+import {
+  InvalidParamsError,
+  MissingUserOrganisationError,
+} from "@services/errors";
 import { getConnection } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
@@ -133,6 +137,30 @@ describe("Innovation Support Suite", () => {
     expect(item.status).toEqual(InnovationSupportStatus.ENGAGING);
   });
 
+  it("should throw when create with invalid params", async () => {
+    let err;
+    try {
+      await supportService.create(null, null, null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw when create without user organisations", async () => {
+    let err;
+    try {
+      await supportService.create("a", "a", {}, []);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(MissingUserOrganisationError);
+  });
+
   it("should find an support by innovator", async () => {
     const supportObj = {
       status: InnovationSupportStatus.ENGAGING,
@@ -206,6 +234,52 @@ describe("Innovation Support Suite", () => {
     expect(item).toBeDefined();
     expect(item.status).toEqual(InnovationSupportStatus.ENGAGING);
     expect(item.accessors.length).toEqual(1);
+  });
+
+  it("should throw when find with invalid params", async () => {
+    let err;
+    try {
+      await supportService.find(null, null, null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should find all supports by innovator", async () => {
+    const supportObj = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [organisationAccessorUnitUser.id],
+    };
+
+    await supportService.create(
+      qualAccessorUser.id,
+      innovation.id,
+      supportObj,
+      qAccessorUserOrganisations
+    );
+
+    const item = await supportService.findAllByInnovation(
+      innovatorUser.id,
+      innovation.id
+    );
+
+    expect(item).toBeDefined();
+    expect(item.length).toEqual(1);
+  });
+
+  it("should throw when findAllByInnovation with invalid params", async () => {
+    let err;
+    try {
+      await supportService.findAllByInnovation(null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
   });
 
   it("should update an support status to add one accessor", async () => {
@@ -335,5 +409,29 @@ describe("Innovation Support Suite", () => {
     expect(item).toBeDefined();
     expect(item.status).toEqual(InnovationSupportStatus.NOT_YET);
     expect(item.accessors.length).toEqual(0);
+  });
+
+  it("should throw when accessor update with invalid params", async () => {
+    let err;
+    try {
+      await supportService.update(null, null, null, null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw when accessor update without user organisations", async () => {
+    let err;
+    try {
+      await supportService.update("a", "a", "a", {}, []);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(MissingUserOrganisationError);
   });
 });
