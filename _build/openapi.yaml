@@ -1431,11 +1431,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: supportId
-          in: path
-          required: true
-          schema:
-            type: string
         - name: Authorization
           in: header
           schema:
