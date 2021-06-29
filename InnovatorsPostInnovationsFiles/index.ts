@@ -1,23 +1,23 @@
 import { HttpRequest } from "@azure/functions";
-import { InnovatorOrganisationRole } from "@services/index";
-import * as persistence from "./persistence";
-import * as Responsify from "../utils/responsify";
-import * as validation from "./validation";
+import { UserType } from "@services/index";
 import {
+  AllowedUserType,
   AppInsights,
   JwtDecoder,
-  OrganisationRoleValidator,
   SQLConnector,
   Validator,
 } from "../utils/decorators";
+import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
+import * as persistence from "./persistence";
+import * as validation from "./validation";
 
 class InnovatorsPostInnovationsFiles {
   @AppInsights()
   @SQLConnector()
   @Validator(validation.ValidateHeaders, "headers", "Invalid Headers")
   @JwtDecoder()
-  @OrganisationRoleValidator(InnovatorOrganisationRole.INNOVATOR_OWNER)
+  @AllowedUserType(UserType.INNOVATOR)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest

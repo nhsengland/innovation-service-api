@@ -74,7 +74,7 @@ describe("[HttpTrigger] innovatorsUpdateInnovationShares Suite", () => {
       expect(res.status).toBe(200);
     });
 
-    it("Should return 403 when innovator has an invalid role", async () => {
+    it("Should return 403 when innovator has an invalid user type", async () => {
       const services = {
         UserService: {
           getUser: () => ({

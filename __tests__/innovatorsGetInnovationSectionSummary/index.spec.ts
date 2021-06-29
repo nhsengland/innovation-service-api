@@ -1,17 +1,16 @@
-/* eslint-disable */ 
-import * as persistence from "../../innovatorsGetInnovationSectionSummary/persistence";
+/* eslint-disable */
+import { UserType } from "@domain/index";
+import {
+  createHttpTrigger, runStubFunctionFromBindings
+} from "stub-azure-function-context";
 import innovatorsGetInnovationSectionSummary from "../../innovatorsGetInnovationSectionSummary";
-import * as connection from "../../utils/connection";
+import * as persistence from "../../innovatorsGetInnovationSectionSummary/persistence";
 import * as authentication from "../../utils/authentication";
+import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
 
-import {
-  runStubFunctionFromBindings,
-  createHttpTrigger,
-} from "stub-azure-function-context";
-
 jest.mock("../../utils/logging/insights", () => ({
-  start: () => {},
+  start: () => { },
   getInstance: () => ({
     startOperation: () => ({
       operation: {
@@ -22,12 +21,25 @@ jest.mock("../../utils/logging/insights", () => ({
       return func;
     },
     defaultClient: {
-      trackTrace: () => {},
-      trackRequest: () => {},
-      flush: () => {},
+      trackTrace: () => { },
+      trackRequest: () => { },
+      flush: () => { },
     },
   }),
 }));
+
+const dummy = {
+  services: {
+    UserService: {
+      getUser: () => ({
+        type: UserType.INNOVATOR,
+      }),
+    },
+  },
+  innovationId: "test_innovation_id",
+  innovatorId: "test_innovator_id",
+};
+
 describe("[HttpTrigger] innovatorsGetInnovation Suite", () => {
   describe("Function Handler", () => {
     afterEach(() => {
@@ -35,7 +47,8 @@ describe("[HttpTrigger] innovatorsGetInnovation Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
+      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
+      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
       spyOn(connection, "setupSQLConnection").and.throwError(
         "Error establishing connection with the datasource."
       );
@@ -50,7 +63,7 @@ describe("[HttpTrigger] innovatorsGetInnovation Suite", () => {
 
     it("Should return 200 when Innovations and sections are found", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: "test_innovator_id",
       });
@@ -63,9 +76,33 @@ describe("[HttpTrigger] innovatorsGetInnovation Suite", () => {
       expect(res.status).toBe(200);
     });
 
+    it("Should return 403 when innovator has an invalid user type", async () => {
+      const services = {
+        UserService: {
+          getUser: () => ({
+            type: UserType.ACCESSOR,
+          }),
+        },
+      };
+
+      spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(services);
+      spyOn(authentication, "decodeToken").and.returnValue({
+        oid: dummy.innovatorId,
+      });
+      spyOn(persistence, "findAllInnovationSections").and.returnValue([
+        { id: dummy.innovationId },
+      ]);
+
+      const { res } = await mockedRequestFactory({
+        headers: { authorization: ":access_token" },
+      });
+      expect(res.status).toBe(403);
+    });
+
     it("Should throw error when oid is different from innovatorId", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: "test",
       });

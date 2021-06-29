@@ -1,9 +1,9 @@
 import { HttpRequest } from "@azure/functions";
+import { AppInsights, SQLConnector, Validator } from "../utils/decorators";
+import * as Responsify from "../utils/responsify";
+import { CustomContext } from "../utils/types";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
-import * as Responsify from "../utils/responsify";
-import { AppInsights, SQLConnector, Validator } from "../utils/decorators";
-import { CustomContext } from "../utils/types";
 
 class InnovatorsHeadOne {
   @AppInsights()

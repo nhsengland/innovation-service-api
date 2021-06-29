@@ -686,33 +686,6 @@ paths:
           description: "UnprocessableEntity"
 
   "/innovators/{innovatorId}":
-    get:
-      tags:
-        - "Innovator"
-        - "GetOne"
-      description: "Retrieves an innovator"
-      operationId: "innovators-get-one"
-      security:
-        - OpenId:
-            - innovators_details
-      parameters:
-        - name: innovatorId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: Authorization
-          in: header
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          $ref: "#/components/responses/innovator-get-one-200"
-        "404":
-          description: "Not Found"
-        "401":
-          description: "Unauthorized"
     head:
       tags:
         - "Innovator"
@@ -736,64 +709,6 @@ paths:
       responses:
         "200":
           description: "Ok"
-        "404":
-          description: "Not Found"
-        "401":
-          description: "Unauthorized"
-    put:
-      tags:
-        - "Innovator"
-        - "UpdateOne"
-      description: "Updates an innovator"
-      operationId: "innovators-update-one"
-      security:
-        - OpenId:
-            - innovators_update
-      parameters:
-        - name: innovatorId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: Authorization
-          in: header
-          schema:
-            type: string
-          required: true
-      requestBody:
-        $ref: "#/components/requestBodies/innovator-update-payload"
-      responses:
-        "200":
-          $ref: "#/components/responses/innovator-update-200"
-        "401":
-          description: "Unauthorized"
-        "400":
-          description: "Bad Request"
-        "422":
-          description: "UnprocessableEntity"
-    delete:
-      tags:
-        - "Innovator"
-        - "DeleteOne"
-      description: "Deletes/Inactivates an innovator"
-      operationId: "innovators-delete-one"
-      security:
-        - OpenId:
-            - innovators_delete
-      parameters:
-        - name: innovatorId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: Authorization
-          in: header
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          $ref: "#/components/responses/innovator-delete-200"
         "404":
           description: "Not Found"
         "401":
@@ -824,36 +739,6 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/innovator-get-innovations-200"
-        "404":
-          description: "Not Found"
-        "401":
-          description: "Unauthorized"
-    post:
-      tags:
-        - "Innovator"
-        - "Innovation"
-        - "CreateInnovation"
-      description: "Creates an Innovation associated with the Innovator"
-      operationId: "innovators-create-innovation"
-      security:
-        - OpenId:
-            - innovators_write
-      parameters:
-        - name: innovatorId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: Authorization
-          in: header
-          schema:
-            type: string
-          required: true
-      requestBody:
-        $ref: "#/components/requestBodies/innovation-create-payload"
-      responses:
-        "201":
-          $ref: "#/components/responses/innovator-create-innovation-201"
         "404":
           description: "Not Found"
         "401":
@@ -889,74 +774,6 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/innovator-get-innovation-200"
-        "404":
-          description: "Not Found"
-        "401":
-          description: "Unauthorized"
-    put:
-      tags:
-        - "Innovator"
-        - "Innovation"
-        - "UpdateInnovation"
-      description: "Updates an Innovation associated with the Innovator"
-      operationId: "innovators-update-innovation"
-      security:
-        - OpenId:
-            - innovators_write
-      parameters:
-        - name: innovatorId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: innovationId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: Authorization
-          in: header
-          schema:
-            type: string
-          required: true
-      requestBody:
-        $ref: "#/components/requestBodies/innovation-update-payload"
-      responses:
-        "200":
-          $ref: "#/components/responses/innovator-update-innovation-200"
-        "404":
-          description: "Not Found"
-        "401":
-          description: "Unauthorized"
-    delete:
-      tags:
-        - "Innovator"
-        - "Innovation"
-        - "DeleteInnovation"
-      description: "Deletes an Innovation associated with the Innovator"
-      operationId: "innovators-delete-innovation"
-      security:
-        - OpenId:
-            - innovators_delete
-      parameters:
-        - name: innovatorId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: innovationId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: Authorization
-          in: header
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          $ref: "#/components/responses/innovator-delete-innovation-200"
         "404":
           description: "Not Found"
         "401":
@@ -2018,14 +1835,8 @@ components:
       $ref: "./schemas/accessors-update-action-payload.yaml"
     innovator-create-payload:
       $ref: "./schemas/innovator-create-payload.yaml"
-    innovator-update-payload:
-      $ref: "./schemas/innovator-update-payload.yaml"
     innovator-update-action-payload:
       $ref: "./schemas/innovator-update-action-payload.yaml"
-    innovation-create-payload:
-      $ref: "./schemas/innovation-create-payload.yaml"
-    innovation-update-payload:
-      $ref: "./schemas/innovation-update-payload.yaml"
     innovation-update-section-payload:
       $ref: "./schemas/innovation-update-section-payload.yaml"
     innovation-update-shares-payload:
@@ -2050,14 +1861,8 @@ components:
       $ref: "./responses/accessor-get-innovations-200.yaml"
     accessor-get-innovation-assessment-200:
       $ref: "./responses/accessor-get-innovation-assessment-200.yaml"
-    innovator-get-one-200:
-      $ref: "./responses/innovator-get-one-200.yaml"
     innovator-create-201:
       $ref: "./responses/innovator-create-201.yaml"
-    innovator-update-200:
-      $ref: "./responses/innovator-update-200.yaml"
-    innovator-delete-200:
-      $ref: "./responses/innovator-delete-200.yaml"
     innovator-get-innovations-200:
       $ref: "./responses/innovator-get-innovations-200.yaml"
     innovator-get-innovation-section-summary-200:
@@ -2066,12 +1871,6 @@ components:
       $ref: "./responses/innovator-post-innovation-upload-201.yaml"
     innovator-get-innovation-200:
       $ref: "./responses/innovator-get-innovation-200.yaml"
-    innovator-create-innovation-201:
-      $ref: "./responses/innovator-create-innovation-201.yaml"
-    innovator-update-innovation-200:
-      $ref: "./responses/innovator-update-innovation-200.yaml"
-    innovator-delete-innovation-200:
-      $ref: "./responses/innovator-delete-innovation-200.yaml"
     innovator-get-innovation-section-200:
       $ref: "./responses/innovator-get-innovation-section-200.yaml"
     innovator-update-innovation-section-200:

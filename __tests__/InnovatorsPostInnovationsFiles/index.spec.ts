@@ -1,19 +1,17 @@
-/* eslint-disable */ 
-import * as persistence from "../../InnovatorsPostInnovationsFiles/persistence";
-import innovatorsPostInnovationsFiles from "../../InnovatorsPostInnovationsFiles";
-import * as connection from "../../utils/connection";
-import * as authentication from "../../utils/authentication";
-import * as service_loader from "../../utils/serviceLoader";
-import * as Validation from "../../InnovatorsPostInnovationsFiles/validation";
-
+/* eslint-disable */
+import { UserType } from "@services/index";
 import {
-  runStubFunctionFromBindings,
-  createHttpTrigger,
+  createHttpTrigger, runStubFunctionFromBindings
 } from "stub-azure-function-context";
-import { InnovatorOrganisationRole } from "@services/index";
+import innovatorsPostInnovationsFiles from "../../InnovatorsPostInnovationsFiles";
+import * as persistence from "../../InnovatorsPostInnovationsFiles/persistence";
+import * as Validation from "../../InnovatorsPostInnovationsFiles/validation";
+import * as authentication from "../../utils/authentication";
+import * as connection from "../../utils/connection";
+import * as service_loader from "../../utils/serviceLoader";
 
 jest.mock("../../utils/logging/insights", () => ({
-  start: () => {},
+  start: () => { },
   getInstance: () => ({
     startOperation: () => ({
       operation: {
@@ -24,21 +22,23 @@ jest.mock("../../utils/logging/insights", () => ({
       return func;
     },
     defaultClient: {
-      trackTrace: () => {},
-      trackRequest: () => {},
-      flush: () => {},
+      trackTrace: () => { },
+      trackRequest: () => { },
+      flush: () => { },
     },
   }),
 }));
 
 const dummy = {
   services: {
-    OrganisationService: {
-      findUserOrganisations: () => [
-        { role: InnovatorOrganisationRole.INNOVATOR_OWNER },
-      ],
+    UserService: {
+      getUser: () => ({
+        type: UserType.INNOVATOR,
+      }),
     },
   },
+  innovatorId: 'test_innovator_id',
+  innovationId: 'test_innovation_id'
 };
 
 describe("[HttpTrigger] innovatorsPostInnovationsFiles Suite", () => {
@@ -48,7 +48,7 @@ describe("[HttpTrigger] innovatorsPostInnovationsFiles Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
+      spyOn(authentication, 'decodeToken').and.returnValue({ oid: dummy.innovatorId });
       spyOn(connection, "setupSQLConnection").and.throwError(
         "Error establishing connection with the datasource."
       );
@@ -61,15 +61,39 @@ describe("[HttpTrigger] innovatorsPostInnovationsFiles Suite", () => {
       );
     });
 
+    it("Should return 403 when innovator has an invalid user type", async () => {
+      const services = {
+        UserService: {
+          getUser: () => ({
+            type: UserType.ACCESSOR,
+          }),
+        },
+      };
+
+      spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(services);
+      spyOn(authentication, "decodeToken").and.returnValue({
+        oid: dummy.innovatorId,
+      });
+      spyOn(persistence, "getUploadUrl").and.returnValue([
+        { id: "file_id" },
+      ]);
+
+      const { res } = await mockedRequestFactory({
+        headers: { authorization: ":access_token" },
+      });
+      expect(res.status).toBe(403);
+    });
+
     it("Should return 201 when Innovation file metadata is created is found", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
       spyOn(Validation, "ValidateHeaders").and.returnValue({});
       spyOn(authentication, "decodeToken").and.returnValue({
-        oid: "test_innovator_id",
+        oid: dummy.innovatorId,
       });
       spyOn(persistence, "getUploadUrl").and.returnValue([
-        { id: ":id", url: "test_innovator_id" },
+        { id: ":id", url: ":url" },
       ]);
 
       const { res } = await mockedRequestFactory({
@@ -93,8 +117,8 @@ async function mockedRequestFactory(data?: any) {
           "http://nhse-i-aac/api/innovators/{innovatorId}/innovations/{innovationId}/upload",
           { ...data.headers }, // headers
           {
-            innovatorId: "test_innovator_id",
-            innovationId: "test_innovation_id",
+            innovatorId: dummy.innovatorId,
+            innovationId: dummy.innovationId,
           }, // ?
           { fileName: "test_file.pdf", context: "TEST_CONTEXT" }, // payload/body
           undefined // querystring

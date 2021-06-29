@@ -668,33 +668,6 @@ paths:
         '422':
           description: UnprocessableEntity
   '/innovators/{innovatorId}':
-    get:
-      tags:
-        - Innovator
-        - GetOne
-      description: Retrieves an innovator
-      operationId: innovators-get-one
-      security:
-        - OpenId:
-            - innovators_details
-      parameters:
-        - name: innovatorId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: Authorization
-          in: header
-          schema:
-            type: string
-          required: true
-      responses:
-        '200':
-          $ref: '#/components/responses/innovator-get-one-200'
-        '401':
-          description: Unauthorized
-        '404':
-          description: Not Found
     head:
       tags:
         - Innovator
@@ -718,64 +691,6 @@ paths:
       responses:
         '200':
           description: Ok
-        '401':
-          description: Unauthorized
-        '404':
-          description: Not Found
-    put:
-      tags:
-        - Innovator
-        - UpdateOne
-      description: Updates an innovator
-      operationId: innovators-update-one
-      security:
-        - OpenId:
-            - innovators_update
-      parameters:
-        - name: innovatorId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: Authorization
-          in: header
-          schema:
-            type: string
-          required: true
-      requestBody:
-        $ref: '#/components/requestBodies/innovator-update-payload'
-      responses:
-        '200':
-          $ref: '#/components/responses/innovator-update-200'
-        '400':
-          description: Bad Request
-        '401':
-          description: Unauthorized
-        '422':
-          description: UnprocessableEntity
-    delete:
-      tags:
-        - Innovator
-        - DeleteOne
-      description: Deletes/Inactivates an innovator
-      operationId: innovators-delete-one
-      security:
-        - OpenId:
-            - innovators_delete
-      parameters:
-        - name: innovatorId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: Authorization
-          in: header
-          schema:
-            type: string
-          required: true
-      responses:
-        '200':
-          $ref: '#/components/responses/innovator-delete-200'
         '401':
           description: Unauthorized
         '404':
@@ -805,36 +720,6 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/innovator-get-innovations-200'
-        '401':
-          description: Unauthorized
-        '404':
-          description: Not Found
-    post:
-      tags:
-        - Innovator
-        - Innovation
-        - CreateInnovation
-      description: Creates an Innovation associated with the Innovator
-      operationId: innovators-create-innovation
-      security:
-        - OpenId:
-            - innovators_write
-      parameters:
-        - name: innovatorId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: Authorization
-          in: header
-          schema:
-            type: string
-          required: true
-      requestBody:
-        $ref: '#/components/requestBodies/innovation-create-payload'
-      responses:
-        '201':
-          $ref: '#/components/responses/innovator-create-innovation-201'
         '401':
           description: Unauthorized
         '404':
@@ -869,74 +754,6 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/innovator-get-innovation-200'
-        '401':
-          description: Unauthorized
-        '404':
-          description: Not Found
-    put:
-      tags:
-        - Innovator
-        - Innovation
-        - UpdateInnovation
-      description: Updates an Innovation associated with the Innovator
-      operationId: innovators-update-innovation
-      security:
-        - OpenId:
-            - innovators_write
-      parameters:
-        - name: innovatorId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: innovationId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: Authorization
-          in: header
-          schema:
-            type: string
-          required: true
-      requestBody:
-        $ref: '#/components/requestBodies/innovation-update-payload'
-      responses:
-        '200':
-          $ref: '#/components/responses/innovator-update-innovation-200'
-        '401':
-          description: Unauthorized
-        '404':
-          description: Not Found
-    delete:
-      tags:
-        - Innovator
-        - Innovation
-        - DeleteInnovation
-      description: Deletes an Innovation associated with the Innovator
-      operationId: innovators-delete-innovation
-      security:
-        - OpenId:
-            - innovators_delete
-      parameters:
-        - name: innovatorId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: innovationId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: Authorization
-          in: header
-          schema:
-            type: string
-          required: true
-      responses:
-        '200':
-          $ref: '#/components/responses/innovator-delete-innovation-200'
         '401':
           description: Unauthorized
         '404':
@@ -2363,20 +2180,6 @@ components:
                 properties:
                   displayName:
                     type: string
-    innovator-update-payload:
-      description: Innovator Update Payload
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              id:
-                type: string
-                format: uuid
-              userId:
-                type: string
-                format: uuid
     innovator-update-action-payload:
       description: Innovation Action Update Payload
       required: true
@@ -2389,46 +2192,6 @@ components:
                 type: string
               status:
                 type: string
-    innovation-create-payload:
-      description: Innovation Create Payload
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              ownerId:
-                type: string
-                format: uuid
-              triageId:
-                type: string
-                format: uuid
-              organisationId:
-                type: string
-                format: uuid
-              name:
-                type: string
-                maxLength: 150
-              description:
-                type: string
-                maxLength: 1000
-    innovation-update-payload:
-      description: Innovation Update Payload
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              id:
-                type: string
-                format: uuid
-              ownerId:
-                type: string
-                format: uuid
-              title:
-                type: string
-                format: uuid
     innovation-update-section-payload:
       description: Innovation Section Update Payload
       required: true
@@ -2665,53 +2428,8 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/assessments-innovation-schema'
-    innovator-get-one-200:
-      description: OK
-      headers:
-        X-Request-ID:
-          description: |
-            Correlation Header of the request
-          schema:
-            type: string
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/innovator-get-one'
-          example: |-
-            {
-              "links": {
-                "self": "/innovators/5b1e3375-6149-4ff1-be76-bce72e4236c0",
-                "next": "/innovators/054d5b4f-b67b-4545-949d-ec4b83d15990",
-                "prev": "/innovators/d0ce7c33-49d8-4f45-97ca-62f53bbeca4c"
-              },
-              "data:": {
-                  "type": "innovator",
-                  "id": "5b1e3375-6149-4ff1-be76-bce72e4236c0",
-                  "attributes": {
-                    "userId": "b874f3c4-7955-475d-a8a8-cb9e7e13eb1b",
-                    "createdAt": "1615390632",
-                    "updatedAt": "1615390672"
-                  }
-                }
-            }
     innovator-create-201:
       description: Created
-      headers:
-        X-Request-ID:
-          description: |
-            Correlation Header of the request
-          schema:
-            type: string
-    innovator-update-200:
-      description: OK
-      headers:
-        X-Request-ID:
-          description: |
-            Correlation Header of the request
-          schema:
-            type: string
-    innovator-delete-200:
-      description: OK
       headers:
         X-Request-ID:
           description: |
@@ -2856,30 +2574,6 @@ components:
                 }
               }
             }
-    innovator-create-innovation-201:
-      description: Created
-      headers:
-        X-Request-ID:
-          description: |
-            Correlation Header of the request
-          schema:
-            type: string
-    innovator-update-innovation-200:
-      description: Created
-      headers:
-        X-Request-ID:
-          description: |
-            Correlation Header of the request
-          schema:
-            type: string
-    innovator-delete-innovation-200:
-      description: OK
-      headers:
-        X-Request-ID:
-          description: |
-            Correlation Header of the request
-          schema:
-            type: string
     innovator-get-innovation-section-200:
       description: OK
       headers:
