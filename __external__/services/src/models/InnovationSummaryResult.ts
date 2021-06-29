@@ -8,6 +8,7 @@ export interface InnovatorInnovationSummary {
   postcode?: string;
   ownerId: User;
   status: InnovationStatus;
+  submittedAt: Date;
   actions: {
     requestedCount: number;
     inReviewCount: number;
