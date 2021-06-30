@@ -148,6 +148,17 @@ export function JwtDecoder() {
       const token = req.headers.authorization;
       const jwt = decodeToken(token);
 
+      const userId = req.params.userId;
+
+      if (userId && userId !== jwt.oid) {
+        context.logger(
+          `[${req.method}]${req.url} Operation denied. ${userId} !== ${jwt.oid}`,
+          Severity.Information
+        );
+        context.res = Responsify.Forbidden({ error: "Operation denied." });
+        return;
+      }
+
       context.auth = {
         decodedJwt: {
           oid: jwt.oid,

@@ -5,7 +5,7 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "route": "accessors/{accessorId}/innovations/{innovationId}/evidence/{evidenceId}"
+      "route": "accessors/{userId}/innovations/{innovationId}/evidence/{evidenceId}"
     },
     { "type": "http", "direction": "out", "name": "res" }
   ],

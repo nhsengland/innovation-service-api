@@ -48,7 +48,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-  "/accessors/{accessorId}/innovations":
+  "/accessors/{userId}/innovations":
     get:
       tags:
         - "Accessor"
@@ -60,7 +60,7 @@ paths:
         - OpenId:
             - accessors_details
       parameters:
-        - name: accessorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -78,7 +78,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-  "/accessors/{accessorId}/innovations/{innovationId}":
+  "/accessors/{userId}/innovations/{innovationId}":
     get:
       tags:
         - "Accessor"
@@ -90,7 +90,7 @@ paths:
         - OpenId:
             - accessors_details
       parameters:
-        - name: accessorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -113,7 +113,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-  "/accessors/{accessorId}/innovations/{innovationId}/section-summary":
+  "/accessors/{userId}/innovations/{innovationId}/section-summary":
     get:
       tags:
         - "Accessor"
@@ -125,7 +125,7 @@ paths:
         - OpenId:
             - accessors_details
       parameters:
-        - name: accessorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -148,7 +148,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-  "/accessors/{accessorId}/innovations/{innovationId}/sections":
+  "/accessors/{userId}/innovations/{innovationId}/sections":
     get:
       tags:
         - "Accessor"
@@ -160,7 +160,7 @@ paths:
         - OpenId:
             - accessors_details
       parameters:
-        - name: accessorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -185,7 +185,7 @@ paths:
         "403":
           description: "Forbidden"
 
-  "/accessors/{accessorId}/innovations/{innovationId}/supports":
+  "/accessors/{userId}/innovations/{innovationId}/supports":
     post:
       tags:
         - "Accessor"
@@ -197,7 +197,7 @@ paths:
         - OpenId:
             - supports_write
       parameters:
-        - name: accessorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -224,7 +224,7 @@ paths:
         "403":
           description: "Forbidden"
 
-  "/accessors/{accessorId}/innovations/{innovationId}/supports/{supportId}":
+  "/accessors/{userId}/innovations/{innovationId}/supports/{supportId}":
     get:
       tags:
         - "Accessor"
@@ -236,7 +236,7 @@ paths:
         - OpenId:
             - innovation_details
       parameters:
-        - name: accessorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -276,7 +276,7 @@ paths:
         - OpenId:
             - innovators_write
       parameters:
-        - name: accessorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -309,7 +309,7 @@ paths:
           description: "Forbidden"
 
 
-  "/accessors/{accessorId}/actions":
+  "/accessors/{userId}/actions":
     get:
       tags:
         - "Accessor"
@@ -321,7 +321,7 @@ paths:
         - OpenId:
             - innovation_details
       parameters:
-        - name: accessorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -341,7 +341,7 @@ paths:
         "403":
           description: "Forbidden"
 
-  "/accessors/{accessorId}/innovations/{innovationId}/actions":
+  "/accessors/{userId}/innovations/{innovationId}/actions":
     get:
       tags:
         - "Accessor"
@@ -353,7 +353,7 @@ paths:
         - OpenId:
             - innovation_details
       parameters:
-        - name: accessorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -388,7 +388,7 @@ paths:
         - OpenId:
             - actions_write
       parameters:
-        - name: accessorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -415,7 +415,7 @@ paths:
         "403":
           description: "Forbidden"
 
-  "/accessors/{accessorId}/innovations/{innovationId}/actions/{actionId}":
+  "/accessors/{userId}/innovations/{innovationId}/actions/{actionId}":
     get:
       tags:
         - "Accessor"
@@ -427,7 +427,7 @@ paths:
         - OpenId:
             - innovation_details
       parameters:
-        - name: accessorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -467,7 +467,7 @@ paths:
         - OpenId:
             - innovators_write
       parameters:
-        - name: accessorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -499,7 +499,7 @@ paths:
         "403":
           description: "Forbidden"
 
-  "/accessors/{accessorId}/innovations/{innovationId}/evidence/{evidenceId}":
+  "/accessors/{userId}/innovations/{innovationId}/evidence/{evidenceId}":
     get:
       tags:
         - "Accessor"
@@ -511,7 +511,7 @@ paths:
         - OpenId:
             - accessors_details
       parameters:
-        - name: accessorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -541,7 +541,7 @@ paths:
         "403":
           description: "Forbidden"
 
-  "/accessors/{accessorId}/innovations/{innovationId}/assessments/{assessmentId}":
+  "/accessors/{userId}/innovations/{innovationId}/assessments/{assessmentId}":
     get:
       tags:
         - "Accessor"
@@ -553,7 +553,7 @@ paths:
         - OpenId:
             - innovators_details
       parameters:
-        - name: accessorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -583,7 +583,7 @@ paths:
         "403":
           description: "Forbidden"
 
-  "/accessors/{accessorId}/innovations/{innovationId}/comments":
+  "/accessors/{userId}/innovations/{innovationId}/comments":
     get:
       tags:
         - "Accessor"
@@ -595,7 +595,7 @@ paths:
         - OpenId:
             - comments_read
       parameters:
-        - name: accessorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -630,7 +630,7 @@ paths:
         - OpenId:
             - comments_write
       parameters:
-        - name: accessorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -685,7 +685,7 @@ paths:
         "422":
           description: "UnprocessableEntity"
 
-  "/innovators/{innovatorId}":
+  "/innovators/{userId}":
     head:
       tags:
         - "Innovator"
@@ -696,7 +696,7 @@ paths:
         - OpenId:
             - innovators_details
       parameters:
-        - name: innovatorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -714,7 +714,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-  "/innovators/{innovatorId}/innovations":
+  "/innovators/{userId}/innovations":
     get:
       tags:
         - "Innovator"
@@ -726,7 +726,7 @@ paths:
         - OpenId:
             - innovators_details
       parameters:
-        - name: innovatorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -744,7 +744,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-  "/innovators/{innovatorId}/innovations/{innovationId}":
+  "/innovators/{userId}/innovations/{innovationId}":
     get:
       tags:
         - "Innovator"
@@ -756,7 +756,7 @@ paths:
         - OpenId:
             - innovators_details
       parameters:
-        - name: innovatorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -779,7 +779,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-  "/innovators/{innovatorId}/innovations/{innovationId}/submit":
+  "/innovators/{userId}/innovations/{innovationId}/submit":
     patch:
       tags:
         - "Innovator"
@@ -791,7 +791,7 @@ paths:
         - OpenId:
             - innovators_write
       parameters:
-        - name: innovatorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -816,7 +816,7 @@ paths:
         "403":
           description: "Forbidden"
 
-  "/innovators/{innovatorId}/innovations/{innovationId}/section-summary":
+  "/innovators/{userId}/innovations/{innovationId}/section-summary":
     get:
       tags:
         - "Innovator"
@@ -828,7 +828,7 @@ paths:
         - OpenId:
             - innovators_details
       parameters:
-        - name: innovatorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -851,7 +851,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-  "/innovators/{innovatorId}/innovations/{innovationId}/sections":
+  "/innovators/{userId}/innovations/{innovationId}/sections":
     get:
       tags:
         - "Innovator"
@@ -863,7 +863,7 @@ paths:
         - OpenId:
             - innovators_details
       parameters:
-        - name: innovatorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -898,7 +898,7 @@ paths:
         - OpenId:
             - innovators_write
       parameters:
-        - name: innovatorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -925,7 +925,7 @@ paths:
         "403":
           description: "Forbidden"
 
-  "/innovators/{innovatorId}/innovations/{innovationId}/sections/submit":
+  "/innovators/{userId}/innovations/{innovationId}/sections/submit":
     patch:
       tags:
         - "Innovator"
@@ -937,7 +937,7 @@ paths:
         - OpenId:
             - innovators_write
       parameters:
-        - name: innovatorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -964,7 +964,7 @@ paths:
         "403":
           description: "Forbidden"
 
-  "/innovators/{innovatorId}/innovations/{innovationId}/shares":
+  "/innovators/{userId}/innovations/{innovationId}/shares":
     get:
       tags:
         - "Innovator"
@@ -976,7 +976,7 @@ paths:
         - OpenId:
             - innovation_details
       parameters:
-        - name: innovatorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -1011,7 +1011,7 @@ paths:
         - OpenId:
             - innovation_write
       parameters:
-        - name: innovatorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -1038,7 +1038,7 @@ paths:
         "403":
           description: "Forbidden"
 
-  "/innovators/{innovatorId}/innovations/{innovationId}/evidence":
+  "/innovators/{userId}/innovations/{innovationId}/evidence":
     post:
       tags:
         - "Innovator"
@@ -1050,7 +1050,7 @@ paths:
         - OpenId:
             - innovators_write
       parameters:
-        - name: innovatorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -1077,7 +1077,7 @@ paths:
         "403":
           description: "Forbidden"
 
-  "/innovators/{innovatorId}/innovations/{innovationId}/evidence/{evidenceId}":
+  "/innovators/{userId}/innovations/{innovationId}/evidence/{evidenceId}":
     get:
       tags:
         - "Innovator"
@@ -1089,7 +1089,7 @@ paths:
         - OpenId:
             - innovators_details
       parameters:
-        - name: innovatorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -1129,7 +1129,7 @@ paths:
         - OpenId:
             - innovators_write
       parameters:
-        - name: innovatorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -1171,7 +1171,7 @@ paths:
         - OpenId:
             - innovators_delete
       parameters:
-        - name: innovatorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -1199,7 +1199,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-  "/innovators/{innovatorId}/innovations/{innovationId}/actions/{actionId}":
+  "/innovators/{userId}/innovations/{innovationId}/actions/{actionId}":
     get:
       tags:
         - "Innovator"
@@ -1211,7 +1211,7 @@ paths:
         - OpenId:
             - innovation_details
       parameters:
-        - name: innovatorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -1251,7 +1251,7 @@ paths:
         - OpenId:
             - innovators_write
       parameters:
-        - name: innovatorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -1283,7 +1283,7 @@ paths:
         "403":
           description: "Forbidden"
 
-  "/innovators/{innovatorId}/innovations/{innovationId}/actions":
+  "/innovators/{userId}/innovations/{innovationId}/actions":
     get:
       tags:
         - "Innovator"
@@ -1295,7 +1295,7 @@ paths:
         - OpenId:
             - innovation_details
       parameters:
-        - name: innovatorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -1320,7 +1320,7 @@ paths:
         "403":
           description: "Forbidden"
 
-  "/innovators/{innovatorId}/innovations/{innovationId}/upload":
+  "/innovators/{userId}/innovations/{innovationId}/upload":
     post:
       tags:
         - "Innovator"
@@ -1332,7 +1332,7 @@ paths:
         - OpenId:
             - innovators_details
       parameters:
-        - name: innovatorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -1367,7 +1367,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-  "/innovators/{innovatorId}/innovations/{innovationId}/comments":
+  "/innovators/{userId}/innovations/{innovationId}/comments":
     get:
       tags:
         - "Innovator"
@@ -1379,7 +1379,7 @@ paths:
         - OpenId:
             - comments_read
       parameters:
-        - name: innovatorId
+        - name: userId
           in: path
           required: true
           schema:
@@ -1414,7 +1414,7 @@ paths:
         - OpenId:
             - comments_write
       parameters:
-        - name: innovatorId
+        - name: userId
           in: path
           required: true
           schema:

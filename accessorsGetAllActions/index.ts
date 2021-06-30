@@ -25,13 +25,7 @@ class AccessorsGetAllActions {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const accessorId = req.params.accessorId;
-    const oid = context.auth.decodedJwt.oid;
-
-    if (accessorId !== oid) {
-      context.res = Responsify.Forbidden({ error: "Operation denied." });
-      return;
-    }
+    const accessorId = req.params.userId;
 
     const query: any = req.query;
     const openActions = query.openActions.toLocaleLowerCase() === "true";

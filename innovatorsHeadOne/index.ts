@@ -13,9 +13,9 @@ class InnovatorsHeadOne {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const oid = req.params.innovatorId;
+    const userId = req.params.userId;
 
-    const result = await persistence.findInnovatorById(context, oid);
+    const result = await persistence.findInnovatorById(context, userId);
 
     if (result) {
       context.res = Responsify.Ok();

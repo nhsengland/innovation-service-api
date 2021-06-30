@@ -19,16 +19,9 @@ class AssessmentsGetInnovationAssessment {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const userId = req.params.userId;
     const innovationId = req.params.innovationId;
-    const oid = context.auth.decodedJwt.oid;
-
-    if (userId !== oid) {
-      context.res = Responsify.Forbidden({ error: "Operation denied." });
-      return;
-    }
-
     const assessmentId = req.params.assessmentId;
+
     let result;
     try {
       result = await persistence.findInnovationAssessmentById(

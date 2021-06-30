@@ -19,21 +19,15 @@ class InnovatorsDeleteInnovationEvidence {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const innovatorId = req.params.innovatorId;
+    const innovatorId = req.params.userId;
     const evidenceId = req.params.evidenceId;
-    const oid = context.auth.decodedJwt.oid;
-
-    if (innovatorId !== oid) {
-      context.res = Responsify.Forbidden({ error: "Operation denied." });
-      return;
-    }
 
     let result;
     try {
       result = await persistence.deleteInnovationEvidence(
         context,
         evidenceId,
-        oid
+        innovatorId
       );
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });

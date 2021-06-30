@@ -6,7 +6,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["head"],
-      "route": "innovators/{innovatorId}"
+      "route": "innovators/{userId}"
     },
     { "type": "http", "direction": "out", "name": "res" }
   ],

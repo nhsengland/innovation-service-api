@@ -25,12 +25,6 @@ class AssessmentsCreateInnovationAssessment {
     const assessment = req.body;
     const userId = req.params.userId;
     const innovationId = req.params.innovationId;
-    const oid = context.auth.decodedJwt.oid;
-
-    if (userId !== oid) {
-      context.res = Responsify.Forbidden({ error: "Operation denied." });
-      return;
-    }
 
     let result;
     try {
