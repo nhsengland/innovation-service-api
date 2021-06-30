@@ -73,7 +73,7 @@ async function mockedRequestFactory(data?: any) {
           "HEAD",
           "http://nhse-i-aac/api/surveys",
           { ...data.headers }, // headers
-          { innovatorId: "test_innovator_id" }, // ?
+          { userId: "test_innovator_id" }, // ?
           {}, // payload/body
           undefined // querystring
         ),
