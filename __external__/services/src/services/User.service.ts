@@ -99,6 +99,10 @@ export class UserService {
   }
 
   async getListOfUsers(ids: string[]): Promise<ProfileSlimModel[]> {
+    if (!ids || ids.length === 0) {
+      return [];
+    }
+
     const accessToken = await authenticateWitGraphAPI();
     const uniqueUserIds = ids.filter((x, i, a) => a.indexOf(x) == i);
     const userIds = uniqueUserIds.map((u) => `"${u}"`).join(",");

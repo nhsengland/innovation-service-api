@@ -4,13 +4,12 @@ export const findInnovationAssessmentById = async (
   ctx: CustomContext,
   assessmentId: string,
   innovationId: string,
-  accessorId: string
+  innovatorId: string
 ) => {
   const result = await ctx.services.InnovationAssessmentService.findByUser(
     assessmentId,
-    accessorId,
-    innovationId,
-    ctx.auth.userOrganisations
+    innovatorId,
+    innovationId
   );
 
   return result;
