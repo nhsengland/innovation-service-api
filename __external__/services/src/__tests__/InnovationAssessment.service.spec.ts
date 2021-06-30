@@ -29,6 +29,7 @@ describe("Innovation Assessment Suite", () => {
   let innovation: Innovation;
   let assessmentUser: User;
   let innovatorUser: User;
+  let qualAccessorUser: User;
   let organisationQuaAccessorUser: OrganisationUser;
   let organisationAccessorUser: OrganisationUser;
 
@@ -42,7 +43,7 @@ describe("Innovation Assessment Suite", () => {
 
     innovatorUser = await fixtures.createInnovatorUser();
     assessmentUser = await fixtures.createAssessmentUser();
-    const qualAccessorUser = await fixtures.createAccessorUser();
+    qualAccessorUser = await fixtures.createAccessorUser();
     const accessorUser = await fixtures.createAccessorUser();
 
     const accessorOrganisation = await fixtures.createOrganisation(
@@ -261,10 +262,54 @@ describe("Innovation Assessment Suite", () => {
       assessmentObj
     );
 
-    const item = await assessmentService.findByAccessor(
+    const item = await assessmentService.findByUser(
       assessment.id,
+      qualAccessorUser.id,
       innovation.id,
       [organisationQuaAccessorUser]
+    );
+
+    expect(item).toBeDefined();
+    expect(item.description).toEqual(dummy.assessment.description);
+  });
+
+  it("should find an assessment by innovator", async () => {
+    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      displayName: ":display_name",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "test_user@example.com",
+        },
+      ],
+      mobilePhone: "+351960000000",
+    });
+    spyOn(userService, "getProfile").and.returnValue({
+      id: assessmentUser.id,
+      displayName: ":displayName",
+      type: UserType.ASSESSMENT,
+      organisations: [],
+      email: "test_user@example.com",
+      phone: "+351960000000",
+    });
+
+    const assessmentObj = {
+      ...dummy.assessment,
+      innovation: innovation.id,
+      assignTo: assessmentUser.id,
+    };
+
+    const assessment = await assessmentService.create(
+      assessmentUser.id,
+      innovation.id,
+      assessmentObj
+    );
+
+    const item = await assessmentService.findByUser(
+      assessment.id,
+      innovatorUser.id,
+      innovation.id
     );
 
     expect(item).toBeDefined();

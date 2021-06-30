@@ -9,7 +9,6 @@ import {
 import {
   InnovationNotFoundError,
   InvalidParamsError,
-  MissingUserOrganisationError,
   ResourceNotFoundError,
 } from "@services/errors";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
@@ -82,24 +81,19 @@ export class InnovationAssessmentService {
     };
   }
 
-  async findByAccessor(
+  async findByUser(
     id: string,
+    userId: string,
     innovationId: string,
-    userOrganisations: OrganisationUser[]
+    userOrganisations?: OrganisationUser[]
   ): Promise<InnovationAssessmentResult> {
-    if (!id || !innovationId || !userOrganisations) {
+    if (!id || !userId || !innovationId) {
       throw new InvalidParamsError("Invalid parameters.");
-    }
-
-    if (!userOrganisations || userOrganisations.length == 0) {
-      throw new MissingUserOrganisationError(
-        "Invalid user. User has no organisations."
-      );
     }
 
     const innovation = await this.innovationService.findInnovation(
       innovationId,
-      id,
+      userId,
       null,
       userOrganisations
     );

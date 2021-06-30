@@ -1,9 +1,9 @@
 import { InnovationAssessmentService } from "@services/index";
 import * as typeorm from "typeorm";
-import * as persistence from "../../accessorsGetInnovationAssessment/persistence";
+import * as persistence from "../../innovatorsGetInnovationAssessment/persistence";
 import { CustomContext } from "../../utils/types";
 
-describe("[accessorsGetInnovationAssessment] Persistence suite", () => {
+describe("[innovatorsGetInnovationAssessment] Persistence suite", () => {
   describe("getInnovationAssessment", () => {
     it("should get an innovation assessment", async () => {
       // Arrange
