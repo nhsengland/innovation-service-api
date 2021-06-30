@@ -19,14 +19,8 @@ class InnovatorsGetInnovationActions {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const innovatorId = req.params.innovatorId;
+    const innovatorId = req.params.userId;
     const innovationId = req.params.innovationId;
-    const oid = context.auth.decodedJwt.oid;
-
-    if (innovatorId !== oid) {
-      context.res = Responsify.Forbidden({ error: "Operation denied." });
-      return;
-    }
 
     let result;
     try {

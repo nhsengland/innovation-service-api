@@ -29,15 +29,9 @@ class AccessorsGetInnovationSections {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const accessorId = req.params.accessorId;
+    const accessorId = req.params.userId;
     const innovationId = req.params.innovationId;
     const section = req.query.section;
-    const oid = context.auth.decodedJwt.oid;
-
-    if (accessorId !== oid) {
-      context.res = Responsify.Forbidden({ error: "Operation denied." });
-      return;
-    }
 
     let result;
     try {

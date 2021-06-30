@@ -27,14 +27,8 @@ class AccessorsUpdateInnovationAction {
   ): Promise<void> {
     const action = req.body;
     const actionId = req.params.actionId;
-    const accessorId = req.params.accessorId;
+    const accessorId = req.params.userId;
     const innovationId = req.params.innovationId;
-    const oid = context.auth.decodedJwt.oid;
-
-    if (accessorId !== oid) {
-      context.res = Responsify.Forbidden({ error: "Operation denied." });
-      return;
-    }
 
     let result;
     try {

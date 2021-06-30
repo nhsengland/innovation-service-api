@@ -129,10 +129,10 @@ async function mockedRequestFactory(data?: any) {
         direction: "in",
         data: createHttpTrigger(
           "POST",
-          "http://nhse-i-aac/api/accessors/{accessorId}/innovations/{innovationId}/supports",
+          "http://nhse-i-aac/api/accessors/{userId}/innovations/{innovationId}/supports",
           { ...data.headers }, // headers
           {
-            accessorId: dummy.accessorId,
+            userId: dummy.accessorId,
             innovationId: dummy.innovationId,
           },
           {

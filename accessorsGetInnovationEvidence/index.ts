@@ -22,16 +22,10 @@ class AccessorsGetInnovationEvidence {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const accessorId = req.params.accessorId;
+    const accessorId = req.params.userId;
     const innovationId = req.params.innovationId;
-    const oid = context.auth.decodedJwt.oid;
-
-    if (accessorId !== oid) {
-      context.res = Responsify.Forbidden({ error: "Operation denied." });
-      return;
-    }
-
     const evidenceId = req.params.evidenceId;
+
     let result;
     try {
       const innovation = await persistence.findInnovationByAccessorId(

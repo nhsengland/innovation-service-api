@@ -23,14 +23,8 @@ class InnovatorsCreateInnovationComment {
     req: HttpRequest
   ): Promise<void> {
     const body = req.body;
-    const innovatorId = req.params.innovatorId;
+    const innovatorId = req.params.userId;
     const innovationId = req.params.innovationId;
-    const oid = context.auth.decodedJwt.oid;
-
-    if (innovatorId !== oid) {
-      context.res = Responsify.Forbidden({ error: "Operation denied." });
-      return;
-    }
 
     let result;
     try {

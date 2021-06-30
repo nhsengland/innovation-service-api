@@ -34,18 +34,7 @@ class AccessorsGetAllInnovations {
     req: HttpRequest,
     auth: any
   ): Promise<void> {
-    const accessorId = req.params.accessorId;
-    const oid = context.auth.decodedJwt.oid;
-
-    if (accessorId !== oid) {
-      context.logger(
-        `[${req.method}]${req.url} Operation denied. ${accessorId} !== ${oid}`,
-        Severity.Information
-      );
-      context.res = Responsify.Forbidden({ error: "Operation denied." });
-      return;
-    }
-
+    const accessorId = req.params.userId;
     const query: any = req.query;
     const supportStatus = query.supportStatus;
     const assignedToMe = query.assignedToMe
