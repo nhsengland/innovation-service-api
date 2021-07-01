@@ -11,7 +11,7 @@ describe("[innovatorsGetInnovationAssessment] Persistence suite", () => {
       spyOn(typeorm, "getConnection");
       const spy = spyOn(
         InnovationAssessmentService.prototype,
-        "findByUser"
+        "find"
       ).and.returnValue([{ id: "" }]);
 
       const ctx = {
@@ -19,15 +19,17 @@ describe("[innovatorsGetInnovationAssessment] Persistence suite", () => {
           InnovationAssessmentService: new InnovationAssessmentService(),
         },
         auth: {
-          userOrganisations: [],
+          requestUser: {
+            id: ":userId",
+            type: "INNOVATOR",
+          },
         },
       };
       // Act
       await persistence.findInnovationAssessmentById(
         ctx as CustomContext,
         "E362433E-F36B-1410-80DE-0032FE5B194B",
-        "Y022433E-T36B-1410-80DE-0032FE5B194B",
-        "T123456E-F88B-6514-89DE-0032FE5B194B"
+        "Y022433E-T36B-1410-80DE-0032FE5B194B"
       );
 
       expect(spy).toHaveBeenCalled();

@@ -1,13 +1,13 @@
 import { HttpRequest } from "@azure/functions";
 import { OrganisationUser, UserType } from "@services/index";
-import { getInstance, start } from "../logging/insights";
 import { decodeToken } from "../authentication";
 import {
-  setIsSQLConnected,
   setIsCosmosConnected,
+  setIsSQLConnected,
   setupCosmosDb,
   setupSQLConnection,
 } from "../connection";
+import { getInstance, start } from "../logging/insights";
 import * as Responsify from "../responsify";
 import { loadAllServices } from "../serviceLoader";
 import { CustomContext, Severity } from "../types";
@@ -172,7 +172,7 @@ export function JwtDecoder() {
   };
 }
 
-export function OrganisationRoleValidator(...roles: any[]) {
+export function OrganisationRoleValidator(userType: UserType, ...roles: any[]) {
   return function (
     target: Object,
     propertyKey: string,
@@ -192,7 +192,7 @@ export function OrganisationRoleValidator(...roles: any[]) {
         roles.includes(uo.role)
       );
 
-      if (filteredOrganisations.length == 0) {
+      if (filteredOrganisations.length === 0) {
         context.log.error(
           `Invalid user. User has no valid roles. {oid: ${oid}}`
         );
@@ -207,7 +207,34 @@ export function OrganisationRoleValidator(...roles: any[]) {
         return;
       }
 
-      context.auth.userOrganisations = filteredOrganisations;
+      // BUSINESS RULE - An user has only one organization and one organisation unit
+      let organisationUnitUser = null;
+      if (filteredOrganisations[0].userOrganisationUnits) {
+        organisationUnitUser =
+          filteredOrganisations[0].userOrganisationUnits[0];
+
+        organisationUnitUser = {
+          id: organisationUnitUser.id,
+          organisationUnit: {
+            id: organisationUnitUser.organisationUnit.id,
+            name: organisationUnitUser.organisationUnit.name,
+          },
+        };
+      }
+
+      context.auth.requestUser = {
+        id: oid,
+        type: userType,
+        organisationUser: {
+          id: filteredOrganisations[0].id,
+          role: filteredOrganisations[0].role,
+          organisation: {
+            id: filteredOrganisations[0].organisation.id,
+            name: filteredOrganisations[0].organisation.name,
+          },
+        },
+        organisationUnitUser,
+      };
 
       await original.apply(this, args);
       return;
@@ -294,6 +321,11 @@ export function AllowedUserType(type: UserType) {
         context.res = Responsify.Forbidden();
         return;
       }
+
+      context.auth.requestUser = {
+        id: oid,
+        type: user.type,
+      };
 
       await original.apply(this, args);
       return;

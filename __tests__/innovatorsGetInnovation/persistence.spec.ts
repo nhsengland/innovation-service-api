@@ -17,11 +17,16 @@ describe("[innovatorsGetInnovation] Persistence suite", () => {
         services: {
           InnovationService: new InnovationService(),
         },
+        auth: {
+          requestUser: {
+            id: ":userId",
+            type: "INNOVATOR",
+          },
+        },
       };
       // Act
       await persistence.findInnovationsByInnovator(
         ctx as CustomContext,
-        "test_innovator_id",
         "test_innovation_id"
       );
 

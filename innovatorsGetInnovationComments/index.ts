@@ -19,7 +19,6 @@ class InnovatorsGetInnovationComments {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const innovatorId = req.params.userId;
     const innovationId = req.params.innovationId;
 
     let order;
@@ -34,7 +33,6 @@ class InnovatorsGetInnovationComments {
       result = await persistence.findInnovationComments(
         context,
         innovationId,
-        innovatorId,
         order
       );
     } catch (error) {

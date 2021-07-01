@@ -4,13 +4,12 @@ import { CustomContext } from "../../utils/types";
 export const updateInnovationEvidence = async (
   ctx: CustomContext,
   id: string,
-  innovatorId: string,
   evidence: any,
   section: InnovationSectionCatalogue
 ) => {
   const result = await ctx.services.InnovationEvidenceService.update(
+    ctx.auth.requestUser,
     id,
-    innovatorId,
     evidence,
     section
   );

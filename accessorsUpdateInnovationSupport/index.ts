@@ -1,5 +1,5 @@
 import { HttpRequest } from "@azure/functions";
-import { AccessorOrganisationRole } from "@domain/index";
+import { AccessorOrganisationRole, UserType } from "@domain/index";
 import {
   AppInsights,
   JwtDecoder,
@@ -17,14 +17,16 @@ class InnovatorsUpdateInnovationSupport {
   @SQLConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
   @JwtDecoder()
-  @OrganisationRoleValidator(AccessorOrganisationRole.QUALIFYING_ACCESSOR)
+  @OrganisationRoleValidator(
+    UserType.ACCESSOR,
+    AccessorOrganisationRole.QUALIFYING_ACCESSOR
+  )
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
     const support = req.body;
     const supportId = req.params.supportId;
-    const accessorId = req.params.userId;
     const innovationId = req.params.innovationId;
 
     let result;
@@ -32,7 +34,6 @@ class InnovatorsUpdateInnovationSupport {
       result = await persistence.updateInnovationSupport(
         context,
         supportId,
-        accessorId,
         innovationId,
         support
       );

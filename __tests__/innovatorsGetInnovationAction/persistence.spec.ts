@@ -19,15 +19,17 @@ describe("[innovatorsGetInnovationAction] Persistence suite", () => {
           InnovationActionService: new InnovationActionService(),
         },
         auth: {
-          userOrganisations: [],
+          requestUser: {
+            id: ":userId",
+            type: "INNOVATOR",
+          },
         },
       };
       // Act
       await persistence.findInnovationAction(
         ctx as CustomContext,
         ":action_id",
-        ":innovation_id",
-        ":innovator_id"
+        ":innovation_id"
       );
 
       expect(spy).toHaveBeenCalled();

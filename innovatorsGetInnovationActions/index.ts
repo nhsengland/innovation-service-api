@@ -19,16 +19,11 @@ class InnovatorsGetInnovationActions {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const innovatorId = req.params.userId;
     const innovationId = req.params.innovationId;
 
     let result;
     try {
-      result = await persistence.findInnovationActions(
-        context,
-        innovationId,
-        innovatorId
-      );
+      result = await persistence.findInnovationActions(context, innovationId);
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);

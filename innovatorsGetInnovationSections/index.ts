@@ -26,7 +26,6 @@ class InnovatorsGetInnovationSections {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const innovatorId = req.params.userId;
     const innovationId = req.params.innovationId;
     const section = req.query.section;
 
@@ -35,7 +34,6 @@ class InnovatorsGetInnovationSections {
       result = await persistence.findInnovationSectionByInnovator(
         context,
         innovationId,
-        innovatorId,
         section
       );
     } catch (error) {

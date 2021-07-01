@@ -22,13 +22,15 @@ describe("[innovatorsCreateInnovationEvidence] Persistence suite", () => {
           InnovationEvidenceService: new InnovationEvidenceService(),
         },
         auth: {
-          userOrganisations: [],
+          requestUser: {
+            id: ":userId",
+            type: "INNOVATOR",
+          },
         },
       };
       // Act
       await persistence.createInnovationEvidence(
         ctx as CustomContext,
-        "test_innovator_id",
         {
           evidenceType: "CLINICAL",
           clinicalEvidenceType: "DATA_PUBLISHED",

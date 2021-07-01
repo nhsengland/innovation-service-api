@@ -2,15 +2,13 @@ import { CustomContext } from "../../utils/types";
 
 export const createInnovationSupport = async (
   ctx: CustomContext,
-  accessorId: string,
   innovationId: string,
   support: any
 ) => {
   const result = await ctx.services.InnovationSupportService.create(
-    accessorId,
+    ctx.auth.requestUser,
     innovationId,
-    support,
-    ctx.auth.userOrganisations
+    support
   );
 
   return result;

@@ -22,14 +22,16 @@ describe("[accessorsGetInnovationSection] Persistence suite", () => {
           InnovationSectionService: new InnovationSectionService(),
         },
         auth: {
-          userOrganisations: [],
+          requestUser: {
+            id: ":userId",
+            type: "ACCESSOR",
+          },
         },
       };
       // Act
       await persistence.findInnovationSectionByAccessor(
         ctx as CustomContext,
-        "test_innovator_id",
-        "test_accessor_id",
+        "test_innovation_id",
         InnovationSectionCatalogue.INNOVATION_DESCRIPTION
       );
 

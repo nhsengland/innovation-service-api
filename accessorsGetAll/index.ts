@@ -1,5 +1,5 @@
 import { HttpRequest } from "@azure/functions";
-import { AccessorOrganisationRole } from "@services/index";
+import { AccessorOrganisationRole, UserType } from "@services/index";
 import {
   AppInsights,
   JwtDecoder,
@@ -14,16 +14,17 @@ class AccessorsGetAll {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder()
-  @OrganisationRoleValidator(AccessorOrganisationRole.QUALIFYING_ACCESSOR)
+  @OrganisationRoleValidator(
+    UserType.ACCESSOR,
+    AccessorOrganisationRole.QUALIFYING_ACCESSOR
+  )
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const oid = context.auth.decodedJwt.oid;
-
     let result;
     try {
-      result = await persistence.findUserOrganisationUnitUsers(context, oid);
+      result = await persistence.findUserOrganisationUnitUsers(context);
     } catch (error) {
       context.log.error(error);
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });

@@ -1,5 +1,5 @@
 import { HttpRequest } from "@azure/functions";
-import { AccessorOrganisationRole } from "@services/index";
+import { AccessorOrganisationRole, UserType } from "@services/index";
 import {
   AppInsights,
   JwtDecoder,
@@ -15,6 +15,7 @@ class AccessorsGetInnovationComments {
   @SQLConnector()
   @JwtDecoder()
   @OrganisationRoleValidator(
+    UserType.ACCESSOR,
     AccessorOrganisationRole.ACCESSOR,
     AccessorOrganisationRole.QUALIFYING_ACCESSOR
   )
@@ -22,7 +23,6 @@ class AccessorsGetInnovationComments {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const accessorId = req.params.userId;
     const innovationId = req.params.innovationId;
 
     let order;
@@ -37,7 +37,6 @@ class AccessorsGetInnovationComments {
       result = await persistence.findInnovationComments(
         context,
         innovationId,
-        accessorId,
         order
       );
     } catch (error) {

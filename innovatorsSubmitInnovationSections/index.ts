@@ -23,7 +23,6 @@ class InnovatorsSubmitInnovationSections {
     req: HttpRequest
   ): Promise<void> {
     const payload = req.body;
-    const innovatorId = req.params.userId;
     const innovationId = req.params.innovationId;
 
     let result;
@@ -31,7 +30,6 @@ class InnovatorsSubmitInnovationSections {
       result = await persistence.submitInnovationSections(
         context,
         innovationId,
-        innovatorId,
         payload.sections
       );
     } catch (error) {

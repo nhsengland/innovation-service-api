@@ -1,10 +1,7 @@
 import { CustomContext } from "../../utils/types";
-export const findAllInnovationsByInnovator = async (
-  ctx: CustomContext,
-  innovatorId: string
-) => {
+export const findAllInnovationsByInnovator = async (ctx: CustomContext) => {
   const result = await ctx.services.InnovationService.findAllByInnovator(
-    innovatorId
+    ctx.auth.requestUser
   );
   return result;
 };

@@ -1,6 +1,6 @@
-import * as persistence from "../../assessmentsGetInnovationSectionSummary/persistence";
 import { InnovationSectionService } from "@services/index";
 import * as typeorm from "typeorm";
+import * as persistence from "../../assessmentsGetInnovationSectionSummary/persistence";
 import { CustomContext } from "../../utils/types";
 
 describe("[assessmentsGetInnovation] Persistence suite", () => {
@@ -17,11 +17,16 @@ describe("[assessmentsGetInnovation] Persistence suite", () => {
         services: {
           InnovationSectionService: new InnovationSectionService(),
         },
+        auth: {
+          requestUser: {
+            id: ":userId",
+            type: "ASSESSMENT",
+          },
+        },
       };
       // Act
       await persistence.findAllInnovationSectionsByAssessment(
         ctx as CustomContext,
-        "test_assessment_id",
         "test_innovation_id"
       );
 

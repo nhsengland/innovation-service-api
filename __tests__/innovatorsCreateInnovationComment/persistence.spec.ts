@@ -18,7 +18,10 @@ describe("[innovatorsCreateInnovationComment] Persistence suite", () => {
           CommentService: new CommentService(),
         },
         auth: {
-          userOrganisations: [],
+          requestUser: {
+            id: ":userId",
+            type: "INNOVATOR",
+          },
         },
       };
       // Act

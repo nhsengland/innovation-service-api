@@ -6,7 +6,6 @@ import {
   InnovationSection,
   InnovationSectionCatalogue,
   InnovationSectionStatus,
-  OrganisationUser,
 } from "@domain/index";
 import * as sectionBodySchema from "@services/config/innovation-section-body.config.json";
 import * as sectionResponseSchema from "@services/config/innovation-section-response.config.json";
@@ -16,6 +15,7 @@ import {
   InvalidParamsError,
   SectionNotFoundError,
 } from "@services/errors";
+import { RequestUser } from "@services/models/RequestUser";
 import { Connection, FindOneOptions, getConnection } from "typeorm";
 import { InnovationSectionModel } from "../models/InnovationSectionModel";
 import { InnovationSectionResult } from "../models/InnovationSectionResult";
@@ -36,24 +36,22 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
   }
 
   async findAllInnovationSections(
-    innovationId: string,
-    userId: string,
-    userOrganisations?: OrganisationUser[]
+    requestUser: RequestUser,
+    innovationId: string
   ) {
-    if (!innovationId || !userId) {
+    if (!innovationId || !requestUser) {
       throw new InvalidParamsError(
         "Invalid parameters. You must define the innovation id and the userId."
       );
     }
 
     const filterOptions: FindOneOptions = {
-      where: { owner: userId },
+      where: { owner: requestUser.id },
     };
     const innovation = await this.innovationService.findInnovation(
+      requestUser,
       innovationId,
-      userId,
-      filterOptions,
-      userOrganisations
+      filterOptions
     );
 
     if (!innovation) {
@@ -76,21 +74,19 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
   }
 
   async findAllInnovationSectionsByAssessment(
-    innovationId: string,
-    userId: string
+    requestUser: RequestUser,
+    innovationId: string
   ) {
-    if (!innovationId || !userId) {
-      throw new InvalidParamsError(
-        "Invalid parameters. You must define the innovation id and the userId."
-      );
+    if (!innovationId || !requestUser) {
+      throw new InvalidParamsError("Invalid parameters.");
     }
 
     const filterOptions: FindOneOptions = {
       relations: ["assessments"],
     };
     const innovation = await this.innovationService.findInnovation(
+      requestUser,
       innovationId,
-      userId,
       filterOptions
     );
 
@@ -114,16 +110,13 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
   }
 
   async findSection(
+    requestUser: RequestUser,
     innovationId: string,
-    userId: string,
-    section: string,
-    userOrganisations?: OrganisationUser[]
+    section: string
   ) {
     // VALIDATIONS
-    if (!innovationId || !section) {
-      throw new InvalidParamsError(
-        "Invalid parameters. You must define innovation id and section."
-      );
+    if (!innovationId || !section || !requestUser) {
+      throw new InvalidParamsError("Invalid parameters.");
     }
 
     const sectionFields = sectionResponseSchema[section];
@@ -135,10 +128,9 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
       relations: ["sections", "sections.files", "owner"],
     };
     const innovation = await this.innovationService.findInnovation(
+      requestUser,
       innovationId,
-      userId,
-      filterOptions,
-      userOrganisations
+      filterOptions
     );
 
     if (!innovation) {
@@ -209,13 +201,13 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
   }
 
   async saveSection(
+    requestUser: RequestUser,
     innovationId: string,
-    userId: string,
     section: string,
     data: any
   ) {
     // VALIDATIONS
-    if (!innovationId || !userId || !section || !data) {
+    if (!innovationId || !requestUser || !section || !data) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
@@ -226,7 +218,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
 
     const filterOptions: FindOneOptions = {
       relations: ["sections", "sections.files", "owner"],
-      where: { owner: userId },
+      where: { owner: requestUser.id },
     };
     const innovation = await this.innovationService.find(
       innovationId,
@@ -240,7 +232,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
 
     // UPDATE INNOVATION FIELDS
     const updatedInnovation = this.getUpdatedInnovationObject(
-      userId,
+      requestUser,
       innovation,
       data,
       sectionFields.innovationFields
@@ -257,8 +249,8 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
         section,
         innovation,
         status: InnovationSectionStatus.DRAFT,
-        createdBy: userId,
-        updatedBy: userId,
+        createdBy: requestUser.id,
+        updatedBy: requestUser.id,
         files:
           sectionFields.files && data.files
             ? data.files.map((id: string) => ({ id }))
@@ -266,7 +258,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
       });
       sections.push(innovationSection);
     } else {
-      sections[innovationSectionIdx].updatedBy = userId;
+      sections[innovationSectionIdx].updatedBy = requestUser.id;
       sections[innovationSectionIdx].status = InnovationSectionStatus.DRAFT;
 
       if (sectionFields.files) {
@@ -293,8 +285,8 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
         const type = sectionFields.innovationTypes[i];
 
         updatedInnovation[type] = await this.getUpdatedInnovationTypeArray(
+          requestUser,
           innovation,
-          userId,
           type,
           data
         );
@@ -308,15 +300,15 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
         updatedInnovation[
           dependency.type
         ] = await this.getUpdatedInnovationDependencyArray(
+          requestUser,
           innovation,
-          userId,
           dependency,
           data
         );
       }
     }
 
-    updatedInnovation.updatedBy = userId;
+    updatedInnovation.updatedBy = requestUser.id;
 
     return this.innovationService.update(innovationId, updatedInnovation);
   }
@@ -326,16 +318,16 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
   }
 
   async submitSections(
+    requestUser: RequestUser,
     innovationId: string,
-    userId: string,
     sections: InnovationSectionCatalogue[]
   ) {
-    if (!innovationId || !userId || !sections) {
+    if (!innovationId || !requestUser || !sections) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
     const filterOptions: FindOneOptions = {
-      where: { owner: userId },
+      where: { owner: requestUser.id },
     };
     const innovation = await this.innovationService.find(
       innovationId,
@@ -359,8 +351,8 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
             innovation,
             section: InnovationSectionCatalogue[secKey],
             status: InnovationSectionStatus.SUBMITTED,
-            createdBy: userId,
-            updatedBy: userId,
+            createdBy: requestUser.id,
+            updatedBy: requestUser.id,
             submittedAt: new Date(),
           });
 
@@ -375,7 +367,10 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
             await transactionManager.update(
               InnovationAction,
               { id: actions[i].id },
-              { status: InnovationActionStatus.IN_REVIEW, updatedBy: userId }
+              {
+                status: InnovationActionStatus.IN_REVIEW,
+                updatedBy: requestUser.id,
+              }
             );
           }
 
@@ -384,7 +379,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
             { id: innovSections[secIdx].id },
             {
               status: InnovationSectionStatus.SUBMITTED,
-              updatedBy: userId,
+              updatedBy: requestUser.id,
               submittedAt: new Date(),
             }
           );
@@ -394,8 +389,8 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
   }
 
   async createSection(
+    requestUser: RequestUser,
     innovationId: string,
-    userId: string,
     section: InnovationSectionCatalogue,
     status?: InnovationSectionStatus
   ) {
@@ -403,8 +398,8 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
       innovation: { id: innovationId },
       section,
       status: status || InnovationSectionStatus.NOT_STARTED,
-      createdBy: userId,
-      updatedBy: userId,
+      createdBy: requestUser.id,
+      updatedBy: requestUser.id,
     });
 
     return this.create(innovationSection);
@@ -453,8 +448,8 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
   }
 
   private async getUpdatedInnovationTypeArray(
+    requestUser: RequestUser,
     innovation: Innovation,
-    userId: string,
     type: string,
     data: any[]
   ) {
@@ -472,8 +467,8 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
       if (objectIndex === -1) {
         original.push({
           type: code,
-          createdBy: userId,
-          updatedBy: userId,
+          createdBy: requestUser.id,
+          updatedBy: requestUser.id,
           createdAt: new Date(),
           deletedAt: null,
         });
@@ -484,8 +479,8 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
   }
 
   private async getUpdatedInnovationDependencyArray(
+    requestUser: RequestUser,
     innovation: Innovation,
-    userId: string,
     dependency: any,
     data: any[]
   ) {
@@ -516,7 +511,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
         }
 
         newObject = this.getUpdatedInnovationObject(
-          userId,
+          requestUser,
           original[objectIndex],
           obj,
           filter
@@ -525,8 +520,8 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
         original[objectIndex] = newObject;
       } else {
         newObject = this.getInnovationFilteredObject(obj, filter);
-        newObject.createdBy = userId;
-        newObject.updatedBy = userId;
+        newObject.createdBy = requestUser.id;
+        newObject.updatedBy = requestUser.id;
         if (files) newObject.files = files;
         original.push(newObject);
       }
@@ -536,7 +531,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
   }
 
   private getUpdatedInnovationObject(
-    userId: string,
+    requestUser: RequestUser,
     original: any,
     data: any,
     filter: any[]
@@ -548,7 +543,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
         newObject[key] = data[key];
       }
     });
-    newObject.updatedBy = userId;
+    newObject.updatedBy = requestUser.id;
 
     return newObject;
   }

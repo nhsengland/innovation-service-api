@@ -35,7 +35,6 @@ class AssessmentsUpdateInnovationAssessment {
       result = await persistence.updateInnovationAssessment(
         context,
         id,
-        userId,
         innovationId,
         assessment
       );

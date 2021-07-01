@@ -23,7 +23,6 @@ class InnovatorsUpdateInnovationSections {
     req: HttpRequest
   ): Promise<void> {
     const payload = req.body;
-    const innovatorId = req.params.userId;
     const innovationId = req.params.innovationId;
 
     let result;
@@ -31,7 +30,6 @@ class InnovatorsUpdateInnovationSections {
       result = await persistence.updateInnovationSection(
         context,
         innovationId,
-        innovatorId,
         payload.section,
         payload.data
       );

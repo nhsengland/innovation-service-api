@@ -19,16 +19,11 @@ class InnovatorsDeleteInnovationEvidence {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const innovatorId = req.params.userId;
     const evidenceId = req.params.evidenceId;
 
     let result;
     try {
-      result = await persistence.deleteInnovationEvidence(
-        context,
-        evidenceId,
-        innovatorId
-      );
+      result = await persistence.deleteInnovationEvidence(context, evidenceId);
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);

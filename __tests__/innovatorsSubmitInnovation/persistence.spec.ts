@@ -19,14 +19,16 @@ describe("[innovatorsSubmitInnovation] Persistence suite", () => {
           InnovationService: new InnovationService(),
         },
         auth: {
-          userOrganisations: [],
+          requestUser: {
+            id: ":userId",
+            type: "INNOVATOR",
+          },
         },
       };
       // Act
       await persistence.submitInnovation(
         ctx as CustomContext,
-        "E362433E-F36B-1410-80DE-0032FE5B194B",
-        "test_innovator_id"
+        "E362433E-F36B-1410-80DE-0032FE5B194B"
       );
 
       expect(spy).toHaveBeenCalled();

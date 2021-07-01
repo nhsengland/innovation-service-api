@@ -11,14 +11,11 @@ export const findInnovationEvidenceById = async (
 
 export const findInnovationByAccessorId = async (
   ctx: CustomContext,
-  innovationId: string,
-  accessorId: string
+  innovationId: string
 ) => {
   const result = await ctx.services.InnovationService.findInnovation(
-    innovationId,
-    accessorId,
-    null,
-    ctx.auth.userOrganisations
+    ctx.auth.requestUser,
+    innovationId
   );
 
   return result;

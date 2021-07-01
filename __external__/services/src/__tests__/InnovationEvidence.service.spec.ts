@@ -8,9 +8,11 @@ import {
   InnovationSection,
   InnovationSectionCatalogue,
   User,
+  UserType,
   YesOrNoCatalogue,
 } from "@domain/index";
 import { ResourceNotFoundError } from "@services/errors";
+import { RequestUser } from "@services/models/RequestUser";
 import { FileService } from "@services/services/File.service";
 import { getConnection } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
@@ -31,6 +33,8 @@ describe("Innovation Evidence Suite", () => {
   let innovation: Innovation;
   let innovatorUser: User;
 
+  let innovatorRequestUser: RequestUser;
+
   beforeAll(async () => {
     // await setupTestsConnection();
     evidenceService = new InnovationEvidenceService(process.env.DB_TESTS_NAME);
@@ -42,10 +46,13 @@ describe("Innovation Evidence Suite", () => {
       owner: innovatorUser,
       surveyId: "abc",
     });
+
+    innovatorRequestUser = fixtures.getRequestUser(innovatorUser);
+
     innovation = await fixtures.saveInnovation(innovationObj);
     await fixtures.createSectionInInnovation(
+      innovatorRequestUser,
       innovation,
-      innovatorUser,
       InnovationSectionCatalogue.EVIDENCE_OF_EFFECTIVENESS,
       { hasEvidence: YesOrNoCatalogue.YES }
     );
@@ -83,7 +90,7 @@ describe("Innovation Evidence Suite", () => {
     });
 
     const item = await evidenceService.create(
-      innovatorUser.id,
+      innovatorRequestUser,
       evidence,
       InnovationSectionCatalogue.EVIDENCE_OF_EFFECTIVENESS
     );
@@ -113,7 +120,7 @@ describe("Innovation Evidence Suite", () => {
     });
 
     const evidence = await evidenceService.create(
-      innovatorUser.id,
+      innovatorRequestUser,
       evidenceObj,
       InnovationSectionCatalogue.EVIDENCE_OF_EFFECTIVENESS
     );
@@ -143,7 +150,7 @@ describe("Innovation Evidence Suite", () => {
     });
 
     const evidence = await evidenceService.create(
-      innovatorUser.id,
+      innovatorRequestUser,
       evidenceObj,
       InnovationSectionCatalogue.EVIDENCE_OF_EFFECTIVENESS
     );
@@ -154,8 +161,8 @@ describe("Innovation Evidence Suite", () => {
     });
 
     await evidenceService.update(
+      innovatorRequestUser,
       evidence.id,
-      innovatorUser.id,
       evidence,
       InnovationSectionCatalogue.EVIDENCE_OF_EFFECTIVENESS
     );
@@ -173,12 +180,12 @@ describe("Innovation Evidence Suite", () => {
     });
 
     const evidence = await evidenceService.create(
-      innovatorUser.id,
+      innovatorRequestUser,
       evidenceObj,
       InnovationSectionCatalogue.EVIDENCE_OF_EFFECTIVENESS
     );
 
-    await evidenceService.delete(evidence.id, innovatorUser.id);
+    await evidenceService.delete(innovatorRequestUser, evidence.id);
 
     let err;
     try {

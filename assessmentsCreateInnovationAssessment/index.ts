@@ -23,14 +23,12 @@ class AssessmentsCreateInnovationAssessment {
     req: HttpRequest
   ): Promise<void> {
     const assessment = req.body;
-    const userId = req.params.userId;
     const innovationId = req.params.innovationId;
 
     let result;
     try {
       result = await persistence.createInnovationAssessment(
         context,
-        userId,
         innovationId,
         assessment
       );

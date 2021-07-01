@@ -19,6 +19,7 @@ import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
 import { AccessorService } from "../services/Accessor.service";
 import { OrganisationService } from "../services/Organisation.service";
+import * as fixtures from "../__fixtures__";
 
 const dummy = {
   baseOrganisation: {
@@ -81,7 +82,7 @@ describe("Organisation Service Suite", () => {
   it("should throw when findAll() with invalid params", async () => {
     let err;
     try {
-      await organisationService.findAll({});
+      await organisationService.findAll(null);
     } catch (error) {
       err = error;
     }
@@ -156,7 +157,7 @@ describe("Organisation Service Suite", () => {
   it("should throw when findUserOrganisationUnitUsers() with invalid params", async () => {
     let err;
     try {
-      await organisationService.findUserOrganisationUnitUsers(null, null);
+      await organisationService.findUserOrganisationUnitUsers(null);
     } catch (error) {
       err = error;
     }
@@ -168,10 +169,10 @@ describe("Organisation Service Suite", () => {
   it("should throw when findUserOrganisationUnitUsers() without user organisations", async () => {
     let err;
     try {
-      await organisationService.findUserOrganisationUnitUsers(
-        ":accessorId",
-        []
-      );
+      await organisationService.findUserOrganisationUnitUsers({
+        id: ":id",
+        type: UserType.ACCESSOR,
+      });
     } catch (error) {
       err = error;
     }
@@ -183,9 +184,25 @@ describe("Organisation Service Suite", () => {
   it("should throw when findUserOrganisationUnitUsers() with user organisation role", async () => {
     let err;
     try {
-      await organisationService.findUserOrganisationUnitUsers(":accessorId", [
-        OrganisationUser.new({ role: AccessorOrganisationRole.ACCESSOR }),
-      ]);
+      await organisationService.findUserOrganisationUnitUsers({
+        id: ":id",
+        type: UserType.ACCESSOR,
+        organisationUser: {
+          id: ":orgUId",
+          role: AccessorOrganisationRole.ACCESSOR,
+          organisation: {
+            id: ":orgId",
+            name: ":orgName",
+          },
+        },
+        organisationUnitUser: {
+          id: ":orgUnitId",
+          organisationUnit: {
+            id: ":orgUnitId",
+            name: ":orgUnitName",
+          },
+        },
+      });
     } catch (error) {
       err = error;
     }
@@ -239,15 +256,13 @@ describe("Organisation Service Suite", () => {
       organisation,
       AccessorOrganisationRole.QUALIFYING_ACCESSOR
     );
-    await organisationService.addUserToOrganisationUnit(orgUser, unit);
-
-    const userOrganisations = await organisationService.findUserOrganisations(
-      qaccessor.id
+    const orgUnitUser = await organisationService.addUserToOrganisationUnit(
+      orgUser,
+      unit
     );
 
     const result = await organisationService.findUserOrganisationUnitUsers(
-      qaccessor.id,
-      userOrganisations
+      fixtures.getRequestUser(qaccessor, orgUser, orgUnitUser)
     );
 
     expect(result).toBeDefined();

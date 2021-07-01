@@ -22,14 +22,16 @@ describe("[innovatorsUpdateInnovationEvidence] Persistence suite", () => {
           InnovationEvidenceService: new InnovationEvidenceService(),
         },
         auth: {
-          userOrganisations: [],
+          requestUser: {
+            id: ":userId",
+            type: "INNOVATOR",
+          },
         },
       };
       // Act
       await persistence.updateInnovationEvidence(
         ctx as CustomContext,
         "E362433E-F36B-1410-80DE-0032FE5B194B",
-        "test_innovator_id",
         {
           id: "test_evidence_id",
           innovation: "test_innovation_id",

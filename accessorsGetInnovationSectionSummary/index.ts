@@ -1,5 +1,5 @@
 import { HttpRequest } from "@azure/functions";
-import * as persistence from "./persistence";
+import { AccessorOrganisationRole, UserType } from "@services/index";
 import {
   AppInsights,
   JwtDecoder,
@@ -8,13 +8,14 @@ import {
 } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
-import { AccessorOrganisationRole } from "@services/index";
+import * as persistence from "./persistence";
 
 class AccessorsGetInnovationSectionSummary {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder()
   @OrganisationRoleValidator(
+    UserType.ACCESSOR,
     AccessorOrganisationRole.ACCESSOR,
     AccessorOrganisationRole.QUALIFYING_ACCESSOR
   )
@@ -22,15 +23,13 @@ class AccessorsGetInnovationSectionSummary {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const accessorId = req.params.userId;
     const innovationId = req.params.innovationId;
 
     let result;
     try {
       result = await persistence.findAllInnovationSections(
         context,
-        innovationId,
-        accessorId
+        innovationId
       );
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });

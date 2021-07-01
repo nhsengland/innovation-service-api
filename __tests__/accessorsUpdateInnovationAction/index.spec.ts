@@ -33,7 +33,7 @@ const dummy = {
   services: {
     OrganisationService: {
       findUserOrganisations: () => [
-        { role: AccessorOrganisationRole.QUALIFYING_ACCESSOR },
+        { role: AccessorOrganisationRole.QUALIFYING_ACCESSOR, organisation: { id: ':orgId' } },
       ],
     },
   },

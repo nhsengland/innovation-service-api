@@ -23,7 +23,6 @@ class InnovatorsCreateInnovationEvidence {
     req: HttpRequest
   ): Promise<void> {
     const evidence = req.body;
-    const innovatorId = req.params.userId;
     const innovationId = req.params.innovationId;
 
     evidence.innovation = innovationId;
@@ -32,7 +31,6 @@ class InnovatorsCreateInnovationEvidence {
     try {
       result = await persistence.createInnovationEvidence(
         context,
-        innovatorId,
         evidence,
         InnovationSectionCatalogue.EVIDENCE_OF_EFFECTIVENESS
       );

@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { AccessorOrganisationRole, UserType } from "@services/index";
+import { AccessorOrganisationRole, InnovatorOrganisationRole, UserType } from "@services/index";
 import {
   createHttpTrigger,
   runStubFunctionFromBindings
@@ -38,7 +38,7 @@ const dummy = {
     },
     OrganisationService: {
       findUserOrganisations: () => [
-        { role: AccessorOrganisationRole.QUALIFYING_ACCESSOR },
+        { role: AccessorOrganisationRole.QUALIFYING_ACCESSOR, organisation: { id: ':orgId' } },
       ],
     },
   },
@@ -89,6 +89,11 @@ describe("[HttpTrigger] accessorsGetInnovationAssessment Suite", () => {
           getUser: () => ({
             type: UserType.INNOVATOR,
           }),
+        },
+        OrganisationService: {
+          findUserOrganisations: () => [
+            { role: InnovatorOrganisationRole.INNOVATOR_OWNER, organisation: { id: ':orgId' } },
+          ],
         },
       };
 

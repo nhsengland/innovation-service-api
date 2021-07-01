@@ -6,6 +6,7 @@ export const findInnovationAssessmentById = async (
   innovationId: string
 ) => {
   const result = await ctx.services.InnovationAssessmentService.find(
+    ctx.auth.requestUser,
     assessmentId,
     innovationId
   );

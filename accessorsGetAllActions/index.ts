@@ -1,6 +1,5 @@
 import { HttpRequest } from "@azure/functions";
-import { AccessorOrganisationRole } from "@domain/index";
-import { ValidateQueryParams } from "./validation";
+import { AccessorOrganisationRole, UserType } from "@domain/index";
 import {
   AppInsights,
   JwtDecoder,
@@ -11,6 +10,7 @@ import {
 import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
+import { ValidateQueryParams } from "./validation";
 
 class AccessorsGetAllActions {
   @AppInsights()
@@ -18,6 +18,7 @@ class AccessorsGetAllActions {
   @SQLConnector()
   @JwtDecoder()
   @OrganisationRoleValidator(
+    UserType.ACCESSOR,
     AccessorOrganisationRole.QUALIFYING_ACCESSOR,
     AccessorOrganisationRole.ACCESSOR
   )
@@ -25,8 +26,6 @@ class AccessorsGetAllActions {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const accessorId = req.params.userId;
-
     const query: any = req.query;
     const openActions = query.openActions.toLocaleLowerCase() === "true";
     const skip = parseInt(query.skip);
@@ -41,7 +40,6 @@ class AccessorsGetAllActions {
     try {
       result = await persistence.findAllActions(
         context,
-        accessorId,
         openActions,
         skip,
         take,

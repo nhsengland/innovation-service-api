@@ -33,6 +33,12 @@ describe("[innovatorsCreateOne] Persistence suite", () => {
         services: {
           InnovatorService: new InnovatorService(),
         },
+        auth: {
+          requestUser: {
+            id: ":userId",
+            type: "INNOVATOR",
+          },
+        },
       };
       // Act
       await persistence.createInnovator(
@@ -59,6 +65,12 @@ describe("[innovatorsCreateOne] Persistence suite", () => {
       const ctx = {
         services: {
           UserService: new UserService(),
+        },
+        auth: {
+          requestUser: {
+            id: ":userId",
+            type: "INNOVATOR",
+          },
         },
       };
       // Act

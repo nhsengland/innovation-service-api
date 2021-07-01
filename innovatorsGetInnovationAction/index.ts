@@ -20,7 +20,6 @@ class InnovatorsGetInnovationAction {
     req: HttpRequest
   ): Promise<void> {
     const actionId = req.params.actionId;
-    const innovatorId = req.params.userId;
     const innovationId = req.params.innovationId;
 
     let result;
@@ -28,8 +27,7 @@ class InnovatorsGetInnovationAction {
       result = await persistence.findInnovationAction(
         context,
         actionId,
-        innovationId,
-        innovatorId
+        innovationId
       );
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });

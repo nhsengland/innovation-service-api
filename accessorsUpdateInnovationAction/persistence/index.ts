@@ -3,16 +3,14 @@ import { CustomContext } from "../../utils/types";
 export const updateInnovationAction = async (
   ctx: CustomContext,
   actionId: string,
-  accessorId: string,
   innovationId: string,
   action: any
 ) => {
   const result = await ctx.services.InnovationActionService.updateByAccessor(
+    ctx.auth.requestUser,
     actionId,
-    accessorId,
     innovationId,
-    action,
-    ctx.auth.userOrganisations
+    action
   );
 
   return result;

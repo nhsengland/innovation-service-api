@@ -19,14 +19,14 @@ describe("[accessorsGetAll] Persistence suite", () => {
           OrganisationService: new OrganisationService(),
         },
         auth: {
-          userOrganisations: [],
+          requestUser: {
+            id: ":userId",
+            type: "ACCESSOR",
+          },
         },
       };
       // Act
-      await persistence.findUserOrganisationUnitUsers(
-        ctx as CustomContext,
-        "test_accessor_id"
-      );
+      await persistence.findUserOrganisationUnitUsers(ctx as CustomContext);
 
       expect(spy).toHaveBeenCalled();
     });

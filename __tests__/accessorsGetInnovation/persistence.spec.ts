@@ -18,13 +18,15 @@ describe("[accessorsGetInnovation] Persistence suite", () => {
           InnovationService: new InnovationService(),
         },
         auth: {
-          userOrganisations: [],
+          requestUser: {
+            id: ":userId",
+            type: "ACCESSOR",
+          },
         },
       };
       // Act
       await persistence.findInnovationOverview(
         ctx as CustomContext,
-        "test_accessor_id",
         "test_innovation_id"
       );
 

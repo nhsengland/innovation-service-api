@@ -18,12 +18,17 @@ describe("[assessmentsUpdateInnovationAssessment] Persistence suite", () => {
         services: {
           InnovationAssessmentService: new InnovationAssessmentService(),
         },
+        auth: {
+          requestUser: {
+            id: ":userId",
+            type: "ASSESSMENT",
+          },
+        },
       };
       // Act
       await persistence.updateInnovationAssessment(
         ctx as CustomContext,
         "id",
-        "test_assessment_user_id",
         "test_innovation_id",
         {
           description: "test",

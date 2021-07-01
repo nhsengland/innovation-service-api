@@ -19,15 +19,17 @@ describe("[accessorsGetInnovationSupport] Persistence suite", () => {
           InnovationSupportService: new InnovationSupportService(),
         },
         auth: {
-          userOrganisations: [],
+          requestUser: {
+            id: ":userId",
+            type: "ACCESSOR",
+          },
         },
       };
       // Act
       await persistence.findInnovationSupport(
         ctx as CustomContext,
         "E362433E-F36B-1410-80DE-0032FE5B194B",
-        "F362433E-F36B-1410-80DE-0032FE5B194B",
-        "G362433E-F36B-1410-80DE-0032FE5B194B"
+        "F362433E-F36B-1410-80DE-0032FE5B194B"
       );
 
       expect(spy).toHaveBeenCalled();
