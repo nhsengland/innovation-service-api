@@ -23,7 +23,6 @@ class InnovatorsUpdateInnovationShares {
     req: HttpRequest
   ): Promise<void> {
     const organisations = req.body.organisations;
-    const innovatorId = req.params.userId;
     const innovationId = req.params.innovationId;
 
     let result;
@@ -31,7 +30,6 @@ class InnovatorsUpdateInnovationShares {
       result = await persistence.updateInnovationShares(
         context,
         innovationId,
-        innovatorId,
         organisations
       );
     } catch (error) {

@@ -18,12 +18,15 @@ describe("[innovatorsGetAllInnovations] Persistence suite", () => {
         services: {
           InnovationService: new InnovationService(),
         },
+        auth: {
+          requestUser: {
+            id: ":userId",
+            type: "INNOVATOR",
+          },
+        },
       };
       // Act
-      await persistence.findAllInnovationsByInnovator(
-        ctx as CustomContext,
-        "test_innovator_id"
-      );
+      await persistence.findAllInnovationsByInnovator(ctx as CustomContext);
 
       expect(spy).toHaveBeenCalled();
     });

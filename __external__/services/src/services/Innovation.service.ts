@@ -6,10 +6,9 @@ import {
   InnovationStatus,
   InnovationSupport,
   InnovationSupportStatus,
-  InnovatorOrganisationRole,
   Organisation,
   OrganisationUnitUser,
-  OrganisationUser,
+  UserType,
 } from "@domain/index";
 import {
   InnovationNotFoundError,
@@ -24,6 +23,7 @@ import {
 } from "@services/models/InnovationListModel";
 import { ProfileModel } from "@services/models/ProfileModel";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
+import { RequestUser } from "@services/models/RequestUser";
 import {
   Connection,
   FindManyOptions,
@@ -56,60 +56,60 @@ export class InnovationService extends BaseService<Innovation> {
   }
 
   async findInnovation(
+    requestUser: RequestUser,
     innovationId: string,
-    userId: string,
-    filter?: any,
-    userOrganisations?: OrganisationUser[]
+    filter?: any
   ) {
-    if (!userId || !innovationId) {
+    if (!requestUser || !innovationId) {
       throw new InvalidParamsError(
         "Invalid params. You must define the user id and the innovation id."
       );
     }
 
-    let role;
-    let userOrganisation;
     const filterRelations = filter && filter.relations ? filter.relations : [];
 
-    // BUSINESS RULE: An user has only one organization
-    if (userOrganisations && userOrganisations.length > 0) {
-      userOrganisation = userOrganisations[0];
-      role = userOrganisation.role;
-    } else {
-      role = InnovatorOrganisationRole.INNOVATOR_OWNER;
-    }
-
     let filterOptions;
-    switch (role) {
-      case InnovatorOrganisationRole.INNOVATOR_OWNER:
+    switch (requestUser.type) {
+      case UserType.INNOVATOR:
         filterOptions = filter
           ? filter
           : {
-              where: { owner: userId },
+              where: { owner: requestUser.id },
               loadRelationIds: true,
             };
         break;
-      case AccessorOrganisationRole.ACCESSOR:
-        // BUSINESS RULE: An user has only one organization unit
-        const organisationUnit =
-          userOrganisation.userOrganisationUnits[0].organisationUnit;
+      case UserType.ACCESSOR:
+        const organisationUser = requestUser.organisationUser;
 
-        filterOptions = {
-          relations: getMergedArray(
-            ["innovationSupports", "assessments"],
-            filterRelations
-          ),
-          where: `organisation_unit_id = '${organisationUnit.id}'`,
-        };
+        if (
+          organisationUser.role === AccessorOrganisationRole.QUALIFYING_ACCESSOR
+        ) {
+          filterOptions = {
+            relations: getMergedArray(
+              ["organisationShares", "assessments"],
+              filterRelations
+            ),
+            where: `Innovation_Innovation__organisationShares.organisation_id = '${organisationUser.organisation.id}'`,
+          };
+        } else {
+          const organisationUnitUser = requestUser.organisationUnitUser;
+
+          filterOptions = {
+            relations: getMergedArray(
+              ["innovationSupports", "assessments"],
+              filterRelations
+            ),
+            where: `organisation_unit_id = '${organisationUnitUser.organisationUnit.id}'`,
+          };
+        }
+
         break;
-      case AccessorOrganisationRole.QUALIFYING_ACCESSOR:
-        filterOptions = {
-          relations: getMergedArray(
-            ["organisationShares", "assessments"],
-            filterRelations
-          ),
-          where: `Innovation_Innovation__organisationShares.organisation_id = '${userOrganisation.organisation.id}'`,
-        };
+      case UserType.ASSESSMENT:
+        filterOptions = filter
+          ? filter
+          : {
+              loadRelationIds: true,
+            };
         break;
       default:
         throw new InvalidUserRoleError("Invalid user role.");
@@ -119,36 +119,31 @@ export class InnovationService extends BaseService<Innovation> {
   }
 
   async findAllByAccessorAndSupportStatus(
-    userId: string,
-    userOrganisations: OrganisationUser[],
+    requestUser: RequestUser,
     supportStatus: string,
     assignedToMe: boolean,
     skip: number,
     take: number,
     order?: { [key: string]: string }
   ) {
-    if (!userId) {
+    if (!requestUser) {
       throw new InvalidParamsError(
         "Invalid userId. You must define the accessor id."
       );
     }
 
-    if (!userOrganisations || userOrganisations.length == 0) {
+    if (!requestUser.organisationUser) {
       throw new MissingUserOrganisationError(
         "Invalid user. User has no organisations."
       );
     }
+    const organisationUser = requestUser.organisationUser;
 
-    // BUSINESS RULE: An accessor has only one organization
-    const userOrganisation = userOrganisations[0];
-
-    if (!hasAccessorRole(userOrganisation.role)) {
+    if (!hasAccessorRole(organisationUser.role)) {
       throw new InvalidUserRoleError("Invalid user. User has an invalid role.");
     }
 
-    // BUSINESS RULE: An user has only one organization unit
-    const organisationUnit =
-      userOrganisation.userOrganisationUnits[0].organisationUnit;
+    const organisationUnit = requestUser.organisationUnitUser.organisationUnit;
 
     const filterOptions = {
       relations: [
@@ -166,15 +161,15 @@ export class InnovationService extends BaseService<Innovation> {
     };
 
     if (
-      userOrganisation.role === AccessorOrganisationRole.QUALIFYING_ACCESSOR
+      organisationUser.role === AccessorOrganisationRole.QUALIFYING_ACCESSOR
     ) {
-      filterOptions.where = `Innovation_Innovation__organisationShares.organisation_id = '${userOrganisation.organisation.id}'`;
+      filterOptions.where = `Innovation_Innovation__organisationShares.organisation_id = '${organisationUser.organisation.id}'`;
       filterOptions.where += ` and Innovation.status = '${InnovationStatus.IN_PROGRESS}'`;
 
       // With status UNASSIGNED should pick innovations without a record on the table innovation_support for the unit
       if (supportStatus === InnovationSupportStatus.UNASSIGNED) {
         filterOptions.relations = ["organisationShares", "assessments"];
-        filterOptions.where += ` and NOT EXISTS(SELECT 1 FROM innovation_support tmp WHERE tmp.innovation_id = Innovation.id and tmp.organisation_unit_id = '${organisationUnit.id}')`;
+        filterOptions.where += ` and NOT EXISTS(SELECT 1 FROM innovation_support tmp WHERE tmp.innovation_id = Innovation.id and deleted_at is null and tmp.organisation_unit_id = '${organisationUnit.id}')`;
       } else {
         filterOptions.relations = [
           "organisationShares",
@@ -192,7 +187,7 @@ export class InnovationService extends BaseService<Innovation> {
 
     // Filter assignedToMe innovations (innovation_support_user)
     if (assignedToMe && supportStatus !== InnovationSupportStatus.UNASSIGNED) {
-      filterOptions.where += ` and user_id = '${userId}'`;
+      filterOptions.where += ` and user_id = '${requestUser.id}'`;
     }
 
     const innovations = await this.repository.findAndCount(filterOptions);
@@ -283,30 +278,30 @@ export class InnovationService extends BaseService<Innovation> {
   }
 
   async findAllByInnovator(
-    userId: string,
+    requestUser: RequestUser,
     filter?: any
   ): Promise<Innovation[]> {
-    if (!userId) {
+    if (!requestUser) {
       throw new InvalidParamsError(
-        "Invalid userId. You must define the owner."
+        "Invalid params. You must define the request user."
       );
     }
 
     const filterOptions = {
       ...filter,
-      owner: userId,
+      owner: requestUser.id,
     };
 
     return await this.repository.find(filterOptions);
   }
 
   async getInnovationOverview(
-    id: string,
-    userId: string
+    requestUser: RequestUser,
+    id: string
   ): Promise<InnovatorInnovationSummary> {
-    if (!id || !userId) {
+    if (!id || !requestUser) {
       throw new InvalidParamsError(
-        "Invalid parameters. You must define the id and the userId."
+        "Invalid parameters. You must define the id and the request user."
       );
     }
 
@@ -317,7 +312,7 @@ export class InnovationService extends BaseService<Innovation> {
       .leftJoinAndSelect("sections.actions", "actions")
       .where("innovation.id = :id and innovation.owner_id = :userId", {
         id,
-        userId,
+        userId: requestUser.id,
       });
 
     const innovation = await query.getOne();
@@ -369,17 +364,16 @@ export class InnovationService extends BaseService<Innovation> {
   }
 
   async getAccessorInnovationSummary(
-    id: string,
-    userId: string,
-    userOrganisations: OrganisationUser[]
+    requestUser: RequestUser,
+    id: string
   ): Promise<AccessorInnovationSummary> {
-    if (!id || !userId) {
+    if (!id || !requestUser) {
       throw new InvalidParamsError(
-        "Invalid parameters. You must define the id and the userId."
+        "Invalid parameters. You must define the id and the request user."
       );
     }
 
-    if (!userOrganisations || userOrganisations.length == 0) {
+    if (!requestUser.organisationUser) {
       throw new MissingUserOrganisationError(
         "Invalid user. User has no organisations."
       );
@@ -395,10 +389,9 @@ export class InnovationService extends BaseService<Innovation> {
       ],
     };
     const innovation = await this.findInnovation(
+      requestUser,
       id,
-      userId,
-      filterOptions,
-      userOrganisations
+      filterOptions
     );
     if (!innovation) {
       throw new InnovationNotFoundError("Innovation not found for the user.");
@@ -416,9 +409,7 @@ export class InnovationService extends BaseService<Innovation> {
       assessment.id = innovation.assessments[0].id;
     }
 
-    // BUSINESS RULE: An user has only one organization unit
-    const organisationUnit =
-      userOrganisations[0].userOrganisationUnits[0].organisationUnit;
+    const organisationUnit = requestUser.organisationUnitUser.organisationUnit;
 
     const support = {
       id: null,
@@ -454,8 +445,15 @@ export class InnovationService extends BaseService<Innovation> {
   }
 
   async getAssessmentInnovationSummary(
+    requestUser: RequestUser,
     id: string
   ): Promise<AssessmentInnovationSummary> {
+    if (!id || !requestUser) {
+      throw new InvalidParamsError(
+        "Invalid parameters. You must define the id and the request user."
+      );
+    }
+
     const innovationFilterOptions: FindOneOptions = {
       relations: ["owner", "categories", "assessments", "assessments.assignTo"],
     };
@@ -501,6 +499,7 @@ export class InnovationService extends BaseService<Innovation> {
   }
 
   async getInnovationListByState(
+    requestUser: RequestUser,
     statuses: string[],
     skip: number,
     take: number,
@@ -556,19 +555,23 @@ export class InnovationService extends BaseService<Innovation> {
     };
   }
 
-  async submitInnovation(id: string, userId: string) {
-    if (!id || !userId) {
+  async submitInnovation(requestUser: RequestUser, id: string) {
+    if (!id || !requestUser) {
       throw new InvalidParamsError(
-        "Invalid parameters. You must define the id and the userId."
+        "Invalid parameters. You must define the id and the request user."
       );
     }
 
     const filterOptions: FindOneOptions = {
-      where: { owner: userId, status: InnovationStatus.CREATED },
+      where: { owner: requestUser.id, status: InnovationStatus.CREATED },
       loadRelationIds: true,
     };
 
-    const innovation = await this.findInnovation(id, userId, filterOptions);
+    const innovation = await this.findInnovation(
+      requestUser,
+      id,
+      filterOptions
+    );
     if (!innovation) {
       throw new InnovationNotFoundError("Innovation not found for the user.");
     }
@@ -576,7 +579,7 @@ export class InnovationService extends BaseService<Innovation> {
     await this.repository.update(innovation.id, {
       submittedAt: new Date(),
       status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
-      updatedBy: userId,
+      updatedBy: requestUser.id,
     });
 
     return {
@@ -585,10 +588,10 @@ export class InnovationService extends BaseService<Innovation> {
     };
   }
 
-  async getOrganisationShares(innovationId: string, userId: string) {
-    if (!innovationId || !userId) {
+  async getOrganisationShares(requestUser: RequestUser, innovationId: string) {
+    if (!innovationId || !requestUser) {
       throw new InvalidParamsError(
-        "Invalid parameters. You must define the innovationId and the userId."
+        "Invalid parameters. You must define the innovationId and the request user."
       );
     }
 
@@ -599,11 +602,11 @@ export class InnovationService extends BaseService<Innovation> {
         "innovationSupports.organisationUnit",
         "innovationSupports.organisationUnit.organisation",
       ],
-      where: { owner: userId },
+      where: { owner: requestUser.id },
     };
     const innovation = await this.findInnovation(
+      requestUser,
       innovationId,
-      userId,
       filterOptions
     );
     if (!innovation) {
@@ -646,13 +649,13 @@ export class InnovationService extends BaseService<Innovation> {
   }
 
   async updateOrganisationShares(
+    requestUser: RequestUser,
     innovationId: string,
-    userId: string,
     organisations: string[]
   ) {
-    if (!innovationId || !userId) {
+    if (!innovationId || !requestUser.id) {
       throw new InvalidParamsError(
-        "Invalid parameters. You must define the innovationId and the userId."
+        "Invalid parameters. You must define the innovationId and the request user."
       );
     }
 
@@ -669,11 +672,11 @@ export class InnovationService extends BaseService<Innovation> {
         "innovationSupports.organisationUnit",
         "innovationSupports.organisationUnit.organisation",
       ],
-      where: { owner: userId },
+      where: { owner: requestUser.id },
     };
     const innovation = await this.findInnovation(
+      requestUser,
       innovationId,
-      userId,
       filterOptions
     );
     if (!innovation) {
@@ -715,12 +718,15 @@ export class InnovationService extends BaseService<Innovation> {
               await transactionManager.update(
                 InnovationAction,
                 { id: actions[actionIdx].id },
-                { status: InnovationActionStatus.DECLINED, updatedBy: userId }
+                {
+                  status: InnovationActionStatus.DECLINED,
+                  updatedBy: requestUser.id,
+                }
               );
             }
 
             innovationSupport.status = InnovationSupportStatus.UNASSIGNED;
-            innovationSupport.updatedBy = userId;
+            innovationSupport.updatedBy = requestUser.id;
             innovationSupport.deletedAt = new Date();
 
             await transactionManager.save(InnovationSupport, innovationSupport);
@@ -728,7 +734,7 @@ export class InnovationService extends BaseService<Innovation> {
         }
       }
 
-      innovation.updatedBy = userId;
+      innovation.updatedBy = requestUser.id;
       innovation.organisationShares = organisations.map((id: string) =>
         Organisation.new({ id })
       );

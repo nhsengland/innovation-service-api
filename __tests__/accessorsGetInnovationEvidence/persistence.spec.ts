@@ -19,7 +19,10 @@ describe("[accessorsGetInnovationEvidence] Persistence suite", () => {
           InnovationEvidenceService: new InnovationEvidenceService(),
         },
         auth: {
-          userOrganisations: [],
+          requestUser: {
+            id: ":userId",
+            type: "ACCESSOR",
+          },
         },
       };
       // Act
@@ -44,14 +47,16 @@ describe("[accessorsGetInnovationEvidence] Persistence suite", () => {
           InnovationService: new InnovationService(),
         },
         auth: {
-          userOrganisations: [],
+          requestUser: {
+            id: ":userId",
+            type: "ACCESSOR",
+          },
         },
       };
       // Act
       await persistence.findInnovationByAccessorId(
         ctx as CustomContext,
-        "E362433E-F36B-1410-80DE-0032FE5B194B",
-        "T231433E-F36B-1410-80DE-0032FE5B195B"
+        "E362433E-F36B-1410-80DE-0032FE5B194B"
       );
 
       expect(spy).toHaveBeenCalled();

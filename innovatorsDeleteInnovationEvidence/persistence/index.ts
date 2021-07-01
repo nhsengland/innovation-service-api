@@ -2,12 +2,11 @@ import { CustomContext } from "../../utils/types";
 
 export const deleteInnovationEvidence = async (
   ctx: CustomContext,
-  id: string,
-  innovatorId: string
+  id: string
 ) => {
   const result = await ctx.services.InnovationEvidenceService.delete(
-    id,
-    innovatorId
+    ctx.auth.requestUser,
+    id
   );
 
   return result;

@@ -5,6 +5,7 @@ export const getAssessmentInnovationSummary = async (
   innovationId: string
 ) => {
   const result = await ctx.services.InnovationService.getAssessmentInnovationSummary(
+    ctx.auth.requestUser,
     innovationId
   );
 

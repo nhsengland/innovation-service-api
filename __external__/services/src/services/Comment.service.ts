@@ -1,4 +1,4 @@
-import { Comment, OrganisationUser } from "@domain/index";
+import { Comment, UserType } from "@domain/index";
 import {
   InnovationNotFoundError,
   InvalidParamsError,
@@ -6,6 +6,7 @@ import {
   MissingUserOrganisationUnitError,
 } from "@services/errors";
 import { CommentModel } from "@services/models/CommentModel";
+import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { InnovationService } from "./Innovation.service";
 import { UserService } from "./User.service";
@@ -24,70 +25,43 @@ export class CommentService {
   }
 
   async create(
-    userId: string,
+    requestUser: RequestUser,
     innovationId: string,
     message: string,
     replyTo?: string,
     innovationActionId?: string
   ): Promise<Comment> {
-    if (!userId || !innovationId || !message || message.length === 0) {
+    if (!requestUser || !innovationId || !message || message.length === 0) {
       throw new InvalidParamsError("Invalid parameters.");
+    }
+
+    let organisationUnit = null;
+    if (requestUser.type === UserType.ACCESSOR) {
+      if (!requestUser.organisationUser) {
+        throw new MissingUserOrganisationError(
+          "Invalid user. User has no organisations."
+        );
+      }
+
+      if (!requestUser.organisationUnitUser) {
+        throw new MissingUserOrganisationUnitError(
+          "Invalid user. User has no organisation units."
+        );
+      }
+
+      organisationUnit = {
+        id: requestUser.organisationUnitUser.organisationUnit.id,
+      };
     }
 
     const commentObj = {
       message,
-      user: { id: userId },
+      user: { id: requestUser.id },
       innovation: { id: innovationId },
       innovationAction: innovationActionId ? { id: innovationActionId } : null,
       replyTo: replyTo ? { id: replyTo } : null,
-      createdBy: userId,
-      updatedBy: userId,
-    };
-
-    return this.commentRepo.save(commentObj);
-  }
-
-  async createByAccessor(
-    userId: string,
-    innovationId: string,
-    message: string,
-    userOrganisations: OrganisationUser[],
-    replyTo?: string,
-    innovationActionId?: string
-  ): Promise<Comment> {
-    if (!userId || !innovationId || !message || message.length === 0) {
-      throw new InvalidParamsError("Invalid parameters.");
-    }
-
-    if (!userOrganisations || userOrganisations.length == 0) {
-      throw new MissingUserOrganisationError(
-        "Invalid user. User has no organisations."
-      );
-    }
-
-    // BUSINESS RULE: An accessor has only one organization
-    const userOrganisation = userOrganisations[0];
-
-    if (
-      !userOrganisation.userOrganisationUnits ||
-      userOrganisation.userOrganisationUnits.length == 0
-    ) {
-      throw new MissingUserOrganisationUnitError(
-        "Invalid user. User has no organisation units."
-      );
-    }
-
-    const organisationUnit =
-      userOrganisation.userOrganisationUnits[0].organisationUnit;
-
-    const commentObj = {
-      message,
-      user: { id: userId },
-      innovation: { id: innovationId },
-      innovationAction: innovationActionId ? { id: innovationActionId } : null,
-      replyTo: replyTo ? { id: replyTo } : null,
-      createdBy: userId,
-      updatedBy: userId,
+      createdBy: requestUser.id,
+      updatedBy: requestUser.id,
       organisationUnit,
     };
 
@@ -95,20 +69,18 @@ export class CommentService {
   }
 
   async findAllByInnovation(
-    userId: string,
+    requestUser: RequestUser,
     innovationId: string,
-    userOrganisations?: OrganisationUser[],
     order?: { [key: string]: string }
   ) {
-    if (!userId || !innovationId) {
+    if (!requestUser || !innovationId) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
     const innovation = await this.innovationService.findInnovation(
+      requestUser,
       innovationId,
-      userId,
-      null,
-      userOrganisations
+      null
     );
     if (!innovation) {
       throw new InnovationNotFoundError(

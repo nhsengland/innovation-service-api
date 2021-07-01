@@ -24,7 +24,6 @@ class InnovatorsUpdateInnovationAction {
   ): Promise<void> {
     const action = req.body;
     const actionId = req.params.actionId;
-    const innovatorId = req.params.userId;
     const innovationId = req.params.innovationId;
 
     let result;
@@ -32,7 +31,6 @@ class InnovatorsUpdateInnovationAction {
       result = await persistence.updateInnovationAction(
         context,
         actionId,
-        innovatorId,
         innovationId,
         action
       );

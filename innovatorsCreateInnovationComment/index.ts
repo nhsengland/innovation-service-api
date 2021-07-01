@@ -23,14 +23,12 @@ class InnovatorsCreateInnovationComment {
     req: HttpRequest
   ): Promise<void> {
     const body = req.body;
-    const innovatorId = req.params.userId;
     const innovationId = req.params.innovationId;
 
     let result;
     try {
       result = await persistence.createInnovationComment(
         context,
-        innovatorId,
         innovationId,
         body.comment,
         body.replyTo

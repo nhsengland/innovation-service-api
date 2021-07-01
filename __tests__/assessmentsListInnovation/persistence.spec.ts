@@ -1,6 +1,6 @@
-import * as persistence from "../../assessmentsListInnovations/persistence";
-import { InnovationSectionService, InnovationService } from "@services/index";
+import { InnovationService } from "@services/index";
 import * as typeorm from "typeorm";
+import * as persistence from "../../assessmentsListInnovations/persistence";
 import { CustomContext } from "../../utils/types";
 
 describe("[assessmentsListInnovation] Persistence suite", () => {
@@ -19,7 +19,10 @@ describe("[assessmentsListInnovation] Persistence suite", () => {
           InnovationService: new InnovationService(),
         },
         auth: {
-          userOrganisations: [],
+          requestUser: {
+            id: ":userId",
+            type: "ASSESSMENT",
+          },
         },
       };
       // Act

@@ -1,7 +1,6 @@
 import { CustomContext } from "../../utils/types";
 export const findAllInnovationsByAccessor = async (
   ctx: CustomContext,
-  accessorId: string,
   supportStatus: string,
   assignedToMe: boolean,
   skip: number,
@@ -9,8 +8,7 @@ export const findAllInnovationsByAccessor = async (
   order?: { [key: string]: string }
 ) => {
   const result = await ctx.services.InnovationService.findAllByAccessorAndSupportStatus(
-    accessorId,
-    ctx.auth.userOrganisations,
+    ctx.auth.requestUser,
     supportStatus,
     assignedToMe,
     skip,

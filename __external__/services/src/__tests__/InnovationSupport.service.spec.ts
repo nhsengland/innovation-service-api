@@ -12,11 +12,13 @@ import {
   OrganisationUnitUser,
   OrganisationUser,
   User,
+  UserType,
 } from "@domain/index";
 import {
   InvalidParamsError,
   MissingUserOrganisationError,
 } from "@services/errors";
+import { RequestUser } from "@services/models/RequestUser";
 import { getConnection } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
@@ -26,26 +28,23 @@ import * as fixtures from "../__fixtures__";
 describe("Innovation Support Suite", () => {
   let supportService: InnovationSupportService;
   let innovation: Innovation;
-  let innovatorUser: User;
-  let accessorUser: User;
-  let qualAccessorUser: User;
-  let organisationQuaAccessorUnitUser: OrganisationUnitUser;
-  let organisationAccessorUnitUser: OrganisationUnitUser;
-  let qAccessorUserOrganisations: OrganisationUser[];
-  let accessorUserOrganisations: OrganisationUser[];
+
+  let innovatorRequestUser: RequestUser;
+  let accessorRequestUser: RequestUser;
+  let qAccessorRequestUser: RequestUser;
 
   beforeAll(async () => {
     // await setupTestsConnection();
     supportService = new InnovationSupportService(process.env.DB_TESTS_NAME);
 
-    innovatorUser = await fixtures.createInnovatorUser();
-    qualAccessorUser = await fixtures.createAccessorUser();
-    accessorUser = await fixtures.createAccessorUser();
+    const innovatorUser = await fixtures.createInnovatorUser();
+    const qualAccessorUser = await fixtures.createAccessorUser();
+    const accessorUser = await fixtures.createAccessorUser();
 
     const accessorOrganisation = await fixtures.createOrganisation(
       OrganisationType.ACCESSOR
     );
-    const organisationQuaAccessorUser = await fixtures.addUserToOrganisation(
+    const organisationQAccessorUser = await fixtures.addUserToOrganisation(
       qualAccessorUser,
       accessorOrganisation,
       AccessorOrganisationRole.QUALIFYING_ACCESSOR
@@ -59,11 +58,11 @@ describe("Innovation Support Suite", () => {
     const organisationUnit = await fixtures.createOrganisationUnit(
       accessorOrganisation
     );
-    organisationQuaAccessorUnitUser = await fixtures.addOrganisationUserToOrganisationUnit(
-      organisationQuaAccessorUser,
+    const organisationUnitQAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
+      organisationQAccessorUser,
       organisationUnit
     );
-    organisationAccessorUnitUser = await fixtures.addOrganisationUserToOrganisationUnit(
+    const organisationUnitAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
       organisationAccessorUser,
       organisationUnit
     );
@@ -85,11 +84,16 @@ describe("Innovation Support Suite", () => {
       { id: qualAccessorUser.id, displayName: ":QUALIFYING_ACCESSOR" },
     ]);
 
-    qAccessorUserOrganisations = await fixtures.findUserOrganisations(
-      qualAccessorUser.id
+    innovatorRequestUser = fixtures.getRequestUser(innovatorUser);
+    qAccessorRequestUser = fixtures.getRequestUser(
+      qualAccessorUser,
+      organisationQAccessorUser,
+      organisationUnitQAccessorUser
     );
-    accessorUserOrganisations = await fixtures.findUserOrganisations(
-      accessorUser.id
+    accessorRequestUser = fixtures.getRequestUser(
+      accessorUser,
+      organisationAccessorUser,
+      organisationUnitAccessorUser
     );
   });
 
@@ -122,15 +126,14 @@ describe("Innovation Support Suite", () => {
   it("should create an support", async () => {
     const supportObj = {
       status: InnovationSupportStatus.ENGAGING,
-      accessors: [organisationAccessorUnitUser.id],
+      accessors: [accessorRequestUser.organisationUnitUser.id],
       comment: "test comment",
     };
 
     const item = await supportService.create(
-      qualAccessorUser.id,
+      qAccessorRequestUser,
       innovation.id,
-      supportObj,
-      qAccessorUserOrganisations
+      supportObj
     );
 
     expect(item).toBeDefined();
@@ -140,7 +143,7 @@ describe("Innovation Support Suite", () => {
   it("should throw when create with invalid params", async () => {
     let err;
     try {
-      await supportService.create(null, null, null, null);
+      await supportService.create(null, null, null);
     } catch (error) {
       err = error;
     }
@@ -152,7 +155,11 @@ describe("Innovation Support Suite", () => {
   it("should throw when create without user organisations", async () => {
     let err;
     try {
-      await supportService.create("a", "a", {}, []);
+      await supportService.create(
+        { id: ":id", type: UserType.ACCESSOR },
+        "a",
+        {}
+      );
     } catch (error) {
       err = error;
     }
@@ -164,21 +171,19 @@ describe("Innovation Support Suite", () => {
   it("should find an support by innovator", async () => {
     const supportObj = {
       status: InnovationSupportStatus.ENGAGING,
-      accessors: [organisationAccessorUnitUser.id],
+      accessors: [accessorRequestUser.organisationUnitUser.id],
     };
 
     const support = await supportService.create(
-      qualAccessorUser.id,
+      qAccessorRequestUser,
       innovation.id,
-      supportObj,
-      qAccessorUserOrganisations
+      supportObj
     );
 
     const item = await supportService.find(
+      innovatorRequestUser,
       support.id,
-      innovatorUser.id,
-      innovation.id,
-      null
+      innovation.id
     );
 
     expect(item).toBeDefined();
@@ -189,21 +194,19 @@ describe("Innovation Support Suite", () => {
   it("should find an support by q. accessor", async () => {
     const supportObj = {
       status: InnovationSupportStatus.ENGAGING,
-      accessors: [organisationAccessorUnitUser.id],
+      accessors: [accessorRequestUser.organisationUnitUser.id],
     };
 
     const support = await supportService.create(
-      qualAccessorUser.id,
+      qAccessorRequestUser,
       innovation.id,
-      supportObj,
-      qAccessorUserOrganisations
+      supportObj
     );
 
     const item = await supportService.find(
+      qAccessorRequestUser,
       support.id,
-      qualAccessorUser.id,
-      innovation.id,
-      qAccessorUserOrganisations
+      innovation.id
     );
 
     expect(item).toBeDefined();
@@ -214,21 +217,19 @@ describe("Innovation Support Suite", () => {
   it("should find an support by accessor", async () => {
     const supportObj = {
       status: InnovationSupportStatus.ENGAGING,
-      accessors: [organisationAccessorUnitUser.id],
+      accessors: [accessorRequestUser.organisationUnitUser.id],
     };
 
     const support = await supportService.create(
-      qualAccessorUser.id,
+      qAccessorRequestUser,
       innovation.id,
-      supportObj,
-      qAccessorUserOrganisations
+      supportObj
     );
 
     const item = await supportService.find(
+      accessorRequestUser,
       support.id,
-      accessorUser.id,
-      innovation.id,
-      accessorUserOrganisations
+      innovation.id
     );
 
     expect(item).toBeDefined();
@@ -239,7 +240,7 @@ describe("Innovation Support Suite", () => {
   it("should throw when find with invalid params", async () => {
     let err;
     try {
-      await supportService.find(null, null, null, null);
+      await supportService.find(null, null, null);
     } catch (error) {
       err = error;
     }
@@ -251,18 +252,17 @@ describe("Innovation Support Suite", () => {
   it("should find all supports by innovator", async () => {
     const supportObj = {
       status: InnovationSupportStatus.ENGAGING,
-      accessors: [organisationAccessorUnitUser.id],
+      accessors: [accessorRequestUser.organisationUnitUser.id],
     };
 
     await supportService.create(
-      qualAccessorUser.id,
+      qAccessorRequestUser,
       innovation.id,
-      supportObj,
-      qAccessorUserOrganisations
+      supportObj
     );
 
     const item = await supportService.findAllByInnovation(
-      innovatorUser.id,
+      innovatorRequestUser,
       innovation.id
     );
 
@@ -285,36 +285,34 @@ describe("Innovation Support Suite", () => {
   it("should update an support status to add one accessor", async () => {
     let supportObj = {
       status: InnovationSupportStatus.ENGAGING,
-      accessors: [organisationAccessorUnitUser.id],
+      accessors: [accessorRequestUser.organisationUnitUser.id],
       comment: "test comment",
     };
 
     const support = await supportService.create(
-      qualAccessorUser.id,
+      qAccessorRequestUser,
       innovation.id,
-      supportObj,
-      qAccessorUserOrganisations
+      supportObj
     );
 
     supportObj = {
       status: InnovationSupportStatus.ENGAGING,
       accessors: [
-        organisationAccessorUnitUser.id,
-        organisationQuaAccessorUnitUser.id,
+        accessorRequestUser.organisationUnitUser.id,
+        qAccessorRequestUser.organisationUnitUser.id,
       ],
       comment: "test comment 2",
     };
     await supportService.update(
+      qAccessorRequestUser,
       support.id,
-      qualAccessorUser.id,
       innovation.id,
-      supportObj,
-      qAccessorUserOrganisations
+      supportObj
     );
 
     const item = await supportService.find(
+      innovatorRequestUser,
       support.id,
-      innovatorUser.id,
       innovation.id
     );
 
@@ -326,42 +324,36 @@ describe("Innovation Support Suite", () => {
   it("should update an support status to a non engaging status with actions", async () => {
     let supportObj = {
       status: InnovationSupportStatus.ENGAGING,
-      accessors: [organisationAccessorUnitUser.id],
+      accessors: [accessorRequestUser.organisationUnitUser.id],
       comment: "test comment",
     };
 
     const support = await supportService.create(
-      qualAccessorUser.id,
+      qAccessorRequestUser,
       innovation.id,
-      supportObj,
-      qAccessorUserOrganisations
+      supportObj
     );
 
-    await fixtures.createInnovationAction(
-      innovation,
-      qualAccessorUser,
-      qAccessorUserOrganisations[0]
-    );
+    await fixtures.createInnovationAction(qAccessorRequestUser, innovation);
 
     supportObj = {
       status: InnovationSupportStatus.NOT_YET,
       accessors: [
-        organisationAccessorUnitUser.id,
-        organisationQuaAccessorUnitUser.id,
+        accessorRequestUser.organisationUnitUser.id,
+        qAccessorRequestUser.organisationUnitUser.id,
       ],
       comment: null,
     };
     await supportService.update(
+      qAccessorRequestUser,
       support.id,
-      qualAccessorUser.id,
       innovation.id,
-      supportObj,
-      qAccessorUserOrganisations
+      supportObj
     );
 
     const item = await supportService.find(
+      innovatorRequestUser,
       support.id,
-      innovatorUser.id,
       innovation.id
     );
 
@@ -373,36 +365,34 @@ describe("Innovation Support Suite", () => {
   it("should update an support status to a non engaging status without actions", async () => {
     let supportObj = {
       status: InnovationSupportStatus.ENGAGING,
-      accessors: [organisationAccessorUnitUser.id],
+      accessors: [accessorRequestUser.organisationUnitUser.id],
       comment: "test comment",
     };
 
     const support = await supportService.create(
-      qualAccessorUser.id,
+      qAccessorRequestUser,
       innovation.id,
-      supportObj,
-      qAccessorUserOrganisations
+      supportObj
     );
 
     supportObj = {
       status: InnovationSupportStatus.NOT_YET,
       accessors: [
-        organisationAccessorUnitUser.id,
-        organisationQuaAccessorUnitUser.id,
+        accessorRequestUser.organisationUnitUser.id,
+        qAccessorRequestUser.organisationUnitUser.id,
       ],
       comment: null,
     };
     await supportService.update(
+      qAccessorRequestUser,
       support.id,
-      qualAccessorUser.id,
       innovation.id,
-      supportObj,
-      qAccessorUserOrganisations
+      supportObj
     );
 
     const item = await supportService.find(
+      innovatorRequestUser,
       support.id,
-      innovatorUser.id,
       innovation.id
     );
 
@@ -414,7 +404,7 @@ describe("Innovation Support Suite", () => {
   it("should throw when accessor update with invalid params", async () => {
     let err;
     try {
-      await supportService.update(null, null, null, null, null);
+      await supportService.update(null, null, null, null);
     } catch (error) {
       err = error;
     }
@@ -426,7 +416,12 @@ describe("Innovation Support Suite", () => {
   it("should throw when accessor update without user organisations", async () => {
     let err;
     try {
-      await supportService.update("a", "a", "a", {}, []);
+      await supportService.update(
+        { id: ":id", type: UserType.ACCESSOR },
+        "a",
+        "a",
+        {}
+      );
     } catch (error) {
       err = error;
     }

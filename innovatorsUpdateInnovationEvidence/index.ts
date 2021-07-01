@@ -43,7 +43,6 @@ class InnovatorsUpdateInnovationEvidence {
       result = await persistence.updateInnovationEvidence(
         context,
         evidenceId,
-        innovatorId,
         evidence,
         InnovationSectionCatalogue.EVIDENCE_OF_EFFECTIVENESS
       );

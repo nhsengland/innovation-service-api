@@ -18,13 +18,18 @@ describe("[innovatorsUpdateInnovationAction] Persistence suite", () => {
         services: {
           InnovationActionService: new InnovationActionService(),
         },
+        auth: {
+          requestUser: {
+            id: ":userId",
+            type: "INNOVATOR",
+          },
+        },
       };
       // Act
       await persistence.updateInnovationAction(
         ctx as CustomContext,
         "T362433E-F36B-1410-80DE-0032FE5B194B",
         "E362433E-F36B-1410-80DE-0032FE5B194B",
-        "F362433E-F36B-1410-80DE-0032FE5B194B",
         {
           status: "DECLINED",
           comment: ":comment",

@@ -9,6 +9,7 @@ import {
   ResourceNotFoundError,
   SectionNotFoundError,
 } from "@services/errors";
+import { RequestUser } from "@services/models/RequestUser";
 import { getConnection, getRepository, Repository } from "typeorm";
 import { FileService } from "./File.service";
 import { InnovationSectionService } from "./InnovationSection.service";
@@ -53,7 +54,7 @@ export class InnovationEvidenceService {
   }
 
   async create(
-    userId: string,
+    requestUser: RequestUser,
     evidence: any,
     section: InnovationSectionCatalogue
   ) {
@@ -64,15 +65,15 @@ export class InnovationEvidenceService {
     await this.updateSectionStatus(evidence.innovation, section);
 
     evidence.files = evidence.files?.map((id: string) => ({ id }));
-    evidence.createdBy = userId;
-    evidence.updatedBy = userId;
+    evidence.createdBy = requestUser.id;
+    evidence.updatedBy = requestUser.id;
 
     return await this.evidenceRepo.save(evidence);
   }
 
   async update(
+    requestUser: RequestUser,
     id: string,
-    userId: string,
     evidence: any,
     section: InnovationSectionCatalogue
   ) {
@@ -95,13 +96,13 @@ export class InnovationEvidenceService {
     }
 
     evidence.files = evidence.files.map((id: string) => ({ id }));
-    evidence.updatedBy = userId;
+    evidence.updatedBy = requestUser.id;
 
     return await this.evidenceRepo.save(evidence);
   }
 
-  async delete(id: string, userId: string) {
-    if (!id) {
+  async delete(requestUser: RequestUser, id: string) {
+    if (!id || !requestUser) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
@@ -116,7 +117,7 @@ export class InnovationEvidenceService {
       throw error;
     }
 
-    evidence.updatedBy = userId;
+    evidence.updatedBy = requestUser.id;
     return await this.evidenceRepo.softDelete({ id: evidence.id });
   }
 

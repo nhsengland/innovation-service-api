@@ -15,8 +15,8 @@ class AccessorsGetInnovationAssessment {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder()
-  @AllowedUserType(UserType.ACCESSOR)
   @OrganisationRoleValidator(
+    UserType.ACCESSOR,
     AccessorOrganisationRole.QUALIFYING_ACCESSOR,
     AccessorOrganisationRole.ACCESSOR
   )
@@ -24,7 +24,6 @@ class AccessorsGetInnovationAssessment {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const accessorId = req.params.userId;
     const innovationId = req.params.innovationId;
     const assessmentId = req.params.assessmentId;
 
@@ -33,8 +32,7 @@ class AccessorsGetInnovationAssessment {
       result = await persistence.findInnovationAssessmentById(
         context,
         assessmentId,
-        innovationId,
-        accessorId
+        innovationId
       );
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });

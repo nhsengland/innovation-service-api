@@ -17,6 +17,12 @@ describe("[innovatorsHeadOne] Persistence suite", () => {
         services: {
           InnovatorService: new InnovatorService(),
         },
+        auth: {
+          requestUser: {
+            id: ":userId",
+            type: "INNOVATOR",
+          },
+        },
       };
       // Act
       await persistence.findInnovatorById(

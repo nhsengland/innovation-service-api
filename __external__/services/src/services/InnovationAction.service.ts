@@ -5,8 +5,6 @@ import {
   InnovationActionStatus,
   InnovationSectionAliasCatalogue,
   InnovationSupport,
-  OrganisationUnit,
-  OrganisationUser,
 } from "@domain/index";
 import {
   InnovationNotFoundError,
@@ -20,6 +18,7 @@ import {
 } from "@services/errors";
 import { hasAccessorRole } from "@services/helpers";
 import { InnovationActionModel } from "@services/models/InnovationActionModel";
+import { RequestUser } from "@services/models/RequestUser";
 import {
   Connection,
   FindManyOptions,
@@ -48,35 +47,23 @@ export class InnovationActionService {
     this.userService = new UserService(connectionName);
   }
 
-  async create(
-    userId: string,
-    innovationId: string,
-    action: any,
-    userOrganisations: OrganisationUser[]
-  ) {
-    if (!userId || !action || !innovationId) {
+  async create(requestUser: RequestUser, innovationId: string, action: any) {
+    if (!requestUser || !action || !innovationId) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
-    if (!userOrganisations || userOrganisations.length == 0) {
+    if (!requestUser.organisationUser) {
       throw new MissingUserOrganisationError(
         "Invalid user. User has no organisations."
       );
     }
 
-    // BUSINESS RULE: An accessor has only one organization
-    const userOrganisation = userOrganisations[0];
-
-    if (
-      !userOrganisation.userOrganisationUnits ||
-      userOrganisation.userOrganisationUnits.length == 0
-    ) {
+    if (!requestUser.organisationUnitUser) {
       throw new MissingUserOrganisationUnitError(
         "Invalid user. User has no organisation units."
       );
     }
 
-    // BUSINESS RULE: An accessor has only one organization unit
     const filterOptions = {
       relations: [
         "sections",
@@ -85,10 +72,9 @@ export class InnovationActionService {
       ],
     };
     const innovation = await this.innovationService.findInnovation(
+      requestUser,
       innovationId,
-      userId,
-      filterOptions,
-      userOrganisations
+      filterOptions
     );
     if (!innovation) {
       throw new InnovationNotFoundError(
@@ -104,8 +90,8 @@ export class InnovationActionService {
     );
     if (!innovationSection) {
       innovationSection = await this.innovationSectionService.createSection(
+        requestUser,
         innovation.id,
-        userId,
         action.section
       );
     } else {
@@ -113,9 +99,7 @@ export class InnovationActionService {
       actionsCounter = actions.length;
     }
 
-    // BUSINESS RULE: An user has only one organization unit
-    const organisationUnit =
-      userOrganisations[0].userOrganisationUnits[0].organisationUnit;
+    const organisationUnit = requestUser.organisationUnitUser.organisationUnit;
 
     const innovationSupport: InnovationSupport = innovation?.innovationSupports.find(
       (is: InnovationSupport) => is.organisationUnit.id === organisationUnit.id
@@ -132,51 +116,41 @@ export class InnovationActionService {
       status: InnovationActionStatus.REQUESTED,
       innovationSection: { id: innovationSection.id },
       innovationSupport: { id: innovationSupport.id },
-      createdBy: userId,
-      updatedBy: userId,
+      createdBy: requestUser.id,
+      updatedBy: requestUser.id,
     };
 
     return this.actionRepo.save(actionObj);
   }
 
   async updateByAccessor(
+    requestUser: RequestUser,
     id: string,
-    userId: string,
     innovationId: string,
-    action: any,
-    userOrganisations: OrganisationUser[]
+    action: any
   ) {
-    if (!id || !userId || !action) {
+    if (!id || !requestUser || !action) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
-    if (!userOrganisations || userOrganisations.length == 0) {
+    if (!requestUser.organisationUser) {
       throw new MissingUserOrganisationError(
         "Invalid user. User has no organisations."
       );
     }
 
-    // BUSINESS RULE: An accessor has only one organization
-    const userOrganisation = userOrganisations[0];
-
-    if (
-      !userOrganisation.userOrganisationUnits ||
-      userOrganisation.userOrganisationUnits.length == 0
-    ) {
+    if (!requestUser.organisationUnitUser) {
       throw new MissingUserOrganisationUnitError(
         "Invalid user. User has no organisation units."
       );
     }
 
-    // BUSINESS RULE: An user has only one organization unit
-    const organisationUnit =
-      userOrganisations[0].userOrganisationUnits[0].organisationUnit;
+    const organisationUnit = requestUser.organisationUnitUser.organisationUnit;
 
     const innovation = await this.innovationService.findInnovation(
+      requestUser,
       innovationId,
-      userId,
-      null,
-      userOrganisations
+      null
     );
     if (!innovation) {
       throw new InvalidParamsError(
@@ -193,28 +167,22 @@ export class InnovationActionService {
       throw new InvalidDataError("Invalid action data.");
     }
 
-    return this.update(
-      innovationAction,
-      innovationId,
-      userId,
-      action,
-      organisationUnit
-    );
+    return this.update(requestUser, innovationAction, innovationId, action);
   }
 
   async updateByInnovator(
+    requestUser: RequestUser,
     id: string,
-    userId: string,
     innovationId: string,
     action: any
   ) {
-    if (!id || !userId || !action) {
+    if (!requestUser || !id || !action) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
     const filterOptions = {
       relations: ["innovationSection", "innovationSection.innovation"],
-      where: `owner_id = '${userId}'`,
+      where: `owner_id = '${requestUser.id}'`,
     };
 
     const innovationAction = await this.actionRepo.findOne(id, filterOptions);
@@ -222,24 +190,22 @@ export class InnovationActionService {
       throw new ResourceNotFoundError("Invalid parameters.");
     }
 
-    return this.update(innovationAction, innovationId, userId, action);
+    return this.update(requestUser, innovationAction, innovationId, action);
   }
 
   async find(
+    requestUser: RequestUser,
     id: string,
-    userId: string,
-    innovationId: string,
-    userOrganisations?: OrganisationUser[]
+    innovationId: string
   ): Promise<InnovationActionModel> {
-    if (!userId || !innovationId) {
+    if (!requestUser || !innovationId) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
     const innovation = await this.innovationService.findInnovation(
+      requestUser,
       innovationId,
-      userId,
-      null,
-      userOrganisations
+      null
     );
     if (!innovation) {
       throw new InnovationNotFoundError(
@@ -278,27 +244,25 @@ export class InnovationActionService {
   }
 
   async findAllByAccessor(
-    userId: string,
-    userOrganisations: OrganisationUser[],
+    requestUser: RequestUser,
     openActions: boolean,
     skip: number,
     take: number,
     order?: { [key: string]: "ASC" | "DESC" }
   ) {
-    if (!userId) {
+    if (!requestUser) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
-    if (!userOrganisations || userOrganisations.length == 0) {
+    if (!requestUser.organisationUser) {
       throw new MissingUserOrganisationError(
         "Invalid user. User has no organisations."
       );
     }
 
-    // BUSINESS RULE: An accessor has only one organization
-    const userOrganisation = userOrganisations[0];
+    const organisationUser = requestUser.organisationUser;
 
-    if (!hasAccessorRole(userOrganisation.role)) {
+    if (!hasAccessorRole(organisationUser.role)) {
       throw new InvalidUserRoleError("Invalid user. User has an invalid role.");
     }
 
@@ -331,7 +295,7 @@ export class InnovationActionService {
     }
 
     if (
-      userOrganisation.role === AccessorOrganisationRole.QUALIFYING_ACCESSOR
+      organisationUser.role === AccessorOrganisationRole.QUALIFYING_ACCESSOR
     ) {
       query
         .innerJoinAndSelect(
@@ -339,12 +303,11 @@ export class InnovationActionService {
           "organisationShares"
         )
         .andWhere("organisation_id = :organisationId", {
-          organisationId: userOrganisation.organisation.id,
+          organisationId: organisationUser.organisation.id,
         });
     } else {
-      // BUSINESS RULE: An user has only one organization unit
       const organisationUnit =
-        userOrganisation.userOrganisationUnits[0].organisationUnit;
+        requestUser.organisationUnitUser.organisationUnit;
 
       query
         .innerJoinAndSelect(
@@ -378,19 +341,16 @@ export class InnovationActionService {
   }
 
   async findAllByInnovation(
-    userId: string,
-    innovationId: string,
-    userOrganisations?: OrganisationUser[]
+    requestUser: RequestUser,
+    innovationId: string
   ): Promise<InnovationActionModel[]> {
-    if (!userId || !innovationId) {
+    if (!requestUser || !innovationId) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
     const innovation = await this.innovationService.findInnovation(
-      innovationId,
-      userId,
-      null,
-      userOrganisations
+      requestUser,
+      innovationId
     );
     if (!innovation) {
       throw new InnovationNotFoundError(
@@ -416,28 +376,29 @@ export class InnovationActionService {
   }
 
   private async update(
+    requestUser: RequestUser,
     innovationAction: InnovationAction,
     innovationId: string,
-    userId: string,
-    action: any,
-    organisationUnit?: OrganisationUnit
+    action: any
   ) {
     return await this.connection.transaction(async (transactionManager) => {
       if (action.comment) {
         const comment = Comment.new({
-          user: { id: userId },
+          user: { id: requestUser.id },
           innovation: { id: innovationId },
           message: action.comment,
           innovationAction: { id: innovationAction.id },
-          createdBy: userId,
-          updatedBy: userId,
-          organisationUnit,
+          createdBy: requestUser.id,
+          updatedBy: requestUser.id,
+          organisationUnit: requestUser.organisationUnitUser
+            ? { id: requestUser.organisationUnitUser.organisationUnit.id }
+            : null,
         });
         await transactionManager.save(Comment, comment);
       }
 
       innovationAction.status = action.status;
-      innovationAction.updatedBy = userId;
+      innovationAction.updatedBy = requestUser.id;
 
       return await transactionManager.save(InnovationAction, innovationAction);
     });

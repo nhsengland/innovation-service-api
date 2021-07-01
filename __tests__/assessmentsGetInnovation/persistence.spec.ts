@@ -18,6 +18,12 @@ describe("[assessmentsGetInnovation] Persistence suite", () => {
         services: {
           InnovationService: new InnovationService(),
         },
+        auth: {
+          requestUser: {
+            id: ":userId",
+            type: "ASSESSMENT",
+          },
+        },
       };
       // Act
       await persistence.getAssessmentInnovationSummary(

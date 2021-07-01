@@ -19,17 +19,14 @@ describe("[accessorsGetAllActions] Persistence suite", () => {
           InnovationActionService: new InnovationActionService(),
         },
         auth: {
-          userOrganisations: [],
+          requestUser: {
+            id: ":userId",
+            type: "ACCESSOR",
+          },
         },
       };
       // Act
-      await persistence.findAllActions(
-        ctx as CustomContext,
-        ":accessorId",
-        true,
-        0,
-        10
-      );
+      await persistence.findAllActions(ctx as CustomContext, true, 0, 10);
 
       expect(spy).toHaveBeenCalled();
     });

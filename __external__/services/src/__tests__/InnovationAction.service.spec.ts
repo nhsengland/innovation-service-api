@@ -13,11 +13,13 @@ import {
   OrganisationUnitUser,
   OrganisationUser,
   User,
+  UserType,
 } from "@domain/index";
 import {
   InvalidParamsError,
   MissingUserOrganisationError,
 } from "@services/errors";
+import { RequestUser } from "@services/models/RequestUser";
 import { getConnection } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
@@ -30,10 +32,10 @@ describe("Innovation Action Suite", () => {
   let innovatorUser: User;
   let accessorUser: User;
   let qualAccessorUser: User;
-  let organisationQuaAccessorUnitUser: OrganisationUnitUser;
-  let organisationAccessorUnitUser: OrganisationUnitUser;
-  let qAccessorUserOrganisations: OrganisationUser[];
-  let accessorUserOrganisations: OrganisationUser[];
+
+  let innovatorRequestUser: RequestUser;
+  let accessorRequestUser: RequestUser;
+  let qAccessorRequestUser: RequestUser;
 
   beforeAll(async () => {
     // await setupTestsConnection();
@@ -46,7 +48,7 @@ describe("Innovation Action Suite", () => {
     const accessorOrganisation = await fixtures.createOrganisation(
       OrganisationType.ACCESSOR
     );
-    const organisationQuaAccessorUser = await fixtures.addUserToOrganisation(
+    const organisationQAccessorUser = await fixtures.addUserToOrganisation(
       qualAccessorUser,
       accessorOrganisation,
       AccessorOrganisationRole.QUALIFYING_ACCESSOR
@@ -60,11 +62,11 @@ describe("Innovation Action Suite", () => {
     const organisationUnit = await fixtures.createOrganisationUnit(
       accessorOrganisation
     );
-    organisationQuaAccessorUnitUser = await fixtures.addOrganisationUserToOrganisationUnit(
-      organisationQuaAccessorUser,
+    const organisationUnitQAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
+      organisationQAccessorUser,
       organisationUnit
     );
-    organisationAccessorUnitUser = await fixtures.addOrganisationUserToOrganisationUnit(
+    const organisationUnitAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
       organisationAccessorUser,
       organisationUnit
     );
@@ -77,22 +79,26 @@ describe("Innovation Action Suite", () => {
     const innovations = await fixtures.saveInnovations(innovationObj);
     innovation = innovations[0];
 
-    qAccessorUserOrganisations = await fixtures.findUserOrganisations(
-      qualAccessorUser.id
+    innovatorRequestUser = fixtures.getRequestUser(innovatorUser);
+    qAccessorRequestUser = fixtures.getRequestUser(
+      qualAccessorUser,
+      organisationQAccessorUser,
+      organisationUnitQAccessorUser
     );
-    accessorUserOrganisations = await fixtures.findUserOrganisations(
-      accessorUser.id
+    accessorRequestUser = fixtures.getRequestUser(
+      accessorUser,
+      organisationAccessorUser,
+      organisationUnitAccessorUser
     );
 
     await fixtures.createSupportInInnovation(
+      qAccessorRequestUser,
       innovation,
-      qualAccessorUser,
-      qAccessorUserOrganisations[0],
-      organisationQuaAccessorUnitUser
+      qAccessorRequestUser.organisationUnitUser.id
     );
     innovation = await fixtures.createSectionInInnovation(
+      innovatorRequestUser,
       innovation,
-      innovatorUser,
       InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
       {}
     );
@@ -146,10 +152,9 @@ describe("Innovation Action Suite", () => {
     };
 
     const item = await actionService.create(
-      qualAccessorUser.id,
+      qAccessorRequestUser,
       innovation.id,
-      actionObj,
-      qAccessorUserOrganisations
+      actionObj
     );
 
     expect(item).toBeDefined();
@@ -163,10 +168,9 @@ describe("Innovation Action Suite", () => {
     };
 
     const item = await actionService.create(
-      qualAccessorUser.id,
+      qAccessorRequestUser,
       innovation.id,
-      actionObj,
-      qAccessorUserOrganisations
+      actionObj
     );
 
     expect(item).toBeDefined();
@@ -177,7 +181,7 @@ describe("Innovation Action Suite", () => {
   it("should throw when create with invalid params", async () => {
     let err;
     try {
-      await actionService.create(null, null, null, null);
+      await actionService.create(null, null, null);
     } catch (error) {
       err = error;
     }
@@ -190,14 +194,17 @@ describe("Innovation Action Suite", () => {
   it("should throw when create without user organisations", async () => {
     let err;
     try {
-      await actionService.create("a", "a", {}, []);
+      await actionService.create(
+        { id: ":id", type: UserType.ACCESSOR },
+        "a",
+        {}
+      );
     } catch (error) {
       err = error;
     }
 
     expect(err).toBeDefined();
     expect(err).toBeInstanceOf(MissingUserOrganisationError);
-    expect(err.message).toContain("Invalid user. User has no organisations.");
   });
 
   it("should update an action by accessor", async () => {
@@ -207,10 +214,9 @@ describe("Innovation Action Suite", () => {
     };
 
     const action = await actionService.create(
-      qualAccessorUser.id,
+      qAccessorRequestUser,
       innovation.id,
-      actionCreateObj,
-      qAccessorUserOrganisations
+      actionCreateObj
     );
 
     const actionUpdObj = {
@@ -218,11 +224,10 @@ describe("Innovation Action Suite", () => {
       comment: "new comment",
     };
     const item = await actionService.updateByAccessor(
+      qAccessorRequestUser,
       action.id,
-      qualAccessorUser.id,
       innovation.id,
-      actionUpdObj,
-      qAccessorUserOrganisations
+      actionUpdObj
     );
 
     expect(item).toBeDefined();
@@ -232,7 +237,7 @@ describe("Innovation Action Suite", () => {
   it("should throw when accessor update with invalid params", async () => {
     let err;
     try {
-      await actionService.updateByAccessor(null, null, null, null, null);
+      await actionService.updateByAccessor(null, null, null, null);
     } catch (error) {
       err = error;
     }
@@ -245,7 +250,12 @@ describe("Innovation Action Suite", () => {
   it("should throw when accessor update without user organisations", async () => {
     let err;
     try {
-      await actionService.updateByAccessor("a", "a", "a", {}, []);
+      await actionService.updateByAccessor(
+        { id: ":id", type: UserType.ACCESSOR },
+        "a",
+        "a",
+        {}
+      );
     } catch (error) {
       err = error;
     }
@@ -262,10 +272,9 @@ describe("Innovation Action Suite", () => {
     };
 
     const action = await actionService.create(
-      qualAccessorUser.id,
+      qAccessorRequestUser,
       innovation.id,
-      actionCreateObj,
-      qAccessorUserOrganisations
+      actionCreateObj
     );
 
     const actionUpdObj = {
@@ -273,8 +282,8 @@ describe("Innovation Action Suite", () => {
       comment: "new comment",
     };
     const item = await actionService.updateByInnovator(
+      innovatorRequestUser,
       action.id,
-      innovatorUser.id,
       innovation.id,
       actionUpdObj
     );
@@ -297,30 +306,19 @@ describe("Innovation Action Suite", () => {
   });
 
   it("should find all innovation actions if Innovator", async () => {
-    await actionService.create(
-      qualAccessorUser.id,
-      innovation.id,
-      {
-        description: "missing good descriptions",
-        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
-      },
-      qAccessorUserOrganisations
-    );
+    await actionService.create(qAccessorRequestUser, innovation.id, {
+      description: "missing good descriptions",
+      section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+    });
 
-    await actionService.create(
-      qualAccessorUser.id,
-      innovation.id,
-      {
-        description: "missing good descriptions",
-        section: InnovationSectionCatalogue.MARKET_RESEARCH,
-      },
-      qAccessorUserOrganisations
-    );
+    await actionService.create(qAccessorRequestUser, innovation.id, {
+      description: "missing good descriptions",
+      section: InnovationSectionCatalogue.MARKET_RESEARCH,
+    });
 
     const item = await actionService.findAllByInnovation(
-      innovatorUser.id,
-      innovation.id,
-      null
+      innovatorRequestUser,
+      innovation.id
     );
 
     expect(item).toBeDefined();
@@ -328,30 +326,19 @@ describe("Innovation Action Suite", () => {
   });
 
   it("should find all innovation actions if Accessor in a support unit", async () => {
-    await actionService.create(
-      qualAccessorUser.id,
-      innovation.id,
-      {
-        description: "missing good descriptions",
-        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
-      },
-      qAccessorUserOrganisations
-    );
+    await actionService.create(qAccessorRequestUser, innovation.id, {
+      description: "missing good descriptions",
+      section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+    });
 
-    await actionService.create(
-      qualAccessorUser.id,
-      innovation.id,
-      {
-        description: "missing good descriptions",
-        section: InnovationSectionCatalogue.MARKET_RESEARCH,
-      },
-      qAccessorUserOrganisations
-    );
+    await actionService.create(qAccessorRequestUser, innovation.id, {
+      description: "missing good descriptions",
+      section: InnovationSectionCatalogue.MARKET_RESEARCH,
+    });
 
     const item = await actionService.findAllByInnovation(
-      accessorUser.id,
-      innovation.id,
-      accessorUserOrganisations
+      accessorRequestUser,
+      innovation.id
     );
 
     expect(item).toBeDefined();
@@ -359,30 +346,19 @@ describe("Innovation Action Suite", () => {
   });
 
   it("should find all innovation actions if Q. Accessor in a shared organisation", async () => {
-    await actionService.create(
-      qualAccessorUser.id,
-      innovation.id,
-      {
-        description: "missing good descriptions",
-        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
-      },
-      qAccessorUserOrganisations
-    );
+    await actionService.create(qAccessorRequestUser, innovation.id, {
+      description: "missing good descriptions",
+      section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+    });
 
-    await actionService.create(
-      qualAccessorUser.id,
-      innovation.id,
-      {
-        description: "missing good descriptions",
-        section: InnovationSectionCatalogue.MARKET_RESEARCH,
-      },
-      qAccessorUserOrganisations
-    );
+    await actionService.create(qAccessorRequestUser, innovation.id, {
+      description: "missing good descriptions",
+      section: InnovationSectionCatalogue.MARKET_RESEARCH,
+    });
 
     const item = await actionService.findAllByInnovation(
-      qualAccessorUser.id,
-      innovation.id,
-      qAccessorUserOrganisations
+      qAccessorRequestUser,
+      innovation.id
     );
 
     expect(item).toBeDefined();
@@ -391,18 +367,17 @@ describe("Innovation Action Suite", () => {
 
   it("should find one innovation action if Innovator by ID", async () => {
     const action = await actionService.create(
-      qualAccessorUser.id,
+      qAccessorRequestUser,
       innovation.id,
       {
         description: "missing good descriptions",
         section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
-      },
-      qAccessorUserOrganisations
+      }
     );
 
     const item = await actionService.find(
+      innovatorRequestUser,
       action.id,
-      innovatorUser.id,
       innovation.id
     );
 
@@ -412,20 +387,18 @@ describe("Innovation Action Suite", () => {
 
   it("should find one innovation action if Accessor in a support unit by ID", async () => {
     const action = await actionService.create(
-      qualAccessorUser.id,
+      qAccessorRequestUser,
       innovation.id,
       {
         description: "missing good descriptions",
         section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
-      },
-      qAccessorUserOrganisations
+      }
     );
 
     const item = await actionService.find(
+      accessorRequestUser,
       action.id,
-      accessorUser.id,
-      innovation.id,
-      accessorUserOrganisations
+      innovation.id
     );
 
     expect(item).toBeDefined();
@@ -434,20 +407,18 @@ describe("Innovation Action Suite", () => {
 
   it("should find one innovation action if Q. Accessor in a shared organisation by ID", async () => {
     const action = await actionService.create(
-      qualAccessorUser.id,
+      qAccessorRequestUser,
       innovation.id,
       {
         description: "missing good descriptions",
         section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
-      },
-      qAccessorUserOrganisations
+      }
     );
 
     const item = await actionService.find(
+      qAccessorRequestUser,
       action.id,
-      qualAccessorUser.id,
-      innovation.id,
-      qAccessorUserOrganisations
+      innovation.id
     );
 
     expect(item).toBeDefined();
@@ -455,29 +426,18 @@ describe("Innovation Action Suite", () => {
   });
 
   it("should find all open actions if Qual. Accessor", async () => {
-    await actionService.create(
-      qualAccessorUser.id,
-      innovation.id,
-      {
-        description: "missing good descriptions",
-        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
-      },
-      qAccessorUserOrganisations
-    );
+    await actionService.create(qAccessorRequestUser, innovation.id, {
+      description: "missing good descriptions",
+      section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+    });
 
-    await actionService.create(
-      qualAccessorUser.id,
-      innovation.id,
-      {
-        description: "missing good descriptions",
-        section: InnovationSectionCatalogue.MARKET_RESEARCH,
-      },
-      qAccessorUserOrganisations
-    );
+    await actionService.create(qAccessorRequestUser, innovation.id, {
+      description: "missing good descriptions",
+      section: InnovationSectionCatalogue.MARKET_RESEARCH,
+    });
 
     const item = await actionService.findAllByAccessor(
-      qualAccessorUser.id,
-      qAccessorUserOrganisations,
+      qAccessorRequestUser,
       true,
       0,
       10
@@ -488,29 +448,18 @@ describe("Innovation Action Suite", () => {
   });
 
   it("should find all open actions if Qual. Accessor with column order", async () => {
-    await actionService.create(
-      qualAccessorUser.id,
-      innovation.id,
-      {
-        description: "missing good descriptions",
-        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
-      },
-      qAccessorUserOrganisations
-    );
+    await actionService.create(qAccessorRequestUser, innovation.id, {
+      description: "missing good descriptions",
+      section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+    });
 
-    await actionService.create(
-      qualAccessorUser.id,
-      innovation.id,
-      {
-        description: "missing good descriptions",
-        section: InnovationSectionCatalogue.MARKET_RESEARCH,
-      },
-      qAccessorUserOrganisations
-    );
+    await actionService.create(qAccessorRequestUser, innovation.id, {
+      description: "missing good descriptions",
+      section: InnovationSectionCatalogue.MARKET_RESEARCH,
+    });
 
     const item = await actionService.findAllByAccessor(
-      qualAccessorUser.id,
-      qAccessorUserOrganisations,
+      qAccessorRequestUser,
       true,
       0,
       10,
@@ -527,29 +476,18 @@ describe("Innovation Action Suite", () => {
   });
 
   it("should find all open actions if Accessor", async () => {
-    await actionService.create(
-      qualAccessorUser.id,
-      innovation.id,
-      {
-        description: "missing good descriptions",
-        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
-      },
-      qAccessorUserOrganisations
-    );
+    await actionService.create(qAccessorRequestUser, innovation.id, {
+      description: "missing good descriptions",
+      section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+    });
 
-    await actionService.create(
-      qualAccessorUser.id,
-      innovation.id,
-      {
-        description: "missing good descriptions",
-        section: InnovationSectionCatalogue.MARKET_RESEARCH,
-      },
-      qAccessorUserOrganisations
-    );
+    await actionService.create(qAccessorRequestUser, innovation.id, {
+      description: "missing good descriptions",
+      section: InnovationSectionCatalogue.MARKET_RESEARCH,
+    });
 
     const item = await actionService.findAllByAccessor(
-      accessorUser.id,
-      accessorUserOrganisations,
+      accessorRequestUser,
       true,
       0,
       10
@@ -561,37 +499,29 @@ describe("Innovation Action Suite", () => {
 
   it("should find all close actions if Qual. Accessor", async () => {
     const action = await actionService.create(
-      qualAccessorUser.id,
+      qAccessorRequestUser,
       innovation.id,
       {
         description: "missing good descriptions",
         section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
-      },
-      qAccessorUserOrganisations
+      }
     );
     await actionService.updateByAccessor(
+      qAccessorRequestUser,
       action.id,
-      qualAccessorUser.id,
       innovation.id,
       {
         status: InnovationActionStatus.COMPLETED,
-      },
-      qAccessorUserOrganisations
+      }
     );
 
-    await actionService.create(
-      qualAccessorUser.id,
-      innovation.id,
-      {
-        description: "missing good descriptions",
-        section: InnovationSectionCatalogue.MARKET_RESEARCH,
-      },
-      qAccessorUserOrganisations
-    );
+    await actionService.create(qAccessorRequestUser, innovation.id, {
+      description: "missing good descriptions",
+      section: InnovationSectionCatalogue.MARKET_RESEARCH,
+    });
 
     const item = await actionService.findAllByAccessor(
-      qualAccessorUser.id,
-      qAccessorUserOrganisations,
+      qAccessorRequestUser,
       false,
       0,
       10
@@ -603,37 +533,29 @@ describe("Innovation Action Suite", () => {
 
   it("should find all close actions if Accessor", async () => {
     const action = await actionService.create(
-      qualAccessorUser.id,
+      qAccessorRequestUser,
       innovation.id,
       {
         description: "missing good descriptions",
         section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
-      },
-      qAccessorUserOrganisations
+      }
     );
     await actionService.updateByAccessor(
+      qAccessorRequestUser,
       action.id,
-      qualAccessorUser.id,
       innovation.id,
       {
         status: InnovationActionStatus.COMPLETED,
-      },
-      qAccessorUserOrganisations
+      }
     );
 
-    await actionService.create(
-      qualAccessorUser.id,
-      innovation.id,
-      {
-        description: "missing good descriptions",
-        section: InnovationSectionCatalogue.MARKET_RESEARCH,
-      },
-      qAccessorUserOrganisations
-    );
+    await actionService.create(qAccessorRequestUser, innovation.id, {
+      description: "missing good descriptions",
+      section: InnovationSectionCatalogue.MARKET_RESEARCH,
+    });
 
     const item = await actionService.findAllByAccessor(
-      accessorUser.id,
-      accessorUserOrganisations,
+      accessorRequestUser,
       false,
       0,
       10

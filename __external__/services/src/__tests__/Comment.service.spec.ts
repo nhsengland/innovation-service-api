@@ -10,6 +10,7 @@ import {
   OrganisationUnitUser,
   OrganisationUser,
   User,
+  UserType,
 } from "@domain/index";
 import * as fixtures from "../__fixtures__";
 import * as helpers from "../helpers";
@@ -18,23 +19,24 @@ import {
   InvalidParamsError,
   MissingUserOrganisationError,
 } from "@services/errors";
+import { RequestUser } from "@services/models/RequestUser";
 
 describe("Comment Service Suite", () => {
   let commentService: CommentService;
-  let innovatorUser: User;
-  let qualAccessorUser: User;
   let innovation: Innovation;
-  let qAccessorUserOrganisations: OrganisationUser[];
+
+  let innovatorRequestUser: RequestUser;
+  let qAccessorRequestUser: RequestUser;
 
   beforeAll(async () => {
     // await setupTestsConnection();
     commentService = new CommentService(process.env.DB_TESTS_NAME);
 
-    qualAccessorUser = await fixtures.createAccessorUser();
+    const qualAccessorUser = await fixtures.createAccessorUser();
     const accessorOrganisation = await fixtures.createOrganisation(
       OrganisationType.ACCESSOR
     );
-    const organisationQuaAccessorUser = await fixtures.addUserToOrganisation(
+    const organisationQAccessorUser = await fixtures.addUserToOrganisation(
       qualAccessorUser,
       accessorOrganisation,
       AccessorOrganisationRole.QUALIFYING_ACCESSOR
@@ -42,15 +44,12 @@ describe("Comment Service Suite", () => {
     const organisationUnit = await fixtures.createOrganisationUnit(
       accessorOrganisation
     );
-    await fixtures.addOrganisationUserToOrganisationUnit(
-      organisationQuaAccessorUser,
+    const organisationUnitQAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
+      organisationQAccessorUser,
       organisationUnit
     );
-    qAccessorUserOrganisations = await fixtures.findUserOrganisations(
-      qualAccessorUser.id
-    );
 
-    innovatorUser = await fixtures.createInnovatorUser();
+    const innovatorUser = await fixtures.createInnovatorUser();
     innovation = await fixtures.saveInnovation(
       fixtures.generateInnovation({
         owner: innovatorUser,
@@ -67,6 +66,13 @@ describe("Comment Service Suite", () => {
       { id: innovatorUser.id, displayName: ":INNOVATOR" },
       { id: qualAccessorUser.id, displayName: ":QUALIFYING_ACCESSOR" },
     ]);
+
+    innovatorRequestUser = fixtures.getRequestUser(innovatorUser);
+    qAccessorRequestUser = fixtures.getRequestUser(
+      qualAccessorUser,
+      organisationQAccessorUser,
+      organisationUnitQAccessorUser
+    );
   });
 
   afterAll(async () => {
@@ -99,7 +105,7 @@ describe("Comment Service Suite", () => {
   it("should throw when create() with invalid params", async () => {
     let err;
     try {
-      await commentService.create("a", "b", "");
+      await commentService.create(innovatorRequestUser, "b", "");
     } catch (error) {
       err = error;
     }
@@ -110,7 +116,7 @@ describe("Comment Service Suite", () => {
 
   it("should create a comment by innovator", async () => {
     const comment = await commentService.create(
-      innovatorUser.id,
+      innovatorRequestUser,
       innovation.id,
       "My Comment"
     );
@@ -121,7 +127,7 @@ describe("Comment Service Suite", () => {
   it("should throw when createByAccessor() with invalid params", async () => {
     let err;
     try {
-      await commentService.createByAccessor("a", "b", "", []);
+      await commentService.create(qAccessorRequestUser, "b", null);
     } catch (error) {
       err = error;
     }
@@ -133,7 +139,11 @@ describe("Comment Service Suite", () => {
   it("should throw when createByAccessor() with without organisations", async () => {
     let err;
     try {
-      await commentService.createByAccessor("a", "b", "message", []);
+      await commentService.create(
+        { id: ":id", type: UserType.ACCESSOR },
+        "b",
+        "message"
+      );
     } catch (error) {
       err = error;
     }
@@ -143,21 +153,24 @@ describe("Comment Service Suite", () => {
   });
 
   it("should create a comment by accessor", async () => {
-    const comment = await commentService.createByAccessor(
-      qualAccessorUser.id,
+    const comment = await commentService.create(
+      qAccessorRequestUser,
       innovation.id,
-      "My Comment",
-      qAccessorUserOrganisations
+      "My Comment"
     );
 
     expect(comment).toBeDefined();
   });
 
   it("should find all comments by an Innovation", async () => {
-    await commentService.create(innovatorUser.id, innovation.id, "My Comment");
+    await commentService.create(
+      innovatorRequestUser,
+      innovation.id,
+      "My Comment"
+    );
 
     const result = await commentService.findAllByInnovation(
-      innovatorUser.id,
+      innovatorRequestUser,
       innovation.id
     );
 
@@ -166,30 +179,27 @@ describe("Comment Service Suite", () => {
 
   it("should find all comments by an Accessor", async () => {
     const comment = await commentService.create(
-      innovatorUser.id,
+      innovatorRequestUser,
       innovation.id,
       "My Innovator Comment"
     );
 
-    await commentService.createByAccessor(
-      qualAccessorUser.id,
+    await commentService.create(
+      qAccessorRequestUser,
       innovation.id,
       "My Accessor Comment",
-      qAccessorUserOrganisations,
       comment.id
     );
 
-    await commentService.createByAccessor(
-      qualAccessorUser.id,
+    await commentService.create(
+      qAccessorRequestUser,
       innovation.id,
-      "My Second Accessor Comment",
-      qAccessorUserOrganisations
+      "My Second Accessor Comment"
     );
 
     const result = await commentService.findAllByInnovation(
-      qualAccessorUser.id,
-      innovation.id,
-      qAccessorUserOrganisations
+      qAccessorRequestUser,
+      innovation.id
     );
 
     expect(result).toBeDefined();

@@ -22,14 +22,16 @@ describe("[innovatorsUpdateInnovationSection] Persistence suite", () => {
           InnovationSectionService: new InnovationSectionService(),
         },
         auth: {
-          userOrganisations: [],
+          requestUser: {
+            id: ":userId",
+            type: "INNOVATOR",
+          },
         },
       };
       // Act
       await persistence.updateInnovationSection(
         ctx as CustomContext,
         "E362433E-F36B-1410-80DE-0032FE5B194B",
-        "test_innovator_id",
         InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
         {
           description: "bbb",

@@ -10,8 +10,10 @@ import {
   InvalidParamsError,
   InvalidUserRoleError,
   MissingUserOrganisationError,
+  MissingUserOrganisationUnitError,
 } from "@services/errors";
 import { OrganisationUnitUserModel } from "@services/models/OrganisationUnitUserModel";
+import { RequestUser } from "@services/models/RequestUser";
 import {
   Connection,
   getConnection,
@@ -43,7 +45,7 @@ export class OrganisationService extends BaseService<Organisation> {
   }
 
   async findAll(filter: any): Promise<Organisation[]> {
-    if (!filter.type) {
+    if (!filter || !filter.type) {
       throw new InvalidParamsError(
         "Invalid filter. You must define the organisation type."
       );
@@ -71,37 +73,40 @@ export class OrganisationService extends BaseService<Organisation> {
   }
 
   async findUserOrganisationUnitUsers(
-    userId: string,
-    userOrganisations: OrganisationUser[]
+    requestUser: RequestUser
   ): Promise<OrganisationUnitUserModel[]> {
-    if (!userId) {
+    if (!requestUser) {
       throw new InvalidParamsError(
         "Invalid userId. You must define the user id."
       );
     }
 
-    if (!userOrganisations || userOrganisations.length == 0) {
+    if (!requestUser.organisationUser) {
       throw new MissingUserOrganisationError(
         "Invalid user. User has no organisations."
       );
     }
 
-    // BUSINESS RULE: An accessor has only one organization
-    const userOrganisation = userOrganisations[0];
+    if (!requestUser.organisationUnitUser) {
+      throw new MissingUserOrganisationUnitError(
+        "Invalid user. User has no organisation units."
+      );
+    }
+
+    const organisationUser = requestUser.organisationUser;
 
     if (
-      userOrganisation.role !== AccessorOrganisationRole.QUALIFYING_ACCESSOR
+      organisationUser.role !== AccessorOrganisationRole.QUALIFYING_ACCESSOR
     ) {
       throw new InvalidUserRoleError("Invalid user. User has an invalid role.");
     }
 
-    // Get all user organisation units
-    const organisationUnits = userOrganisation?.userOrganisationUnits.map(
-      (uou: OrganisationUnitUser) => uou?.organisationUnit.id
-    );
-    if (!organisationUnits) return [];
+    // Get User organisation unit id
+    const organisationUnits = [
+      requestUser.organisationUnitUser.organisationUnit.id,
+    ];
 
-    // Get all users from the organisation units
+    // Get all users from the organisation unit
     const filterOptions = {
       relations: ["organisationUser", "organisationUser.user"],
       where: { organisationUnit: In(organisationUnits) },

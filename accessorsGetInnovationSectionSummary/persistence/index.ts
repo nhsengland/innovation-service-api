@@ -2,13 +2,11 @@ import { CustomContext } from "../../utils/types";
 
 export const findAllInnovationSections = async (
   ctx: CustomContext,
-  innovationId: string,
-  accessorId: string
+  innovationId: string
 ) => {
   const result = await ctx.services.InnovationSectionService.findAllInnovationSections(
-    innovationId,
-    accessorId,
-    ctx.auth.userOrganisations
+    ctx.auth.requestUser,
+    innovationId
   );
 
   return result;

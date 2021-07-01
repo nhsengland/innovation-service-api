@@ -1,5 +1,5 @@
 import { HttpRequest } from "@azure/functions";
-import { AccessorOrganisationRole } from "@domain/index";
+import { AccessorOrganisationRole, UserType } from "@domain/index";
 import {
   AppInsights,
   JwtDecoder,
@@ -18,6 +18,7 @@ class AccessorsUpdateInnovationAction {
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
   @JwtDecoder()
   @OrganisationRoleValidator(
+    UserType.ACCESSOR,
     AccessorOrganisationRole.QUALIFYING_ACCESSOR,
     AccessorOrganisationRole.ACCESSOR
   )
@@ -27,7 +28,6 @@ class AccessorsUpdateInnovationAction {
   ): Promise<void> {
     const action = req.body;
     const actionId = req.params.actionId;
-    const accessorId = req.params.userId;
     const innovationId = req.params.innovationId;
 
     let result;
@@ -35,7 +35,6 @@ class AccessorsUpdateInnovationAction {
       result = await persistence.updateInnovationAction(
         context,
         actionId,
-        accessorId,
         innovationId,
         action
       );

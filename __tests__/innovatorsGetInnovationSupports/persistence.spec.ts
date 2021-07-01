@@ -1,4 +1,4 @@
-import { InnovationSupportService, InnovationService } from "@services/index";
+import { InnovationSupportService } from "@services/index";
 import * as typeorm from "typeorm";
 import * as persistence from "../../innovatorsGetInnovationSupports/persistence";
 import { CustomContext } from "../../utils/types";
@@ -19,14 +19,16 @@ describe("[innovatorsGetInnovationSupports] Persistence suite", () => {
           InnovationSupportService: new InnovationSupportService(),
         },
         auth: {
-          userOrganisations: [],
+          requestUser: {
+            id: ":userId",
+            type: "INNOVATOR",
+          },
         },
       };
       // Act
       await persistence.findAllInnovationSupports(
         ctx as CustomContext,
-        "E362433E-F36B-1410-80DE-0032FE5B194B",
-        "F362433E-F36B-1410-80DE-0032FE5B194B"
+        "E362433E-F36B-1410-80DE-0032FE5B194B"
       );
 
       expect(spy).toHaveBeenCalled();

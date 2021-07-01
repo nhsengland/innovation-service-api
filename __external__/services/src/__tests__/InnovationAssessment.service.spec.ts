@@ -10,6 +10,7 @@ import {
   User,
   UserType,
 } from "@domain/index";
+import { RequestUser } from "@services/models/RequestUser";
 import { UserService } from "@services/services/User.service";
 import { getConnection } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
@@ -27,11 +28,10 @@ describe("Innovation Assessment Suite", () => {
   let assessmentService: InnovationAssessmentService;
   let userService: UserService;
   let innovation: Innovation;
-  let assessmentUser: User;
-  let innovatorUser: User;
-  let qualAccessorUser: User;
-  let organisationQuaAccessorUser: OrganisationUser;
-  let organisationAccessorUser: OrganisationUser;
+
+  let assessmentRequestUser: RequestUser;
+  let innovatorRequestUser: RequestUser;
+  let qAccessorRequestUser: RequestUser;
 
   beforeAll(async () => {
     // await setupTestsConnection();
@@ -41,25 +41,18 @@ describe("Innovation Assessment Suite", () => {
     );
     userService = new UserService(process.env.DB_TESTS_NAME);
 
-    innovatorUser = await fixtures.createInnovatorUser();
-    assessmentUser = await fixtures.createAssessmentUser();
-    qualAccessorUser = await fixtures.createAccessorUser();
-    const accessorUser = await fixtures.createAccessorUser();
+    const innovatorUser = await fixtures.createInnovatorUser();
+    const assessmentUser = await fixtures.createAssessmentUser();
+    const qualAccessorUser = await fixtures.createAccessorUser();
 
     const accessorOrganisation = await fixtures.createOrganisation(
       OrganisationType.ACCESSOR
     );
 
-    organisationQuaAccessorUser = await fixtures.addUserToOrganisation(
+    const organisationQAccessorUser = await fixtures.addUserToOrganisation(
       qualAccessorUser,
       accessorOrganisation,
       AccessorOrganisationRole.QUALIFYING_ACCESSOR
-    );
-
-    organisationAccessorUser = await fixtures.addUserToOrganisation(
-      accessorUser,
-      accessorOrganisation,
-      AccessorOrganisationRole.ACCESSOR
     );
 
     const innovationObj = fixtures.generateInnovation({
@@ -69,6 +62,13 @@ describe("Innovation Assessment Suite", () => {
     });
     const innovations = await fixtures.saveInnovations(innovationObj);
     innovation = innovations[0];
+
+    innovatorRequestUser = fixtures.getRequestUser(innovatorUser);
+    assessmentRequestUser = fixtures.getRequestUser(assessmentUser);
+    qAccessorRequestUser = fixtures.getRequestUser(
+      qualAccessorUser,
+      organisationQAccessorUser
+    );
   });
 
   afterAll(async () => {
@@ -101,11 +101,11 @@ describe("Innovation Assessment Suite", () => {
     const assessmentObj = {
       ...dummy.assessment,
       innovation: innovation.id,
-      assignTo: assessmentUser.id,
+      assignTo: assessmentRequestUser.id,
     };
 
     const item = await assessmentService.create(
-      assessmentUser.id,
+      assessmentRequestUser,
       innovation.id,
       assessmentObj
     );
@@ -118,12 +118,12 @@ describe("Innovation Assessment Suite", () => {
     const assessmentObj = {
       ...dummy.assessment,
       innovation: innovation.id,
-      assignTo: assessmentUser.id,
+      assignTo: assessmentRequestUser.id,
       comment: "my assessment comment",
     };
 
     const item = await assessmentService.create(
-      assessmentUser.id,
+      assessmentRequestUser,
       innovation.id,
       assessmentObj
     );
@@ -145,7 +145,7 @@ describe("Innovation Assessment Suite", () => {
       mobilePhone: "+351960000000",
     });
     spyOn(userService, "getProfile").and.returnValue({
-      id: assessmentUser.id,
+      id: assessmentRequestUser.id,
       displayName: ":displayName",
       type: UserType.ASSESSMENT,
       organisations: [],
@@ -156,16 +156,20 @@ describe("Innovation Assessment Suite", () => {
     const assessmentObj = {
       ...dummy.assessment,
       innovation: innovation.id,
-      assignTo: assessmentUser.id,
+      assignTo: assessmentRequestUser.id,
     };
 
     const assessment = await assessmentService.create(
-      assessmentUser.id,
+      assessmentRequestUser,
       innovation.id,
       assessmentObj
     );
 
-    const item = await assessmentService.find(assessment.id, innovation.id);
+    const item = await assessmentService.find(
+      assessmentRequestUser,
+      assessment.id,
+      innovation.id
+    );
 
     expect(item).toBeDefined();
     expect(item.description).toEqual(dummy.assessment.description);
@@ -175,11 +179,11 @@ describe("Innovation Assessment Suite", () => {
     const assessmentObj = {
       ...dummy.assessment,
       innovation: innovation.id,
-      assignTo: assessmentUser.id,
+      assignTo: assessmentRequestUser.id,
     };
 
     const assessment = await assessmentService.create(
-      assessmentUser.id,
+      assessmentRequestUser,
       innovation.id,
       assessmentObj
     );
@@ -189,8 +193,8 @@ describe("Innovation Assessment Suite", () => {
       test: "test",
     };
     const item = await assessmentService.update(
+      assessmentRequestUser,
       assessment.id,
-      assessmentUser.id,
       innovation.id,
       updAssessment
     );
@@ -203,11 +207,11 @@ describe("Innovation Assessment Suite", () => {
     const assessmentObj = {
       ...dummy.assessment,
       innovation: innovation.id,
-      assignTo: assessmentUser.id,
+      assignTo: assessmentRequestUser.id,
     };
 
     const assessment = await assessmentService.create(
-      assessmentUser.id,
+      assessmentRequestUser,
       innovation.id,
       assessmentObj
     );
@@ -218,8 +222,8 @@ describe("Innovation Assessment Suite", () => {
       test: "test",
     };
     const item = await assessmentService.update(
+      assessmentRequestUser,
       assessment.id,
-      assessmentUser.id,
       innovation.id,
       updAssessment
     );
@@ -242,7 +246,7 @@ describe("Innovation Assessment Suite", () => {
       mobilePhone: "+351960000000",
     });
     spyOn(userService, "getProfile").and.returnValue({
-      id: assessmentUser.id,
+      id: assessmentRequestUser.id,
       displayName: ":displayName",
       type: UserType.ASSESSMENT,
       organisations: [],
@@ -253,20 +257,19 @@ describe("Innovation Assessment Suite", () => {
     const assessmentObj = {
       ...dummy.assessment,
       innovation: innovation.id,
-      assignTo: assessmentUser.id,
+      assignTo: assessmentRequestUser.id,
     };
 
     const assessment = await assessmentService.create(
-      assessmentUser.id,
+      assessmentRequestUser,
       innovation.id,
       assessmentObj
     );
 
-    const item = await assessmentService.findByUser(
+    const item = await assessmentService.find(
+      qAccessorRequestUser,
       assessment.id,
-      qualAccessorUser.id,
-      innovation.id,
-      [organisationQuaAccessorUser]
+      innovation.id
     );
 
     expect(item).toBeDefined();
@@ -286,7 +289,7 @@ describe("Innovation Assessment Suite", () => {
       mobilePhone: "+351960000000",
     });
     spyOn(userService, "getProfile").and.returnValue({
-      id: assessmentUser.id,
+      id: assessmentRequestUser.id,
       displayName: ":displayName",
       type: UserType.ASSESSMENT,
       organisations: [],
@@ -297,18 +300,18 @@ describe("Innovation Assessment Suite", () => {
     const assessmentObj = {
       ...dummy.assessment,
       innovation: innovation.id,
-      assignTo: assessmentUser.id,
+      assignTo: assessmentRequestUser.id,
     };
 
     const assessment = await assessmentService.create(
-      assessmentUser.id,
+      assessmentRequestUser,
       innovation.id,
       assessmentObj
     );
 
-    const item = await assessmentService.findByUser(
+    const item = await assessmentService.find(
+      innovatorRequestUser,
       assessment.id,
-      innovatorUser.id,
       innovation.id
     );
 

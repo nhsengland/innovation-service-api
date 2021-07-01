@@ -19,7 +19,10 @@ describe("[assessmentsGetInnovationEvidence] Persistence suite", () => {
           InnovationEvidenceService: new InnovationEvidenceService(),
         },
         auth: {
-          userOrganisations: [],
+          requestUser: {
+            id: ":userId",
+            type: "ASSESSMENT",
+          },
         },
       };
       // Act

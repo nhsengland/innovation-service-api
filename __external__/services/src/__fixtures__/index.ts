@@ -1,9 +1,8 @@
 import {
   AccessorOrganisationRole,
   Innovation,
-  InnovationSection,
+  InnovationAction,
   InnovationSectionCatalogue,
-  InnovationSectionAliasCatalogue,
   InnovationSupport,
   InnovationSupportStatus,
   Organisation,
@@ -13,8 +12,8 @@ import {
   OrganisationUser,
   User,
   UserType,
-  InnovationAction,
 } from "@domain/index";
+import { RequestUser } from "@services/models/RequestUser";
 import { AccessorService } from "@services/services/Accessor.service";
 import { InnovationService } from "@services/services/Innovation.service";
 import { InnovationActionService } from "@services/services/InnovationAction.service";
@@ -81,10 +80,27 @@ export const createInnovationWithSupportStatus = async () => {
   );
 
   await createSupportInInnovation(
+    {
+      id: qAccessor.id,
+      type: UserType.ACCESSOR,
+      organisationUser: {
+        id: organisationUser.id,
+        role: organisationUser.role,
+        organisation: {
+          id: organisation.id,
+          name: organisation.name,
+        },
+      },
+      organisationUnitUser: {
+        id: unit.id,
+        organisationUnit: {
+          id: unit.id,
+          name: unit.name,
+        },
+      },
+    },
     innovation,
-    qAccessor,
-    organisationUser,
-    organisationUnitUser
+    organisationUnitUser.id
   );
 
   return innovation;
@@ -194,21 +210,21 @@ export const addOrganisationUserToOrganisationUnit = async (
 };
 
 export const findUserOrganisations = async (
-  userId: string
+  requestUser: RequestUser
 ): Promise<OrganisationUser[]> => {
   const organisationService = new OrganisationService(
     process.env.DB_TESTS_NAME
   );
 
-  return await organisationService.findUserOrganisations(userId);
+  return await organisationService.findUserOrganisations(requestUser.id);
 };
 
 // ****************************
 // Innovation Section
 // ****************************
 export const createSectionInInnovation = async (
+  requestUser: RequestUser,
   innovation: Innovation,
-  innovator: User,
   section: InnovationSectionCatalogue,
   data: any
 ) => {
@@ -217,8 +233,8 @@ export const createSectionInInnovation = async (
   );
 
   return await innovationSectionService.saveSection(
+    requestUser,
     innovation.id,
-    innovator.id,
     section,
     data
   );
@@ -228,10 +244,9 @@ export const createSectionInInnovation = async (
 // Innovation Support
 // ****************************
 export const createSupportInInnovation = async (
+  requestUser: RequestUser,
   innovation: Innovation,
-  qAccessor: User,
-  organisationUser: OrganisationUser,
-  organisationUnitUser: OrganisationUnitUser
+  organisationUnitUserId: string
 ): Promise<InnovationSupport> => {
   const innovationSupportService = new InnovationSupportService(
     process.env.DB_TESTS_NAME
@@ -239,14 +254,13 @@ export const createSupportInInnovation = async (
 
   const supportObj = InnovationSupport.new({
     status: InnovationSupportStatus.ENGAGING,
-    accessors: [organisationUnitUser.id],
+    accessors: [organisationUnitUserId],
   });
 
   return await innovationSupportService.create(
-    qAccessor.id,
+    requestUser,
     innovation.id,
-    supportObj,
-    [organisationUser]
+    supportObj
   );
 };
 
@@ -254,9 +268,8 @@ export const createSupportInInnovation = async (
 // Innovation Action
 // ****************************
 export const createInnovationAction = async (
-  innovation: Innovation,
-  accessor: User,
-  organisationUser: OrganisationUser
+  requestUser: RequestUser,
+  innovation: Innovation
 ): Promise<InnovationAction> => {
   const innovationActionService = new InnovationActionService(
     process.env.DB_TESTS_NAME
@@ -268,10 +281,9 @@ export const createInnovationAction = async (
   };
 
   return await innovationActionService.create(
-    accessor.id,
+    requestUser,
     innovation.id,
-    actionObj,
-    [organisationUser]
+    actionObj
   );
 };
 
@@ -279,9 +291,8 @@ export const createInnovationAction = async (
 // Assessment
 // ****************************
 export const createAssessment = async (
-  innovator: User,
-  innovation: Innovation,
-  assessmentUser: User
+  requestUser: RequestUser,
+  innovation: Innovation
 ) => {
   const assessmentService = new InnovationAssessmentService(
     process.env.DB_TESTS_NAME
@@ -290,18 +301,18 @@ export const createAssessment = async (
   const fake = {
     assessment: {
       description: faker.lorem.sentence(),
-      assignTo: assessmentUser.id,
+      assignTo: requestUser.id,
     },
   };
 
   const assessmentObj = {
     ...fake.assessment,
     innovation,
-    assignTo: assessmentUser.id,
+    assignTo: requestUser.id,
   };
 
   return await assessmentService.create(
-    innovator.id,
+    requestUser,
     innovation.id,
     assessmentObj
   );
@@ -324,9 +335,11 @@ export const saveInnovationsWithAssessment = async (
     const innovation = await innovationService.create(element);
 
     const assessment = await createAssessment(
-      innovator,
-      innovation,
-      assessmentUser
+      {
+        id: assessmentUser.id,
+        type: UserType.ASSESSMENT,
+      },
+      innovation
     );
 
     result.push({
@@ -337,4 +350,44 @@ export const saveInnovationsWithAssessment = async (
   }
 
   return result;
+};
+
+// ****************************
+// Request User
+// ****************************
+export const getRequestUser = (
+  user: User,
+  orgUser?: OrganisationUser,
+  orgUnitUser?: OrganisationUnitUser
+): RequestUser => {
+  let organisationUser = null;
+  let organisationUnitUser = null;
+
+  if (orgUser) {
+    organisationUser = {
+      id: orgUser.id,
+      role: orgUser.role,
+      organisation: {
+        id: orgUser.organisation.id,
+        name: orgUser.organisation.name,
+      },
+    };
+  }
+
+  if (orgUnitUser) {
+    organisationUnitUser = {
+      id: orgUnitUser.id,
+      organisationUnit: {
+        id: orgUnitUser.organisationUnit.id,
+        name: orgUnitUser.organisationUnit.name,
+      },
+    };
+  }
+
+  return {
+    id: user.id,
+    type: user.type,
+    organisationUser,
+    organisationUnitUser,
+  };
 };

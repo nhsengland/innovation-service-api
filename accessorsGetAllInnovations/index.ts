@@ -1,9 +1,5 @@
 import { HttpRequest } from "@azure/functions";
-import {
-  AccessorOrganisationRole,
-  Innovation,
-  InnovationSupportStatus,
-} from "@services/index";
+import { AccessorOrganisationRole, UserType } from "@services/index";
 import {
   AppInsights,
   JwtDecoder,
@@ -26,6 +22,7 @@ class AccessorsGetAllInnovations {
   )
   @JwtDecoder()
   @OrganisationRoleValidator(
+    UserType.ACCESSOR,
     AccessorOrganisationRole.QUALIFYING_ACCESSOR,
     AccessorOrganisationRole.ACCESSOR
   )
@@ -34,7 +31,6 @@ class AccessorsGetAllInnovations {
     req: HttpRequest,
     auth: any
   ): Promise<void> {
-    const accessorId = req.params.userId;
     const query: any = req.query;
     const supportStatus = query.supportStatus;
     const assignedToMe = query.assignedToMe
@@ -52,7 +48,6 @@ class AccessorsGetAllInnovations {
     try {
       result = await persistence.findAllInnovationsByAccessor(
         context,
-        accessorId,
         supportStatus,
         assignedToMe,
         skip,

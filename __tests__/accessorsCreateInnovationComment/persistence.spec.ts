@@ -9,17 +9,19 @@ describe("[accessorsCreateInnovationComment] Persistence suite", () => {
       // Arrange
       spyOn(typeorm, "getRepository");
       spyOn(typeorm, "getConnection");
-      const spy = spyOn(
-        CommentService.prototype,
-        "createByAccessor"
-      ).and.returnValue([{ id: "" }]);
+      const spy = spyOn(CommentService.prototype, "create").and.returnValue([
+        { id: "" },
+      ]);
 
       const ctx = {
         services: {
           CommentService: new CommentService(),
         },
         auth: {
-          userOrganisations: [],
+          requestUser: {
+            id: ":userId",
+            type: "ACCESSOR",
+          },
         },
       };
       // Act

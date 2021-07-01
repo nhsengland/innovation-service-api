@@ -3,12 +3,11 @@ import { CustomContext } from "../../utils/types";
 export const findInnovationSectionByInnovator = async (
   ctx: CustomContext,
   innovationId: string,
-  innovatorId: string,
   section: string
 ) => {
   const result = await ctx.services.InnovationSectionService.findSection(
+    ctx.auth.requestUser,
     innovationId,
-    innovatorId,
     section
   );
 

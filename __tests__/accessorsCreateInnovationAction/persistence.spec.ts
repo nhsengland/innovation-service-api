@@ -22,14 +22,16 @@ describe("[accessorsCreateInnovationAction] Persistence suite", () => {
           InnovationActionService: new InnovationActionService(),
         },
         auth: {
-          userOrganisations: [],
+          requestUser: {
+            id: ":userId",
+            type: "ACCESSOR",
+          },
         },
       };
       // Act
       await persistence.createInnovationAction(
         ctx as CustomContext,
         "E362433E-F36B-1410-80DE-0032FE5B194B",
-        "F362433E-F36B-1410-80DE-0032FE5B194B",
         {
           description: ":description",
           section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,

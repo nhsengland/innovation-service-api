@@ -18,12 +18,17 @@ describe("[innovatorsGetInnovationShares] Persistence suite", () => {
         services: {
           InnovationService: new InnovationService(),
         },
+        auth: {
+          requestUser: {
+            id: ":userId",
+            type: "INNOVATOR",
+          },
+        },
       };
       // Act
       await persistence.findInnovationShares(
         ctx as CustomContext,
-        "T362433E-F36B-1410-80DE-0032FE5B194B",
-        "E362433E-F36B-1410-80DE-0032FE5B194B"
+        "T362433E-F36B-1410-80DE-0032FE5B194B"
       );
 
       expect(spy).toHaveBeenCalled();

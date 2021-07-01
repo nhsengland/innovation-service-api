@@ -19,14 +19,9 @@ class InnovatorsGetAllInnovations {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const innovatorId = req.params.userId;
-
     let result;
     try {
-      result = await persistence.findAllInnovationsByInnovator(
-        context,
-        innovatorId
-      );
+      result = await persistence.findAllInnovationsByInnovator(context);
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);

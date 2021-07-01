@@ -19,14 +19,16 @@ describe("[innovatorsDeleteInnovationEvidence] Persistence suite", () => {
           InnovationEvidenceService: new InnovationEvidenceService(),
         },
         auth: {
-          userOrganisations: [],
+          requestUser: {
+            id: ":userId",
+            type: "INNOVATOR",
+          },
         },
       };
       // Act
       await persistence.deleteInnovationEvidence(
         ctx as CustomContext,
-        "E362433E-F36B-1410-80DE-0032FE5B194B",
-        "test_innovator_id"
+        "E362433E-F36B-1410-80DE-0032FE5B194B"
       );
 
       expect(spy).toHaveBeenCalled();

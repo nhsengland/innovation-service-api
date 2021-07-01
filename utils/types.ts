@@ -1,5 +1,6 @@
 import { Context } from "@azure/functions";
 import { Services } from "@services/index";
+import { RequestUser } from "@services/models/RequestUser";
 
 type DecodedJwt = {
   oid: string;
@@ -7,7 +8,7 @@ type DecodedJwt = {
 };
 
 type Auth = {
-  userOrganisations?: any[];
+  requestUser?: RequestUser;
   decodedJwt?: DecodedJwt;
 };
 

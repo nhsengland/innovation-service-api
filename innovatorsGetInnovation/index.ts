@@ -19,14 +19,12 @@ class InnovatorsGetInnovation {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const innovatorId = req.params.userId;
     const innovationId = req.params.innovationId;
 
     let result;
     try {
       result = await persistence.findInnovationsByInnovator(
         context,
-        innovatorId,
         innovationId
       );
     } catch (error) {

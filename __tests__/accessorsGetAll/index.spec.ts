@@ -1,15 +1,14 @@
 /* eslint-disable */ 
-import * as persistence from "../../accessorsGetAll/persistence";
+import { AccessorOrganisationRole } from "@services/index";
+import {
+  createHttpTrigger, runStubFunctionFromBindings
+} from "stub-azure-function-context";
 import accessorsGetAll from "../../accessorsGetAll";
+import * as persistence from "../../accessorsGetAll/persistence";
 import * as authentication from "../../utils/authentication";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
 
-import {
-  runStubFunctionFromBindings,
-  createHttpTrigger,
-} from "stub-azure-function-context";
-import { AccessorOrganisationRole, InnovationStatus } from "@services/index";
 
 jest.mock("../../utils/logging/insights", () => ({
   start: () => {},
@@ -34,7 +33,7 @@ const dummy = {
   services: {
     OrganisationService: {
       findUserOrganisations: () => [
-        { role: AccessorOrganisationRole.QUALIFYING_ACCESSOR },
+        { role: AccessorOrganisationRole.QUALIFYING_ACCESSOR, organisation: { id: ':orgId' } },
       ],
     },
   },

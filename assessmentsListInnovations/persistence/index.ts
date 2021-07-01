@@ -8,6 +8,7 @@ export const getInnovationList = async (
   order?: { [key: string]: string }
 ) => {
   const result = await ctx.services.InnovationService.getInnovationListByState(
+    ctx.auth.requestUser,
     statuses,
     skip,
     take,

@@ -10,7 +10,7 @@ import {
   Validator,
 } from "../utils/decorators";
 import { CustomContext, Severity } from "../utils/types";
-import { AccessorOrganisationRole } from "@services/index";
+import { AccessorOrganisationRole, UserType } from "@services/index";
 
 class AccessorsGetInnovationSections {
   @AppInsights()
@@ -22,6 +22,7 @@ class AccessorsGetInnovationSections {
   )
   @JwtDecoder()
   @OrganisationRoleValidator(
+    UserType.ACCESSOR,
     AccessorOrganisationRole.ACCESSOR,
     AccessorOrganisationRole.QUALIFYING_ACCESSOR
   )
@@ -29,7 +30,6 @@ class AccessorsGetInnovationSections {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const accessorId = req.params.userId;
     const innovationId = req.params.innovationId;
     const section = req.query.section;
 
@@ -38,7 +38,6 @@ class AccessorsGetInnovationSections {
       result = await persistence.findInnovationSectionByAccessor(
         context,
         innovationId,
-        accessorId,
         section
       );
     } catch (error) {

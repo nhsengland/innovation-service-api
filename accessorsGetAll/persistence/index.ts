@@ -1,11 +1,7 @@
 import { CustomContext } from "../../utils/types";
-export const findUserOrganisationUnitUsers = async (
-  ctx: CustomContext,
-  accessorId: string
-) => {
+export const findUserOrganisationUnitUsers = async (ctx: CustomContext) => {
   const result = await ctx.services.OrganisationService.findUserOrganisationUnitUsers(
-    accessorId,
-    ctx.auth.userOrganisations
+    ctx.auth.requestUser
   );
   return result;
 };

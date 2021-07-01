@@ -19,7 +19,10 @@ describe("[accessorsUpdateInnovationSupport] Persistence suite", () => {
           InnovationSupportService: new InnovationSupportService(),
         },
         auth: {
-          userOrganisations: [],
+          requestUser: {
+            id: ":userId",
+            type: "ACCESSOR",
+          },
         },
       };
       // Act
@@ -27,7 +30,6 @@ describe("[accessorsUpdateInnovationSupport] Persistence suite", () => {
         ctx as CustomContext,
         "T362433E-F36B-1410-80DE-0032FE5B194B",
         "E362433E-F36B-1410-80DE-0032FE5B194B",
-        "F362433E-F36B-1410-80DE-0032FE5B194B",
         {
           status: "NOT_YET",
           comment: ":comment",

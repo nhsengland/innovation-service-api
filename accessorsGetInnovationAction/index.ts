@@ -1,5 +1,5 @@
 import { HttpRequest } from "@azure/functions";
-import { AccessorOrganisationRole } from "@domain/index";
+import { AccessorOrganisationRole, UserType } from "@domain/index";
 import {
   AppInsights,
   JwtDecoder,
@@ -15,6 +15,7 @@ class AccessorsGetInnovationAction {
   @SQLConnector()
   @JwtDecoder()
   @OrganisationRoleValidator(
+    UserType.ACCESSOR,
     AccessorOrganisationRole.QUALIFYING_ACCESSOR,
     AccessorOrganisationRole.ACCESSOR
   )
@@ -23,7 +24,6 @@ class AccessorsGetInnovationAction {
     req: HttpRequest
   ): Promise<void> {
     const actionId = req.params.actionId;
-    const accessorId = req.params.userId;
     const innovationId = req.params.innovationId;
 
     let result;
@@ -31,8 +31,7 @@ class AccessorsGetInnovationAction {
       result = await persistence.findInnovationAction(
         context,
         actionId,
-        innovationId,
-        accessorId
+        innovationId
       );
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });

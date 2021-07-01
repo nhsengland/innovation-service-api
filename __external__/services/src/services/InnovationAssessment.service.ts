@@ -4,13 +4,14 @@ import {
   InnovationAssessment,
   InnovationStatus,
   Organisation,
-  OrganisationUser,
+  UserType,
 } from "@domain/index";
 import {
   InnovationNotFoundError,
   InvalidParamsError,
   ResourceNotFoundError,
 } from "@services/errors";
+import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { InnovationAssessmentResult } from "../models/InnovationAssessmentResult";
 import { InnovationService } from "./Innovation.service";
@@ -30,11 +31,23 @@ export class InnovationAssessmentService {
   }
 
   async find(
+    requestUser: RequestUser,
     id: string,
     innovationId: string
   ): Promise<InnovationAssessmentResult> {
-    if (!id || !innovationId) {
+    if (!requestUser || !id || !innovationId) {
       throw new InvalidParamsError("Invalid parameters.");
+    }
+
+    if (requestUser.type !== UserType.ASSESSMENT) {
+      const innovation = await this.innovationService.findInnovation(
+        requestUser,
+        innovationId
+      );
+
+      if (!innovation) {
+        throw new InnovationNotFoundError("Innovation not found for the user.");
+      }
     }
 
     const assessment = await this.findOne(id, innovationId);
@@ -81,43 +94,23 @@ export class InnovationAssessmentService {
     };
   }
 
-  async findByUser(
-    id: string,
-    userId: string,
+  async create(
+    requestUser: RequestUser,
     innovationId: string,
-    userOrganisations?: OrganisationUser[]
-  ): Promise<InnovationAssessmentResult> {
-    if (!id || !userId || !innovationId) {
-      throw new InvalidParamsError("Invalid parameters.");
-    }
-
-    const innovation = await this.innovationService.findInnovation(
-      innovationId,
-      userId,
-      null,
-      userOrganisations
-    );
-
-    if (!innovation) {
-      throw new InnovationNotFoundError("Innovation not found for the user.");
-    }
-
-    return await this.find(id, innovationId);
-  }
-
-  async create(userId: string, innovationId: string, assessment: any) {
-    if (!userId || !assessment) {
+    assessment: any
+  ) {
+    if (!requestUser || !assessment) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
     return await this.connection.transaction(async (transactionManager) => {
       if (assessment.comment) {
         const comment = Comment.new({
-          user: { id: userId },
+          user: { id: requestUser.id },
           innovation: { id: innovationId },
           message: assessment.comment,
-          createdBy: userId,
-          updatedBy: userId,
+          createdBy: requestUser.id,
+          updatedBy: requestUser.id,
         });
         await transactionManager.save(Comment, comment);
       }
@@ -131,9 +124,9 @@ export class InnovationAssessmentService {
       const assessmentObj = InnovationAssessment.new({
         description: assessment.description,
         innovation: { id: innovationId },
-        assignTo: userId,
-        createdBy: userId,
-        updatedBy: userId,
+        assignTo: requestUser.id,
+        createdBy: requestUser.id,
+        updatedBy: requestUser.id,
       });
 
       return await transactionManager.save(InnovationAssessment, assessmentObj);
@@ -141,12 +134,12 @@ export class InnovationAssessmentService {
   }
 
   async update(
+    requestUser: RequestUser,
     id: string,
-    userId: string,
     innovationId: string,
     assessment: any
   ) {
-    if (!id || !userId || !assessment) {
+    if (!id || !requestUser || !assessment) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
@@ -162,7 +155,7 @@ export class InnovationAssessmentService {
         await transactionManager.update(
           Innovation,
           { id: innovationId },
-          { status: InnovationStatus.IN_PROGRESS, updatedBy: userId }
+          { status: InnovationStatus.IN_PROGRESS, updatedBy: requestUser.id }
         );
       }
 
@@ -172,7 +165,7 @@ export class InnovationAssessmentService {
           assessmentDb[key] = assessment[key];
         }
       }
-      assessmentDb.updatedBy = userId;
+      assessmentDb.updatedBy = requestUser.id;
       assessmentDb.organisations = assessment.organisations?.map(
         (id: string) => ({ id })
       );

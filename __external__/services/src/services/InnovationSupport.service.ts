@@ -6,7 +6,6 @@ import {
   InnovationSupport,
   InnovationSupportStatus,
   OrganisationUnitUser,
-  OrganisationUser,
 } from "@domain/index";
 import {
   InnovationNotFoundError,
@@ -18,6 +17,7 @@ import {
   ResourceNotFoundError,
 } from "@services/errors";
 import { InnovationSupportModel } from "@services/models/InnovationSupportModel";
+import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { InnovationService } from "./Innovation.service";
 import { OrganisationService } from "./Organisation.service";
@@ -39,20 +39,17 @@ export class InnovationSupportService {
   }
 
   async find(
+    requestUser: RequestUser,
     id: string,
-    userId: string,
-    innovationId: string,
-    userOrganisations?: OrganisationUser[]
+    innovationId: string
   ): Promise<InnovationSupportModel> {
-    if (!id || !userId || !innovationId) {
+    if (!id || !requestUser || !innovationId) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
     const innovation = await this.innovationService.findInnovation(
-      innovationId,
-      userId,
-      null,
-      userOrganisations
+      requestUser,
+      innovationId
     );
     if (!innovation) {
       throw new InnovationNotFoundError(
@@ -90,10 +87,10 @@ export class InnovationSupportService {
   }
 
   async findAllByInnovation(
-    userId: string,
+    requestUser: RequestUser,
     innovationId: string
   ): Promise<InnovationSupportModel[]> {
-    if (!userId || !innovationId) {
+    if (!requestUser || !innovationId) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
@@ -106,11 +103,11 @@ export class InnovationSupportService {
         "innovationSupports.organisationUnitUsers.organisationUser",
         "innovationSupports.organisationUnitUsers.organisationUser.user",
       ],
-      where: { owner: userId },
+      where: { owner: requestUser.id },
     };
     const innovation = await this.innovationService.findInnovation(
+      requestUser,
       innovationId,
-      userId,
       filterOptions
     );
     if (!innovation) {
@@ -169,46 +166,33 @@ export class InnovationSupportService {
     });
   }
 
-  async create(
-    userId: string,
-    innovationId: string,
-    support: any,
-    userOrganisations: OrganisationUser[]
-  ) {
-    if (!userId || !support) {
+  async create(requestUser: RequestUser, innovationId: string, support: any) {
+    if (!requestUser || !support) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
-    if (!userOrganisations || userOrganisations.length == 0) {
+    if (!requestUser.organisationUser) {
       throw new MissingUserOrganisationError(
         "Invalid user. User has no organisations."
       );
     }
 
-    // BUSINESS RULE: An accessor has only one organization
-    const userOrganisation = userOrganisations[0];
-
-    if (
-      !userOrganisation.userOrganisationUnits ||
-      userOrganisation.userOrganisationUnits.length == 0
-    ) {
+    if (!requestUser.organisationUnitUser) {
       throw new MissingUserOrganisationUnitError(
         "Invalid user. User has no organisation units."
       );
     }
 
+    const organisationUser = requestUser.organisationUser;
     if (
-      userOrganisation.role !== AccessorOrganisationRole.QUALIFYING_ACCESSOR
+      organisationUser.role !== AccessorOrganisationRole.QUALIFYING_ACCESSOR
     ) {
       throw new InvalidUserRoleError("Invalid user. User has an invalid role.");
     }
 
-    // BUSINESS RULE: An accessor has only one organization unit
     const innovation = await this.innovationService.findInnovation(
-      innovationId,
-      userId,
-      null,
-      userOrganisations
+      requestUser,
+      innovationId
     );
     if (!innovation) {
       throw new InnovationNotFoundError(
@@ -216,13 +200,12 @@ export class InnovationSupportService {
       );
     }
 
-    const organisationUnit =
-      userOrganisation.userOrganisationUnits[0].organisationUnit;
+    const organisationUnit = requestUser.organisationUnitUser.organisationUnit;
 
     return await this.connection.transaction(async (transactionManager) => {
       if (support.comment) {
         const comment = Comment.new({
-          user: { id: userId },
+          user: { id: requestUser.id },
           innovation: innovation,
           message: support.comment,
           organisationUnit,
@@ -232,8 +215,8 @@ export class InnovationSupportService {
 
       const innovationSupport = {
         status: support.status,
-        createdBy: userId,
-        updatedBy: userId,
+        createdBy: requestUser.id,
+        updatedBy: requestUser.id,
         innovation: { id: innovation.id },
         organisationUnit: { id: organisationUnit.id },
         organisationUnitUsers: support.accessors?.map((id) => ({ id })),
@@ -247,34 +230,28 @@ export class InnovationSupportService {
   }
 
   async update(
+    requestUser: RequestUser,
     id: string,
-    userId: string,
     innovationId: string,
-    support: any,
-    userOrganisations: OrganisationUser[]
+    support: any
   ) {
-    if (!id || !userId || !innovationId || !support) {
+    if (!id || !requestUser || !innovationId || !support) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
-    if (!userOrganisations || userOrganisations.length == 0) {
+    if (!requestUser.organisationUser) {
       throw new MissingUserOrganisationError(
         "Invalid user. User has no organisations."
       );
     }
 
-    // BUSINESS RULE: An accessor has only one organization
-    const userOrganisation = userOrganisations[0];
-
-    if (
-      !userOrganisation.userOrganisationUnits ||
-      userOrganisation.userOrganisationUnits.length == 0
-    ) {
+    if (!requestUser.organisationUnitUser) {
       throw new MissingUserOrganisationUnitError(
         "Invalid user. User has no organisation units."
       );
     }
 
+    const userOrganisation = requestUser.organisationUser;
     if (
       userOrganisation.role !== AccessorOrganisationRole.QUALIFYING_ACCESSOR
     ) {
@@ -282,10 +259,8 @@ export class InnovationSupportService {
     }
 
     const innovation = await this.innovationService.findInnovation(
-      innovationId,
-      userId,
-      null,
-      userOrganisations
+      requestUser,
+      innovationId
     );
     if (!innovation) {
       throw new InnovationNotFoundError(
@@ -298,17 +273,16 @@ export class InnovationSupportService {
       throw new ResourceNotFoundError("Innovation Support not found!");
     }
 
-    const organisationUnit =
-      userOrganisation.userOrganisationUnits[0].organisationUnit;
+    const organisationUnit = requestUser.organisationUnitUser.organisationUnit;
 
     return await this.connection.transaction(async (transactionManager) => {
       if (support.comment) {
         const comment = Comment.new({
-          user: { id: userId },
+          user: { id: requestUser.id },
           innovation: innovation,
           message: support.comment,
-          createdBy: userId,
-          updatedBy: userId,
+          createdBy: requestUser.id,
+          updatedBy: requestUser.id,
           organisationUnit,
         });
         await transactionManager.save(Comment, comment);
@@ -332,7 +306,10 @@ export class InnovationSupportService {
           await transactionManager.update(
             InnovationAction,
             { id: actions[i].id },
-            { status: InnovationActionStatus.DELETED, updatedBy: userId }
+            {
+              status: InnovationActionStatus.DELETED,
+              updatedBy: requestUser.id,
+            }
           );
         }
       } else {
@@ -342,7 +319,7 @@ export class InnovationSupportService {
       }
 
       innovationSupport.status = support.status;
-      innovationSupport.updatedBy = userId;
+      innovationSupport.updatedBy = requestUser.id;
 
       return await transactionManager.save(
         InnovationSupport,
