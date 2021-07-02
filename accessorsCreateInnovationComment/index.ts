@@ -19,7 +19,8 @@ class AccessorsCreateInnovationComment {
   @JwtDecoder()
   @OrganisationRoleValidator(
     UserType.ACCESSOR,
-    AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    AccessorOrganisationRole.QUALIFYING_ACCESSOR,
+    AccessorOrganisationRole.ACCESSOR
   )
   static async httpTrigger(
     context: CustomContext,
