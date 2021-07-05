@@ -37,7 +37,8 @@ describe("Notification Test Suite", () => {
 
       const notificationObj = Notification.new({
         message: "myNewNotification",
-        user,
+        created_by: user,
+        updated_by: user,
       });
       const notification = await notificationRepo.save(notificationObj);
 

@@ -23,6 +23,7 @@ export { OrganisationUser } from "./entity/organisation/OrganisationUser.entity"
 
 export { Comment } from "./entity/user/Comment.entity";
 export { Notification } from "./entity/user/Notification.entity";
+export { NotificationUser } from "./entity/user/NotificationUser.entity";
 export { User } from "./entity/user/User.entity";
 
 export * from "./enums/catalog.enums";

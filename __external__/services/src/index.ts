@@ -43,6 +43,7 @@ export {
   OrganisationUser,
   Comment,
   Notification,
+  NotificationUser,
   User,
   YesOrNoCatalogue,
   CarePathwayCatalogue,

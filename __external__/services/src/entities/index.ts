@@ -22,6 +22,7 @@ import {
   OrganisationUser,
   Comment,
   Notification,
+  NotificationUser,
   User,
 } from "@domain/index";
 
@@ -49,5 +50,6 @@ export const entities = [
   OrganisationUser,
   Comment,
   Notification,
+  NotificationUser,
   User,
 ];
