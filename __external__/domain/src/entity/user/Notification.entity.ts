@@ -1,12 +1,15 @@
+import { NotificationContextType } from "@domain/enums/user.enums";
 import {
   Column,
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Base } from "../Base.entity";
-import { User } from "./User.entity";
+import { Innovation } from "../innovation/Innovation.entity";
+import { NotificationUser } from "./NotificationUser.entity";
 
 @Entity("notification")
 export class Notification extends Base {
@@ -14,16 +17,29 @@ export class Notification extends Base {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column()
+  @Column({ name: "message" })
   message: string;
 
-  @Column({ name: "is_read", nullable: false, default: false })
-  isRead: boolean;
+  @Column({ name: "context_type" })
+  contextType: NotificationContextType;
+
+  @Column({ name: "context_id" })
+  contextId: string;
 
   //relationships
-  @ManyToOne(() => User, { nullable: false })
-  @JoinColumn({ name: "user_id" })
-  user: User;
+  @ManyToOne(() => Innovation)
+  @JoinColumn({ name: "innovation_id" })
+  innovation: Innovation;
+
+  @OneToMany(
+    () => NotificationUser,
+    (notificationUser) => notificationUser.notification,
+    {
+      lazy: true,
+      cascade: ["insert", "update"],
+    }
+  )
+  notificationUsers: NotificationUser[];
 
   //static constructor
   static new(data) {
