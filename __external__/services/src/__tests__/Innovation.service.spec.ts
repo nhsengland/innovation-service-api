@@ -77,14 +77,16 @@ describe("Innovator Service Suite", () => {
     const organisationUnit = await fixtures.createOrganisationUnit(
       accessorOrganisation
     );
-    const organisationUnitQAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
-      organisationQAccessorUser,
-      organisationUnit
-    );
-    const organisationUnitAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
-      organisationAccessorUser,
-      organisationUnit
-    );
+    const organisationUnitQAccessorUser =
+      await fixtures.addOrganisationUserToOrganisationUnit(
+        organisationQAccessorUser,
+        organisationUnit
+      );
+    const organisationUnitAccessorUser =
+      await fixtures.addOrganisationUserToOrganisationUnit(
+        organisationAccessorUser,
+        organisationUnit
+      );
 
     innovatorRequestUser = fixtures.getRequestUser(innovatorUser);
     assessmentRequestUser = fixtures.getRequestUser(assessmentUser);
@@ -504,11 +506,12 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should list innovations within the list of statuses", async () => {
-    const innovations: Innovation[] = await fixtures.saveInnovationsWithAssessment(
-      fixtures.generateInnovation({
-        owner: { id: innovatorRequestUser.id },
-      })
-    );
+    const innovations: Innovation[] =
+      await fixtures.saveInnovationsWithAssessment(
+        fixtures.generateInnovation({
+          owner: { id: innovatorRequestUser.id },
+        })
+      );
 
     spyOn(helpers, "authenticateWitGraphAPI").and.stub();
     spyOn(helpers, "getUsersFromB2C").and.returnValues(

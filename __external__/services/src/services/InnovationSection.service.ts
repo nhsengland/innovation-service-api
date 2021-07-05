@@ -272,9 +272,9 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
           throw error;
         }
 
-        sections[
-          innovationSectionIdx
-        ].files = data.files?.map((id: string) => ({ id }));
+        sections[innovationSectionIdx].files = data.files?.map(
+          (id: string) => ({ id })
+        );
       }
     }
     updatedInnovation.sections = sections;
@@ -297,14 +297,13 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
       for (let i = 0; i < sectionFields.innovationDependencies.length; i++) {
         const dependency = sectionFields.innovationDependencies[i];
 
-        updatedInnovation[
-          dependency.type
-        ] = await this.getUpdatedInnovationDependencyArray(
-          requestUser,
-          innovation,
-          dependency,
-          data
-        );
+        updatedInnovation[dependency.type] =
+          await this.getUpdatedInnovationDependencyArray(
+            requestUser,
+            innovation,
+            dependency,
+            data
+          );
       }
     }
 
