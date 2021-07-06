@@ -6,6 +6,8 @@ import {
   InnovationSection,
   InnovationSupport,
   InnovationSupportStatus,
+  Notification,
+  NotificationUser,
   Organisation,
   OrganisationType,
   OrganisationUnit,
@@ -118,7 +120,8 @@ describe("Innovation Support Suite", () => {
     const query = getConnection(process.env.DB_TESTS_NAME)
       .createQueryBuilder()
       .delete();
-
+    await query.from(NotificationUser).execute();
+    await query.from(Notification).execute();
     await query.from(Comment).execute();
     await query.from(InnovationAction).execute();
     await query.from(InnovationSection).execute();

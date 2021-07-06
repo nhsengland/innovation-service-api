@@ -9,6 +9,8 @@ import {
   InnovationSupport,
   InnovationSupportStatus,
   InnovatorOrganisationRole,
+  Notification,
+  NotificationUser,
   Organisation,
   OrganisationType,
   OrganisationUnit,
@@ -120,6 +122,8 @@ describe("Innovator Service Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(NotificationUser).execute();
+    await query.from(Notification).execute();
     await query.from(Comment).execute();
     await query.from(InnovationAssessment).execute();
     await query.from(InnovationAction).execute();

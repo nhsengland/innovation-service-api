@@ -4,6 +4,7 @@ import {
   AccessorOrganisationRole,
   Comment,
   Innovation,
+  NotificationUser,
   Organisation,
   OrganisationType,
   OrganisationUnit,
@@ -11,6 +12,7 @@ import {
   OrganisationUser,
   User,
   UserType,
+  Notification,
 } from "@domain/index";
 import * as fixtures from "../__fixtures__";
 import * as helpers from "../helpers";
@@ -74,6 +76,14 @@ describe("Comment Service Suite", () => {
       organisationQAccessorUser,
       organisationUnitQAccessorUser
     );
+  });
+
+  afterEach(async () => {
+    const query = getConnection(process.env.DB_TESTS_NAME)
+      .createQueryBuilder()
+      .delete();
+    await query.from(NotificationUser).execute();
+    await query.from(Notification).execute();
   });
 
   afterAll(async () => {

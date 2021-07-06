@@ -6,6 +6,8 @@ import {
   InnovationStatus,
   InnovationSupport,
   InnovationSupportStatus,
+  NotificationAudience,
+  NotificationContextType,
   Organisation,
   OrganisationUnitUser,
   UserType,
@@ -40,18 +42,21 @@ import {
   InnovatorInnovationSummary,
 } from "../models/InnovationSummaryResult";
 import { BaseService } from "./Base.service";
+import { NotificationService } from "./Notification.service";
 import { UserService } from "./User.service";
 
 export class InnovationService extends BaseService<Innovation> {
   private readonly connection: Connection;
   private readonly userService: UserService;
   private readonly supportRepo: Repository<InnovationSupport>;
+  private readonly notificationService: NotificationService;
 
   constructor(connectionName?: string) {
     super(Innovation, connectionName);
     this.connection = getConnection(connectionName);
 
     this.userService = new UserService(connectionName);
+    this.notificationService = new NotificationService(connectionName);
     this.supportRepo = getRepository(InnovationSupport, connectionName);
   }
 
@@ -583,6 +588,15 @@ export class InnovationService extends BaseService<Innovation> {
       status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
       updatedBy: requestUser.id,
     });
+
+    await this.notificationService.create(
+      requestUser,
+      NotificationAudience.ASSESSMENT_USERS,
+      innovation.id,
+      NotificationContextType.INNOVATION,
+      innovation.id,
+      `The innovation ${innovation.name} was submitted for assessment.`
+    );
 
     return {
       id: innovation.id,

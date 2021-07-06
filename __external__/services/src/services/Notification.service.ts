@@ -40,6 +40,7 @@ export class NotificationService {
     audience: NotificationAudience,
     innovationId: string,
     contextType: NotificationContextType,
+    contextId: string,
     message: string
   ): Promise<Notification> {
     let notification: Notification;
@@ -49,6 +50,7 @@ export class NotificationService {
           requestUser,
           innovationId,
           contextType,
+          contextId,
           message
         );
         break;
@@ -57,6 +59,7 @@ export class NotificationService {
           requestUser,
           innovationId,
           contextType,
+          contextId,
           message
         );
         break;
@@ -65,6 +68,7 @@ export class NotificationService {
           requestUser,
           innovationId,
           contextType,
+          contextId,
           message
         );
         break;
@@ -73,6 +77,7 @@ export class NotificationService {
           requestUser,
           innovationId,
           contextType,
+          contextId,
           message
         );
         break;
@@ -87,6 +92,7 @@ export class NotificationService {
     requestUser: RequestUser,
     innovationId: string,
     contextType: NotificationContextType,
+    contextId: string,
     message: string
   ) {
     // target users are all accessors whose this innovation has been assigned to and whose support is on ENGAGING status
@@ -112,7 +118,7 @@ export class NotificationService {
     );
 
     const notification = Notification.new({
-      contextId: innovationId,
+      contextId,
       contextType,
       innovation: innovationId,
       notificationUsers: targetUsers,
@@ -127,6 +133,7 @@ export class NotificationService {
     requestUser: RequestUser,
     innovationId: string,
     contextType: NotificationContextType,
+    contextId: string,
     message: string
   ) {
     // target users are all qualifying accessors who belong to the suggested organisations of an assessment record
@@ -155,7 +162,7 @@ export class NotificationService {
     }));
 
     const notification = Notification.new({
-      contextId: innovationId,
+      contextId,
       contextType,
       innovation: innovationId,
       notificationUsers: targetUsers,
@@ -169,6 +176,7 @@ export class NotificationService {
     requestUser: RequestUser,
     innovationId: string,
     contextType: NotificationContextType,
+    contextId: string,
     message: string
   ) {
     // target user is the owner of the innovation
@@ -181,7 +189,7 @@ export class NotificationService {
     const targetUsers = [innovation.owner];
 
     const notification = Notification.new({
-      contextId: innovationId,
+      contextId,
       contextType,
       innovation: innovationId,
       notificationUsers: targetUsers.map((u) => ({
@@ -198,6 +206,7 @@ export class NotificationService {
     requestUser: RequestUser,
     innovationId: string,
     contextType: NotificationContextType,
+    contextId: string,
     message: string
   ) {
     // target user is the owner of the innovation
@@ -215,7 +224,7 @@ export class NotificationService {
     }));
 
     const notification = Notification.new({
-      contextId: innovationId,
+      contextId,
       contextType,
       innovation: innovationId,
       notificationUsers: targetUsers,

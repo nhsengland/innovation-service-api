@@ -4,6 +4,8 @@ import {
   Innovation,
   InnovationAssessment,
   MaturityLevelCatalogue,
+  Notification,
+  NotificationUser,
   Organisation,
   OrganisationType,
   OrganisationUser,
@@ -89,6 +91,8 @@ describe("Innovation Assessment Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(NotificationUser).execute();
+    await query.from(Notification).execute();
     await query.from(Comment).execute();
     await query.from(InnovationAssessment).execute();
   });

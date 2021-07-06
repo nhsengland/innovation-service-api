@@ -82,6 +82,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.ACTION,
+      innovation.id,
       "teste"
     );
 
@@ -148,6 +149,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.ACCESSORS,
       innovation.id,
       NotificationContextType.ACTION,
+      innovation.id,
       "teste"
     );
 
@@ -235,6 +237,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.ACCESSORS,
       innovation.id,
       NotificationContextType.ACTION,
+      innovation.id,
       "teste"
     );
 
@@ -311,6 +314,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.ACCESSORS,
       innovation.id,
       NotificationContextType.ACTION,
+      innovation.id,
       "teste"
     );
 
@@ -367,6 +371,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.QUALIFYING_ACCESSORS,
       innovation.id,
       NotificationContextType.ACTION,
+      innovation.id,
       "teste"
     );
 
@@ -416,6 +421,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.QUALIFYING_ACCESSORS,
       innovation.id,
       NotificationContextType.ACTION,
+      innovation.id,
       "teste"
     );
 
@@ -443,6 +449,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.ASSESSMENT_USERS,
       innovation.id,
       NotificationContextType.ACTION,
+      innovation.id,
       "teste"
     );
 

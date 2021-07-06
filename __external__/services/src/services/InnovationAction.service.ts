@@ -5,6 +5,8 @@ import {
   InnovationActionStatus,
   InnovationSectionAliasCatalogue,
   InnovationSupport,
+  NotificationAudience,
+  NotificationContextType,
 } from "@domain/index";
 import {
   InnovationNotFoundError,
@@ -28,6 +30,7 @@ import {
 } from "typeorm";
 import { InnovationService } from "./Innovation.service";
 import { InnovationSectionService } from "./InnovationSection.service";
+import { NotificationService } from "./Notification.service";
 import { UserService } from "./User.service";
 
 export class InnovationActionService {
@@ -36,6 +39,7 @@ export class InnovationActionService {
   private readonly innovationService: InnovationService;
   private readonly innovationSectionService: InnovationSectionService;
   private readonly userService: UserService;
+  private readonly notificationService: NotificationService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -45,6 +49,7 @@ export class InnovationActionService {
       connectionName
     );
     this.userService = new UserService(connectionName);
+    this.notificationService = new NotificationService(connectionName);
   }
 
   async create(requestUser: RequestUser, innovationId: string, action: any) {
@@ -122,7 +127,18 @@ export class InnovationActionService {
       updatedBy: requestUser.id,
     };
 
-    return this.actionRepo.save(actionObj);
+    const result = await this.actionRepo.save(actionObj);
+
+    await this.notificationService.create(
+      requestUser,
+      NotificationAudience.INNOVATORS,
+      innovationId,
+      NotificationContextType.ACTION,
+      result.id,
+      `An action was created by the accessor with id ${requestUser.id} for the innovation ${innovation.name}(${innovationId})`
+    );
+
+    return result;
   }
 
   async updateByAccessor(
@@ -169,7 +185,23 @@ export class InnovationActionService {
       throw new InvalidDataError("Invalid action data.");
     }
 
-    return this.update(requestUser, innovationAction, innovationId, action);
+    const result = await this.update(
+      requestUser,
+      innovationAction,
+      innovationId,
+      action
+    );
+
+    await this.notificationService.create(
+      requestUser,
+      NotificationAudience.INNOVATORS,
+      innovationId,
+      NotificationContextType.ACTION,
+      result.id,
+      `An action was updated by the accessor with id ${requestUser.id} for the innovation ${innovation.name}(${innovationId})`
+    );
+
+    return result;
   }
 
   async updateByInnovator(
@@ -192,7 +224,23 @@ export class InnovationActionService {
       throw new ResourceNotFoundError("Invalid parameters.");
     }
 
-    return this.update(requestUser, innovationAction, innovationId, action);
+    const result = await this.update(
+      requestUser,
+      innovationAction,
+      innovationId,
+      action
+    );
+
+    await this.notificationService.create(
+      requestUser,
+      NotificationAudience.ACCESSORS,
+      innovationId,
+      NotificationContextType.ACTION,
+      innovationAction.id,
+      `An action was updated by the innovator with id ${requestUser.id} for the innovation with id ${innovationId}`
+    );
+
+    return result;
   }
 
   async find(

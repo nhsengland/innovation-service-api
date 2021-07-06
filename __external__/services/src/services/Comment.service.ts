@@ -1,4 +1,9 @@
-import { Comment, UserType } from "@domain/index";
+import {
+  Comment,
+  NotificationAudience,
+  NotificationContextType,
+  UserType,
+} from "@domain/index";
 import {
   InnovationNotFoundError,
   InvalidParamsError,
@@ -9,6 +14,7 @@ import { CommentModel } from "@services/models/CommentModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { InnovationService } from "./Innovation.service";
+import { NotificationService } from "./Notification.service";
 import { UserService } from "./User.service";
 
 export class CommentService {
@@ -16,12 +22,14 @@ export class CommentService {
   private readonly commentRepo: Repository<Comment>;
   private readonly innovationService: InnovationService;
   private readonly userService: UserService;
+  private readonly notificationService: NotificationService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.commentRepo = getRepository(Comment, connectionName);
     this.innovationService = new InnovationService(connectionName);
     this.userService = new UserService(connectionName);
+    this.notificationService = new NotificationService(connectionName);
   }
 
   async create(
@@ -65,7 +73,20 @@ export class CommentService {
       organisationUnit,
     };
 
-    return this.commentRepo.save(commentObj);
+    const result = await this.commentRepo.save(commentObj);
+
+    await this.notificationService.create(
+      requestUser,
+      requestUser.type === UserType.INNOVATOR
+        ? NotificationAudience.ACCESSORS
+        : NotificationAudience.INNOVATORS,
+      innovationId,
+      NotificationContextType.COMMENT,
+      result.id,
+      `A ${NotificationContextType.COMMENT} was created by ${requestUser.id}`
+    );
+
+    return result;
   }
 
   async findAllByInnovation(
