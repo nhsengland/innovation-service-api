@@ -2,14 +2,16 @@ import {
   AccessorOrganisationRole,
   Innovation,
   InnovationAssessment,
-  InnovationStatus,
   InnovationSupport,
   InnovationSupportStatus,
   Notification,
   NotificationAudience,
   NotificationContextType,
-  OrganisationUnit,
+  OrganisationUser,
+  User,
+  UserType,
 } from "@domain/index";
+import { RequestUser } from "@services/models/RequestUser";
 import { getConnection, getRepository, In, Repository } from "typeorm";
 
 export class NotificationService {
@@ -17,7 +19,8 @@ export class NotificationService {
   private readonly innovationSupportRepo: Repository<InnovationSupport>;
   private readonly innovationRepo: Repository<Innovation>;
   private readonly assessmentRepo: Repository<InnovationAssessment>;
-  private readonly organisationUnitsRepo: Repository<OrganisationUnit>;
+  private readonly organisationUserRepo: Repository<OrganisationUser>;
+  private readonly userRepo: Repository<User>;
 
   constructor(connectionName?: string) {
     getConnection(connectionName);
@@ -28,13 +31,12 @@ export class NotificationService {
     );
     this.innovationRepo = getRepository(Innovation, connectionName);
     this.assessmentRepo = getRepository(InnovationAssessment, connectionName);
-    this.organisationUnitsRepo = getRepository(
-      OrganisationUnit,
-      connectionName
-    );
+    this.organisationUserRepo = getRepository(OrganisationUser, connectionName);
+    this.userRepo = getRepository(User, connectionName);
   }
 
   async create(
+    requestUser: RequestUser,
     audience: NotificationAudience,
     innovationId: string,
     contextType: NotificationContextType,
@@ -44,6 +46,7 @@ export class NotificationService {
     switch (audience) {
       case NotificationAudience.ACCESSORS:
         notification = await this.createNotificationForAccessors(
+          requestUser,
           innovationId,
           contextType,
           message
@@ -51,6 +54,7 @@ export class NotificationService {
         break;
       case NotificationAudience.INNOVATORS:
         notification = await this.createNotificationForInnovators(
+          requestUser,
           innovationId,
           contextType,
           message
@@ -58,12 +62,19 @@ export class NotificationService {
         break;
       case NotificationAudience.QUALIFYING_ACCESSORS:
         notification = await this.createNotificationForQualifyingAccessors(
+          requestUser,
           innovationId,
           contextType,
           message
         );
         break;
       case NotificationAudience.ASSESSMENT_USERS:
+        notification = await this.createNotificationForAssessmentUsers(
+          requestUser,
+          innovationId,
+          contextType,
+          message
+        );
         break;
       default:
         break;
@@ -73,6 +84,7 @@ export class NotificationService {
   }
 
   private async createNotificationForAccessors(
+    requestUser: RequestUser,
     innovationId: string,
     contextType: NotificationContextType,
     message: string
@@ -85,11 +97,18 @@ export class NotificationService {
         innovation: innovationId,
         status: InnovationSupportStatus.ENGAGING,
       },
-      relations: ["organisationUnitUsers"],
+      relations: [
+        "organisationUnitUsers",
+        "organisationUnitUsers.organisationUser",
+        "organisationUnitUsers.organisationUser.user",
+      ],
     });
 
     const targetUsers = supports.flatMap((s) =>
-      s.organisationUnitUsers.map((x) => x.organisationUser.id)
+      s.organisationUnitUsers.map((x) => ({
+        user: x.organisationUser.user.id,
+        createdBy: requestUser.id,
+      }))
     );
 
     const notification = Notification.new({
@@ -98,18 +117,21 @@ export class NotificationService {
       innovation: innovationId,
       notificationUsers: targetUsers,
       message,
+      createdBy: requestUser.id,
     });
 
     return await this.notificationRepo.save(notification);
   }
 
   private async createNotificationForQualifyingAccessors(
+    requestUser: RequestUser,
     innovationId: string,
     contextType: NotificationContextType,
     message: string
   ) {
     // target users are all qualifying accessors who belong to the suggested organisations of an assessment record
 
+    // TODO: For now, QA's only receive notifications intigated when an Innovation finishes the assessment.
     const assessment = await this.assessmentRepo.find({
       where: { innovation: innovationId },
       relations: ["organisations"],
@@ -119,19 +141,18 @@ export class NotificationService {
       s.organisations.map((x) => x.id)
     );
 
-    const units = await this.organisationUnitsRepo.find({
-      where: { organisation: In(organisations) },
+    const orgUsers = await this.organisationUserRepo.find({
+      where: {
+        organisation: { id: In(organisations) },
+        role: AccessorOrganisationRole.QUALIFYING_ACCESSOR,
+      },
+      loadRelationIds: true,
     });
 
-    const targetUsers = units.flatMap((u) =>
-      u.organisationUnitUsers
-        .filter(
-          (user) =>
-            user.organisationUser.role ===
-            AccessorOrganisationRole.QUALIFYING_ACCESSOR
-        )
-        .map((user) => user.id)
-    );
+    const targetUsers = orgUsers.map((u) => ({
+      user: u.user,
+      createdBy: requestUser.id,
+    }));
 
     const notification = Notification.new({
       contextId: innovationId,
@@ -145,6 +166,7 @@ export class NotificationService {
   }
 
   private async createNotificationForInnovators(
+    requestUser: RequestUser,
     innovationId: string,
     contextType: NotificationContextType,
     message: string
@@ -153,10 +175,44 @@ export class NotificationService {
     // this is obtained from the innovation entity
 
     const innovation = await this.innovationRepo.findOne(innovationId, {
-      relations: ["owner"],
+      loadRelationIds: true,
     });
 
-    const targetUsers = [innovation.owner.id];
+    const targetUsers = [innovation.owner];
+
+    const notification = Notification.new({
+      contextId: innovationId,
+      contextType,
+      innovation: innovationId,
+      notificationUsers: targetUsers.map((u) => ({
+        user: u,
+        createdBy: requestUser.id,
+      })),
+      message,
+    });
+
+    return await this.notificationRepo.save(notification);
+  }
+
+  private async createNotificationForAssessmentUsers(
+    requestUser: RequestUser,
+    innovationId: string,
+    contextType: NotificationContextType,
+    message: string
+  ) {
+    // target user is the owner of the innovation
+    // this is obtained from the innovation entity
+
+    const users = await this.userRepo.find({
+      where: {
+        type: UserType.ASSESSMENT,
+      },
+    });
+
+    const targetUsers = users.map((u) => ({
+      user: u.id,
+      createdBy: requestUser.id,
+    }));
 
     const notification = Notification.new({
       contextId: innovationId,
