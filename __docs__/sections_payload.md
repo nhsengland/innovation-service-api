@@ -46,7 +46,8 @@
 			{
 				"id": "string?",
 				"name": "string",
-				"conditions": "string"
+				"conditions": "string",
+				"otherCondition": "string"
 			}
 		],
 	}

@@ -4,11 +4,10 @@ export const findInnovationOverview = async (
   ctx: CustomContext,
   innovationId: string
 ) => {
-  const result =
-    await ctx.services.InnovationService.getAccessorInnovationSummary(
-      ctx.auth.requestUser,
-      innovationId
-    );
+  const result = await ctx.services.InnovationService.getAccessorInnovationSummary(
+    ctx.auth.requestUser,
+    innovationId
+  );
 
   return result;
 };

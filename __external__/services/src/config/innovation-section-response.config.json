@@ -11,7 +11,7 @@
     "innovationDependencies": [
       {
         "type": "subgroups",
-        "fields": ["id", "name", "conditions"]
+        "fields": ["id", "name", "conditions", "otherCondition"]
       }
     ]
   },

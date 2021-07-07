@@ -48,6 +48,9 @@ export class InnovationSubgroup extends Base {
   @Column({ name: "other_benefit", type: "nvarchar", nullable: true })
   otherBenefit: string;
 
+  @Column({ name: "other_condition", type: "nvarchar", nullable: true })
+  otherCondition: string;
+
   //relationships
   @ManyToOne(() => Innovation, { nullable: false })
   @JoinColumn({ name: "innovation_id" })

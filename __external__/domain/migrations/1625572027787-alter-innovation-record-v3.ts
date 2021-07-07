@@ -98,6 +98,9 @@ export class alterInnovationRecordV31625572027787
     await queryRunner.query(
       `ALTER TABLE "innovation_subgroup" ADD other_benefit nvarchar(255) NULL;`
     );
+    await queryRunner.query(
+      `ALTER TABLE "innovation_subgroup" ADD other_condition nvarchar(255) NULL;`
+    );
 
     // innovation_subgroup_benefit table
     await queryRunner.query(`CREATE TABLE "innovation_subgroup_benefit" (
@@ -197,6 +200,9 @@ export class alterInnovationRecordV31625572027787
     // innovation_subgroup table
     await queryRunner.query(
       `ALTER TABLE "innovation_subgroup" DROP COLUMN "other_benefit"`
+    );
+    await queryRunner.query(
+      `ALTER TABLE "innovation_subgroup" DROP COLUMN "other_condition"`
     );
     await queryRunner.query(
       `ALTER TABLE "innovation_subgroup" ADD benefits nvarchar(255) NULL;`
