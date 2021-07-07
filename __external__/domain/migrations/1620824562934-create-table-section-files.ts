@@ -1,7 +1,8 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class createTableSectionFiles1620824562934
-  implements MigrationInterface {
+  implements MigrationInterface
+{
   name = "createTableSectionFiles1620824562934";
 
   public async up(queryRunner: QueryRunner): Promise<void> {

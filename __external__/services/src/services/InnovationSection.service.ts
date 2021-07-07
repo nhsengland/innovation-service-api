@@ -6,6 +6,8 @@ import {
   InnovationSection,
   InnovationSectionCatalogue,
   InnovationSectionStatus,
+  NotificationAudience,
+  NotificationContextType,
 } from "@domain/index";
 import * as sectionBodySchema from "@services/config/innovation-section-body.config.json";
 import * as sectionResponseSchema from "@services/config/innovation-section-response.config.json";
@@ -22,17 +24,20 @@ import { InnovationSectionResult } from "../models/InnovationSectionResult";
 import { BaseService } from "./Base.service";
 import { FileService } from "./File.service";
 import { InnovationService } from "./Innovation.service";
+import { NotificationService } from "./Notification.service";
 
 export class InnovationSectionService extends BaseService<InnovationSection> {
   private readonly connection: Connection;
   private readonly fileService: FileService;
   private readonly innovationService: InnovationService;
+  private readonly notificationService: NotificationService;
 
   constructor(connectionName?: string) {
     super(InnovationSection, connectionName);
     this.connection = getConnection(connectionName);
     this.fileService = new FileService(connectionName);
     this.innovationService = new InnovationService(connectionName);
+    this.notificationService = new NotificationService(connectionName);
   }
 
   async findAllInnovationSections(
@@ -272,9 +277,9 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
           throw error;
         }
 
-        sections[
-          innovationSectionIdx
-        ].files = data.files?.map((id: string) => ({ id }));
+        sections[innovationSectionIdx].files = data.files?.map(
+          (id: string) => ({ id })
+        );
       }
     }
     updatedInnovation.sections = sections;
@@ -297,14 +302,13 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
       for (let i = 0; i < sectionFields.innovationDependencies.length; i++) {
         const dependency = sectionFields.innovationDependencies[i];
 
-        updatedInnovation[
-          dependency.type
-        ] = await this.getUpdatedInnovationDependencyArray(
-          requestUser,
-          innovation,
-          dependency,
-          data
-        );
+        updatedInnovation[dependency.type] =
+          await this.getUpdatedInnovationDependencyArray(
+            requestUser,
+            innovation,
+            dependency,
+            data
+          );
       }
     }
 
@@ -340,52 +344,72 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     }
 
     const innovSections = await innovation.sections;
+    const updatedActions: string[] = [];
 
-    return await this.connection.transaction(async (transactionManager) => {
-      for (let i = 0; i < sections.length; i++) {
-        const secKey = sections[i];
-        const secIdx = innovSections.findIndex((obj) => obj.section === secKey);
-
-        if (secIdx === -1) {
-          const innovSectionObj = InnovationSection.new({
-            innovation,
-            section: InnovationSectionCatalogue[secKey],
-            status: InnovationSectionStatus.SUBMITTED,
-            createdBy: requestUser.id,
-            updatedBy: requestUser.id,
-            submittedAt: new Date(),
-          });
-
-          await transactionManager.save(InnovationSection, innovSectionObj);
-        } else {
-          const innovationActions = await innovSections[secIdx].actions;
-          const actions = innovationActions.filter(
-            (ia: InnovationAction) =>
-              ia.status === InnovationActionStatus.REQUESTED
+    const result = await this.connection.transaction(
+      async (transactionManager) => {
+        for (let i = 0; i < sections.length; i++) {
+          const secKey = sections[i];
+          const secIdx = innovSections.findIndex(
+            (obj) => obj.section === secKey
           );
-          for (let i = 0; i < actions.length; i++) {
+
+          if (secIdx === -1) {
+            const innovSectionObj = InnovationSection.new({
+              innovation,
+              section: InnovationSectionCatalogue[secKey],
+              status: InnovationSectionStatus.SUBMITTED,
+              createdBy: requestUser.id,
+              updatedBy: requestUser.id,
+              submittedAt: new Date(),
+            });
+
+            await transactionManager.save(InnovationSection, innovSectionObj);
+          } else {
+            const innovationActions = await innovSections[secIdx].actions;
+            const actions = innovationActions.filter(
+              (ia: InnovationAction) =>
+                ia.status === InnovationActionStatus.REQUESTED
+            );
+            for (let i = 0; i < actions.length; i++) {
+              updatedActions.push(actions[i].id);
+              await transactionManager.update(
+                InnovationAction,
+                { id: actions[i].id },
+                {
+                  status: InnovationActionStatus.IN_REVIEW,
+                  updatedBy: requestUser.id,
+                }
+              );
+            }
+
             await transactionManager.update(
-              InnovationAction,
-              { id: actions[i].id },
+              InnovationSection,
+              { id: innovSections[secIdx].id },
               {
-                status: InnovationActionStatus.IN_REVIEW,
+                status: InnovationSectionStatus.SUBMITTED,
                 updatedBy: requestUser.id,
+                submittedAt: new Date(),
               }
             );
           }
-
-          await transactionManager.update(
-            InnovationSection,
-            { id: innovSections[secIdx].id },
-            {
-              status: InnovationSectionStatus.SUBMITTED,
-              updatedBy: requestUser.id,
-              submittedAt: new Date(),
-            }
-          );
         }
       }
-    });
+    );
+
+    for (let index = 0; index < updatedActions.length; index++) {
+      const element = updatedActions[index];
+      await this.notificationService.create(
+        requestUser,
+        NotificationAudience.ACCESSORS,
+        innovationId,
+        NotificationContextType.ACTION,
+        element,
+        `The action with id ${element} was updated by the innovator with id ${requestUser.id} for the innovation with id ${innovationId}`
+      );
+    }
+
+    return result;
   }
 
   async createSection(

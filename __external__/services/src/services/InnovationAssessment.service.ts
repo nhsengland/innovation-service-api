@@ -3,6 +3,8 @@ import {
   Innovation,
   InnovationAssessment,
   InnovationStatus,
+  NotificationAudience,
+  NotificationContextType,
   Organisation,
   UserType,
 } from "@domain/index";
@@ -15,6 +17,7 @@ import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { InnovationAssessmentResult } from "../models/InnovationAssessmentResult";
 import { InnovationService } from "./Innovation.service";
+import { NotificationService } from "./Notification.service";
 import { UserService } from "./User.service";
 
 export class InnovationAssessmentService {
@@ -22,12 +25,14 @@ export class InnovationAssessmentService {
   private readonly assessmentRepo: Repository<InnovationAssessment>;
   private readonly userService: UserService;
   private readonly innovationService: InnovationService;
+  private readonly notificationService: NotificationService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.assessmentRepo = getRepository(InnovationAssessment, connectionName);
     this.userService = new UserService(connectionName);
     this.innovationService = new InnovationService(connectionName);
+    this.notificationService = new NotificationService(connectionName);
   }
 
   async find(
@@ -148,30 +153,43 @@ export class InnovationAssessmentService {
       throw new ResourceNotFoundError("Assessment not found!");
     }
 
-    return await this.connection.transaction(async (transactionManager) => {
-      if (assessment.isSubmission) {
-        assessmentDb.finishedAt = new Date();
+    const result = await this.connection.transaction(
+      async (transactionManager) => {
+        if (assessment.isSubmission) {
+          assessmentDb.finishedAt = new Date();
 
-        await transactionManager.update(
-          Innovation,
-          { id: innovationId },
-          { status: InnovationStatus.IN_PROGRESS, updatedBy: requestUser.id }
-        );
-      }
-
-      delete assessment["innovation"];
-      for (const key in assessmentDb) {
-        if (key in assessment) {
-          assessmentDb[key] = assessment[key];
+          await transactionManager.update(
+            Innovation,
+            { id: innovationId },
+            { status: InnovationStatus.IN_PROGRESS, updatedBy: requestUser.id }
+          );
         }
-      }
-      assessmentDb.updatedBy = requestUser.id;
-      assessmentDb.organisations = assessment.organisations?.map(
-        (id: string) => ({ id })
-      );
 
-      return await transactionManager.save(assessmentDb);
-    });
+        delete assessment["innovation"];
+        for (const key in assessmentDb) {
+          if (key in assessment) {
+            assessmentDb[key] = assessment[key];
+          }
+        }
+        assessmentDb.updatedBy = requestUser.id;
+        assessmentDb.organisations = assessment.organisations?.map(
+          (id: string) => ({ id })
+        );
+
+        return await transactionManager.save(assessmentDb);
+      }
+    );
+
+    await this.notificationService.create(
+      requestUser,
+      NotificationAudience.QUALIFYING_ACCESSORS,
+      innovationId,
+      NotificationContextType.INNOVATION,
+      result.id,
+      `Innovation with id ${innovationId} is now available for Qualifying Accessors`
+    );
+
+    return result;
   }
 
   private async findOne(

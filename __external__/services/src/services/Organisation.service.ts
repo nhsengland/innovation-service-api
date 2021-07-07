@@ -72,6 +72,19 @@ export class OrganisationService extends BaseService<Organisation> {
     });
   }
 
+  async findUserFromUnitUsers(unitUsers: string[]): Promise<string[]> {
+    if (!unitUsers) {
+      throw new InvalidParamsError("unitUsers param must be defined.");
+    }
+
+    const users = await this.orgUnitUserRepo.find({
+      where: { id: In(unitUsers) },
+      relations: ["organisationUser", "organisationUser.user"],
+    });
+
+    return users.map((u) => u.organisationUser.user.id);
+  }
+
   async findUserOrganisationUnitUsers(
     requestUser: RequestUser
   ): Promise<OrganisationUnitUserModel[]> {

@@ -7,6 +7,8 @@ import {
   InnovationSection,
   InnovationSectionCatalogue,
   InnovationSupport,
+  Notification,
+  NotificationUser,
   Organisation,
   OrganisationType,
   OrganisationUnit,
@@ -62,14 +64,16 @@ describe("Innovation Action Suite", () => {
     const organisationUnit = await fixtures.createOrganisationUnit(
       accessorOrganisation
     );
-    const organisationUnitQAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
-      organisationQAccessorUser,
-      organisationUnit
-    );
-    const organisationUnitAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
-      organisationAccessorUser,
-      organisationUnit
-    );
+    const organisationUnitQAccessorUser =
+      await fixtures.addOrganisationUserToOrganisationUnit(
+        organisationQAccessorUser,
+        organisationUnit
+      );
+    const organisationUnitAccessorUser =
+      await fixtures.addOrganisationUserToOrganisationUnit(
+        organisationAccessorUser,
+        organisationUnit
+      );
 
     const innovationObj = fixtures.generateInnovation({
       owner: innovatorUser,
@@ -141,6 +145,8 @@ describe("Innovation Action Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(NotificationUser).execute();
+    await query.from(Notification).execute();
     await query.from(Comment).execute();
     await query.from(InnovationAction).execute();
   });

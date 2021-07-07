@@ -5,6 +5,8 @@ import {
   InnovationActionStatus,
   InnovationSupport,
   InnovationSupportStatus,
+  NotificationAudience,
+  NotificationContextType,
   OrganisationUnitUser,
 } from "@domain/index";
 import {
@@ -22,6 +24,7 @@ import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { InnovationService } from "./Innovation.service";
 import { OrganisationService } from "./Organisation.service";
 import { UserService } from "./User.service";
+import { NotificationService } from "./Notification.service";
 
 export class InnovationSupportService {
   private readonly connection: Connection;
@@ -29,6 +32,7 @@ export class InnovationSupportService {
   private readonly innovationService: InnovationService;
   private readonly organisationService: OrganisationService;
   private readonly userService: UserService;
+  private readonly notificationService: NotificationService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -36,6 +40,7 @@ export class InnovationSupportService {
     this.innovationService = new InnovationService(connectionName);
     this.organisationService = new OrganisationService(connectionName);
     this.userService = new UserService(connectionName);
+    this.notificationService = new NotificationService(connectionName);
   }
 
   async find(
@@ -202,31 +207,54 @@ export class InnovationSupportService {
 
     const organisationUnit = requestUser.organisationUnitUser.organisationUnit;
 
-    return await this.connection.transaction(async (transactionManager) => {
-      if (support.comment) {
-        const comment = Comment.new({
-          user: { id: requestUser.id },
-          innovation: innovation,
-          message: support.comment,
-          organisationUnit,
-        });
-        await transactionManager.save(Comment, comment);
+    let targetNotificationUsers: string[] = [];
+
+    const result = await this.connection.transaction(
+      async (transactionManager) => {
+        if (support.comment) {
+          const comment = Comment.new({
+            user: { id: requestUser.id },
+            innovation: innovation,
+            message: support.comment,
+            organisationUnit,
+          });
+          await transactionManager.save(Comment, comment);
+        }
+
+        const innovationSupport = {
+          status: support.status,
+          createdBy: requestUser.id,
+          updatedBy: requestUser.id,
+          innovation: { id: innovation.id },
+          organisationUnit: { id: organisationUnit.id },
+          organisationUnitUsers: support.accessors?.map((id) => ({ id })),
+        };
+
+        const usersToBeNotified =
+          innovationSupport.organisationUnitUsers?.map((u) => u.id) || [];
+        targetNotificationUsers =
+          await this.organisationService.findUserFromUnitUsers(
+            usersToBeNotified
+          );
+
+        return await transactionManager.save(
+          InnovationSupport,
+          innovationSupport
+        );
       }
+    );
 
-      const innovationSupport = {
-        status: support.status,
-        createdBy: requestUser.id,
-        updatedBy: requestUser.id,
-        innovation: { id: innovation.id },
-        organisationUnit: { id: organisationUnit.id },
-        organisationUnitUsers: support.accessors?.map((id) => ({ id })),
-      };
+    await this.notificationService.create(
+      requestUser,
+      NotificationAudience.ACCESSORS,
+      innovationId,
+      NotificationContextType.INNOVATION,
+      innovationId,
+      `The Innovation with id ${innovationId} was assigned to the accessors of ${requestUser.organisationUnitUser.organisationUnit.name}`,
+      targetNotificationUsers
+    );
 
-      return await transactionManager.save(
-        InnovationSupport,
-        innovationSupport
-      );
-    });
+    return result;
   }
 
   async update(
@@ -275,57 +303,79 @@ export class InnovationSupportService {
 
     const organisationUnit = requestUser.organisationUnitUser.organisationUnit;
 
-    return await this.connection.transaction(async (transactionManager) => {
-      if (support.comment) {
-        const comment = Comment.new({
-          user: { id: requestUser.id },
-          innovation: innovation,
-          message: support.comment,
-          createdBy: requestUser.id,
-          updatedBy: requestUser.id,
-          organisationUnit,
-        });
-        await transactionManager.save(Comment, comment);
-      }
+    let targetNotificationUsers: string[] = [];
 
-      if (
-        innovationSupport.status === InnovationSupportStatus.ENGAGING &&
-        innovationSupport.status !== support.status
-      ) {
-        innovationSupport.organisationUnitUsers = [];
-        const innovationActions = await innovationSupport.actions;
-
-        const actions = innovationActions.filter(
-          (ia: InnovationAction) =>
-            ia.status === InnovationActionStatus.REQUESTED ||
-            ia.status === InnovationActionStatus.STARTED ||
-            ia.status === InnovationActionStatus.IN_REVIEW
-        );
-
-        for (let i = 0; i < actions.length; i++) {
-          await transactionManager.update(
-            InnovationAction,
-            { id: actions[i].id },
-            {
-              status: InnovationActionStatus.DELETED,
-              updatedBy: requestUser.id,
-            }
-          );
+    const result = await this.connection.transaction(
+      async (transactionManager) => {
+        if (support.comment) {
+          const comment = Comment.new({
+            user: { id: requestUser.id },
+            innovation: innovation,
+            message: support.comment,
+            createdBy: requestUser.id,
+            updatedBy: requestUser.id,
+            organisationUnit,
+          });
+          await transactionManager.save(Comment, comment);
         }
-      } else {
-        innovationSupport.organisationUnitUsers = support.accessors?.map(
-          (id) => ({ id })
+
+        if (
+          innovationSupport.status === InnovationSupportStatus.ENGAGING &&
+          innovationSupport.status !== support.status
+        ) {
+          innovationSupport.organisationUnitUsers = [];
+          const innovationActions = await innovationSupport.actions;
+
+          const actions = innovationActions.filter(
+            (ia: InnovationAction) =>
+              ia.status === InnovationActionStatus.REQUESTED ||
+              ia.status === InnovationActionStatus.STARTED ||
+              ia.status === InnovationActionStatus.IN_REVIEW
+          );
+
+          for (let i = 0; i < actions.length; i++) {
+            await transactionManager.update(
+              InnovationAction,
+              { id: actions[i].id },
+              {
+                status: InnovationActionStatus.DELETED,
+                updatedBy: requestUser.id,
+              }
+            );
+          }
+        } else {
+          innovationSupport.organisationUnitUsers = support.accessors?.map(
+            (id) => ({ id })
+          );
+          const usersToBeNotified =
+            innovationSupport.organisationUnitUsers?.map((u) => u.id) || [];
+          targetNotificationUsers =
+            await this.organisationService.findUserFromUnitUsers(
+              usersToBeNotified
+            );
+        }
+
+        innovationSupport.status = support.status;
+        innovationSupport.updatedBy = requestUser.id;
+
+        return await transactionManager.save(
+          InnovationSupport,
+          innovationSupport
         );
       }
+    );
 
-      innovationSupport.status = support.status;
-      innovationSupport.updatedBy = requestUser.id;
+    await this.notificationService.create(
+      requestUser,
+      NotificationAudience.ACCESSORS,
+      innovationId,
+      NotificationContextType.INNOVATION,
+      innovationId,
+      `The support for the Innovation with id ${innovationId} was updated and notification was created for the accessors of ${requestUser.organisationUnitUser.organisationUnit.name}`,
+      targetNotificationUsers
+    );
 
-      return await transactionManager.save(
-        InnovationSupport,
-        innovationSupport
-      );
-    });
+    return result;
   }
 
   private async findOne(
