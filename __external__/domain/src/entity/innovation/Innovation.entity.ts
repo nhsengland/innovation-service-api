@@ -10,20 +10,21 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import {
+  CostComparisonCatalogue,
   HasBenefitsCatalogue,
   HasEvidenceCatalogue,
   HasFundingCatalogue,
   HasKnowledgeCatalogue,
   HasMarketResearchCatalogue,
   HasPatentsCatalogue,
+  HasProblemTackleKnowledgeCatalogue,
   HasRegulationKnowledegeCatalogue,
   HasResourcesToScaleCatalogue,
-  HasSubgroupsCatalogue,
-  HasProblemTackleKnowledgeCatalogue,
   HasTestsCatalogue,
   InnovationCategoryCatalogue,
   InnovationPathwayKnowledgeCatalogue,
   MainPurposeCatalogue,
+  YesNoNotRelevantCatalogue,
   YesOrNoCatalogue,
 } from "../../enums/catalog.enums";
 import { InnovationStatus } from "../../enums/innovation.enums";
@@ -37,7 +38,9 @@ import { InnovationCareSetting } from "./InnovationCareSetting.entity";
 import { InnovationCategory } from "./InnovationCategory.entity";
 import { InnovationClinicalArea } from "./InnovationClinicalArea.entity";
 import { InnovationDeploymentPlan } from "./InnovationDeploymentPlan.entity";
+import { InnovationEnvironmentalBenefit } from "./InnovationEnvironmentalBenefit.entity";
 import { InnovationEvidence } from "./InnovationEvidence.entity";
+import { InnovationGeneralBenefit } from "./InnovationGeneralBenefit.entity";
 import { InnovationRevenue } from "./InnovationRevenue.entity";
 import { InnovationSection } from "./InnovationSection.entity";
 import { InnovationStandard } from "./InnovationStandard.entity";
@@ -110,14 +113,8 @@ export class Innovation extends Base {
   @Column({ name: "intervention_impact", nullable: true })
   interventionImpact: string;
 
-  @Column({ name: "has_subgroups", type: "nvarchar", nullable: true })
-  hasSubgroups: HasSubgroupsCatalogue;
-
   @Column({ name: "has_benefits", type: "nvarchar", nullable: true })
   hasBenefits: HasBenefitsCatalogue;
-
-  @Column({ name: "benefits", nullable: true })
-  benefits: string;
 
   @Column({ name: "has_evidence", type: "nvarchar", nullable: true })
   hasEvidence: HasEvidenceCatalogue;
@@ -137,6 +134,12 @@ export class Innovation extends Base {
   @Column({ name: "other_intellectual", nullable: true })
   otherIntellectual: string;
 
+  @Column({ name: "impact_patients", nullable: true, default: false })
+  impactPatients: boolean;
+
+  @Column({ name: "impact_clinicians", nullable: true, default: false })
+  impactClinicians: boolean;
+
   @Column({
     name: "has_regulation_knowledge",
     type: "nvarchar",
@@ -152,7 +155,7 @@ export class Innovation extends Base {
     type: "nvarchar",
     nullable: true,
   })
-  hasUKPathwayKnowledge: YesOrNoCatalogue;
+  hasUKPathwayKnowledge: YesNoNotRelevantCatalogue;
 
   @Column({
     name: "innovation_pathway_knowledge",
@@ -206,6 +209,49 @@ export class Innovation extends Base {
 
   @Column({ name: "has_resources_to_scale", type: "nvarchar", nullable: true })
   hasResourcesToScale: HasResourcesToScaleCatalogue;
+
+  @Column({ name: "cost_description", type: "nvarchar", nullable: true })
+  costDescription: string;
+
+  @Column({ name: "sell_expectations", type: "nvarchar", nullable: true })
+  sellExpectations: string;
+
+  @Column({ name: "usage_expectations", type: "nvarchar", nullable: true })
+  usageExpectations: string;
+
+  @Column({ name: "cost_comparison", type: "nvarchar", nullable: true })
+  costComparison: CostComparisonCatalogue;
+
+  @Column({
+    name: "clinicians_impact_details",
+    type: "nvarchar",
+    nullable: true,
+  })
+  cliniciansImpactDetails: string;
+
+  @Column({
+    name: "accessibility_impact_details",
+    type: "nvarchar",
+    nullable: true,
+  })
+  accessibilityImpactDetails: string;
+
+  @Column({
+    name: "accessibility_steps_details",
+    type: "nvarchar",
+    nullable: true,
+  })
+  accessibilityStepsDetails: string;
+
+  @Column({ name: "other_general_benefit", type: "nvarchar", nullable: true })
+  otherGeneralBenefit: string;
+
+  @Column({
+    name: "other_environmental_benefit",
+    type: "nvarchar",
+    nullable: true,
+  })
+  otherEnvironmentalBenefit: string;
 
   // relationships
   @ManyToOne(() => User, { nullable: false })
@@ -305,6 +351,22 @@ export class Innovation extends Base {
     cascade: ["insert", "update"],
   })
   supportTypes: InnovationSupportType[];
+
+  @OneToMany(() => InnovationGeneralBenefit, (record) => record.innovation, {
+    lazy: true,
+    cascade: ["insert", "update"],
+  })
+  generalBenefits: InnovationGeneralBenefit[];
+
+  @OneToMany(
+    () => InnovationEnvironmentalBenefit,
+    (record) => record.innovation,
+    {
+      lazy: true,
+      cascade: ["insert", "update"],
+    }
+  )
+  environmentalBenefits: InnovationEnvironmentalBenefit[];
 
   @OneToMany(() => Comment, (record) => record.innovation, { lazy: true })
   comments: Comment[];

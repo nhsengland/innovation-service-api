@@ -165,7 +165,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
       for (let i = 0; i < sectionFields.innovationTypes.length; i++) {
         const type = sectionFields.innovationTypes[i];
 
-        data[type] = await this.getInnovationTypeArray(innovation, type);
+        data[type] = await this.getParentTypeArray(innovation, type);
       }
     }
 
@@ -284,7 +284,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
       for (let i = 0; i < sectionFields.innovationTypes.length; i++) {
         const type = sectionFields.innovationTypes[i];
 
-        updatedInnovation[type] = await this.getUpdatedInnovationTypeArray(
+        updatedInnovation[type] = await this.getUpdatedParentTypeArray(
           requestUser,
           innovation,
           type,
@@ -447,13 +447,13 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     return result;
   }
 
-  private async getUpdatedInnovationTypeArray(
+  private async getUpdatedParentTypeArray(
     requestUser: RequestUser,
-    innovation: Innovation,
+    parent: any,
     type: string,
     data: any[]
   ) {
-    const original: any[] = await innovation[type];
+    const original: any[] = await parent[type];
 
     const newValues: string[] = data[type];
     original
@@ -488,6 +488,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
 
     const newValues: any = data[dependency.type];
     const filter: string[] = dependency.fields;
+    const subtypes: string[] = dependency.subtypes;
 
     original
       .filter((obj) => !newValues.some((e: any) => e.id === obj.id))
@@ -495,7 +496,12 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
         obj.deletedAt = new Date();
       });
 
-    newValues.forEach((obj: any) => {
+    for (
+      let newValuesIdx = 0;
+      newValuesIdx < newValues.length;
+      newValuesIdx++
+    ) {
+      const obj = newValues[newValuesIdx];
       let newObject: any;
       let files: any[];
 
@@ -516,16 +522,46 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
           obj,
           filter
         );
+
         if (files) newObject.files = files;
+        // MANAGE SPECIFIC SUBTYPES
+        if (subtypes) {
+          for (let i = 0; i < subtypes.length; i++) {
+            const type = subtypes[i];
+
+            newObject[type] = await this.getUpdatedParentTypeArray(
+              requestUser,
+              newObject,
+              type,
+              obj
+            );
+          }
+        }
+
         original[objectIndex] = newObject;
       } else {
         newObject = this.getInnovationFilteredObject(obj, filter);
         newObject.createdBy = requestUser.id;
         newObject.updatedBy = requestUser.id;
+
         if (files) newObject.files = files;
+        // MANAGE SPECIFIC SUBTYPES
+        if (subtypes) {
+          for (let i = 0; i < subtypes.length; i++) {
+            const type = subtypes[i];
+
+            newObject[type] = await this.getUpdatedParentTypeArray(
+              requestUser,
+              newObject,
+              type,
+              obj
+            );
+          }
+        }
+
         original.push(newObject);
       }
-    });
+    }
 
     return original;
   }
@@ -548,8 +584,8 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     return newObject;
   }
 
-  private async getInnovationTypeArray(innovation: Innovation, type: string) {
-    const original = await innovation[type];
+  private async getParentTypeArray(parent: any, type: string) {
+    const original = await parent[type];
 
     return original.flatMap((obj: any) => obj.type);
   }
@@ -559,10 +595,28 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     dependency: any
   ) {
     const original = await innovation[dependency.type];
+    const subtypes: string[] = dependency.subtypes;
+    const result = [];
 
-    return original.map((obj: any) =>
-      this.getInnovationFilteredObject(obj, dependency.fields)
-    );
+    for (let idx = 0; idx < original.length; idx++) {
+      const originalObj = original[idx];
+
+      const obj = this.getInnovationFilteredObject(
+        originalObj,
+        dependency.fields
+      );
+      if (subtypes) {
+        for (let i = 0; i < subtypes.length; i++) {
+          const type = subtypes[i];
+
+          obj[type] = await this.getParentTypeArray(originalObj, type);
+        }
+      }
+
+      result.push(obj);
+    }
+
+    return result;
   }
 
   private getInnovationFilteredObject(original: any, filter: any[]) {

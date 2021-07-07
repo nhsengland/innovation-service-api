@@ -4,7 +4,6 @@ import {
   Comment,
   EvidenceTypeCatalogue,
   HasRegulationKnowledegeCatalogue,
-  HasSubgroupsCatalogue,
   Innovation,
   InnovationAction,
   InnovationArea,
@@ -21,7 +20,7 @@ import {
   InnovationSectionCatalogue,
   InnovationSectionStatus,
   InnovationStandard,
-  InnovationStandardCatologue,
+  InnovationCertificationCatalogue,
   InnovationStatus,
   InnovationSubgroup,
   InnovationSupport,
@@ -35,6 +34,12 @@ import {
   User,
   UserType,
   YesOrNoCatalogue,
+  InnovationSubgroupBenefit,
+  InnovationGeneralBenefit,
+  InnovationEnvironmentalBenefit,
+  GeneralBenefitCatalogue,
+  EnvironmentalBenefitCatalogue,
+  SubgroupBenefitCatalogue,
 } from "@domain/index";
 import {
   InnovationNotFoundError,
@@ -82,6 +87,8 @@ describe("Innovation Section Service Suite", () => {
       .delete();
 
     await query.from(Comment).execute();
+    await query.from(InnovationGeneralBenefit).execute();
+    await query.from(InnovationEnvironmentalBenefit).execute();
     await query.from(InnovationDeploymentPlan).execute();
     await query.from(InnovationRevenue).execute();
     await query.from(InnovationUserTest).execute();
@@ -92,6 +99,7 @@ describe("Innovation Section Service Suite", () => {
     await query.from(InnovationCategory).execute();
     await query.from(InnovationClinicalArea).execute();
     await query.from(InnovationEvidence).execute();
+    await query.from(InnovationSubgroupBenefit).execute();
     await query.from(InnovationSubgroup).execute();
     await query.from(InnovationAction).execute();
     await query.from(InnovationSection).execute();
@@ -181,7 +189,6 @@ describe("Innovation Section Service Suite", () => {
     const subgroup = InnovationSubgroup.new({
       name: "subgroup test",
       conditions: "subgroup conditions",
-      benefits: "subgroup benefits",
     });
 
     const evidence = InnovationEvidence.new({
@@ -195,7 +202,8 @@ describe("Innovation Section Service Suite", () => {
     const innovationObj = fixtures.generateInnovation({
       owner: innovatorRequestUser.id,
       surveyId: "abc",
-      hasSubgroups: HasSubgroupsCatalogue.YES,
+      impactPatients: true,
+      impactClinicians: true,
       status: InnovationStatus.IN_PROGRESS,
       subgroups: [subgroup],
       evidence: [evidence],
@@ -227,13 +235,13 @@ describe("Innovation Section Service Suite", () => {
     const subgroup = InnovationSubgroup.new({
       name: "subgroup test",
       conditions: "subgroup conditions",
-      benefits: "subgroup benefits",
     });
 
     const innovationObj = fixtures.generateInnovation({
       owner: innovatorRequestUser.id,
       surveyId: "abc",
-      hasSubgroups: HasSubgroupsCatalogue.YES,
+      impactPatients: true,
+      impactClinicians: true,
       status: InnovationStatus.IN_PROGRESS,
       subgroups: [subgroup],
       categories: [category, category2],
@@ -330,7 +338,8 @@ describe("Innovation Section Service Suite", () => {
       owner: innovatorRequestUser.id,
       name: "My Innovation",
       surveyId: "abc",
-      hasSubgroups: HasSubgroupsCatalogue.NO,
+      impactPatients: false,
+      impactClinicians: false,
       status: InnovationStatus.IN_PROGRESS,
       sections: [sectionObj],
     });
@@ -342,12 +351,13 @@ describe("Innovation Section Service Suite", () => {
       innovation.id,
       InnovationSectionCatalogue.UNDERSTANDING_OF_NEEDS,
       {
-        hasSubgroups: HasSubgroupsCatalogue.YES,
+        impactPatients: true,
+        impactClinicians: false,
+        cliniciansImpactDetails: ":cliniciansImpactDetails",
         subgroups: [
           InnovationSubgroup.new({
             name: "subgroup test",
             conditions: "subgroup conditions",
-            benefits: "subgroup benefits",
           }),
         ],
         name: "should not update name",
@@ -361,6 +371,8 @@ describe("Innovation Section Service Suite", () => {
     expect(sections.length).toEqual(2);
     expect(subgroups.length).toEqual(1);
     expect(result.name).toEqual("My Innovation");
+    expect(result.impactPatients).toBeTruthy();
+    expect(result.impactClinicians).toBeFalsy();
     expect(subgroups[0].name).toEqual("subgroup test");
   });
 
@@ -374,13 +386,38 @@ describe("Innovation Section Service Suite", () => {
       owner: innovatorRequestUser.id,
       name: "My Innovation",
       surveyId: "abc",
-      hasSubgroups: HasSubgroupsCatalogue.YES,
+      impactPatients: true,
+      impactClinicians: true,
       hasBenefits: YesOrNoCatalogue.YES,
       status: InnovationStatus.IN_PROGRESS,
       subgroups: [subgroup],
     });
     const innovation = await fixtures.saveInnovation(innovationObj);
     let subgroups = await innovation.subgroups;
+
+    await innovationSectionService.saveSection(
+      innovatorRequestUser,
+      innovation.id,
+      InnovationSectionCatalogue.UNDERSTANDING_OF_BENEFITS,
+      {
+        hasBenefits: YesOrNoCatalogue.YES,
+        accessibilityImpactDetails: ":accessibilityImpactDetails",
+        accessibilityStepsDetails: ":accessibilityStepsDetails",
+        generalBenefits: [GeneralBenefitCatalogue.OTHER],
+        environmentalBenefits: [EnvironmentalBenefitCatalogue.OTHER],
+        otherGeneralBenefit: ":otherGeneralBenefit",
+        otherEnvironmentalBenefit: ":otherEnvironmentalBenefit",
+        subgroups: [
+          {
+            id: subgroups[0].id,
+            conditions: "subgroup conditions",
+            benefits: [SubgroupBenefitCatalogue.OTHER],
+            otherBenefit: "other benefits",
+          },
+        ],
+        name: "should not update name",
+      }
+    );
 
     // Act
     const result = await innovationSectionService.saveSection(
@@ -389,12 +426,18 @@ describe("Innovation Section Service Suite", () => {
       InnovationSectionCatalogue.UNDERSTANDING_OF_BENEFITS,
       {
         hasBenefits: YesOrNoCatalogue.YES,
-        benefits: "innovation benefits",
+        accessibilityImpactDetails: ":accessibilityImpactDetails",
+        accessibilityStepsDetails: ":accessibilityStepsDetails",
+        generalBenefits: [GeneralBenefitCatalogue.OTHER],
+        environmentalBenefits: [EnvironmentalBenefitCatalogue.OTHER],
+        otherGeneralBenefit: ":otherGeneralBenefit",
+        otherEnvironmentalBenefit: ":otherEnvironmentalBenefit",
         subgroups: [
           {
             id: subgroups[0].id,
             conditions: "subgroup conditions",
-            benefits: "subgroup benefits",
+            benefits: [SubgroupBenefitCatalogue.PREVENTS_CONDITION_OCCURRING],
+            otherBenefit: "other benefits",
           },
         ],
         name: "should not update name",
@@ -406,7 +449,7 @@ describe("Innovation Section Service Suite", () => {
 
     // Assert
     expect(result.name).toEqual("My Innovation");
-    expect(subgroups[0].benefits).toEqual("subgroup benefits");
+    expect(subgroups[0].otherBenefit).toEqual("other benefits");
     expect(sections.length).toEqual(1);
     expect(subgroups.length).toEqual(1);
   });
@@ -416,7 +459,8 @@ describe("Innovation Section Service Suite", () => {
       owner: innovatorRequestUser.id,
       name: "My Innovation",
       surveyId: "abc",
-      hasSubgroups: HasSubgroupsCatalogue.YES,
+      impactPatients: true,
+      impactClinicians: true,
       hasEvidence: YesOrNoCatalogue.NO,
       status: InnovationStatus.IN_PROGRESS,
     });
@@ -446,7 +490,8 @@ describe("Innovation Section Service Suite", () => {
       name: "My Innovation",
       surveyId: "abc",
       hasFinalProduct: YesOrNoCatalogue.NO,
-      hasSubgroups: HasSubgroupsCatalogue.YES,
+      impactPatients: true,
+      impactClinicians: true,
       hasEvidence: YesOrNoCatalogue.NO,
       status: InnovationStatus.IN_PROGRESS,
     });
@@ -486,7 +531,8 @@ describe("Innovation Section Service Suite", () => {
       name: "My Innovation",
       surveyId: "abc",
       hasFinalProduct: YesOrNoCatalogue.NO,
-      hasSubgroups: HasSubgroupsCatalogue.YES,
+      impactPatients: true,
+      impactClinicians: true,
       hasEvidence: YesOrNoCatalogue.NO,
       status: InnovationStatus.IN_PROGRESS,
     });
@@ -508,7 +554,7 @@ describe("Innovation Section Service Suite", () => {
         hasOtherIntellectual: "cenas variadas",
         standards: [
           {
-            type: InnovationStandardCatologue.CE_UKCA_CLASS_I,
+            type: InnovationCertificationCatalogue.CE_UKCA_CLASS_I,
             hasMet: StandardMetCatalogue.IN_PROGRESS,
           },
         ],
@@ -588,7 +634,8 @@ describe("Innovation Section Service Suite", () => {
       owner: innovatorRequestUser.id,
       name: "My Innovation",
       surveyId: "abc",
-      hasSubgroups: HasSubgroupsCatalogue.NO,
+      impactPatients: false,
+      impactClinicians: false,
       status: InnovationStatus.IN_PROGRESS,
       sections: [sectionObj],
     });
@@ -667,7 +714,8 @@ describe("Innovation Section Service Suite", () => {
       owner: innovatorRequestUser.id,
       name: "My Innovation",
       surveyId: "abc",
-      hasSubgroups: HasSubgroupsCatalogue.NO,
+      impactPatients: false,
+      impactClinicians: false,
       status: InnovationStatus.IN_PROGRESS,
       sections: [sectionObj],
       organisationShares: [accessorOrganisation],

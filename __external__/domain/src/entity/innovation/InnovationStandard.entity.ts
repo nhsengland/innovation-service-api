@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import {
-  InnovationStandardCatologue,
+  InnovationCertificationCatalogue,
   StandardMetCatalogue,
 } from "../../enums/catalog.enums";
 import { Base } from "../Base.entity";
@@ -22,7 +22,7 @@ export class InnovationStandard extends Base {
   id: string;
 
   @Column({ name: "type", type: "nvarchar" })
-  type: InnovationStandardCatologue;
+  type: InnovationCertificationCatalogue;
 
   @Column({ name: "has_met", type: "nvarchar" })
   hasMet: StandardMetCatalogue;
