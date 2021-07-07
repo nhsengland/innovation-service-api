@@ -459,4 +459,113 @@ describe("Notification Service Suite", () => {
     expect(notificationUsers.length).toBe(1);
     expect(notificationUsers[0].user).toEqual(assessmentUser.id);
   });
+
+  it("should dismiss notification from an innovator with given notification ids", async () => {
+    const accessor = await fixtures.createAccessorUser();
+    const innovator = await fixtures.createInnovatorUser();
+    const organisation = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
+    );
+    const orgUser = await fixtures.addUserToOrganisation(
+      accessor,
+      organisation,
+      "ACCESSOR"
+    );
+    const unit = await fixtures.createOrganisationUnit(organisation);
+    await fixtures.addOrganisationUserToOrganisationUnit(orgUser, unit);
+    const innovationObj = fixtures.generateInnovation({
+      owner: { id: innovator.id },
+    });
+    const innovation = await fixtures.saveInnovation(innovationObj);
+
+    const requestUser: RequestUser = {
+      id: accessor.id,
+      type: UserType.ACCESSOR,
+    };
+
+    const notification1 = await notificationService.create(
+      requestUser,
+      NotificationAudience.INNOVATORS,
+      innovation.id,
+      NotificationContextType.ACTION,
+      innovation.id,
+      "test 1"
+    );
+
+    const notification2 = await notificationService.create(
+      requestUser,
+      NotificationAudience.INNOVATORS,
+      innovation.id,
+      NotificationContextType.ACTION,
+      innovation.id,
+      "test 2"
+    );
+
+    const dismisssRequestUser: RequestUser = {
+      id: innovator.id,
+      type: UserType.INNOVATOR,
+    };
+
+    const actual = await notificationService.dismiss(dismisssRequestUser, [
+      notification1,
+      notification2,
+    ]);
+
+    expect(actual.success).toBe(true);
+  });
+
+  it("should dismiss notifications of the type INNOVATION from an innovator without notification ids", async () => {
+    const accessor = await fixtures.createAccessorUser();
+    const innovator = await fixtures.createInnovatorUser();
+    const organisation = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
+    );
+    const orgUser = await fixtures.addUserToOrganisation(
+      accessor,
+      organisation,
+      "ACCESSOR"
+    );
+    const unit = await fixtures.createOrganisationUnit(organisation);
+    await fixtures.addOrganisationUserToOrganisationUnit(orgUser, unit);
+    const innovationObj = fixtures.generateInnovation({
+      owner: { id: innovator.id },
+    });
+    const innovation = await fixtures.saveInnovation(innovationObj);
+
+    const requestUser: RequestUser = {
+      id: accessor.id,
+      type: UserType.ACCESSOR,
+    };
+
+    await notificationService.create(
+      requestUser,
+      NotificationAudience.INNOVATORS,
+      innovation.id,
+      NotificationContextType.ACTION,
+      innovation.id,
+      "test 1"
+    );
+
+    await notificationService.create(
+      requestUser,
+      NotificationAudience.INNOVATORS,
+      innovation.id,
+      NotificationContextType.INNOVATION,
+      innovation.id,
+      "test 2"
+    );
+
+    const dismissRequestUser: RequestUser = {
+      id: innovator.id,
+      type: UserType.INNOVATOR,
+    };
+
+    const actual = await notificationService.dismiss(
+      dismissRequestUser,
+      [],
+      NotificationContextType.ACTION
+    );
+
+    expect(actual.success).toBe(true);
+  });
 });

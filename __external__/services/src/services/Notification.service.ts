@@ -7,24 +7,40 @@ import {
   Notification,
   NotificationAudience,
   NotificationContextType,
+  NotificationUser,
   OrganisationUser,
   User,
   UserType,
 } from "@domain/index";
 import { RequestUser } from "@services/models/RequestUser";
-import { getConnection, getRepository, In, Repository } from "typeorm";
+
+import {
+  getConnection,
+  getRepository,
+  In,
+  Repository,
+  Connection,
+} from "typeorm";
+
+export type NotificationDismissResult = {
+  success: boolean;
+  error?: any;
+};
 
 export class NotificationService {
   private readonly notificationRepo: Repository<Notification>;
+  private readonly notificationUserRepo: Repository<NotificationUser>;
   private readonly innovationSupportRepo: Repository<InnovationSupport>;
   private readonly innovationRepo: Repository<Innovation>;
   private readonly assessmentRepo: Repository<InnovationAssessment>;
   private readonly organisationUserRepo: Repository<OrganisationUser>;
   private readonly userRepo: Repository<User>;
+  private readonly connection: Connection;
 
   constructor(connectionName?: string) {
-    getConnection(connectionName);
+    this.connection = getConnection(connectionName);
     this.notificationRepo = getRepository(Notification, connectionName);
+    this.notificationUserRepo = getRepository(NotificationUser, connectionName);
     this.innovationSupportRepo = getRepository(
       InnovationSupport,
       connectionName
@@ -88,6 +104,79 @@ export class NotificationService {
     }
 
     return notification;
+  }
+
+  async dismiss(
+    requestUser: RequestUser,
+    notifications: Notification[],
+    contextType?: NotificationContextType
+  ): Promise<NotificationDismissResult> {
+    const affected = 0;
+
+    if (notifications && notifications.length > 0) {
+      for (let index = 0; index < notifications.length; index++) {
+        try {
+          const notification = notifications[index];
+          const query = this.connection
+            .createQueryBuilder()
+            .update(NotificationUser)
+            .set({ readAt: () => "CURRENT_TIMESTAMP" })
+            .where("notification = :notificationId and user = :userId", {
+              notificationId: notification.id,
+              userId: requestUser.id,
+            });
+
+          await query.updateEntity(true).execute();
+        } catch (error) {
+          return {
+            success: false,
+            error,
+          };
+        }
+      }
+    } else {
+      try {
+        const query = this.notificationUserRepo
+          .createQueryBuilder("notificationUser")
+          .select(["notificationUser.user", "notificationUser.notification"])
+          .innerJoin("notificationUser.notification", "notification")
+          .where(
+            "notificationUser.user = :userId and notification.contextType = :contextType",
+            {
+              userId: requestUser.id,
+              contextType,
+            }
+          );
+
+        const sql = query.getQueryAndParameters();
+        const notificationUsers = await query.execute();
+
+        if (notificationUsers.length > 0) {
+          await this.notificationUserRepo
+            .createQueryBuilder()
+            .update()
+            .set({ readAt: () => "CURRENT_TIMESTAMP" })
+            .where(
+              "user IN (:...userIds) and notification IN (:...notifications)",
+              {
+                userIds: notificationUsers.map((n) => n.user_id),
+                notifications: notificationUsers.map((n) => n.notification_id),
+              }
+            )
+            .updateEntity(true)
+            .execute();
+        }
+      } catch (error) {
+        return {
+          success: false,
+          error,
+        };
+      }
+    }
+
+    return {
+      success: true,
+    };
   }
 
   private async createNotificationForAccessors(
