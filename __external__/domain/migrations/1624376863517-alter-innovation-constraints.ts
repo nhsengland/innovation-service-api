@@ -1,7 +1,8 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class alterInnovationConstraints1624376863517
-  implements MigrationInterface {
+  implements MigrationInterface
+{
   name = "alterInnovationConstraints1624376863517";
 
   public async up(queryRunner: QueryRunner): Promise<void> {

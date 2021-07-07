@@ -293,8 +293,7 @@ describe("Innovation Test Suite", () => {
       });
 
       const innovationRevenue = InnovationRevenue.new({
-        type:
-          InnovationRevenueTypeCatalogue.SALES_OF_CONSUMABLES_OR_ACCESSORIES,
+        type: InnovationRevenueTypeCatalogue.SALES_OF_CONSUMABLES_OR_ACCESSORIES,
       });
 
       const innovationUserTests = InnovationUserTest.new({

@@ -318,6 +318,30 @@ export const createAssessment = async (
   );
 };
 
+export const addSharesToAssessment = async (
+  requestUser: RequestUser,
+  id: string,
+  innovationId: string,
+  shares?: Organisation[]
+) => {
+  const assessmentService = new InnovationAssessmentService(
+    process.env.DB_TESTS_NAME
+  );
+
+  const assessmentObj = {
+    innovationId,
+    isSubmission: true,
+    organisations: shares.map((o) => o.id),
+  };
+
+  return await assessmentService.update(
+    requestUser,
+    id,
+    innovationId,
+    assessmentObj
+  );
+};
+
 export const saveInnovationsWithAssessment = async (
   ...innovations: Innovation[]
 ) => {

@@ -25,6 +25,8 @@ import {
   InnovationSubgroup,
   InnovationSupport,
   InnovationUserTest,
+  Notification,
+  NotificationUser,
   Organisation,
   OrganisationType,
   OrganisationUnit,
@@ -86,6 +88,8 @@ describe("Innovation Section Service Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(NotificationUser).execute();
+    await query.from(Notification).execute();
     await query.from(Comment).execute();
     await query.from(InnovationGeneralBenefit).execute();
     await query.from(InnovationEnvironmentalBenefit).execute();
@@ -685,10 +689,11 @@ describe("Innovation Section Service Suite", () => {
     const organisationUnit = await fixtures.createOrganisationUnit(
       accessorOrganisation
     );
-    const organisationQuaAccessorUnitUser = await fixtures.addOrganisationUserToOrganisationUnit(
-      qAccessorUserOrganisation,
-      organisationUnit
-    );
+    const organisationQuaAccessorUnitUser =
+      await fixtures.addOrganisationUserToOrganisationUnit(
+        qAccessorUserOrganisation,
+        organisationUnit
+      );
 
     const qAccessorRequestUser: RequestUser = {
       id: qualAccessorUser.id,

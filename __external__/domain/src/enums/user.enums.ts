@@ -9,3 +9,9 @@ export enum NotificationContextType {
   ACTION = "ACTION",
   COMMENT = "COMMENT",
 }
+export enum NotificationAudience {
+  ACCESSORS = "ACCESSORS",
+  INNOVATORS = "INNOVATORS",
+  QUALIFYING_ACCESSORS = "QUALIFYING_ACCESSORS",
+  ASSESSMENT_USERS = "ASSESSMENT_USERS",
+}
