@@ -7,6 +7,8 @@ import {
   InnovationSection,
   InnovationSectionCatalogue,
   InnovationSupport,
+  Notification,
+  NotificationUser,
   Organisation,
   OrganisationType,
   OrganisationUnit,
@@ -143,6 +145,8 @@ describe("Innovation Action Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(NotificationUser).execute();
+    await query.from(Notification).execute();
     await query.from(Comment).execute();
     await query.from(InnovationAction).execute();
   });
