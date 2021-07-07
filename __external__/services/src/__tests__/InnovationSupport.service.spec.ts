@@ -36,7 +36,7 @@ describe("Innovation Support Suite", () => {
   let qAccessorRequestUser: RequestUser;
 
   beforeAll(async () => {
-    // await setupTestsConnection();
+    //await setupTestsConnection();
     supportService = new InnovationSupportService(process.env.DB_TESTS_NAME);
 
     const innovatorUser = await fixtures.createInnovatorUser();
@@ -113,7 +113,7 @@ describe("Innovation Support Suite", () => {
     await query.from(Innovation).execute();
     await query.from(User).execute();
 
-    // closeTestsConnection();
+    //closeTestsConnection();
   });
 
   afterEach(async () => {

@@ -41,7 +41,8 @@ export class NotificationService {
     innovationId: string,
     contextType: NotificationContextType,
     contextId: string,
-    message: string
+    message: string,
+    specificUsers?: string[]
   ): Promise<Notification> {
     let notification: Notification;
     switch (audience) {
@@ -51,7 +52,8 @@ export class NotificationService {
           innovationId,
           contextType,
           contextId,
-          message
+          message,
+          specificUsers
         );
         break;
       case NotificationAudience.INNOVATORS:
@@ -93,10 +95,13 @@ export class NotificationService {
     innovationId: string,
     contextType: NotificationContextType,
     contextId: string,
-    message: string
+    message: string,
+    specificUsers?: string[]
   ) {
     // target users are all accessors whose this innovation has been assigned to and whose support is on ENGAGING status
     // this is obtained from the innovation_support entity
+
+    let targetUsers: { user: string; createdBy: string }[] = [];
 
     const supports = await this.innovationSupportRepo.find({
       where: {
@@ -110,12 +115,19 @@ export class NotificationService {
       ],
     });
 
-    const targetUsers = supports.flatMap((s) =>
-      s.organisationUnitUsers.map((x) => ({
-        user: x.organisationUser.user.id,
+    if (!specificUsers || specificUsers.length === 0) {
+      targetUsers = supports.flatMap((s) =>
+        s.organisationUnitUsers.map((x) => ({
+          user: x.organisationUser.user.id,
+          createdBy: requestUser.id,
+        }))
+      );
+    } else {
+      targetUsers = specificUsers?.map((u) => ({
+        user: u,
         createdBy: requestUser.id,
-      }))
-    );
+      }));
+    }
 
     const notification = Notification.new({
       contextId,
