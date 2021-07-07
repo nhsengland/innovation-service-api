@@ -179,6 +179,7 @@ export class NotificationService {
       innovation: innovationId,
       notificationUsers: targetUsers,
       message,
+      createdBy: requestUser.id,
     });
 
     return await this.notificationRepo.save(notification);
@@ -209,6 +210,7 @@ export class NotificationService {
         createdBy: requestUser.id,
       })),
       message,
+      createdBy: requestUser.id,
     });
 
     return await this.notificationRepo.save(notification);
@@ -241,6 +243,7 @@ export class NotificationService {
       innovation: innovationId,
       notificationUsers: targetUsers,
       message,
+      createdBy: requestUser.id,
     });
 
     return await this.notificationRepo.save(notification);
