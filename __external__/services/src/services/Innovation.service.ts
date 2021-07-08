@@ -236,17 +236,15 @@ export class InnovationService extends BaseService<Innovation> {
       }
     */
     const organisationsMap = await this.getOrganisationsMap(innovations[0]);
-    const notifications =
-      await this.notificationService.getUnreadNotifications(
-        requestUser,
-        null,
-        NotificationContextType.INNOVATION,
-      );
+    const notifications = await this.notificationService.getUnreadNotifications(
+      requestUser,
+      null,
+      NotificationContextType.INNOVATION
+    );
 
     const result = {
       data: innovations[0]?.map((inno: Innovation) => {
-
-        const unread = notifications.filter(n => n.contextId === inno.id);
+        const unread = notifications.filter((n) => n.contextId === inno.id);
 
         const innovationSupport = inno.innovationSupports?.find(
           (is: InnovationSupport) =>
@@ -284,7 +282,7 @@ export class InnovationService extends BaseService<Innovation> {
           // GRAB THE ORGANISATION ACRONYMS ARRAY FROM THE MAP BY THE KEY = INNOVATION ID
           organisations: organisationsMap[inno.id] || [],
           notifications: {
-            count: unread?.length || 0
+            count: unread?.length || 0,
           },
         };
       }),
