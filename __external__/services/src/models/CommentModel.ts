@@ -11,5 +11,8 @@ export interface CommentModel {
       name: string;
     };
   };
+  notifications?: {
+    count: number;
+  };
   replies?: CommentModel[];
 }

@@ -352,6 +352,12 @@ export class InnovationService extends BaseService<Innovation> {
       });
     });
 
+    const notifications =
+      await this.notificationService.getUnreadNotificationsCounts(
+        requestUser,
+        innovation.id
+      );
+
     const result: InnovatorInnovationSummary = {
       id: innovation.id,
       name: innovation.name,
@@ -363,6 +369,7 @@ export class InnovationService extends BaseService<Innovation> {
       submittedAt: innovation.submittedAt,
       assessment,
       actions,
+      notifications,
     };
 
     return result;
@@ -431,6 +438,12 @@ export class InnovationService extends BaseService<Innovation> {
       support.status = innovationSupport.status;
     }
 
+    const notifications =
+      await this.notificationService.getUnreadNotificationsCounts(
+        requestUser,
+        innovation.id
+      );
+
     return {
       summary: {
         id: innovation.id,
@@ -448,6 +461,7 @@ export class InnovationService extends BaseService<Innovation> {
       },
       assessment,
       support,
+      notifications,
     };
   }
 
@@ -484,6 +498,12 @@ export class InnovationService extends BaseService<Innovation> {
       assessment.assignToName = b2cAssessmentUser.displayName;
     }
 
+    const notifications =
+      await this.notificationService.getUnreadNotificationsCounts(
+        requestUser,
+        innovation.id
+      );
+
     return {
       summary: {
         id: innovation.id,
@@ -502,6 +522,7 @@ export class InnovationService extends BaseService<Innovation> {
         phone: b2cOwnerUser.phone,
       },
       assessment,
+      notifications,
     };
   }
 
@@ -556,8 +577,14 @@ export class InnovationService extends BaseService<Innovation> {
       }));
     }
 
+    const notifications = await this.notificationService.getUnreadNotifications(
+      requestUser,
+      null,
+      NotificationContextType.INNOVATION
+    );
+
     return {
-      data: this.mapResponse(res),
+      data: this.mapResponse(res, notifications),
       count: result[1],
     };
   }
@@ -823,23 +850,30 @@ export class InnovationService extends BaseService<Innovation> {
     });
   }
 
-  private mapResponse(res: any[]): InnovationViewModel[] {
-    const result: InnovationViewModel[] = res.map((r) => ({
-      id: r.id,
-      name: r.name,
-      submittedAt: r.submittedAt,
-      countryName: r.countryName,
-      postCode: r.postcode,
-      mainCategory: r.mainCategory,
-      otherMainCategoryDescription: r.otherMainCategoryDescription,
-      assessment: {
-        id: r.assessments[0]?.id,
-        createdAt: r.assessments[0]?.createdAt,
-        assignTo: { name: r.assessments?.user?.name },
-        finishedAt: r.assessments[0]?.finishedAt,
-      },
-      organisations: r.organisations || [],
-    }));
+  private mapResponse(res: any[], notifications: any[]): InnovationViewModel[] {
+    const result: InnovationViewModel[] = res.map((r) => {
+      const unread = notifications?.filter((n) => n.contextId === r.id);
+
+      return {
+        id: r.id,
+        name: r.name,
+        submittedAt: r.submittedAt,
+        countryName: r.countryName,
+        postCode: r.postcode,
+        mainCategory: r.mainCategory,
+        otherMainCategoryDescription: r.otherMainCategoryDescription,
+        assessment: {
+          id: r.assessments[0]?.id,
+          createdAt: r.assessments[0]?.createdAt,
+          assignTo: { name: r.assessments?.user?.name },
+          finishedAt: r.assessments[0]?.finishedAt,
+        },
+        organisations: r.organisations || [],
+        notifications: {
+          count: unread?.length || 0,
+        },
+      };
+    });
 
     return result;
   }
@@ -848,7 +882,7 @@ export class InnovationService extends BaseService<Innovation> {
     innovations: Innovation[]
   ): Promise<{ [key: string]: string[] } | []> {
     const innovationIds: string[] = innovations.map((o) => o.id);
-    //return await this.supportRepo.findByInnovationIds(innovationIds) || [];
+    // return await this.supportRepo.findByInnovationIds(innovationIds) || [];
     // FROM THE INNOVATIONS PASSED IN
     // GRAB THE SUPPORTS WITH THE STATUS = ENGAGING
 

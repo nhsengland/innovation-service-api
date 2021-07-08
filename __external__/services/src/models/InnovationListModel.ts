@@ -17,4 +17,7 @@ export interface InnovationViewModel {
     finishedAt: string;
   };
   organisations: string[];
+  notifications?: {
+    count: number;
+  };
 }

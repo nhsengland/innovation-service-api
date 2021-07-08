@@ -371,18 +371,31 @@ export class InnovationActionService {
 
     const [innovationActions, count] = await query.getManyAndCount();
 
-    const actions = innovationActions?.map((ia: InnovationAction) => ({
-      id: ia.id,
-      displayId: ia.displayId,
-      innovation: {
-        id: ia.innovationSection.innovation.id,
-        name: ia.innovationSection.innovation.name,
-      },
-      status: ia.status,
-      section: ia.innovationSection.section,
-      createdAt: ia.createdAt,
-      updatedAt: ia.updatedAt,
-    }));
+    const notifications = await this.notificationService.getUnreadNotifications(
+      requestUser,
+      null,
+      NotificationContextType.ACTION
+    );
+
+    const actions = innovationActions?.map((ia: InnovationAction) => {
+      const unread = notifications.filter((n) => n.contextId === ia.id);
+
+      return {
+        id: ia.id,
+        displayId: ia.displayId,
+        innovation: {
+          id: ia.innovationSection.innovation.id,
+          name: ia.innovationSection.innovation.name,
+        },
+        status: ia.status,
+        section: ia.innovationSection.section,
+        createdAt: ia.createdAt,
+        updatedAt: ia.updatedAt,
+        notifications: {
+          count: unread?.length || 0,
+        },
+      };
+    });
 
     return {
       data: actions,
@@ -414,15 +427,27 @@ export class InnovationActionService {
     };
     const innovationActions = await this.actionRepo.find(filterOptions);
 
-    return innovationActions.map((ia: InnovationAction) => ({
-      id: ia.id,
-      displayId: ia.displayId,
-      status: ia.status,
-      description: ia.description,
-      section: ia.innovationSection.section,
-      createdAt: ia.createdAt,
-      updatedAt: ia.updatedAt,
-    }));
+    const notifications = await this.notificationService.getUnreadNotifications(
+      requestUser,
+      innovationId,
+      NotificationContextType.ACTION
+    );
+
+    return innovationActions.map((ia: InnovationAction) => {
+      const unread = notifications.filter((n) => n.contextId === ia.id);
+      return {
+        id: ia.id,
+        displayId: ia.displayId,
+        status: ia.status,
+        description: ia.description,
+        section: ia.innovationSection.section,
+        createdAt: ia.createdAt,
+        updatedAt: ia.updatedAt,
+        notifications: {
+          count: unread?.length || 0,
+        },
+      };
+    });
   }
 
   private async update(

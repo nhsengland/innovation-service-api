@@ -26,12 +26,12 @@ import * as fixtures from "../__fixtures__";
 describe("Notification Service Suite", () => {
   let notificationService: NotificationService;
   beforeAll(async () => {
-    // await setupTestsConnection();
+    //await setupTestsConnection();
     notificationService = new NotificationService(process.env.DB_TESTS_NAME);
   });
 
   afterAll(async () => {
-    // closeTestsConnection();
+    //closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -662,6 +662,156 @@ describe("Notification Service Suite", () => {
     expect(actual).toEqual({ ACTION: 1 });
   });
 
+  it("should get unread COMMENT notifications counts by contextId", async () => {
+    const accessor = await fixtures.createAccessorUser();
+    const innovator = await fixtures.createInnovatorUser();
+    const organisation = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
+    );
+    const orgUser = await fixtures.addUserToOrganisation(
+      accessor,
+      organisation,
+      "ACCESSOR"
+    );
+    const unit = await fixtures.createOrganisationUnit(organisation);
+    await fixtures.addOrganisationUserToOrganisationUnit(orgUser, unit);
+    const innovationObj = fixtures.generateInnovation({
+      owner: { id: innovator.id },
+    });
+    const innovation = await fixtures.saveInnovation(innovationObj);
+
+    const requestUser: RequestUser = {
+      id: accessor.id,
+      type: UserType.ACCESSOR,
+    };
+
+    const notification1 = await notificationService.create(
+      requestUser,
+      NotificationAudience.INNOVATORS,
+      innovation.id,
+      NotificationContextType.COMMENT,
+      innovation.id,
+      "test 1"
+    );
+
+    const notification2 = await notificationService.create(
+      requestUser,
+      NotificationAudience.INNOVATORS,
+      innovation.id,
+      NotificationContextType.INNOVATION,
+      innovation.id,
+      "test 2"
+    );
+
+    const notification3 = await notificationService.create(
+      requestUser,
+      NotificationAudience.INNOVATORS,
+      innovation.id,
+      NotificationContextType.COMMENT,
+      innovation.id,
+      "test 3"
+    );
+
+    const notification4 = await notificationService.create(
+      requestUser,
+      NotificationAudience.INNOVATORS,
+      innovation.id,
+      NotificationContextType.ACTION,
+      innovation.id,
+      "test 3"
+    );
+
+    const innovatorUser: RequestUser = {
+      id: innovator.id,
+      type: UserType.INNOVATOR,
+    };
+
+    const actual = await notificationService.getUnreadNotificationsCounts(
+      innovatorUser,
+      innovation.id,
+      null,
+      innovation.id
+    );
+
+    expect(actual).toBeDefined();
+    expect(actual).toEqual({ COMMENT: 2, ACTION: 1, INNOVATION: 1 });
+  });
+
+  it("should get unread INNOVATION notifications counts by contextId and contextType INNOVATION", async () => {
+    const accessor = await fixtures.createAccessorUser();
+    const innovator = await fixtures.createInnovatorUser();
+    const organisation = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
+    );
+    const orgUser = await fixtures.addUserToOrganisation(
+      accessor,
+      organisation,
+      "ACCESSOR"
+    );
+    const unit = await fixtures.createOrganisationUnit(organisation);
+    await fixtures.addOrganisationUserToOrganisationUnit(orgUser, unit);
+    const innovationObj = fixtures.generateInnovation({
+      owner: { id: innovator.id },
+    });
+    const innovation = await fixtures.saveInnovation(innovationObj);
+
+    const requestUser: RequestUser = {
+      id: accessor.id,
+      type: UserType.ACCESSOR,
+    };
+
+    const notification1 = await notificationService.create(
+      requestUser,
+      NotificationAudience.INNOVATORS,
+      innovation.id,
+      NotificationContextType.COMMENT,
+      innovation.id,
+      "test 1"
+    );
+
+    const notification2 = await notificationService.create(
+      requestUser,
+      NotificationAudience.INNOVATORS,
+      innovation.id,
+      NotificationContextType.INNOVATION,
+      innovation.id,
+      "test 2"
+    );
+
+    const notification3 = await notificationService.create(
+      requestUser,
+      NotificationAudience.INNOVATORS,
+      innovation.id,
+      NotificationContextType.COMMENT,
+      innovation.id,
+      "test 3"
+    );
+
+    const notification4 = await notificationService.create(
+      requestUser,
+      NotificationAudience.INNOVATORS,
+      innovation.id,
+      NotificationContextType.ACTION,
+      innovation.id,
+      "test 3"
+    );
+
+    const innovatorUser: RequestUser = {
+      id: innovator.id,
+      type: UserType.INNOVATOR,
+    };
+
+    const actual = await notificationService.getUnreadNotificationsCounts(
+      innovatorUser,
+      innovation.id,
+      NotificationContextType.INNOVATION,
+      innovation.id
+    );
+
+    expect(actual).toBeDefined();
+    expect(actual).toEqual({ INNOVATION: 1 });
+  });
+
   it("should get unread ACTION notifications list", async () => {
     const accessor = await fixtures.createAccessorUser();
     const innovator = await fixtures.createInnovatorUser();
@@ -734,6 +884,6 @@ describe("Notification Service Suite", () => {
 
     expect(actual).toBeDefined();
     expect(actual.length).toBe(1);
-    expect(actual[0].isRead).toBe(false);
+    expect(actual[0].readAt).toBeNull();
   });
 });

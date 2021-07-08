@@ -109,6 +109,12 @@ export class CommentService {
       );
     }
 
+    const notifications = await this.notificationService.getUnreadNotifications(
+      requestUser,
+      innovationId,
+      NotificationContextType.COMMENT
+    );
+
     const filterOptions = {
       relations: ["user", "organisationUnit", "replyTo"],
       where: { innovation: innovationId },
@@ -127,7 +133,7 @@ export class CommentService {
     const result = comments
       .filter((comment: Comment) => comment.replyTo === null)
       .map((comment: Comment) =>
-        this.getFormattedComment(comment, b2cUserNames)
+        this.getFormattedComment(comment, b2cUserNames, notifications)
       );
 
     result.map((res) => {
@@ -136,7 +142,7 @@ export class CommentService {
           (comment: Comment) => comment.replyTo && comment.replyTo.id === res.id
         )
         .map((comment: Comment) =>
-          this.getFormattedComment(comment, b2cUserNames)
+          this.getFormattedComment(comment, b2cUserNames, notifications)
         );
     });
 
@@ -145,8 +151,17 @@ export class CommentService {
 
   private getFormattedComment(
     comment: Comment,
-    b2cUserNames: { [key: string]: string }
+    b2cUserNames: { [key: string]: string },
+    notifications?: {
+      id: string;
+      contextType: string;
+      contextId: string;
+      innovationId: string;
+      readAt: string;
+    }[]
   ): CommentModel {
+    const unread = notifications?.filter((n) => n.contextId === comment.id);
+
     const commentModel: CommentModel = {
       id: comment.id,
       message: comment.message,
@@ -155,6 +170,9 @@ export class CommentService {
         id: comment.user.id,
         type: comment.user.type,
         name: b2cUserNames[comment.user.id],
+      },
+      notifications: {
+        count: unread?.length || 0,
       },
     };
 

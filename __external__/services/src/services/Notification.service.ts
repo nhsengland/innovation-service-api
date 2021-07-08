@@ -164,7 +164,7 @@ export class NotificationService {
     innovationId: string,
     contextType?: string,
     contextId?: string
-  ) {
+  ): Promise<{ [key: string]: number }> {
     let parameters: any = { innovationId };
     let filters =
       "n_users.notification_id = notifications.id and notifications.innovation_id = :innovationId and read_at IS NULL";
@@ -202,13 +202,29 @@ export class NotificationService {
 
   async getUnreadNotifications(
     requestUser: RequestUser,
-    innovationId: string,
+    innovationId?: string,
     contextType?: string,
     contextId?: string
-  ) {
-    let parameters: any = { innovationId };
+  ): Promise<
+    {
+      id: string;
+      contextType: string;
+      contextId: string;
+      innovationId: string;
+      readAt: string;
+    }[]
+  > {
+    let parameters: any = {};
     let filters =
-      "n_users.notification_id = notifications.id and notifications.innovation_id = :innovationId and read_at IS NULL";
+      "n_users.notification_id = notifications.id and read_at IS NULL";
+
+    if (innovationId) {
+      filters += " and notifications.innovation_id = :innovationId";
+      parameters = {
+        ...parameters,
+        innovationId,
+      };
+    }
 
     if (contextType) {
       filters += " and notifications.context_type = :contextType";
