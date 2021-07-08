@@ -437,11 +437,9 @@ export class InnovationService extends BaseService<Innovation> {
       id: null,
       status: null,
     };
-    const innovationSupport: InnovationSupport =
-      innovation?.innovationSupports.find(
-        (is: InnovationSupport) =>
-          is.organisationUnit.id === organisationUnit.id
-      );
+    const innovationSupport: InnovationSupport = innovation?.innovationSupports.find(
+      (is: InnovationSupport) => is.organisationUnit.id === organisationUnit.id
+    );
 
     if (innovationSupport) {
       support.id = innovationSupport.id;

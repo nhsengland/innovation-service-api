@@ -7,20 +7,22 @@
     "innovationFields": ["hasProblemTackleKnowledge", "problemsTackled", "problemsConsequences", "intervention", "interventionImpact"]
   },
   "UNDERSTANDING_OF_NEEDS": {
-    "innovationFields": ["hasSubgroups"],
+    "innovationFields": ["impactPatients", "impactClinicians", "cliniciansImpactDetails"],
     "innovationDependencies": [
       {
         "type": "subgroups",
-        "fields": ["name", "conditions"]
+        "fields": ["name", "conditions", "otherCondition"]
       }
     ]
   },
   "UNDERSTANDING_OF_BENEFITS": {
-    "innovationFields": ["hasBenefits", "benefits"],
+    "innovationFields": ["hasBenefits", "accessibilityImpactDetails", "accessibilityStepsDetails", "otherGeneralBenefit", "otherEnvironmentalBenefit"],
+    "innovationTypes": ["generalBenefits", "environmentalBenefits"],
     "innovationDependencies": [
       {
         "type": "subgroups",
-        "fields": ["benefits"]
+        "fields": ["otherBenefit"],
+        "subtypes": ["benefits"]
       }
     ]
   },
@@ -63,7 +65,7 @@
     "files": true
   },
   "COST_OF_INNOVATION": {
-    "innovationFields": ["hasCostKnowledge"],
+    "innovationFields": ["hasCostKnowledge", "costDescription", "sellExpectations", "usageExpectations"],
     "innovationDependencies": [
       {
         "type": "subgroups",
@@ -72,7 +74,7 @@
     ]
   },
   "COMPARATIVE_COST_BENEFIT": {
-    "innovationFields": ["hasCostSavingKnowledge", "hasCostCareKnowledge"],
+    "innovationFields": ["hasCostSavingKnowledge", "hasCostCareKnowledge", "costComparison"],
     "innovationDependencies": [
       {
         "type": "subgroups",

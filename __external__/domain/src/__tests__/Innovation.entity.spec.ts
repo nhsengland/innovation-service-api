@@ -18,7 +18,6 @@ import {
   StandardMetCatalogue,
   HasPatentsCatalogue,
   HasRegulationKnowledegeCatalogue,
-  HasSubgroupsCatalogue,
   HasTestsCatalogue,
   MainPurposeCatalogue,
   YesOrNoCatalogue,
@@ -31,7 +30,7 @@ import {
   InnovationClinicalAreaCatalogue,
   EvidenceTypeCatalogue,
   ClinicalEvidenceTypeCatalogue,
-  InnovationStandardCatologue,
+  InnovationCertificationCatalogue,
   InnovationRevenueTypeCatalogue,
   CarePathwayCatalogue,
   PatientRangeCatalogue,
@@ -53,7 +52,7 @@ const dummy = {
   subgroup: {
     name: "name",
     conditions: "conditions",
-    benefits: "benefits",
+    benefits: [],
     carePathway: CarePathwayCatalogue.FIT_LESS_COSTS,
     costDescription: "cost description",
     patientsRange: PatientRangeCatalogue.BETWEEN_10000_500000,
@@ -289,12 +288,13 @@ describe("Innovation Test Suite", () => {
       });
 
       const innovationStandards = InnovationStandard.new({
-        type: InnovationStandardCatologue.OTHER,
+        type: InnovationCertificationCatalogue.OTHER,
         hasMet: StandardMetCatalogue.YES,
       });
 
       const innovationRevenue = InnovationRevenue.new({
-        type: InnovationRevenueTypeCatalogue.SALES_OF_CONSUMABLES_OR_ACCESSORIES,
+        type:
+          InnovationRevenueTypeCatalogue.SALES_OF_CONSUMABLES_OR_ACCESSORIES,
       });
 
       const innovationUserTests = InnovationUserTest.new({
@@ -316,9 +316,7 @@ describe("Innovation Test Suite", () => {
         problemsConsequences: "problems consequences",
         intervention: "intervention",
         interventionImpact: "intervention impact",
-        hasSubgroups: HasSubgroupsCatalogue.YES,
         hasBenefits: YesOrNoCatalogue.YES,
-        benefits: "benefits",
         hasEvidence: YesOrNoCatalogue.YES,
         hasMarketResearch: HasMarketResearchCatalogue.YES,
         marketResearch: "market research",

@@ -39,12 +39,15 @@
 {
 	"section": "UNDERSTANDING_OF_NEEDS",
 	"data": {
-		"hasSubgroups": "HasSubgroupsCatalogue",
+		"impactPatients": boolean,
+		"impactClinicians": boolan,
+		"cliniciansImpactDetails": "string",
 		"subgroups": [
 			{
 				"id": "string?",
 				"name": "string",
-				"conditions": "string"
+				"conditions": "string",
+				"otherCondition": "string"
 			}
 		],
 	}
@@ -57,14 +60,20 @@
 	"section": "UNDERSTANDING_OF_BENEFITS",
 	"data": {
 		"hasBenefits": "HasBenefitsCatalogue",
+		"accessibilityImpactDetails" : "string",
+		"accessibilityStepsDetails": "string",
+		"otherGeneralBenefit": "string",
+		"otherEnvironmentalBenefit": "string",
+		"generalBenefits": [GeneralBenefitCatalogue],
+		"environmentalBenefits": [EnvironmentalBenefitCatalogue],
 		"subgroups": [
 			{
 				"id": "string",
 				"name": "string",
-				"benefits": "string"
+				"benefits": [SubgroupBenefitCatalogue],
+				"otherBenefit": "string"
 			}
-		],
-		"benefits": "string"
+		]
 	}
 }
 
@@ -125,7 +134,7 @@
 		"standards": [
 			{
 				"id": "string",
-				"type": "InnovationStandardCatologue",
+				"type": "InnovationCertificationCatalogue",
 				"hasMet": "StandardMetCatalogue"
 			}
 		],
@@ -140,7 +149,7 @@
 	"section": "CURRENT_CARE_PATHWAY",
 	"data": {
 		"id": "string",
-		"hasUKPathwayKnowledge": "YesOrNoCatalogue",
+		"hasUKPathwayKnowledge": "YesNoNotRelevantCatalogue",
 		"innovationPathwayKnowledge": "InnovationPathwayKnowledgeCatalogue",
 		"potentialPathway": "string",
 		"subgroups": [
@@ -179,6 +188,9 @@
 	"data": {
 		"id": "string",
 		"hasCostKnowledge": "HasTestsCatalogue",
+		"costDescription": "string",
+		"sellExpectations": "string",
+		"usageExpectations": "string"
 		"subgroups": [
 			{
 				"id": "string",
@@ -200,6 +212,7 @@
 		"id": "string",
 		"hasCostSavingKnowledge": "HasKnowledgeCatalogue",
 		"hasCostCareKnowledge": "HasKnowledgeCatalogue",
+		"costComparison": "CostComparisonCatalogue",
 		"subgroups": [
 			{
 				"id": "string",
