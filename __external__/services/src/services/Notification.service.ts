@@ -114,13 +114,6 @@ export class NotificationService {
     contextType: NotificationContextType,
     contextId: string
   ): Promise<NotificationDismissResult> {
-    // const notificationUser =
-    //   await this.notificationUserRepo
-    //   .createQueryBuilder('notificationUser')
-    //   .innerJoinAndSelect('notification', 'notification', 'contextType = :contextType and contextId = :contextId', {contextType, contextId})
-    //   .where('user = :userId', { userId: requestUser.id})
-    //   .getMany();
-
     const notificationUsers = await this.notificationUserRepo.find({
       relations: ["user", "notification"],
       join: {
@@ -165,6 +158,102 @@ export class NotificationService {
       updated: notificationUsers,
     };
   }
+
+  async getUnreadNotificationsCounts(
+    requestUser: RequestUser,
+    innovationId: string,
+    contextType?: string,
+    contextId?: string
+  ) {
+    let parameters: any = { innovationId };
+    let filters =
+      "n_users.notification_id = notifications.id and notifications.innovation_id = :innovationId and read_at IS NULL";
+
+    if (contextType) {
+      filters += " and notifications.context_type = :contextType";
+      parameters = {
+        ...parameters,
+        contextType,
+      };
+    }
+
+    if (contextId) {
+      filters += " and notifications.context_id = :contextId";
+      parameters = {
+        ...parameters,
+        contextId,
+      };
+    }
+
+    const query = this.notificationUserRepo
+      .createQueryBuilder("n_users")
+      .select("notifications.context_type", "contextType")
+      .addSelect("COUNT(notifications.context_type)", "count")
+      .innerJoin(Notification, "notifications", filters, parameters);
+
+    const unreadNotifications = await query
+      .groupBy("notifications.contextType")
+      .addGroupBy("n_users.user_id")
+      .having("n_users.user_id = :userId ", { userId: requestUser.id })
+      .getRawMany();
+
+    return this.convertArrayToObject(unreadNotifications, "contextType");
+  }
+
+  async getUnreadNotifications(
+    requestUser: RequestUser,
+    innovationId: string,
+    contextType?: string,
+    contextId?: string
+  ) {
+    let parameters: any = { innovationId };
+    let filters =
+      "n_users.notification_id = notifications.id and notifications.innovation_id = :innovationId and read_at IS NULL";
+
+    if (contextType) {
+      filters += " and notifications.context_type = :contextType";
+      parameters = {
+        ...parameters,
+        contextType,
+      };
+    }
+
+    if (contextId) {
+      filters += " and notifications.context_id = :contextId";
+      parameters = {
+        ...parameters,
+        contextId,
+      };
+    }
+
+    const query = this.notificationUserRepo
+      .createQueryBuilder("n_users")
+      .select("notifications.id", "id")
+      .addSelect("notifications.context_type", "contextType")
+      .addSelect("notifications.context_id", "contextId")
+      .addSelect("notifications.innovation_id", "innovationId")
+      .addSelect("n_users.read_at", "readAt")
+      .innerJoin(Notification, "notifications", filters, parameters);
+
+    const unreadNotifications = await query
+      .where("n_users.user_id = :userId ", { userId: requestUser.id })
+      .getRawMany();
+
+    return unreadNotifications.map((n) => ({
+      ...n,
+      isRead: n.readAt ? true : false,
+    }));
+  }
+
+  private convertArrayToObject = (array, key) => {
+    const initialValue = {};
+    return array.reduce((obj, item) => {
+      return {
+        ...obj,
+        [item[key]]: item.count,
+      };
+    }, initialValue);
+  };
 
   private async createNotificationForAccessors(
     requestUser: RequestUser,
