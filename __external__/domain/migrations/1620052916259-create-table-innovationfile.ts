@@ -1,8 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class createTableInnovationfile1620052916259
-  implements MigrationInterface
-{
+  implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `CREATE TABLE innovation_file(

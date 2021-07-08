@@ -1,8 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class createTableEvidenceFiles1620123443149
-  implements MigrationInterface
-{
+  implements MigrationInterface {
   name = "createTableEvidenceFiles1620123443149";
 
   public async up(queryRunner: QueryRunner): Promise<void> {

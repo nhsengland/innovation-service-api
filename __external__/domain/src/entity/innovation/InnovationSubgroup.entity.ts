@@ -3,6 +3,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import {
@@ -11,8 +12,8 @@ import {
   PatientRangeCatalogue,
 } from "../../enums/catalog.enums";
 import { Base } from "../Base.entity";
-
 import { Innovation } from "../innovation/Innovation.entity";
+import { InnovationSubgroupBenefit } from "./InnovationSubgroupBenefit.entity";
 
 @Entity("innovation_subgroup")
 export class InnovationSubgroup extends Base {
@@ -25,9 +26,6 @@ export class InnovationSubgroup extends Base {
 
   @Column({ nullable: true })
   conditions: string;
-
-  @Column({ nullable: true })
-  benefits: string;
 
   @Column({ name: "care_pathway", type: "nvarchar", nullable: true })
   carePathway: CarePathwayCatalogue;
@@ -47,10 +45,26 @@ export class InnovationSubgroup extends Base {
   @Column({ name: "cost_comparison", type: "nvarchar", nullable: true })
   costComparison: CostComparisonCatalogue;
 
+  @Column({ name: "other_benefit", type: "nvarchar", nullable: true })
+  otherBenefit: string;
+
+  @Column({ name: "other_condition", type: "nvarchar", nullable: true })
+  otherCondition: string;
+
   //relationships
   @ManyToOne(() => Innovation, { nullable: false })
   @JoinColumn({ name: "innovation_id" })
   innovation: Innovation;
+
+  @OneToMany(
+    () => InnovationSubgroupBenefit,
+    (record) => record.innovationSubgroup,
+    {
+      lazy: true,
+      cascade: ["insert", "update"],
+    }
+  )
+  benefits: InnovationSubgroupBenefit[];
 
   //static constructor
   static new(data) {

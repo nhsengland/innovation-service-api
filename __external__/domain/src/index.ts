@@ -6,12 +6,15 @@ export { InnovationCareSetting } from "./entity/innovation/InnovationCareSetting
 export { InnovationCategory } from "./entity/innovation/InnovationCategory.entity";
 export { InnovationClinicalArea } from "./entity/innovation/InnovationClinicalArea.entity";
 export { InnovationDeploymentPlan } from "./entity/innovation/InnovationDeploymentPlan.entity";
+export { InnovationEnvironmentalBenefit } from "./entity/innovation/InnovationEnvironmentalBenefit.entity";
 export { InnovationEvidence } from "./entity/innovation/InnovationEvidence.entity";
 export { InnovationFile } from "./entity/innovation/InnovationFile.entity";
+export { InnovationGeneralBenefit } from "./entity/innovation/InnovationGeneralBenefit.entity";
 export { InnovationStandard } from "./entity/innovation/InnovationStandard.entity";
 export { InnovationRevenue } from "./entity/innovation/InnovationRevenue.entity";
 export { InnovationSection } from "./entity/innovation/InnovationSection.entity";
 export { InnovationSubgroup } from "./entity/innovation/InnovationSubgroup.entity";
+export { InnovationSubgroupBenefit } from "./entity/innovation/InnovationSubgroupBenefit.entity";
 export { InnovationSupport } from "./entity/innovation/InnovationSupport.entity";
 export { InnovationSupportType } from "./entity/innovation/InnovationSupportType.entity";
 export { InnovationUserTest } from "./entity/innovation/InnovationUserTest.entity";
