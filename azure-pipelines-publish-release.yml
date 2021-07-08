@@ -1,0 +1,63 @@
+trigger:
+- master
+pr: none
+
+name: InnovationServiceAPI_Release_1.0.0_$(Date:yyyyMMdd)_$(Rev:.r)
+
+pool:
+  vmImage: windows-latest
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '12.x'
+  displayName: 'Install Node.js'
+
+- task: Npm@1
+  inputs:
+    command: 'install'
+    verbose: true
+    customRegistry: 'useFeed'
+    customFeed: '7f3e8d94-c48d-41cc-b5aa-0aee0596a809/2ad29166-69b2-465e-b7d8-6b9d66443d60'
+  displayName: 'Install dependencies'
+
+- script: |
+    npm run build
+  displayName: 'Run Build'
+
+- task: CopyFiles@2
+  inputs:
+    Contents: |
+      **/*
+      !.git/**
+      !coverage/**
+      !.vscode/**
+      !azure-pipelines-build-and-publish.yml
+      !azure-pipelines-pull-request.yml
+      !jest.config.js
+      !local.settings.json
+      !package-lock.json
+      !README.MD
+      !commitizen.js
+      !azure-pipelines-publish.yml
+      !.eslintrc.js
+      !.npmrc
+      !.gitignore
+      !.funcignore
+      !__tests__
+      !surveyCreateOne
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/Functions.zip'
+    replaceExistingArchive: true
+  
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/Functions.zip'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
