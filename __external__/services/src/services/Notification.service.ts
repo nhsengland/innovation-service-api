@@ -20,10 +20,13 @@ import {
   In,
   Repository,
   Connection,
+  ObjectLiteral,
+  IsNull,
 } from "typeorm";
 
 export type NotificationDismissResult = {
-  success: boolean;
+  affected: number;
+  updated: ObjectLiteral[];
   error?: any;
 };
 
@@ -108,74 +111,58 @@ export class NotificationService {
 
   async dismiss(
     requestUser: RequestUser,
-    notifications: Notification[],
-    contextType?: NotificationContextType
+    contextType: NotificationContextType,
+    contextId: string
   ): Promise<NotificationDismissResult> {
-    const affected = 0;
+    // const notificationUser =
+    //   await this.notificationUserRepo
+    //   .createQueryBuilder('notificationUser')
+    //   .innerJoinAndSelect('notification', 'notification', 'contextType = :contextType and contextId = :contextId', {contextType, contextId})
+    //   .where('user = :userId', { userId: requestUser.id})
+    //   .getMany();
 
-    if (notifications && notifications.length > 0) {
-      for (let index = 0; index < notifications.length; index++) {
-        try {
-          const notification = notifications[index];
-          const query = this.connection
-            .createQueryBuilder()
-            .update(NotificationUser)
-            .set({ readAt: () => "CURRENT_TIMESTAMP" })
-            .where("notification = :notificationId and user = :userId", {
-              notificationId: notification.id,
-              userId: requestUser.id,
-            });
+    const notificationUsers = await this.notificationUserRepo.find({
+      relations: ["user", "notification"],
+      join: {
+        alias: "n_users",
+        innerJoin: { notification: "n_users.notification" },
+      },
+      where: (qb) => {
+        qb.where({
+          user: { id: requestUser.id },
+          readAt: IsNull(),
+        }).andWhere(
+          "notification.contextType = :contextType and notification.context_id = :contextId",
+          { contextType, contextId }
+        );
+      },
+      select: ["user", "notification", "readAt"],
+    });
 
-          await query.updateEntity(true).execute();
-        } catch (error) {
-          return {
-            success: false,
-            error,
-          };
-        }
-      }
-    } else {
-      try {
-        const query = this.notificationUserRepo
-          .createQueryBuilder("notificationUser")
-          .select(["notificationUser.user", "notificationUser.notification"])
-          .innerJoin("notificationUser.notification", "notification")
-          .where(
-            "notificationUser.user = :userId and notification.contextType = :contextType",
-            {
-              userId: requestUser.id,
-              contextType,
-            }
-          );
+    let result;
 
-        const sql = query.getQueryAndParameters();
-        const notificationUsers = await query.execute();
-
-        if (notificationUsers.length > 0) {
-          await this.notificationUserRepo
-            .createQueryBuilder()
-            .update()
-            .set({ readAt: () => "CURRENT_TIMESTAMP" })
-            .where(
-              "user IN (:...userIds) and notification IN (:...notifications)",
-              {
-                userIds: notificationUsers.map((n) => n.user_id),
-                notifications: notificationUsers.map((n) => n.notification_id),
-              }
-            )
-            .updateEntity(true)
-            .execute();
-        }
-      } catch (error) {
-        return {
-          success: false,
-          error,
-        };
-      }
+    try {
+      const notificationIds = notificationUsers.map((u) => u.notification.id);
+      result = await this.notificationUserRepo
+        .createQueryBuilder()
+        .update(NotificationUser)
+        .set({ readAt: () => "CURRENT_TIMESTAMP" })
+        .where(
+          "user = :userId and notification in (:...notificationId) and read_at IS NULL",
+          { userId: requestUser.id, notificationId: notificationIds }
+        )
+        .execute();
+    } catch (error) {
+      return {
+        error,
+        updated: [],
+        affected: 0,
+      };
     }
 
     return {
-      success: true,
+      affected: notificationUsers.length,
+      updated: notificationUsers,
     };
   }
 
