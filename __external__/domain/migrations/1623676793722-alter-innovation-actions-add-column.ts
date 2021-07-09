@@ -1,7 +1,8 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class alterInnovationActionsAddColumn1623676793722
-  implements MigrationInterface {
+  implements MigrationInterface
+{
   name = "alterInnovationActionsAddColumn1623676793722";
 
   public async up(queryRunner: QueryRunner): Promise<void> {

@@ -4,10 +4,11 @@ export const findAllInnovationSections = async (
   ctx: CustomContext,
   innovationId: string
 ) => {
-  const result = await ctx.services.InnovationSectionService.findAllInnovationSections(
-    ctx.auth.requestUser,
-    innovationId
-  );
+  const result =
+    await ctx.services.InnovationSectionService.findAllInnovationSections(
+      ctx.auth.requestUser,
+      innovationId
+    );
 
   return result;
 };

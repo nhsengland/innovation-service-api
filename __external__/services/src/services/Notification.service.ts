@@ -279,16 +279,13 @@ export class NotificationService {
     message: string,
     specificUsers?: string[]
   ) {
-    // target users are all accessors whose this innovation has been assigned to and whose support is on ENGAGING status
+    // target users are all accessors whose this innovation has been assigned to and whose support is on ENGAGING status OR COMPLETE status
     // this is obtained from the innovation_support entity
 
     let targetUsers: { user: string; createdBy: string }[] = [];
 
     const supports = await this.innovationSupportRepo.find({
-      where: {
-        innovation: innovationId,
-        status: InnovationSupportStatus.ENGAGING,
-      },
+      where: `innovation_id = '${innovationId}' and status in('${InnovationSupportStatus.ENGAGING}', '${InnovationSupportStatus.COMPLETE}')`,
       relations: [
         "organisationUnitUsers",
         "organisationUnitUsers.organisationUser",

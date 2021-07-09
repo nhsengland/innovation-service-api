@@ -1,7 +1,8 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class createTableInnovationSupportType1621331271431
-  implements MigrationInterface {
+  implements MigrationInterface
+{
   name = "createTableInnovationSupportType1621331271431";
 
   public async up(queryRunner: QueryRunner): Promise<void> {

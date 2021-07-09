@@ -232,9 +232,10 @@ export class InnovationSupportService {
 
         const usersToBeNotified =
           innovationSupport.organisationUnitUsers?.map((u) => u.id) || [];
-        targetNotificationUsers = await this.organisationService.findUserFromUnitUsers(
-          usersToBeNotified
-        );
+        targetNotificationUsers =
+          await this.organisationService.findUserFromUnitUsers(
+            usersToBeNotified
+          );
 
         return await transactionManager.save(
           InnovationSupport,
@@ -348,9 +349,10 @@ export class InnovationSupportService {
           );
           const usersToBeNotified =
             innovationSupport.organisationUnitUsers?.map((u) => u.id) || [];
-          targetNotificationUsers = await this.organisationService.findUserFromUnitUsers(
-            usersToBeNotified
-          );
+          targetNotificationUsers =
+            await this.organisationService.findUserFromUnitUsers(
+              usersToBeNotified
+            );
         }
 
         innovationSupport.status = support.status;
