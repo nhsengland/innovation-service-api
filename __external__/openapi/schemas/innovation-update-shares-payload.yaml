@@ -1,0 +1,11 @@
+description: Innovation Shares Update Payload
+required: true
+content:
+  application/json:
+    schema:
+      type: object
+      properties:
+        organisations:
+          type: array
+          items:
+            type: string

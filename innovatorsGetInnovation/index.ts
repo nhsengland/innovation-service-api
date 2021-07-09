@@ -1,20 +1,41 @@
-import { AzureFunction, Context, HttpRequest } from "@azure/functions";
+import { HttpRequest } from "@azure/functions";
+import { UserType } from "@domain/index";
+import {
+  AllowedUserType,
+  AppInsights,
+  JwtDecoder,
+  SQLConnector,
+} from "../utils/decorators";
+import * as Responsify from "../utils/responsify";
+import { CustomContext, Severity } from "../utils/types";
+import * as persistence from "./persistence";
 
-export default async function innovatorsGetInnovation(
-  context: Context,
-  req: HttpRequest
-): Promise<void> {
-  context.log("HTTP trigger function processed a request.");
+class InnovatorsGetInnovation {
+  @AppInsights()
+  @SQLConnector()
+  @JwtDecoder()
+  @AllowedUserType(UserType.INNOVATOR)
+  static async httpTrigger(
+    context: CustomContext,
+    req: HttpRequest
+  ): Promise<void> {
+    const innovationId = req.params.innovationId;
 
-  //
-  const innovatorId = req.query.innovatorId;
+    let result;
+    try {
+      result = await persistence.findInnovationsByInnovator(
+        context,
+        innovationId
+      );
+    } catch (error) {
+      context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
+      context.log.error(error);
+      context.res = Responsify.ErroHandling(error);
+      return;
+    }
 
-  //
-  const innovationId = req.query.innovationId;
-
-  //
-  const authorization = req.query.authorization;
-
-  // Default response code is 200.
-  context.res = { body: "Successfully Setup" };
+    context.res = Responsify.Ok(result);
+  }
 }
+
+export default InnovatorsGetInnovation.httpTrigger;

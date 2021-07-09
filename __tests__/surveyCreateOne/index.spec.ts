@@ -1,12 +1,31 @@
-import surveyCreateOne from "../../surveyCreateOne/index";
+/* eslint-disable */
 import * as mongoose from "mongoose";
+import {
+  createHttpTrigger, runStubFunctionFromBindings
+} from "stub-azure-function-context";
+import surveyCreateOne from "../../surveyCreateOne/index";
 import * as persistence from "../../surveyCreateOne/persistence";
 import * as Validation from "../../surveyCreateOne/validation";
 
-import {
-  runStubFunctionFromBindings,
-  createHttpTrigger,
-} from "stub-azure-function-context";
+jest.mock("../../utils/logging/insights", () => ({
+  start: () => { },
+  getInstance: () => ({
+    startOperation: () => ({
+      operation: {
+        parentId: ":parent_id",
+      },
+    }),
+    wrapWithCorrelationContext: (func) => {
+      return func;
+    },
+    defaultClient: {
+      trackTrace: () => { },
+      trackRequest: () => { },
+      flush: () => { },
+    },
+  }),
+}));
+
 
 describe("[HttpTrigger] SurveyCreateOne Suite", () => {
   describe("Function Handler", () => {

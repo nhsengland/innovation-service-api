@@ -1,6 +1,9 @@
 trigger:
 - develop
+- master
 pr: none
+
+name: InnovationServiceAPI_$(SourceBranchName)_1.0.0_$(Date:yyyyMMdd)_$(Rev:.r)
 
 pool:
   vmImage: windows-latest
@@ -16,29 +19,12 @@ steps:
     command: 'install'
     verbose: true
     customRegistry: 'useFeed'
-    customFeed: 'd9ecb648-bec3-489a-8033-491efc9722a1/68378af9-2d8c-48bf-b1c8-9a01f4ad4851'
+    customFeed: '7f3e8d94-c48d-41cc-b5aa-0aee0596a809/2ad29166-69b2-465e-b7d8-6b9d66443d60'
   displayName: 'Install dependencies'
-
-
-- task: Npm@1
-  inputs:
-    command: 'custom'
-    customCommand: 'install -g azure-functions-core-tools'
-  displayName: 'Install azure-function-core-tools'
-  
-- task: PowerShell@2
-  inputs:
-    targetType: 'inline'
-    script: 'func extensions install'
-  displayName: 'Install Func extensions'
 
 - script: |
     npm run build
   displayName: 'Run Build'
-
-- script: |
-    npm test
-  displayName: 'Run Tests'
 
 - task: CopyFiles@2
   inputs:

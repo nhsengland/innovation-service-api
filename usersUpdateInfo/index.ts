@@ -1,7 +1,7 @@
 import { Context, HttpRequest } from "@azure/functions";
 import jwt_decode from "jwt-decode";
 
-import { ADUserService } from "nhs-aac-domain-services";
+import { UserService } from "@services/index";
 
 import * as Responsify from "../utils/responsify";
 import { ValidateHeaders, ValidatePayload } from "./validation";
@@ -17,7 +17,7 @@ export default async function usersUpdateInfo(
   const payload = req.body;
   const payloadValidation = ValidatePayload(payload);
 
-  const userService = new ADUserService();
+  const userService = new UserService();
 
   if (payloadValidation.error) {
     context.res = Responsify.BadData({ error: "Payload validation failed." });

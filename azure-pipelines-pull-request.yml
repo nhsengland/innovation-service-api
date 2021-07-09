@@ -1,35 +1,66 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+resources:
+ containers:
+   - container: mssql
+     image: mcr.microsoft.com/mssql/server:2017-latest-ubuntu
+     ports:
+     - 1433:1433
+     env:
+      SA_PASSWORD: P@ssw0rd
+      ACCEPT_EULA: Y
+
+pool:
+  vmImage: 'ubuntu-latest'
 
 trigger: none
 
 pr:
 - develop
 
-pool:
-  vmImage: ubuntu-latest
+services:
+  mssql: mssql
+
+variables:
+  DB_TESTS_HOST: 'localhost'
+  DB_TESTS_USER: 'test_usr'
+  DB_TESTS_PWD: 'SuperSecret52!!'
+  DB_TESTS_NAME: 'tests'
 
 steps:
+- task: PowerShell@2
+  displayName: 'Wait for MSSQL Start'
+  inputs:
+    targetType: 'inline'
+    script: |
+      # Write your PowerShell commands here.
+        
+      start-sleep -s 10
+
+- script: |
+    sqlcmd -S localhost -U sa -P P@ssw0rd -p -Q "CREATE DATABASE tests;"
+    sqlcmd -S localhost -U sa -P P@ssw0rd -p -Q "USE tests; CREATE LOGIN test_usr WITH PASSWORD='SuperSecret52!!';"
+    sqlcmd -S localhost -U sa -P P@ssw0rd -p -Q "USE tests; CREATE USER test_usr from LOGIN test_usr;"
+    sqlcmd -S localhost -U sa -P P@ssw0rd -p -Q "USE tests; EXEC sp_addrolemember 'db_owner', 'test_usr';"
+    sqlcmd -S localhost -U test_usr -P SuperSecret52!! -p -Q "SELECT @@VERSION;"
+  displayName: 'Setup SQL Container'
 
 - task: NodeTool@0
   inputs:
     versionSpec: '12.x'
   displayName: 'Install Node.js'
-  
+
 - task: Npm@1
   inputs:
     command: 'install'
-    verbose: true
-    customRegistry: 'useFeed'
-    customFeed: 'd9ecb648-bec3-489a-8033-491efc9722a1/68378af9-2d8c-48bf-b1c8-9a01f4ad4851'
-  displayName: 'Install Dependencies'
+  displayName: 'Install dependencies'
 
 - script: |
-    npm run build
-  displayName: 'Run Build'
+    npm run migrations:run
+  displayName: 'Run Migrations against the Container'
 
 - script: |
     npm test
   displayName: 'Run Tests'
+  
+- script: |
+    npm run build
+  displayName: 'Run Build'

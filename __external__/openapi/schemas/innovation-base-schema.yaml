@@ -1,0 +1,23 @@
+type: object
+properties:
+  "type":
+    type: string
+    maxLength: 40
+  id:
+    type: string
+    format: uuid
+  attributes:
+    type: object
+    properties:
+      ownerId:
+        type: string
+        format: uuid
+      title:
+        type: string
+        maxLength: 150
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time

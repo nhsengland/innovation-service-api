@@ -1,0 +1,1975 @@
+openapi: "3.0.2"
+info:
+  title: "NHSE-I-AAC API"
+  version: "0.0.1"
+servers:
+  - url: https://nhse-${ENV}-innovation-service-functions.azurewebsites.net/api
+
+
+paths:
+  "/survey":
+    post:
+      tags:
+        - "Survey"
+        - "Create"
+      description: "Creates a Survey object with answers"
+      operationId: "survey-create-one"
+      requestBody:
+        $ref: "#/components/requestBodies/survey-create-payload"
+      responses:
+        "201":
+          $ref: "#/components/responses/survey-create-201"
+        "400":
+          description: "Bad Request"
+        "422":
+          description: "UnprocessableEntity"
+
+  "/accessors":
+    get:
+      tags:
+        - "Accessor"
+        - "List"
+      description: "Retrieves the list of all accessors"
+      operationId: "accessors-get-all"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - accessors_list
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
+  "/accessors/{userId}/innovations":
+    get:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "GetInnovations"
+      description: "Gets an Accessor's Innovations"
+      operationId: "accessors-get-all-innovations"
+      security:
+        - OpenId:
+            - accessors_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/accessor-get-innovations-200"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
+  "/accessors/{userId}/innovations/{innovationId}":
+    get:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "GetInnovation"
+      description: "Gets an Innovation associated with the Accessor"
+      operationId: "accessors-get-innovation"
+      security:
+        - OpenId:
+            - accessors_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
+  "/accessors/{userId}/innovations/{innovationId}/section-summary":
+    get:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "GetInnovationSectionSummary"
+      description: "Gets an Innovation Sections associated with the Accessor"
+      operationId: "accessors-get-innovation-section-summary"
+      security:
+        - OpenId:
+            - accessors_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
+  "/accessors/{userId}/innovations/{innovationId}/sections":
+    get:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "GetInnovationSection"
+      description: "Get an Innovation Section associated with the Accessor"
+      operationId: "accessors-get-innovation-sections"
+      security:
+        - OpenId:
+            - accessors_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/accessors/{userId}/innovations/{innovationId}/supports":
+    post:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "CreateInnovationSupport"
+      description: "Creates an Innovation Support associated with the Innovation"
+      operationId: "accessors-create-innovation-support"
+      security:
+        - OpenId:
+            - supports_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/accessors-create-support-payload"
+      responses:
+        "201":
+          description: "Created"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/accessors/{userId}/innovations/{innovationId}/supports/{supportId}":
+    get:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "GetInnovationSupport"
+      description: "Get an Innovation Support associated with the Innovation"
+      operationId: "accessors-get-innovation-support"
+      security:
+        - OpenId:
+            - innovation_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: supportId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+    put:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "UpdateInnovationSupport"
+      description: "Updates an Innovation Support associated with the Innovation"
+      operationId: "accessors-update-innovation-support"
+      security:
+        - OpenId:
+            - innovators_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: supportId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/accessors-update-support-payload"
+      responses:
+        "200":
+          description: "Ok"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+
+  "/accessors/{userId}/actions":
+    get:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "GetInnovationActions"
+      description: "Get All Innovation Actions"
+      operationId: "accessors-get-all-actions"
+      security:
+        - OpenId:
+            - innovation_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/accessors/{userId}/innovations/{innovationId}/actions":
+    get:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "GetInnovationActions"
+      description: "Get Innovation Actions associated with the Innovation"
+      operationId: "accessors-get-innovation-actions"
+      security:
+        - OpenId:
+            - innovation_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+    post:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "CreateInnovationAction"
+      description: "Creates an Innovation Action associated with the Innovation"
+      operationId: "accessors-create-innovation-action"
+      security:
+        - OpenId:
+            - actions_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/accessors-create-action-payload"
+      responses:
+        "201":
+          description: "Created"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/accessors/{userId}/innovations/{innovationId}/actions/{actionId}":
+    get:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "GetInnovationAction"
+      description: "Get an Innovation Action associated with the Innovation"
+      operationId: "accessors-get-innovation-action"
+      security:
+        - OpenId:
+            - innovation_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: actionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+    put:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "UpdateInnovationAction"
+      description: "Updates an Innovation Action associated with the Innovation"
+      operationId: "accessors-update-innovation-action"
+      security:
+        - OpenId:
+            - innovators_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: actionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/accessors-update-action-payload"
+      responses:
+        "200":
+          description: "Ok"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/accessors/{userId}/innovations/{innovationId}/evidence/{evidenceId}":
+    get:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "GetInnovationEvidence"
+      description: "Get an Innovation Evidence associated with the Accessor"
+      operationId: "accessors-get-innovation-evidence"
+      security:
+        - OpenId:
+            - accessors_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: evidenceId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/accessors/{userId}/innovations/{innovationId}/assessments/{assessmentId}":
+    get:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "GetInnovationAssessment"
+      description: "Get an Innovation Assessment associated with the Innovation"
+      operationId: "accessors-get-innovation-assessment"
+      security:
+        - OpenId:
+            - innovators_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: assessmentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/accessor-get-innovation-assessment-200"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/accessors/{userId}/innovations/{innovationId}/comments":
+    get:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "GetInnovationComments"
+      description: "Get Innovation Comments associated with the Innovation"
+      operationId: "accessors-get-innovation-comments"
+      security:
+        - OpenId:
+            - comments_read
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+    post:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "CreateInnovationComment"
+      description: "Creates an Innovation Comment associated with the Innovation"
+      operationId: "accessors-create-innovation-comment"
+      security:
+        - OpenId:
+            - comments_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/innovation-create-comment-payload"
+      responses:
+        "201":
+          description: "Created"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/innovators":
+    post:
+      tags:
+        - "Innovator"
+        - "Create"
+      description: "Creates an Innovator"
+      operationId: "innovators-create-one"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - innovators_create
+      requestBody:
+        $ref: "#/components/requestBodies/innovator-create-payload"
+      responses:
+        "201":
+          $ref: "#/components/responses/innovator-create-201"
+        "401":
+          description: "Unauthorized"
+        "400":
+          description: "Bad Request"
+        "422":
+          description: "UnprocessableEntity"
+
+  "/innovators/{userId}":
+    head:
+      tags:
+        - "Innovator"
+        - "HeadOne"
+      description: "Retrieves an innovator"
+      operationId: "innovators-head-one"
+      security:
+        - OpenId:
+            - innovators_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "Ok"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
+  "/innovators/{userId}/innovations":
+    get:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "GetInnovations"
+      description: "Gets an Innovator's Innovations"
+      operationId: "innovators-get-all-innovations"
+      security:
+        - OpenId:
+            - innovators_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/innovator-get-innovations-200"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
+  "/innovators/{userId}/innovations/{innovationId}":
+    get:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "GetInnovation"
+      description: "Gets an Innovation associated with the Innovator"
+      operationId: "innovators-get-innovation"
+      security:
+        - OpenId:
+            - innovators_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/innovator-get-innovation-200"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
+  "/innovators/{userId}/innovations/{innovationId}/submit":
+    patch:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "SubmitInnovation"
+      description: "Submits an Innovation associated with the Innovator"
+      operationId: "innovators-submit-innovation"
+      security:
+        - OpenId:
+            - innovators_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "204":
+          description: "No Content"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/innovators/{userId}/innovations/{innovationId}/section-summary":
+    get:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "GetInnovationSectionSummary"
+      description: "Gets an Innovation Sections associated with the Innovator"
+      operationId: "innovators-get-innovation-section-summary"
+      security:
+        - OpenId:
+            - innovators_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/innovator-get-innovation-section-summary-200"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
+  "/innovators/{userId}/innovations/{innovationId}/sections":
+    get:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "GetInnovationSection"
+      description: "Get an Innovation Section associated with the Innovator"
+      operationId: "innovators-get-innovation-sections"
+      security:
+        - OpenId:
+            - innovators_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/innovator-get-innovation-section-200"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+    put:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "UpdateInnovationSection"
+      description: "Updates an Innovation Section associated with the Innovator"
+      operationId: "innovators-update-innovation-sections"
+      security:
+        - OpenId:
+            - innovators_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/innovation-update-section-payload"
+      responses:
+        "200":
+          $ref: "#/components/responses/innovator-update-innovation-section-200"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/innovators/{userId}/innovations/{innovationId}/sections/submit":
+    patch:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "SubmitInnovationSection"
+      description: "Submits an Innovation Section associated with the Innovator"
+      operationId: "innovators-submit-innovation-sections"
+      security:
+        - OpenId:
+            - innovators_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/innovation-submit-section-payload"
+      responses:
+        "204":
+          description: "No Content"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/innovators/{userId}/innovations/{innovationId}/shares":
+    get:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "GetInnovationShares"
+      description: "Get Innovation Shares associated with the Innovation"
+      operationId: "innovators-get-innovation-shares"
+      security:
+        - OpenId:
+            - innovation_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+    put:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "UpdateInnovationShares"
+      description: "Updates Innovation Shares associated with the Innovation"
+      operationId: "innovators-update-innovation-shares"
+      security:
+        - OpenId:
+            - innovation_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/innovation-update-shares-payload"
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/innovators/{userId}/innovations/{innovationId}/evidence":
+    post:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "CreateInnovationEvidence"
+      description: "Creates an Innovation Evidence associated with the Innovation"
+      operationId: "innovators-create-innovation-evidence"
+      security:
+        - OpenId:
+            - innovators_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/innovation-create-evidence-payload"
+      responses:
+        "201":
+          description: "Created"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/innovators/{userId}/innovations/{innovationId}/evidence/{evidenceId}":
+    get:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "GetInnovationEvidence"
+      description: "Get an Innovation Evidence associated with the Innovation"
+      operationId: "innovators-get-innovation-evidence"
+      security:
+        - OpenId:
+            - innovators_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: evidenceId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/innovator-get-innovation-evidence-200"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+    put:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "UpdateInnovationEvidence"
+      description: "Updates an Innovation Evidence associated with the Innovation"
+      operationId: "innovators-update-innovation-evidence"
+      security:
+        - OpenId:
+            - innovators_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: evidenceId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/innovation-update-evidence-payload"
+      responses:
+        "200":
+          description: "Ok"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+    delete:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "DeleteInnovationEvidence"
+      description: "Deletes an Innovation Evidence associated with the Innovation"
+      operationId: "innovators-delete-innovation-evidence"
+      security:
+        - OpenId:
+            - innovators_delete
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: evidenceId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "Ok"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
+  "/innovators/{userId}/innovations/{innovationId}/actions/{actionId}":
+    get:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "GetInnovationAction"
+      description: "Get an Innovation Action associated with the Innovation"
+      operationId: "innovators-get-innovation-action"
+      security:
+        - OpenId:
+            - innovation_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: actionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+    put:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "UpdateInnovationAction"
+      description: "Updates an Innovation Action associated with the Innovation"
+      operationId: "innovators-update-innovation-action"
+      security:
+        - OpenId:
+            - innovators_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: actionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/innovator-update-action-payload"
+      responses:
+        "200":
+          description: "Ok"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/innovators/{userId}/innovations/{innovationId}/actions":
+    get:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "GetInnovationActions"
+      description: "Get Innovation Actions associated with the Innovation"
+      operationId: "innovators-get-innovation-actions"
+      security:
+        - OpenId:
+            - innovation_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/innovators/{userId}/innovations/{innovationId}/upload":
+    post:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "InnovatorsPostInnovationsFiles"
+      description: "Creates an Innovation file metadata and returns a built upload url"
+      operationId: "innovators-post-innovation-upload"
+      security:
+        - OpenId:
+            - innovators_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        description: Innovation File Upload Payload
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fileName:
+                  type: string
+                context:
+                  type: string
+      responses:
+        "201":
+          $ref: "#/components/responses/innovator-post-innovation-upload-201"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
+  "/innovators/{userId}/innovations/{innovationId}/comments":
+    get:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "GetInnovationComments"
+      description: "Get Innovation Comments associated with the Innovation"
+      operationId: "innovators-get-innovation-comments"
+      security:
+        - OpenId:
+            - comments_read
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+    post:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "CreateInnovationComment"
+      description: "Creates an Innovation Comment associated with the Innovation"
+      operationId: "innovators-create-innovation-comment"
+      security:
+        - OpenId:
+            - comments_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/innovation-create-comment-payload"
+      responses:
+        "201":
+          description: "Created"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/innovators/{userId}/innovations/{innovationId}/supports":
+    get:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "GetInnovationSupports"
+      description: "Get an Innovation Supports associated with the Innovation"
+      operationId: "innovators-get-innovation-supports"
+      security:
+        - OpenId:
+            - innovation_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/innovators/{userId}/innovations/{innovationId}/assessments/{assessmentId}":
+    get:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "GetInnovationAssessment"
+      description: "Get an Innovation Assessment associated with the Innovation"
+      operationId: "innovators-get-innovation-assessment"
+      security:
+        - OpenId:
+            - innovators_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: assessmentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/accessor-get-innovation-assessment-200"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/me":
+    get:
+      tags:
+        - "Users"
+        - "GetProfile"
+      description: "Retrieves the user profile"
+      operationId: "users-get-profile"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - user_profile
+      responses:
+        "200":
+          $ref: "#/components/responses/users-get-profile-200"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+  
+  "/organisations":
+    get:
+      tags:
+        - "Organisation"
+        - "List"
+      description: "Retrieves the list of all organisations with a filter"
+      operationId: "organisations-get-all"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - organisations_list
+      responses:
+        "200":
+          $ref: "#/components/responses/organisations-get-all-200"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+  
+  "/assessments/{userId}/innovations/{innovationId}":
+    get:
+      tags:
+        - "assessment"
+        - "GetAssessmentsInnovationSummary"
+      description: "Retrieves the Assessment Innovation Summary"
+      operationId: "assessments-get-innovation"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: userId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: innovationId
+          in: path
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - user_profile
+      responses:
+        "200":
+          $ref: "#/components/responses/assessments-get-innovation-200"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+  
+  "/assessments/{userId}/innovations":
+    get:
+      tags:
+        - "assessment"
+        - "ListAssessmentsInnovations"
+      description: "Retrieves the Assessment Innovation List"
+      operationId: "assessments-list-innovations"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: userId
+          in: path
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - user_profile
+      responses:
+        "200":
+          $ref: "#/components/responses/assessments-list-innovations-200"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
+  "/assessments/{userId}/innovations/{innovationId}/assessments":
+    post:
+      tags:
+        - "Assessment"
+        - "Innovation"
+        - "CreateInnovationAssessment"
+      description: "Creates an Innovation Assessment associated with the Innovation"
+      operationId: "assessments-create-innovation-assessment"
+      security:
+        - OpenId:
+            - assessments_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/assessments-create-assessment-payload"
+      responses:
+        "201":
+          description: "Created"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/assessments/{userId}/innovations/{innovationId}/assessments/{assessmentId}":
+    get:
+      tags:
+        - "Assessment"
+        - "Innovation"
+        - "GetInnovationAssessment"
+      description: "Get an Innovation Assessment associated with the Innovation"
+      operationId: "assessments-get-innovation-assessment"
+      security:
+        - OpenId:
+            - innovators_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: assessmentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/assessments-get-innovation-assessment-200"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+    put:
+      tags:
+        - "Assessment"
+        - "Innovation"
+        - "UpdateInnovationAssessment"
+      description: "Updates an Innovation Assessment associated with the Innovation"
+      operationId: "assessments-update-innovation-assessment"
+      security:
+        - OpenId:
+            - innovators_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: assessmentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/assessments-update-assessment-payload"
+      responses:
+        "200":
+          description: "Ok"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/assessments/{userId}/innovations/{innovationId}/evidence/{evidenceId}":
+    get:
+      tags:
+        - "Assessment"
+        - "Innovation"
+        - "GetInnovationEvidence"
+      description: "Get an Innovation Evidence associated with the Innovation"
+      operationId: "assessments-get-innovation-evidence"
+      security:
+        - OpenId:
+            - innovators_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: evidenceId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/assessments/{userId}/innovations/{innovationId}/section-summary":
+    get:
+      tags:
+        - "Assessment"
+        - "Innovation"
+        - "GetInnovationSectionSummary"
+      description: "Gets an Innovation Sections"
+      operationId: "assessments-get-innovation-section-summary"
+      security:
+        - OpenId:
+            - assessments_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
+  "/assessments/{userId}/innovations/{innovationId}/sections":
+    get:
+      tags:
+        - "Assessment"
+        - "Innovation"
+        - "GetInnovationSection"
+      description: "Get an Innovation Section"
+      operationId: "assessments-get-innovation-sections"
+      security:
+        - OpenId:
+            - assessments_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+components:
+  schemas:
+    accessor-schema:
+      $ref: "./schemas/accessor-base-schema.yaml"
+    accessor-get-innovations:
+      $ref: "./schemas/accessor-get-innovations.yaml"
+    innovator-schema:
+      $ref: "./schemas/innovator-base-schema.yaml"
+    innovation-schema:
+      $ref: "./schemas/innovation-base-schema.yaml"
+    organisation-schema:
+      $ref: "./schemas/organisation-base-schema.yaml"
+    survey-schema:
+      $ref: "./schemas/survey-base-schema.yaml"
+    innovator-get-all:
+      $ref: "./schemas/innovator-get-all.yaml"
+    organisations-get-all:
+      $ref: "./schemas/organisations-get-all.yaml"
+    innovator-get-one:
+      $ref: "./schemas/innovator-get-one.yaml"
+    innovator-get-innovations:
+      $ref: "./schemas/innovator-get-innovations.yaml"
+    innovator-get-innovation:
+      $ref: "./schemas/innovator-get-innovation.yaml"
+    innovator-post-innovation-upload:
+      $ref: "./schemas/innovator-post-innovation-upload.yaml"
+    profile-schema:
+      $ref: "./schemas/users-profile-base-schema.yaml"
+    assessments-innovation-schema:
+      $ref: "./schemas/assessments-innovation-base-schema.yaml"
+    assessments-innovations-schema:
+      $ref: "./schemas/assessments-innovations-base-schema.yaml"
+    survey-get-id:
+      $ref: "./schemas/survey-get-id.yaml"
+
+  requestBodies:
+    accessors-create-support-payload:
+      $ref: "./schemas/accessors-create-support-payload.yaml"
+    accessors-update-support-payload:
+      $ref: "./schemas/accessors-update-support-payload.yaml"
+    accessors-create-action-payload:
+      $ref: "./schemas/accessors-create-action-payload.yaml"
+    accessors-update-action-payload:
+      $ref: "./schemas/accessors-update-action-payload.yaml"
+    innovator-create-payload:
+      $ref: "./schemas/innovator-create-payload.yaml"
+    innovator-update-action-payload:
+      $ref: "./schemas/innovator-update-action-payload.yaml"
+    innovation-update-section-payload:
+      $ref: "./schemas/innovation-update-section-payload.yaml"
+    innovation-update-shares-payload:
+      $ref: "./schemas/innovation-update-shares-payload.yaml"
+    innovation-update-evidence-payload:
+      $ref: "./schemas/innovation-update-evidence-payload.yaml"
+    innovation-create-evidence-payload:
+      $ref: "./schemas/innovation-create-evidence-payload.yaml"
+    innovation-submit-section-payload:
+      $ref: "./schemas/innovation-submit-section-payload.yaml"
+    innovation-create-comment-payload:
+      $ref: "./schemas/innovation-create-comment-payload.yaml"
+    survey-create-payload:
+      $ref: "./schemas/survey-create-payload.yaml"
+    assessments-create-assessment-payload:
+      $ref: "./schemas/assessments-create-assessment-payload.yaml"
+    assessments-update-assessment-payload:
+      $ref: "./schemas/assessments-update-assessment-payload.yaml"
+
+  responses:
+    accessor-get-innovations-200:
+      $ref: "./responses/accessor-get-innovations-200.yaml"
+    accessor-get-innovation-assessment-200:
+      $ref: "./responses/accessor-get-innovation-assessment-200.yaml"
+    innovator-create-201:
+      $ref: "./responses/innovator-create-201.yaml"
+    innovator-get-innovations-200:
+      $ref: "./responses/innovator-get-innovations-200.yaml"
+    innovator-get-innovation-section-summary-200:
+      $ref: "./responses/innovator-get-innovation-section-summary-200.yaml"
+    innovator-post-innovation-upload-201:
+      $ref: "./responses/innovator-post-innovation-upload-201.yaml"
+    innovator-get-innovation-200:
+      $ref: "./responses/innovator-get-innovation-200.yaml"
+    innovator-get-innovation-section-200:
+      $ref: "./responses/innovator-get-innovation-section-200.yaml"
+    innovator-update-innovation-section-200:
+      $ref: "./responses/innovator-update-innovation-section-200.yaml"
+    innovator-get-innovation-evidence-200:
+      $ref: "./responses/innovator-get-innovation-evidence-200.yaml"
+    survey-create-201:
+      $ref: "./responses/survey-create-201.yaml"
+    users-get-profile-200:
+      $ref: "./responses/users-get-profile-200.yaml"
+    organisations-get-all-200:
+      $ref: "./responses/organisations-get-all-200.yaml"
+    assessments-get-innovation-200:
+      $ref: "./responses/assessments-get-innovation-200.yaml"
+    assessments-list-innovations-200:
+      $ref: "./responses/assessments-get-innovation-200.yaml"
+    assessments-get-innovation-assessment-200:
+      $ref: "./responses/assessments-get-innovation-assessment-200.yaml"
+
+  securitySchemes:
+    OpenId:
+      type: openIdConnect
+      openIdConnectUrl: https://example.com/.well_known/openid-configuration

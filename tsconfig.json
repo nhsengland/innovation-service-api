@@ -1,10 +1,24 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es2015",
+    "target": "es2019",
     "outDir": "dist",
     "rootDir": ".",
     "sourceMap": true,
-    "strict": false
+    "strict": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@domain/*": ["__external__/domain/src/*"],
+      "@services/*": ["__external__/services/src/*"],
+      "@entities/*": ["__external__/services/src/entities/*"]
+    },
+    "plugins": [
+      {
+        "transform": "typescript-transform-paths",
+      }
+    ]
   }
 }

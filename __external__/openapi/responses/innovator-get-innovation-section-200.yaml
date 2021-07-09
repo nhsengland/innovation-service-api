@@ -1,0 +1,33 @@
+description: OK
+headers:
+  X-Request-ID:
+    description: >
+      Correlation Header of the request
+    schema:
+      type: string
+content:
+  application/json:
+    schema:
+      $ref: '../nhse-i-aac-openapi.yaml#/components/schemas/innovator-get-innovation'
+    example: |-
+      {
+        "links": {
+          "self": "/innovator/5b1e3375-6149-4ff1-be76-bce72e4236c0/innovations/054d5b4f-b67b-4545-949d-ec4b83d15990"
+          "next": null,
+          "prev": null
+        },
+        "data": {
+          "section": "INNOVATION_DESCRIPTION",
+          "data": {
+              "id": "E362433E-F36B-1410-80DE-0032FE5B194B",
+              "description": "bbb",
+              "otherCategoryDescription": null,
+              "hasFinalProduct": null,
+              "mainPurpose": null,
+              "categories": [],
+              "areas": [],
+              "clinicalAreas": [],
+              "careSettings": []
+          }
+        }
+      }

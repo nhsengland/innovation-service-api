@@ -1,0 +1,25 @@
+description: Innovation Evidence Update Payload
+required: true
+content:
+  application/json:
+    schema:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        innovation:
+          type: string
+          format: uuid
+        evidenceType:
+          type: string
+        clinicalEvidenceType:
+          type: string
+        description:
+          type: string
+        summary:
+          type: string
+        files:
+          type: array
+          items:
+            type: string

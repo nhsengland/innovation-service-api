@@ -1,0 +1,12 @@
+description: OK
+headers:
+  X-Request-ID:
+    description: >
+      Correlation Header of the request
+    schema:
+      type: string
+content:
+  application/json:
+    type: array
+    items:
+      $ref: '../nhse-i-aac-openapi.yaml#/components/schemas/assessments-innovation-schema'

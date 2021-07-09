@@ -1,0 +1,19 @@
+type: object
+properties:
+  "type":
+    type: string
+  id:
+    type: string
+    format: uuid
+  attributes:
+    type: object
+    properties:
+      userId:
+        type: string
+        format: uuid
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
