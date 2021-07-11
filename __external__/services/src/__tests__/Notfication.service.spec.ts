@@ -1,11 +1,18 @@
 /**
  * @jest-environment node
  */
+/* tslint:disable */
 import {
+  AccessorOrganisationRole,
+  Comment,
   Innovation,
+  InnovationAction,
   InnovationAssessment,
+  InnovationSection,
   InnovationSupport,
+  InnovationSupportStatus,
   Notification,
+  NotificationActivityType,
   NotificationAudience,
   NotificationContextType,
   NotificationUser,
@@ -19,15 +26,21 @@ import {
 } from "@domain/index";
 import { RequestUser } from "@services/models/RequestUser";
 import { getConnection } from "typeorm";
-import { closeTestsConnection, setupTestsConnection } from "..";
+import {
+  closeTestsConnection,
+  InnovationSupportService,
+  setupTestsConnection,
+} from "..";
 import { NotificationService } from "../services/Notification.service";
 import * as fixtures from "../__fixtures__";
 
 describe("Notification Service Suite", () => {
   let notificationService: NotificationService;
+  let supportService: InnovationSupportService;
   beforeAll(async () => {
     //await setupTestsConnection();
     notificationService = new NotificationService(process.env.DB_TESTS_NAME);
+    supportService = new InnovationSupportService(process.env.DB_TESTS_NAME);
   });
 
   afterAll(async () => {
@@ -38,6 +51,9 @@ describe("Notification Service Suite", () => {
     const query = getConnection(process.env.DB_TESTS_NAME)
       .createQueryBuilder()
       .delete();
+    await query.from(Comment).execute();
+    await query.from(InnovationAction).execute();
+    await query.from(InnovationSection).execute();
     await query.from(InnovationSupport).execute();
     await query.from(InnovationAssessment).execute();
     await query.from(OrganisationUnitUser).execute();
@@ -82,6 +98,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.ACTION,
+      NotificationActivityType.ACTION_CREATED,
       innovation.id,
       "teste"
     );
@@ -149,6 +166,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.ACCESSORS,
       innovation.id,
       NotificationContextType.ACTION,
+      NotificationActivityType.ACTION_CREATED,
       innovation.id,
       "teste"
     );
@@ -237,6 +255,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.ACCESSORS,
       innovation.id,
       NotificationContextType.ACTION,
+      NotificationActivityType.ACTION_CREATED,
       innovation.id,
       "teste"
     );
@@ -314,6 +333,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.ACCESSORS,
       innovation.id,
       NotificationContextType.ACTION,
+      NotificationActivityType.ACTION_CREATED,
       innovation.id,
       "teste"
     );
@@ -371,6 +391,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.QUALIFYING_ACCESSORS,
       innovation.id,
       NotificationContextType.ACTION,
+      NotificationActivityType.ACTION_CREATED,
       innovation.id,
       "teste"
     );
@@ -421,6 +442,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.QUALIFYING_ACCESSORS,
       innovation.id,
       NotificationContextType.ACTION,
+      NotificationActivityType.ACTION_CREATED,
       innovation.id,
       "teste"
     );
@@ -449,6 +471,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.ASSESSMENT_USERS,
       innovation.id,
       NotificationContextType.ACTION,
+      NotificationActivityType.ACTION_CREATED,
       innovation.id,
       "teste"
     );
@@ -488,6 +511,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.INNOVATION,
+      NotificationActivityType.INNOVATION_SUPPORT_CREATED,
       innovation.id,
       "test 1"
     );
@@ -497,6 +521,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.COMMENT,
+      NotificationActivityType.COMMENT_CREATED_ACCESSOR,
       innovation.id,
       "test 2"
     );
@@ -543,6 +568,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.INNOVATION,
+      NotificationActivityType.INNOVATION_SUPPORT_CREATED,
       innovation.id,
       "test 1"
     );
@@ -552,6 +578,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.INNOVATION,
+      NotificationActivityType.INNOVATION_SUPPORT_CREATED,
       innovation.id,
       "test 2"
     );
@@ -561,6 +588,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.COMMENT,
+      NotificationActivityType.COMMENT_CREATED_ACCESSOR,
       innovation.id,
       "test 3"
     );
@@ -570,6 +598,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.ACTION,
+      NotificationActivityType.ACTION_CREATED,
       innovation.id,
       "test 3"
     );
@@ -616,6 +645,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.INNOVATION,
+      NotificationActivityType.INNOVATION_SUPPORT_CREATED,
       innovation.id,
       "test 1"
     );
@@ -625,6 +655,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.INNOVATION,
+      NotificationActivityType.INNOVATION_SUPPORT_CREATED,
       innovation.id,
       "test 2"
     );
@@ -634,6 +665,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.COMMENT,
+      NotificationActivityType.COMMENT_CREATED_ACCESSOR,
       innovation.id,
       "test 3"
     );
@@ -643,6 +675,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.ACTION,
+      NotificationActivityType.ACTION_CREATED,
       innovation.id,
       "test 3"
     );
@@ -690,6 +723,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.COMMENT,
+      NotificationActivityType.COMMENT_CREATED_ACCESSOR,
       innovation.id,
       "test 1"
     );
@@ -699,6 +733,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.INNOVATION,
+      NotificationActivityType.INNOVATION_SUPPORT_CREATED,
       innovation.id,
       "test 2"
     );
@@ -708,6 +743,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.COMMENT,
+      NotificationActivityType.COMMENT_CREATED_ACCESSOR,
       innovation.id,
       "test 3"
     );
@@ -717,6 +753,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.ACTION,
+      NotificationActivityType.ACTION_CREATED,
       innovation.id,
       "test 3"
     );
@@ -765,6 +802,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.COMMENT,
+      NotificationActivityType.COMMENT_CREATED_ACCESSOR,
       innovation.id,
       "test 1"
     );
@@ -774,6 +812,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.INNOVATION,
+      NotificationActivityType.INNOVATION_SUBMITED,
       innovation.id,
       "test 2"
     );
@@ -783,6 +822,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.COMMENT,
+      NotificationActivityType.COMMENT_CREATED_ACCESSOR,
       innovation.id,
       "test 3"
     );
@@ -792,6 +832,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.ACTION,
+      NotificationActivityType.ACTION_CREATED,
       innovation.id,
       "test 3"
     );
@@ -840,6 +881,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.INNOVATION,
+      NotificationActivityType.INNOVATION_SUPPORT_CREATED,
       innovation.id,
       "test 1"
     );
@@ -849,6 +891,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.INNOVATION,
+      NotificationActivityType.INNOVATION_SUPPORT_CREATED,
       innovation.id,
       "test 2"
     );
@@ -858,6 +901,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.COMMENT,
+      NotificationActivityType.COMMENT_CREATED_ACCESSOR,
       innovation.id,
       "test 3"
     );
@@ -867,6 +911,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.ACTION,
+      NotificationActivityType.ACTION_CREATED,
       innovation.id,
       "test 3"
     );
@@ -885,5 +930,146 @@ describe("Notification Service Suite", () => {
     expect(actual).toBeDefined();
     expect(actual.length).toBe(1);
     expect(actual[0].readAt).toBeNull();
+  });
+
+  it("should get unread Innovations list", async () => {
+    const innovatorUser = await fixtures.createInnovatorUser();
+    const qualAccessorUser = await fixtures.createAccessorUser();
+    const accessorUser = await fixtures.createAccessorUser();
+
+    const accessorOrganisation = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
+    );
+    const organisationQAccessorUser = await fixtures.addUserToOrganisation(
+      qualAccessorUser,
+      accessorOrganisation,
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    );
+
+    const organisationAccessorUser = await fixtures.addUserToOrganisation(
+      accessorUser,
+      accessorOrganisation,
+      AccessorOrganisationRole.ACCESSOR
+    );
+
+    const innovationObj1 = fixtures.generateInnovation({
+      owner: innovatorUser,
+      surveyId: "abc",
+      organisationShares: [{ id: accessorOrganisation.id }],
+    });
+
+    const innovationObj2 = fixtures.generateInnovation({
+      owner: innovatorUser,
+      surveyId: "abce",
+      organisationShares: [{ id: accessorOrganisation.id }],
+    });
+
+    const innovations = await fixtures.saveInnovations(
+      innovationObj1,
+      innovationObj2
+    );
+
+    const innovation1 = innovations[0];
+    const innovation2 = innovations[1];
+
+    const organisationUnit = await fixtures.createOrganisationUnit(
+      accessorOrganisation
+    );
+    const organisationUnitQAccessorUser =
+      await fixtures.addOrganisationUserToOrganisationUnit(
+        organisationQAccessorUser,
+        organisationUnit
+      );
+    const organisationUnitAccessorUser =
+      await fixtures.addOrganisationUserToOrganisationUnit(
+        organisationAccessorUser,
+        organisationUnit
+      );
+
+    const innovatorRequestUser = fixtures.getRequestUser(innovatorUser);
+    const qAccessorRequestUser = fixtures.getRequestUser(
+      qualAccessorUser,
+      organisationQAccessorUser,
+      organisationUnitQAccessorUser
+    );
+    const accessorRequestUser = fixtures.getRequestUser(
+      accessorUser,
+      organisationAccessorUser,
+      organisationUnitAccessorUser
+    );
+
+    let supportObj1 = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [accessorRequestUser.organisationUnitUser.id],
+      comment: "test comment",
+    };
+
+    let supportObj2 = {
+      status: InnovationSupportStatus.COMPLETE,
+      accessors: [accessorRequestUser.organisationUnitUser.id],
+      comment: "test comment",
+    };
+
+    const support1 = await supportService.create(
+      qAccessorRequestUser,
+      innovation1.id,
+      supportObj1
+    );
+
+    const support2 = await supportService.create(
+      qAccessorRequestUser,
+      innovation2.id,
+      supportObj2
+    );
+
+    await fixtures.createInnovationAction(qAccessorRequestUser, innovation1);
+    await fixtures.createInnovationAction(qAccessorRequestUser, innovation2);
+
+    supportObj1 = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [
+        accessorRequestUser.organisationUnitUser.id,
+        qAccessorRequestUser.organisationUnitUser.id,
+      ],
+      comment: null,
+    };
+
+    supportObj2 = {
+      status: InnovationSupportStatus.COMPLETE,
+      accessors: [
+        accessorRequestUser.organisationUnitUser.id,
+        qAccessorRequestUser.organisationUnitUser.id,
+      ],
+      comment: null,
+    };
+
+    await supportService.update(
+      qAccessorRequestUser,
+      support1.id,
+      innovation1.id,
+      supportObj1
+    );
+
+    await supportService.update(
+      qAccessorRequestUser,
+      support2.id,
+      innovation2.id,
+      supportObj2
+    );
+
+    const notification = await notificationService.create(
+      innovatorRequestUser,
+      NotificationAudience.ACCESSORS,
+      innovation1.id,
+      NotificationContextType.COMMENT,
+      NotificationActivityType.COMMENT_CREATED_INNOVATOR,
+      innovation1.id,
+      "test 3"
+    );
+    const nots = await notificationService.getAggregatedInnovationNotifications(
+      accessorRequestUser
+    );
+
+    console.log(nots);
   });
 });

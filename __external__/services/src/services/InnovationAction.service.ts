@@ -5,6 +5,7 @@ import {
   InnovationActionStatus,
   InnovationSectionAliasCatalogue,
   InnovationSupport,
+  NotificationActivityType,
   NotificationAudience,
   NotificationContextType,
 } from "@domain/index";
@@ -134,6 +135,7 @@ export class InnovationActionService {
       NotificationAudience.INNOVATORS,
       innovationId,
       NotificationContextType.ACTION,
+      NotificationActivityType.ACTION_CREATED,
       result.id,
       `An action was created by the accessor with id ${requestUser.id} for the innovation ${innovation.name}(${innovationId})`
     );
@@ -197,6 +199,7 @@ export class InnovationActionService {
       NotificationAudience.INNOVATORS,
       innovationId,
       NotificationContextType.ACTION,
+      NotificationActivityType.ACTION_UPDATED_ACCESSOR,
       result.id,
       `An action was updated by the accessor with id ${requestUser.id} for the innovation ${innovation.name}(${innovationId})`
     );
@@ -236,6 +239,7 @@ export class InnovationActionService {
       NotificationAudience.ACCESSORS,
       innovationId,
       NotificationContextType.ACTION,
+      NotificationActivityType.ACTION_UPDATED_INNOVATOR,
       innovationAction.id,
       `An action was updated by the innovator with id ${requestUser.id} for the innovation with id ${innovationId}`
     );

@@ -5,6 +5,7 @@ import {
   InnovationSupport,
   InnovationSupportStatus,
   Notification,
+  NotificationActivityType,
   NotificationAudience,
   NotificationContextType,
   NotificationUser,
@@ -59,6 +60,7 @@ export class NotificationService {
     audience: NotificationAudience,
     innovationId: string,
     contextType: NotificationContextType,
+    activityType: NotificationActivityType,
     contextId: string,
     message: string,
     specificUsers?: string[]
@@ -70,6 +72,7 @@ export class NotificationService {
           requestUser,
           innovationId,
           contextType,
+          activityType,
           contextId,
           message,
           specificUsers
@@ -80,8 +83,10 @@ export class NotificationService {
           requestUser,
           innovationId,
           contextType,
+          activityType,
           contextId,
-          message
+          message,
+          specificUsers || []
         );
         break;
       case NotificationAudience.QUALIFYING_ACCESSORS:
@@ -89,6 +94,7 @@ export class NotificationService {
           requestUser,
           innovationId,
           contextType,
+          activityType,
           contextId,
           message
         );
@@ -98,6 +104,7 @@ export class NotificationService {
           requestUser,
           innovationId,
           contextType,
+          activityType,
           contextId,
           message
         );
@@ -200,6 +207,32 @@ export class NotificationService {
     return this.convertArrayToObject(unreadNotifications, "contextType");
   }
 
+  async getAggregatedInnovationNotifications(requestuser: RequestUser) {
+    const innovations = this.innovationRepo
+      .createQueryBuilder("innovations")
+      .select("supports.status", "status")
+      .addSelect("COUNT(notificationUsers.user_id)", "count")
+      .innerJoin(
+        InnovationSupport,
+        "supports",
+        "innovations.id = supports.innovation_id"
+      )
+      .innerJoin(
+        Notification,
+        "notifications",
+        `innovations.id = notifications.innovation_id and notifications.context_type = 'INNOVATION'`
+      )
+      .innerJoin(
+        NotificationUser,
+        "notificationUsers",
+        "notifications.id = notificationUsers.notification_id and notificationUsers.user_id = :userId and notificationUsers.read_at IS NULL",
+        { userId: requestuser.id }
+      )
+      .groupBy("supports.status");
+
+    return await innovations.getRawMany();
+  }
+
   async getUnreadNotifications(
     requestUser: RequestUser,
     innovationId?: string,
@@ -209,6 +242,7 @@ export class NotificationService {
     {
       id: string;
       contextType: string;
+      activityType: string;
       contextId: string;
       innovationId: string;
       readAt: string;
@@ -247,6 +281,7 @@ export class NotificationService {
       .select("notifications.id", "id")
       .addSelect("notifications.context_type", "contextType")
       .addSelect("notifications.context_id", "contextId")
+      .addSelect("notifications.activity_type", "activityType")
       .addSelect("notifications.innovation_id", "innovationId")
       .addSelect("n_users.read_at", "readAt")
       .innerJoin(Notification, "notifications", filters, parameters);
@@ -275,6 +310,7 @@ export class NotificationService {
     requestUser: RequestUser,
     innovationId: string,
     contextType: NotificationContextType,
+    activityType: NotificationActivityType,
     contextId: string,
     message: string,
     specificUsers?: string[]
@@ -310,6 +346,7 @@ export class NotificationService {
     const notification = Notification.new({
       contextId,
       contextType,
+      activityType,
       innovation: innovationId,
       notificationUsers: targetUsers,
       message,
@@ -323,6 +360,7 @@ export class NotificationService {
     requestUser: RequestUser,
     innovationId: string,
     contextType: NotificationContextType,
+    activityType: NotificationActivityType,
     contextId: string,
     message: string
   ) {
@@ -354,6 +392,7 @@ export class NotificationService {
     const notification = Notification.new({
       contextId,
       contextType,
+      activityType,
       innovation: innovationId,
       notificationUsers: targetUsers,
       message,
@@ -367,8 +406,10 @@ export class NotificationService {
     requestUser: RequestUser,
     innovationId: string,
     contextType: NotificationContextType,
+    activityType: NotificationActivityType,
     contextId: string,
-    message: string
+    message: string,
+    specificUsers: string[]
   ) {
     // target user is the owner of the innovation
     // this is obtained from the innovation entity
@@ -377,11 +418,12 @@ export class NotificationService {
       loadRelationIds: true,
     });
 
-    const targetUsers = [innovation.owner];
+    const targetUsers = [innovation.owner, ...specificUsers];
 
     const notification = Notification.new({
       contextId,
       contextType,
+      activityType,
       innovation: innovationId,
       notificationUsers: targetUsers.map((u) => ({
         user: u,
@@ -398,6 +440,7 @@ export class NotificationService {
     requestUser: RequestUser,
     innovationId: string,
     contextType: NotificationContextType,
+    activityType: NotificationActivityType,
     contextId: string,
     message: string
   ) {
@@ -418,6 +461,7 @@ export class NotificationService {
     const notification = Notification.new({
       contextId,
       contextType,
+      activityType,
       innovation: innovationId,
       notificationUsers: targetUsers,
       message,

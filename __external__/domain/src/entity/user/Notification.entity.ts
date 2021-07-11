@@ -26,6 +26,9 @@ export class Notification extends Base {
   @Column({ name: "context_id" })
   contextId: string;
 
+  @Column({ name: "activity_type" })
+  activityType: string;
+
   //relationships
   @ManyToOne(() => Innovation)
   @JoinColumn({ name: "innovation_id" })

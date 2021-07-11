@@ -6,6 +6,7 @@ import {
   InnovationStatus,
   InnovationSupport,
   InnovationSupportStatus,
+  NotificationActivityType,
   NotificationAudience,
   NotificationContextType,
   Organisation,
@@ -631,6 +632,7 @@ export class InnovationService extends BaseService<Innovation> {
       NotificationAudience.ASSESSMENT_USERS,
       innovation.id,
       NotificationContextType.INNOVATION,
+      NotificationActivityType.INNOVATION_SUBMITED,
       innovation.id,
       `The innovation ${innovation.name} was submitted for assessment.`
     );

@@ -5,6 +5,7 @@ import {
   InnovationActionStatus,
   InnovationSupport,
   InnovationSupportStatus,
+  NotificationActivityType,
   NotificationAudience,
   NotificationContextType,
   OrganisationUnitUser,
@@ -249,6 +250,7 @@ export class InnovationSupportService {
       NotificationAudience.ACCESSORS,
       innovationId,
       NotificationContextType.INNOVATION,
+      NotificationActivityType.INNOVATION_SUPPORT_CREATED,
       innovationId,
       `The Innovation with id ${innovationId} was assigned to the accessors of ${requestUser.organisationUnitUser.organisationUnit.name}`,
       targetNotificationUsers
@@ -303,8 +305,6 @@ export class InnovationSupportService {
 
     const organisationUnit = requestUser.organisationUnitUser.organisationUnit;
 
-    let targetNotificationUsers: string[] = [];
-
     const result = await this.connection.transaction(
       async (transactionManager) => {
         if (support.comment) {
@@ -347,12 +347,6 @@ export class InnovationSupportService {
           innovationSupport.organisationUnitUsers = support.accessors?.map(
             (id) => ({ id })
           );
-          const usersToBeNotified =
-            innovationSupport.organisationUnitUsers?.map((u) => u.id) || [];
-          targetNotificationUsers =
-            await this.organisationService.findUserFromUnitUsers(
-              usersToBeNotified
-            );
         }
 
         innovationSupport.status = support.status;
@@ -363,16 +357,6 @@ export class InnovationSupportService {
           innovationSupport
         );
       }
-    );
-
-    await this.notificationService.create(
-      requestUser,
-      NotificationAudience.ACCESSORS,
-      innovationId,
-      NotificationContextType.INNOVATION,
-      innovationId,
-      `The support for the Innovation with id ${innovationId} was updated and notification was created for the accessors of ${requestUser.organisationUnitUser.organisationUnit.name}`,
-      targetNotificationUsers
     );
 
     return result;

@@ -1,5 +1,7 @@
 import {
   Comment,
+  InnovationSupport,
+  NotificationActivityType,
   NotificationAudience,
   NotificationContextType,
   UserType,
@@ -14,7 +16,9 @@ import { CommentModel } from "@services/models/CommentModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { InnovationService } from "./Innovation.service";
+import { InnovationSupportService } from "./InnovationSupport.service";
 import { NotificationService } from "./Notification.service";
+import { OrganisationService } from "./Organisation.service";
 import { UserService } from "./User.service";
 
 export class CommentService {
@@ -23,6 +27,8 @@ export class CommentService {
   private readonly innovationService: InnovationService;
   private readonly userService: UserService;
   private readonly notificationService: NotificationService;
+  private readonly innovationSupportService: InnovationSupportService;
+  private readonly organisationService: OrganisationService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -30,6 +36,10 @@ export class CommentService {
     this.innovationService = new InnovationService(connectionName);
     this.userService = new UserService(connectionName);
     this.notificationService = new NotificationService(connectionName);
+    this.innovationSupportService = new InnovationSupportService(
+      connectionName
+    );
+    this.organisationService = new OrganisationService(connectionName);
   }
 
   async create(
@@ -75,6 +85,24 @@ export class CommentService {
 
     const result = await this.commentRepo.save(commentObj);
 
+    let targetNotificationUsers;
+    // If the comment if made by an accessor, it also has to send a notification for assigned accessors regardless of the unit they belong to.
+    // The create method already knows it has to create a notification to the owner of the innovation.
+    // But we need to pass in the accessors that are assigned to this innovation.
+    if (requestUser.type === UserType.ACCESSOR) {
+      const supports = await this.innovationSupportService.findAllByInnovation(
+        requestUser,
+        innovationId
+      );
+      const accessorsUnitIds = supports.flatMap((s) =>
+        s.accessors.map((a) => a.id)
+      );
+      const userIds = await this.organisationService.findUserFromUnitUsers(
+        accessorsUnitIds
+      );
+      targetNotificationUsers = userIds.filter((u) => u !== requestUser.id);
+    }
+
     await this.notificationService.create(
       requestUser,
       requestUser.type === UserType.INNOVATOR
@@ -82,8 +110,12 @@ export class CommentService {
         : NotificationAudience.INNOVATORS,
       innovationId,
       NotificationContextType.COMMENT,
+      requestUser.type === UserType.INNOVATOR
+        ? NotificationActivityType.COMMENT_CREATED_INNOVATOR
+        : NotificationActivityType.COMMENT_CREATED_ACCESSOR,
       result.id,
-      `A ${NotificationContextType.COMMENT} was created by ${requestUser.id}`
+      `A ${NotificationContextType.COMMENT} was created by ${requestUser.id}`,
+      targetNotificationUsers || []
     );
 
     return result;
