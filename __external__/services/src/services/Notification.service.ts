@@ -207,7 +207,9 @@ export class NotificationService {
     return this.convertArrayToObject(unreadNotifications, "contextType");
   }
 
-  async getAggregatedInnovationNotifications(requestuser: RequestUser) {
+  async getAggregatedInnovationNotifications(
+    requestUser: RequestUser
+  ): Promise<{ [key: string]: number }> {
     const innovations = this.innovationRepo
       .createQueryBuilder("innovations")
       .select("supports.status", "status")
@@ -220,17 +222,50 @@ export class NotificationService {
       .innerJoin(
         Notification,
         "notifications",
-        `innovations.id = notifications.innovation_id and notifications.context_type = 'INNOVATION'`
+        `innovations.id = notifications.innovation_id`
       )
       .innerJoin(
         NotificationUser,
         "notificationUsers",
         "notifications.id = notificationUsers.notification_id and notificationUsers.user_id = :userId and notificationUsers.read_at IS NULL",
-        { userId: requestuser.id }
+        { userId: requestUser.id }
       )
       .groupBy("supports.status");
 
-    return await innovations.getRawMany();
+    const organisationUnit = requestUser.organisationUnitUser.organisationUnit;
+
+    const assigned = await innovations.getRawMany();
+
+    const unassignedQuery = this.innovationRepo
+      .createQueryBuilder("innovation")
+      .select("count(innovation.status)", "count")
+      .innerJoin(
+        Notification,
+        "notifications",
+        `notifications.id = notifications.innovation_id and NOT EXISTS(SELECT 1 FROM innovation_support tmp WHERE tmp.innovation_id = innovation.id and deleted_at is null and tmp.organisation_unit_id = :organisationUnitId)`,
+        { organisationUnitId: organisationUnit.id }
+      )
+      .innerJoin(
+        NotificationUser,
+        "notificationUsers",
+        "notifications.id = notificationUsers.notification_id and notificationUsers.user_id = :userId and notificationUsers.read_at IS NULL",
+        { userId: requestUser.id }
+      )
+      .groupBy("innovation.status")
+      .having(`innovation.status = :status`, { status: "IN_PROGRESS" });
+
+    const sql = unassignedQuery.getSql();
+    const unassigned = await unassignedQuery.getRawMany();
+
+    const result = [
+      ...assigned,
+      ...unassigned.map((u) => ({
+        status: "UNASSIGNED",
+        count: u.count,
+      })),
+    ];
+
+    return this.convertArrayToObject(result, "status");
   }
 
   async getUnreadNotifications(

@@ -205,6 +205,7 @@ export class CommentService {
       },
       notifications: {
         count: unread?.length || 0,
+        data: unread,
       },
     };
 

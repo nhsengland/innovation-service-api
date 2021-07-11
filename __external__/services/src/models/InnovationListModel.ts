@@ -19,5 +19,12 @@ export interface InnovationViewModel {
   organisations: string[];
   notifications?: {
     count: number;
+    data: {
+      id: string;
+      contextType: string;
+      contextId: string;
+      innovationId: string;
+      readAt: string;
+    }[];
   };
 }

@@ -13,6 +13,13 @@ export interface CommentModel {
   };
   notifications?: {
     count: number;
+    data: {
+      id: string;
+      contextType: string;
+      contextId: string;
+      innovationId: string;
+      readAt: string;
+    }[];
   };
   replies?: CommentModel[];
 }

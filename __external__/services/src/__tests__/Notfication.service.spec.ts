@@ -932,7 +932,7 @@ describe("Notification Service Suite", () => {
     expect(actual[0].readAt).toBeNull();
   });
 
-  it("should get unread Innovations list", async () => {
+  it("should get aggregated unread Innovations count", async () => {
     const innovatorUser = await fixtures.createInnovatorUser();
     const qualAccessorUser = await fixtures.createAccessorUser();
     const accessorUser = await fixtures.createAccessorUser();
@@ -1035,11 +1035,8 @@ describe("Notification Service Suite", () => {
     };
 
     supportObj2 = {
-      status: InnovationSupportStatus.COMPLETE,
-      accessors: [
-        accessorRequestUser.organisationUnitUser.id,
-        qAccessorRequestUser.organisationUnitUser.id,
-      ],
+      status: InnovationSupportStatus.UNASSIGNED,
+      accessors: [],
       comment: null,
     };
 
@@ -1066,10 +1063,14 @@ describe("Notification Service Suite", () => {
       innovation1.id,
       "test 3"
     );
-    const nots = await notificationService.getAggregatedInnovationNotifications(
-      accessorRequestUser
-    );
+    const notificationByStatus =
+      await notificationService.getAggregatedInnovationNotifications(
+        accessorRequestUser
+      );
 
-    console.log(nots);
+    expect(notificationByStatus).toBeDefined();
+    expect(Object.keys(notificationByStatus).length).toBe(2);
+    expect(Object.keys(notificationByStatus).includes("UNASSIGNED")).toBe(true);
+    expect(Object.keys(notificationByStatus).includes("ENGAGING")).toBe(true);
   });
 });

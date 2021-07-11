@@ -238,10 +238,13 @@ export class InnovationService extends BaseService<Innovation> {
     */
     const organisationsMap = await this.getOrganisationsMap(innovations[0]);
     const notifications = await this.notificationService.getUnreadNotifications(
-      requestUser,
-      null,
-      NotificationContextType.INNOVATION
+      requestUser
     );
+
+    const aggregatedNotifications =
+      await this.notificationService.getAggregatedInnovationNotifications(
+        requestUser
+      );
 
     const result = {
       data: innovations[0]?.map((inno: Innovation) => {
@@ -284,6 +287,8 @@ export class InnovationService extends BaseService<Innovation> {
           organisations: organisationsMap[inno.id] || [],
           notifications: {
             count: unread?.length || 0,
+            data: unread,
+            aggregated: aggregatedNotifications,
           },
         };
       }),
@@ -883,6 +888,7 @@ export class InnovationService extends BaseService<Innovation> {
         organisations: r.organisations || [],
         notifications: {
           count: unread?.length || 0,
+          data: unread,
         },
       };
     });
