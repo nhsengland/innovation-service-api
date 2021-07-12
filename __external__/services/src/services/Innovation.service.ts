@@ -6,7 +6,6 @@ import {
   InnovationStatus,
   InnovationSupport,
   InnovationSupportStatus,
-  NotificationActivityType,
   NotificationAudience,
   NotificationContextType,
   Organisation,
@@ -248,7 +247,7 @@ export class InnovationService extends BaseService<Innovation> {
 
     const result = {
       data: innovations[0]?.map((inno: Innovation) => {
-        const unread = notifications.filter((n) => n.contextId === inno.id);
+        const unread = notifications.filter((n) => n.innovationId === inno.id);
 
         const innovationSupport = inno.innovationSupports?.find(
           (is: InnovationSupport) =>
@@ -287,12 +286,11 @@ export class InnovationService extends BaseService<Innovation> {
           organisations: organisationsMap[inno.id] || [],
           notifications: {
             count: unread?.length || 0,
-            data: unread,
-            aggregated: aggregatedNotifications,
           },
         };
       }),
       count: innovations[1],
+      tabInfo: aggregatedNotifications,
     };
 
     return result;
@@ -594,14 +592,18 @@ export class InnovationService extends BaseService<Innovation> {
     }
 
     const notifications = await this.notificationService.getUnreadNotifications(
-      requestUser,
-      null,
-      NotificationContextType.INNOVATION
+      requestUser
     );
+
+    const aggregatedNotifications =
+      await this.notificationService.getAggregatedInnovationNotifications(
+        requestUser
+      );
 
     return {
       data: this.mapResponse(res, notifications),
       count: result[1],
+      tabInfo: aggregatedNotifications,
     };
   }
 
@@ -637,7 +639,7 @@ export class InnovationService extends BaseService<Innovation> {
       NotificationAudience.ASSESSMENT_USERS,
       innovation.id,
       NotificationContextType.INNOVATION,
-      NotificationActivityType.INNOVATION_SUBMITED,
+
       innovation.id,
       `The innovation ${innovation.name} was submitted for assessment.`
     );

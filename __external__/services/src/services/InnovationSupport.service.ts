@@ -5,7 +5,6 @@ import {
   InnovationActionStatus,
   InnovationSupport,
   InnovationSupportStatus,
-  NotificationActivityType,
   NotificationAudience,
   NotificationContextType,
   OrganisationUnitUser,
@@ -250,9 +249,9 @@ export class InnovationSupportService {
       NotificationAudience.ACCESSORS,
       innovationId,
       NotificationContextType.INNOVATION,
-      NotificationActivityType.INNOVATION_SUPPORT_CREATED,
+
       innovationId,
-      `The Innovation with id ${innovationId} was assigned to the accessors of ${requestUser.organisationUnitUser.organisationUnit.name}`,
+      `Support was created for the Innovation with id ${innovationId} with the status ${support.status}`,
       targetNotificationUsers
     );
 
@@ -351,6 +350,37 @@ export class InnovationSupportService {
 
         innovationSupport.status = support.status;
         innovationSupport.updatedBy = requestUser.id;
+
+        if (
+          [
+            InnovationSupportStatus.WITHDRAWN,
+            InnovationSupportStatus.NOT_YET,
+            InnovationSupportStatus.WAITING,
+          ].includes(support.status)
+        ) {
+          await this.notificationService.create(
+            requestUser,
+            NotificationAudience.ASSESSMENT_USERS,
+            innovationId,
+            NotificationContextType.INNOVATION,
+            innovationId,
+            `The innovation with id ${innovationId} has had its support status changed to ${innovationSupport.status}`
+          );
+        }
+
+        if (
+          support.status === InnovationSupportStatus.ENGAGING ||
+          support.status === InnovationSupportStatus.COMPLETE
+        ) {
+          await this.notificationService.create(
+            requestUser,
+            NotificationAudience.ACCESSORS,
+            innovationId,
+            NotificationContextType.INNOVATION,
+            innovationId,
+            `The innovation with id ${innovationId} has had its support status changed to ${innovationSupport.status}`
+          );
+        }
 
         return await transactionManager.save(
           InnovationSupport,

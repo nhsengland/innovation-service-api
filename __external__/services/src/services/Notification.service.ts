@@ -5,7 +5,6 @@ import {
   InnovationSupport,
   InnovationSupportStatus,
   Notification,
-  NotificationActivityType,
   NotificationAudience,
   NotificationContextType,
   NotificationUser,
@@ -60,7 +59,6 @@ export class NotificationService {
     audience: NotificationAudience,
     innovationId: string,
     contextType: NotificationContextType,
-    activityType: NotificationActivityType,
     contextId: string,
     message: string,
     specificUsers?: string[]
@@ -72,7 +70,6 @@ export class NotificationService {
           requestUser,
           innovationId,
           contextType,
-          activityType,
           contextId,
           message,
           specificUsers
@@ -83,7 +80,6 @@ export class NotificationService {
           requestUser,
           innovationId,
           contextType,
-          activityType,
           contextId,
           message,
           specificUsers || []
@@ -94,7 +90,7 @@ export class NotificationService {
           requestUser,
           innovationId,
           contextType,
-          activityType,
+
           contextId,
           message
         );
@@ -104,7 +100,7 @@ export class NotificationService {
           requestUser,
           innovationId,
           contextType,
-          activityType,
+
           contextId,
           message
         );
@@ -213,7 +209,7 @@ export class NotificationService {
     const innovations = this.innovationRepo
       .createQueryBuilder("innovations")
       .select("supports.status", "status")
-      .addSelect("COUNT(notificationUsers.user_id)", "count")
+      .addSelect("COUNT(DISTINCT notifications.id)", "count")
       .innerJoin(
         InnovationSupport,
         "supports",
@@ -227,35 +223,38 @@ export class NotificationService {
       .innerJoin(
         NotificationUser,
         "notificationUsers",
-        "notifications.id = notificationUsers.notification_id and notificationUsers.user_id = :userId and notificationUsers.read_at IS NULL",
+        "notifications.id = notificationUsers.notification_id and notificationUsers.read_at IS NULL and notificationUsers.user_id = :userId",
         { userId: requestUser.id }
       )
       .groupBy("supports.status");
 
-    const organisationUnit = requestUser.organisationUnitUser.organisationUnit;
-
     const assigned = await innovations.getRawMany();
 
-    const unassignedQuery = this.innovationRepo
-      .createQueryBuilder("innovation")
-      .select("count(innovation.status)", "count")
-      .innerJoin(
-        Notification,
-        "notifications",
-        `notifications.id = notifications.innovation_id and NOT EXISTS(SELECT 1 FROM innovation_support tmp WHERE tmp.innovation_id = innovation.id and deleted_at is null and tmp.organisation_unit_id = :organisationUnitId)`,
-        { organisationUnitId: organisationUnit.id }
-      )
-      .innerJoin(
-        NotificationUser,
-        "notificationUsers",
-        "notifications.id = notificationUsers.notification_id and notificationUsers.user_id = :userId and notificationUsers.read_at IS NULL",
-        { userId: requestUser.id }
-      )
-      .groupBy("innovation.status")
-      .having(`innovation.status = :status`, { status: "IN_PROGRESS" });
+    let unassigned: { count: number }[] = [];
 
-    const sql = unassignedQuery.getSql();
-    const unassigned = await unassignedQuery.getRawMany();
+    if (requestUser.type === UserType.ACCESSOR) {
+      const organisationUnit =
+        requestUser.organisationUnitUser.organisationUnit;
+      const unassignedQuery = this.innovationRepo
+        .createQueryBuilder("innovation")
+        .select("count(DISTINCT notifications.id)", "count")
+        .innerJoin(
+          Notification,
+          "notifications",
+          `notifications.id = notifications.innovation_id and NOT EXISTS(SELECT 1 FROM innovation_support tmp WHERE tmp.innovation_id = innovation.id and deleted_at is null and tmp.organisation_unit_id = :organisationUnitId)`,
+          { organisationUnitId: organisationUnit.id }
+        )
+        .innerJoin(
+          NotificationUser,
+          "notificationUsers",
+          "notifications.id = notificationUsers.notification_id and notificationUsers.user_id = :userId and notificationUsers.read_at IS NULL",
+          { userId: requestUser.id }
+        )
+        .groupBy("innovation.status")
+        .having(`innovation.status = :status`, { status: "IN_PROGRESS" });
+
+      unassigned = await unassignedQuery.getRawMany();
+    }
 
     const result = [
       ...assigned,
@@ -277,7 +276,6 @@ export class NotificationService {
     {
       id: string;
       contextType: string;
-      activityType: string;
       contextId: string;
       innovationId: string;
       readAt: string;
@@ -316,7 +314,6 @@ export class NotificationService {
       .select("notifications.id", "id")
       .addSelect("notifications.context_type", "contextType")
       .addSelect("notifications.context_id", "contextId")
-      .addSelect("notifications.activity_type", "activityType")
       .addSelect("notifications.innovation_id", "innovationId")
       .addSelect("n_users.read_at", "readAt")
       .innerJoin(Notification, "notifications", filters, parameters);
@@ -345,7 +342,6 @@ export class NotificationService {
     requestUser: RequestUser,
     innovationId: string,
     contextType: NotificationContextType,
-    activityType: NotificationActivityType,
     contextId: string,
     message: string,
     specificUsers?: string[]
@@ -381,7 +377,7 @@ export class NotificationService {
     const notification = Notification.new({
       contextId,
       contextType,
-      activityType,
+
       innovation: innovationId,
       notificationUsers: targetUsers,
       message,
@@ -395,7 +391,6 @@ export class NotificationService {
     requestUser: RequestUser,
     innovationId: string,
     contextType: NotificationContextType,
-    activityType: NotificationActivityType,
     contextId: string,
     message: string
   ) {
@@ -427,7 +422,7 @@ export class NotificationService {
     const notification = Notification.new({
       contextId,
       contextType,
-      activityType,
+
       innovation: innovationId,
       notificationUsers: targetUsers,
       message,
@@ -441,7 +436,6 @@ export class NotificationService {
     requestUser: RequestUser,
     innovationId: string,
     contextType: NotificationContextType,
-    activityType: NotificationActivityType,
     contextId: string,
     message: string,
     specificUsers: string[]
@@ -458,7 +452,7 @@ export class NotificationService {
     const notification = Notification.new({
       contextId,
       contextType,
-      activityType,
+
       innovation: innovationId,
       notificationUsers: targetUsers.map((u) => ({
         user: u,
@@ -475,7 +469,6 @@ export class NotificationService {
     requestUser: RequestUser,
     innovationId: string,
     contextType: NotificationContextType,
-    activityType: NotificationActivityType,
     contextId: string,
     message: string
   ) {
@@ -496,7 +489,7 @@ export class NotificationService {
     const notification = Notification.new({
       contextId,
       contextType,
-      activityType,
+
       innovation: innovationId,
       notificationUsers: targetUsers,
       message,

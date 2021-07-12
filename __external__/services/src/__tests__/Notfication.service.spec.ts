@@ -12,7 +12,6 @@ import {
   InnovationSupport,
   InnovationSupportStatus,
   Notification,
-  NotificationActivityType,
   NotificationAudience,
   NotificationContextType,
   NotificationUser,
@@ -98,7 +97,6 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.ACTION,
-      NotificationActivityType.ACTION_CREATED,
       innovation.id,
       "teste"
     );
@@ -166,7 +164,6 @@ describe("Notification Service Suite", () => {
       NotificationAudience.ACCESSORS,
       innovation.id,
       NotificationContextType.ACTION,
-      NotificationActivityType.ACTION_CREATED,
       innovation.id,
       "teste"
     );
@@ -255,7 +252,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.ACCESSORS,
       innovation.id,
       NotificationContextType.ACTION,
-      NotificationActivityType.ACTION_CREATED,
+
       innovation.id,
       "teste"
     );
@@ -333,7 +330,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.ACCESSORS,
       innovation.id,
       NotificationContextType.ACTION,
-      NotificationActivityType.ACTION_CREATED,
+
       innovation.id,
       "teste"
     );
@@ -391,7 +388,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.QUALIFYING_ACCESSORS,
       innovation.id,
       NotificationContextType.ACTION,
-      NotificationActivityType.ACTION_CREATED,
+
       innovation.id,
       "teste"
     );
@@ -442,7 +439,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.QUALIFYING_ACCESSORS,
       innovation.id,
       NotificationContextType.ACTION,
-      NotificationActivityType.ACTION_CREATED,
+
       innovation.id,
       "teste"
     );
@@ -471,7 +468,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.ASSESSMENT_USERS,
       innovation.id,
       NotificationContextType.ACTION,
-      NotificationActivityType.ACTION_CREATED,
+
       innovation.id,
       "teste"
     );
@@ -511,7 +508,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.INNOVATION,
-      NotificationActivityType.INNOVATION_SUPPORT_CREATED,
+
       innovation.id,
       "test 1"
     );
@@ -521,7 +518,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.COMMENT,
-      NotificationActivityType.COMMENT_CREATED_ACCESSOR,
+
       innovation.id,
       "test 2"
     );
@@ -568,7 +565,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.INNOVATION,
-      NotificationActivityType.INNOVATION_SUPPORT_CREATED,
+
       innovation.id,
       "test 1"
     );
@@ -578,7 +575,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.INNOVATION,
-      NotificationActivityType.INNOVATION_SUPPORT_CREATED,
+
       innovation.id,
       "test 2"
     );
@@ -588,7 +585,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.COMMENT,
-      NotificationActivityType.COMMENT_CREATED_ACCESSOR,
+
       innovation.id,
       "test 3"
     );
@@ -598,7 +595,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.ACTION,
-      NotificationActivityType.ACTION_CREATED,
+
       innovation.id,
       "test 3"
     );
@@ -645,7 +642,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.INNOVATION,
-      NotificationActivityType.INNOVATION_SUPPORT_CREATED,
+
       innovation.id,
       "test 1"
     );
@@ -655,7 +652,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.INNOVATION,
-      NotificationActivityType.INNOVATION_SUPPORT_CREATED,
+
       innovation.id,
       "test 2"
     );
@@ -665,7 +662,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.COMMENT,
-      NotificationActivityType.COMMENT_CREATED_ACCESSOR,
+
       innovation.id,
       "test 3"
     );
@@ -675,7 +672,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.ACTION,
-      NotificationActivityType.ACTION_CREATED,
+
       innovation.id,
       "test 3"
     );
@@ -723,7 +720,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.COMMENT,
-      NotificationActivityType.COMMENT_CREATED_ACCESSOR,
+
       innovation.id,
       "test 1"
     );
@@ -733,7 +730,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.INNOVATION,
-      NotificationActivityType.INNOVATION_SUPPORT_CREATED,
+
       innovation.id,
       "test 2"
     );
@@ -743,7 +740,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.COMMENT,
-      NotificationActivityType.COMMENT_CREATED_ACCESSOR,
+
       innovation.id,
       "test 3"
     );
@@ -753,7 +750,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.ACTION,
-      NotificationActivityType.ACTION_CREATED,
+
       innovation.id,
       "test 3"
     );
@@ -802,7 +799,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.COMMENT,
-      NotificationActivityType.COMMENT_CREATED_ACCESSOR,
+
       innovation.id,
       "test 1"
     );
@@ -812,7 +809,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.INNOVATION,
-      NotificationActivityType.INNOVATION_SUBMITED,
+
       innovation.id,
       "test 2"
     );
@@ -822,7 +819,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.COMMENT,
-      NotificationActivityType.COMMENT_CREATED_ACCESSOR,
+
       innovation.id,
       "test 3"
     );
@@ -832,7 +829,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.ACTION,
-      NotificationActivityType.ACTION_CREATED,
+
       innovation.id,
       "test 3"
     );
@@ -881,7 +878,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.INNOVATION,
-      NotificationActivityType.INNOVATION_SUPPORT_CREATED,
+
       innovation.id,
       "test 1"
     );
@@ -891,7 +888,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.INNOVATION,
-      NotificationActivityType.INNOVATION_SUPPORT_CREATED,
+
       innovation.id,
       "test 2"
     );
@@ -901,7 +898,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.COMMENT,
-      NotificationActivityType.COMMENT_CREATED_ACCESSOR,
+
       innovation.id,
       "test 3"
     );
@@ -911,7 +908,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.INNOVATORS,
       innovation.id,
       NotificationContextType.ACTION,
-      NotificationActivityType.ACTION_CREATED,
+
       innovation.id,
       "test 3"
     );
@@ -1059,7 +1056,7 @@ describe("Notification Service Suite", () => {
       NotificationAudience.ACCESSORS,
       innovation1.id,
       NotificationContextType.COMMENT,
-      NotificationActivityType.COMMENT_CREATED_INNOVATOR,
+
       innovation1.id,
       "test 3"
     );

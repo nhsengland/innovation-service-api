@@ -6,7 +6,6 @@ import {
   InnovationSection,
   InnovationSectionCatalogue,
   InnovationSectionStatus,
-  NotificationActivityType,
   NotificationAudience,
   NotificationContextType,
 } from "@domain/index";
@@ -405,7 +404,6 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
         NotificationAudience.ACCESSORS,
         innovationId,
         NotificationContextType.ACTION,
-        NotificationActivityType.ACTION_UPDATED_INNOVATOR,
         element,
         `The action with id ${element} was updated by the innovator with id ${requestUser.id} for the innovation with id ${innovationId}`
       );

@@ -3,7 +3,6 @@ import {
   Innovation,
   InnovationAssessment,
   InnovationStatus,
-  NotificationActivityType,
   NotificationAudience,
   NotificationContextType,
   Organisation,
@@ -186,7 +185,6 @@ export class InnovationAssessmentService {
       NotificationAudience.QUALIFYING_ACCESSORS,
       innovationId,
       NotificationContextType.INNOVATION,
-      NotificationActivityType.INNOVATION_ASSESSMENT_COMPLETE,
       result.id,
       `Innovation with id ${innovationId} is now available for Qualifying Accessors`
     );

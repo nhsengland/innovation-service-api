@@ -1,7 +1,6 @@
 import {
   Comment,
   InnovationSupport,
-  NotificationActivityType,
   NotificationAudience,
   NotificationContextType,
   UserType,
@@ -94,13 +93,18 @@ export class CommentService {
         requestUser,
         innovationId
       );
-      const accessorsUnitIds = supports.flatMap((s) =>
-        s.accessors.map((a) => a.id)
-      );
-      const userIds = await this.organisationService.findUserFromUnitUsers(
-        accessorsUnitIds
-      );
-      targetNotificationUsers = userIds.filter((u) => u !== requestUser.id);
+
+      if (supports.length > 0) {
+        const accessorsUnitIds = supports.flatMap((s) =>
+          s.accessors.map((a) => a.id)
+        );
+
+        const userIds = await this.organisationService.findUserFromUnitUsers(
+          accessorsUnitIds
+        );
+
+        targetNotificationUsers = userIds.filter((u) => u !== requestUser.id);
+      }
     }
 
     await this.notificationService.create(
@@ -110,9 +114,6 @@ export class CommentService {
         : NotificationAudience.INNOVATORS,
       innovationId,
       NotificationContextType.COMMENT,
-      requestUser.type === UserType.INNOVATOR
-        ? NotificationActivityType.COMMENT_CREATED_INNOVATOR
-        : NotificationActivityType.COMMENT_CREATED_ACCESSOR,
       result.id,
       `A ${NotificationContextType.COMMENT} was created by ${requestUser.id}`,
       targetNotificationUsers || []
