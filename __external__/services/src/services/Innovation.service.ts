@@ -286,6 +286,10 @@ export class InnovationService extends BaseService<Innovation> {
           organisations: organisationsMap[inno.id] || [],
           notifications: {
             count: unread?.length || 0,
+            hasNew:
+              unread.filter(
+                (u) => u.contextType === NotificationContextType.INNOVATION
+              ).length > 0 && !support.id,
           },
         };
       }),

@@ -209,7 +209,7 @@ export class NotificationService {
     const innovations = this.innovationRepo
       .createQueryBuilder("innovations")
       .select("supports.status", "status")
-      .addSelect("COUNT(DISTINCT notifications.id)", "count")
+      .addSelect("COUNT(notifications.id)", "count")
       .innerJoin(
         InnovationSupport,
         "supports",
@@ -237,11 +237,11 @@ export class NotificationService {
         requestUser.organisationUnitUser.organisationUnit;
       const unassignedQuery = this.innovationRepo
         .createQueryBuilder("innovation")
-        .select("count(DISTINCT notifications.id)", "count")
+        .select("count(notifications.id)", "count")
         .innerJoin(
           Notification,
           "notifications",
-          `notifications.id = notifications.innovation_id and NOT EXISTS(SELECT 1 FROM innovation_support tmp WHERE tmp.innovation_id = innovation.id and deleted_at is null and tmp.organisation_unit_id = :organisationUnitId)`,
+          `innovation.id = notifications.innovation_id and NOT EXISTS(SELECT 1 FROM innovation_support tmp WHERE tmp.innovation_id = innovation.id and deleted_at is null and tmp.organisation_unit_id = :organisationUnitId)`,
           { organisationUnitId: organisationUnit.id }
         )
         .innerJoin(

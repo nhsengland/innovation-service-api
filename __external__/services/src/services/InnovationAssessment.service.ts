@@ -180,14 +180,16 @@ export class InnovationAssessmentService {
       }
     );
 
-    await this.notificationService.create(
-      requestUser,
-      NotificationAudience.QUALIFYING_ACCESSORS,
-      innovationId,
-      NotificationContextType.INNOVATION,
-      result.id,
-      `Innovation with id ${innovationId} is now available for Qualifying Accessors`
-    );
+    if (assessment.isSubmission) {
+      await this.notificationService.create(
+        requestUser,
+        NotificationAudience.QUALIFYING_ACCESSORS,
+        innovationId,
+        NotificationContextType.INNOVATION,
+        result.id,
+        `Innovation with id ${innovationId} is now available for Qualifying Accessors`
+      );
+    }
 
     return result;
   }
