@@ -5,31 +5,58 @@ import {
   AccessorOrganisationRole,
   Organisation,
   OrganisationType,
+  OrganisationUnit,
+  OrganisationUnitUser,
   OrganisationUser,
   User,
   UserType,
 } from "@domain/index";
+import {
+  InvalidDataError,
+  InvalidParamsError,
+  InvalidUserTypeError,
+} from "@services/errors";
 import { getConnection, getRepository } from "typeorm";
-import * as helpers from "../helpers";
 import { closeTestsConnection, setupTestsConnection } from "..";
+import * as helpers from "../helpers";
 import { ProfileModel } from "../models/ProfileModel";
 import { AccessorService } from "../services/Accessor.service";
 import { OrganisationService } from "../services/Organisation.service";
 import { UserService } from "../services/User.service";
+import * as fixtures from "../__fixtures__";
+
+const dummy = {
+  requestUser: {
+    id: ":userId",
+    type: UserType.ADMIN,
+  },
+};
 
 describe("User Service Suite", () => {
-  let adUserService: UserService;
+  let userService: UserService;
   let accessorService: AccessorService;
   let organisationService: OrganisationService;
+  let organisation: Organisation;
+  let organisationUnit: OrganisationUnit;
 
   beforeAll(async () => {
     // await setupTestsConnection();
-    adUserService = new UserService(process.env.DB_TESTS_NAME);
+    userService = new UserService(process.env.DB_TESTS_NAME);
     accessorService = new AccessorService(process.env.DB_TESTS_NAME);
     organisationService = new OrganisationService(process.env.DB_TESTS_NAME);
+
+    organisation = await fixtures.createOrganisation(OrganisationType.ACCESSOR);
+    organisationUnit = await fixtures.createOrganisationUnit(organisation);
   });
 
   afterAll(async () => {
+    const query = getConnection(process.env.DB_TESTS_NAME)
+      .createQueryBuilder()
+      .delete();
+
+    await query.from(OrganisationUnit).execute();
+    await query.from(Organisation).execute();
+
     // closeTestsConnection();
   });
 
@@ -37,13 +64,14 @@ describe("User Service Suite", () => {
     const query = getConnection(process.env.DB_TESTS_NAME)
       .createQueryBuilder()
       .delete();
+
+    await query.from(OrganisationUnitUser).execute();
     await query.from(OrganisationUser).execute();
-    await query.from(Organisation).execute();
     await query.from(User).execute();
   });
 
   it("should instantiate the User service", async () => {
-    expect(adUserService).toBeDefined();
+    expect(userService).toBeDefined();
   });
 
   it("should update a user profile", async () => {
@@ -53,10 +81,7 @@ describe("User Service Suite", () => {
 
     let err;
     try {
-      await adUserService.updateUserDisplayName(
-        { displayName: "test" },
-        ":oid"
-      );
+      await userService.updateUserDisplayName({ displayName: "test" }, ":oid");
     } catch (error) {
       err = error;
     }
@@ -124,7 +149,7 @@ describe("User Service Suite", () => {
 
     // Act
     try {
-      actual = await adUserService.getProfile(accessor.id);
+      actual = await userService.getProfile(accessor.id);
     } catch (error) {
       err = error;
     }
@@ -157,7 +182,7 @@ describe("User Service Suite", () => {
     let err;
 
     try {
-      actual = await adUserService.getProfile(
+      actual = await userService.getProfile(
         "8c179628-100d-4f95-bae4-2ccc64de77fe"
       );
     } catch (error) {
@@ -166,5 +191,100 @@ describe("User Service Suite", () => {
 
     expect(err).toBeUndefined();
     expect(actual.type).toBeNull();
+  });
+
+  it("should throw when createUser with invalid params", async () => {
+    let err;
+    try {
+      await userService.createUser(null, null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw when createUser with invalid accessor params", async () => {
+    let err;
+    try {
+      await userService.createUser(dummy.requestUser, {
+        type: UserType.ACCESSOR,
+        name: ":name",
+        email: "email@email.pt",
+        password: "myNewPassword1!",
+      });
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw when createUser with invalid user type params", async () => {
+    let err;
+    try {
+      await userService.createUser(dummy.requestUser, {
+        type: UserType.INNOVATOR,
+        name: ":name",
+        email: "email@email.pt",
+        password: "myNewPassword1!",
+      });
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidDataError);
+  });
+
+  it("should throw when createUser with invalid requestUser type params", async () => {
+    const requestUser = {
+      id: ":user_id",
+      type: UserType.ASSESSMENT,
+    };
+
+    let err;
+    try {
+      await userService.createUser(requestUser, {
+        type: UserType.ASSESSMENT,
+        name: ":name",
+        email: "email@email.pt",
+        password: "myNewPassword1!",
+      });
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidUserTypeError);
+  });
+
+  it("should create an accessor user", async () => {
+    const result = await userService.createUser(dummy.requestUser, {
+      type: UserType.ACCESSOR,
+      name: ":name",
+      email: "email@email.pt",
+      password: "myNewPassword1!",
+      organisationAcronym: organisation.acronym,
+      organisationUnitAcronym: organisationUnit.acronym,
+      role: AccessorOrganisationRole.ACCESSOR,
+    });
+
+    expect(result).toBeDefined();
+    expect(result.organisationUserId).toBeDefined();
+    expect(result.organisationUnitUserId).toBeDefined();
+  });
+
+  it("should create an assessment user", async () => {
+    const result = await userService.createUser(dummy.requestUser, {
+      type: UserType.ASSESSMENT,
+      name: ":name",
+      email: "email@email.pt",
+      password: "myNewPassword1!",
+    });
+
+    expect(result).toBeDefined();
   });
 });

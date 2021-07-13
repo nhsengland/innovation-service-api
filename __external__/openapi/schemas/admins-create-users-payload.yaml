@@ -1,0 +1,15 @@
+description: Admins Create Users Payload
+required: true
+content:
+  application/json:
+    schema:
+      type: array
+      items:
+        type: object
+        properties:
+          type:
+            type: string
+          name:
+            type: string
+          email:
+            type: string

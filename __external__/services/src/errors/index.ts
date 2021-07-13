@@ -67,3 +67,10 @@ export class InvalidUserRoleError extends Error {
     this.name = "InvalidUserRoleError";
   }
 }
+
+export class InvalidUserTypeError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InvalidUserTypeError";
+  }
+}
