@@ -4,6 +4,7 @@ import {
   InvalidDataError,
   InvalidParamsError,
   InvalidUserRoleError,
+  InvalidUserTypeError,
   MissingUserOrganisationError,
   MissingUserOrganisationUnitError,
   ResourceNotFoundError,
@@ -96,7 +97,8 @@ export const ErroHandling = (error: Error) => {
   } else if (
     error instanceof MissingUserOrganisationError ||
     error instanceof MissingUserOrganisationUnitError ||
-    error instanceof InvalidUserRoleError
+    error instanceof InvalidUserRoleError ||
+    error instanceof InvalidUserTypeError
   ) {
     return Forbidden({
       error: error.name,

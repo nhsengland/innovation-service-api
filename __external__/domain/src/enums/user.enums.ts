@@ -1,4 +1,5 @@
 export enum UserType {
+  ADMIN = "ADMIN",
   INNOVATOR = "INNOVATOR",
   ACCESSOR = "ACCESSOR",
   ASSESSMENT = "ASSESSMENT",
