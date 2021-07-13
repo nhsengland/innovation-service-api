@@ -104,7 +104,7 @@ export class InnovationService extends BaseService<Innovation> {
               ["innovationSupports", "assessments"],
               filterRelations
             ),
-            where: `organisation_unit_id = '${organisationUnitUser.organisationUnit.id}'`,
+            where: `Innovation__innovationSupports.organisation_unit_id = '${organisationUnitUser.organisationUnit.id}'`,
           };
         }
 
@@ -599,10 +599,18 @@ export class InnovationService extends BaseService<Innovation> {
       requestUser
     );
 
-    const aggregatedNotifications =
-      await this.notificationService.getAggregatedInnovationNotifications(
-        requestUser
-      );
+    let aggregatedNotifications;
+    if (requestUser.type === UserType.ASSESSMENT) {
+      aggregatedNotifications =
+        await this.notificationService.getAggregatedInnovationNotificationsAssessment(
+          requestUser
+        );
+    } else {
+      aggregatedNotifications =
+        await this.notificationService.getAggregatedInnovationNotifications(
+          requestUser
+        );
+    }
 
     return {
       data: this.mapResponse(res, notifications),
@@ -894,7 +902,7 @@ export class InnovationService extends BaseService<Innovation> {
         organisations: r.organisations || [],
         notifications: {
           count: unread?.length || 0,
-          data: unread,
+          isNew: r.assessments.length === 0,
         },
       };
     });

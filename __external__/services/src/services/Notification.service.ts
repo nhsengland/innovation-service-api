@@ -2,6 +2,7 @@ import {
   AccessorOrganisationRole,
   Innovation,
   InnovationAssessment,
+  InnovationStatus,
   InnovationSupport,
   InnovationSupportStatus,
   Notification,
@@ -206,15 +207,29 @@ export class NotificationService {
   async getAggregatedInnovationNotifications(
     requestUser: RequestUser
   ): Promise<{ [key: string]: number }> {
-    const innovations = this.innovationRepo
+    let innovations = this.innovationRepo
       .createQueryBuilder("innovations")
       .select("supports.status", "status")
-      .addSelect("COUNT(notifications.id)", "count")
-      .innerJoin(
+      .addSelect("COUNT(1)", "count");
+
+    if (requestUser.type === UserType.ACCESSOR) {
+      innovations = innovations.innerJoin(
         InnovationSupport,
         "supports",
-        "innovations.id = supports.innovation_id"
-      )
+        "innovations.id = supports.innovation_id and supports.organisation_unit_id = :orgUnitId",
+        {
+          orgUnitId: requestUser.organisationUnitUser.organisationUnit.id,
+        }
+      );
+    } else {
+      innovations = innovations.innerJoin(
+        InnovationSupport,
+        "supports",
+        "innovations.id = supports.innovation_id "
+      );
+    }
+
+    innovations = innovations
       .innerJoin(
         Notification,
         "notifications",
@@ -259,10 +274,36 @@ export class NotificationService {
     const result = [
       ...assigned,
       ...unassigned.map((u) => ({
-        status: "UNASSIGNED",
+        status: InnovationSupportStatus.UNASSIGNED,
         count: u.count,
       })),
     ];
+
+    return this.convertArrayToObject(result, "status");
+  }
+  async getAggregatedInnovationNotificationsAssessment(
+    requestUser: RequestUser
+  ): Promise<{ [key: string]: number }> {
+    const innovations = this.innovationRepo
+      .createQueryBuilder("innovations")
+      .select("innovations.status", "status")
+      .addSelect("COUNT(1)", "count")
+      .innerJoin(
+        Notification,
+        "notifications",
+        `innovations.id = notifications.innovation_id`
+      )
+      .innerJoin(
+        NotificationUser,
+        "notificationUsers",
+        "notifications.id = notificationUsers.notification_id and notificationUsers.read_at IS NULL and notificationUsers.user_id = :userId",
+        { userId: requestUser.id }
+      )
+      .groupBy("innovations.status");
+
+    const assigned = await innovations.getRawMany();
+
+    const result = [...assigned];
 
     return this.convertArrayToObject(result, "status");
   }
