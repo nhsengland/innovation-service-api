@@ -47,6 +47,12 @@ describe("User Service Suite", () => {
 
     organisation = await fixtures.createOrganisation(OrganisationType.ACCESSOR);
     organisationUnit = await fixtures.createOrganisationUnit(organisation);
+
+    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
+    spyOn(helpers, "getUserFromB2CByEmail").and.returnValue({
+      id: ":userOid",
+      displayName: ":userName",
+    });
   });
 
   afterAll(async () => {
@@ -76,7 +82,6 @@ describe("User Service Suite", () => {
 
   it("should update a user profile", async () => {
     // Arrange
-    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
     spyOn(helpers, "saveB2CUser").and.callFake;
 
     let err;
@@ -91,8 +96,6 @@ describe("User Service Suite", () => {
 
   it("should retrieve a user profile with organisation roles", async () => {
     // Arrange
-
-    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
     spyOn(helpers, "getUserFromB2C").and.returnValue({
       displayName: "Accessor A",
       identities: [
@@ -162,7 +165,6 @@ describe("User Service Suite", () => {
   });
 
   it("should retrieve a user B2C profile information", async () => {
-    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
     spyOn(helpers, "getUserFromB2C").and.returnValue({
       displayName: "Accessor A",
       identities: [
