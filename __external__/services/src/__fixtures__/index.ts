@@ -158,6 +158,7 @@ export const createOrganisationUnit = async (
 
   const unitObj = OrganisationUnit.new({
     name: faker.company.companyName(),
+    acronym: faker.company.companySuffix(),
     organisation,
   });
 

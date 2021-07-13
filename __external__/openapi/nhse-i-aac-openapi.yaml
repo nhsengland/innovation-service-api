@@ -1868,6 +1868,35 @@ paths:
         "403":
           description: "Forbidden"
 
+  "/user-admin/users":
+    post:
+      tags:
+        - "Admin"
+        - "User"
+        - "CreateUsers"
+      description: "Creates users"
+      operationId: "admins-create-users"
+      security:
+        - OpenId:
+            - users_write
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/admins-create-users-payload"
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
 components:
   schemas:
     accessor-schema:
@@ -1904,6 +1933,8 @@ components:
       $ref: "./schemas/survey-get-id.yaml"
 
   requestBodies:
+    admins-create-users-payload: 
+      $ref: "./schemas/admins-create-users-payload.yaml"
     accessors-create-support-payload:
       $ref: "./schemas/accessors-create-support-payload.yaml"
     accessors-update-support-payload:
