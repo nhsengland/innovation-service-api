@@ -972,16 +972,14 @@ describe("Notification Service Suite", () => {
     const organisationUnit = await fixtures.createOrganisationUnit(
       accessorOrganisation
     );
-    const organisationUnitQAccessorUser =
-      await fixtures.addOrganisationUserToOrganisationUnit(
-        organisationQAccessorUser,
-        organisationUnit
-      );
-    const organisationUnitAccessorUser =
-      await fixtures.addOrganisationUserToOrganisationUnit(
-        organisationAccessorUser,
-        organisationUnit
-      );
+    const organisationUnitQAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
+      organisationQAccessorUser,
+      organisationUnit
+    );
+    const organisationUnitAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
+      organisationAccessorUser,
+      organisationUnit
+    );
 
     const innovatorRequestUser = fixtures.getRequestUser(innovatorUser);
     const qAccessorRequestUser = fixtures.getRequestUser(
@@ -1060,10 +1058,9 @@ describe("Notification Service Suite", () => {
       innovation1.id,
       "test 3"
     );
-    const notificationByStatus =
-      await notificationService.getAggregatedInnovationNotifications(
-        accessorRequestUser
-      );
+    const notificationByStatus = await notificationService.getAggregatedInnovationNotifications(
+      accessorRequestUser
+    );
 
     expect(notificationByStatus).toBeDefined();
     expect(Object.keys(notificationByStatus).length).toBe(2);

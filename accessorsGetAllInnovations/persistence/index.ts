@@ -7,14 +7,13 @@ export const findAllInnovationsByAccessor = async (
   take: number,
   order?: { [key: string]: string }
 ) => {
-  const result =
-    await ctx.services.InnovationService.findAllByAccessorAndSupportStatus(
-      ctx.auth.requestUser,
-      supportStatus,
-      assignedToMe,
-      skip,
-      take,
-      order
-    );
+  const result = await ctx.services.InnovationService.findAllByAccessorAndSupportStatus(
+    ctx.auth.requestUser,
+    supportStatus,
+    assignedToMe,
+    skip,
+    take,
+    order
+  );
   return result;
 };
