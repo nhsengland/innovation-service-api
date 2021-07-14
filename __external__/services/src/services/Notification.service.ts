@@ -140,15 +140,18 @@ export class NotificationService {
 
     try {
       const notificationIds = notificationUsers.map((u) => u.notification.id);
-      result = await this.notificationUserRepo
-        .createQueryBuilder()
-        .update(NotificationUser)
-        .set({ readAt: () => "CURRENT_TIMESTAMP" })
-        .where(
-          "user = :userId and notification in (:...notificationId) and read_at IS NULL",
-          { userId: requestUser.id, notificationId: notificationIds }
-        )
-        .execute();
+
+      if (notificationIds.length > 0) {
+        result = await this.notificationUserRepo
+          .createQueryBuilder()
+          .update(NotificationUser)
+          .set({ readAt: () => "CURRENT_TIMESTAMP" })
+          .where(
+            "user = :userId and notification in (:...notificationId) and read_at IS NULL",
+            { userId: requestUser.id, notificationId: notificationIds }
+          )
+          .execute();
+      }
     } catch (error) {
       return {
         error,
