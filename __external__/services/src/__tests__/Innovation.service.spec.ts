@@ -44,7 +44,7 @@ describe("Innovator Service Suite", () => {
   let assessmentRequestUser: RequestUser;
 
   beforeAll(async () => {
-    // await setupTestsConnection();
+    //await setupTestsConnection();
     innovationService = new InnovationService(process.env.DB_TESTS_NAME);
     userService = new UserService(process.env.DB_TESTS_NAME);
 
@@ -79,14 +79,16 @@ describe("Innovator Service Suite", () => {
     const organisationUnit = await fixtures.createOrganisationUnit(
       accessorOrganisation
     );
-    const organisationUnitQAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
-      organisationQAccessorUser,
-      organisationUnit
-    );
-    const organisationUnitAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
-      organisationAccessorUser,
-      organisationUnit
-    );
+    const organisationUnitQAccessorUser =
+      await fixtures.addOrganisationUserToOrganisationUnit(
+        organisationQAccessorUser,
+        organisationUnit
+      );
+    const organisationUnitAccessorUser =
+      await fixtures.addOrganisationUserToOrganisationUnit(
+        organisationAccessorUser,
+        organisationUnit
+      );
 
     innovatorRequestUser = fixtures.getRequestUser(innovatorUser);
     assessmentRequestUser = fixtures.getRequestUser(assessmentUser);
@@ -112,7 +114,7 @@ describe("Innovator Service Suite", () => {
     await query.from(OrganisationUser).execute();
     await query.from(Organisation).execute();
     await query.from(User).execute();
-    // closeTestsConnection();
+    //closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -508,11 +510,12 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should list innovations within the list of statuses", async () => {
-    const innovations: Innovation[] = await fixtures.saveInnovationsWithAssessment(
-      fixtures.generateInnovation({
-        owner: { id: innovatorRequestUser.id },
-      })
-    );
+    const innovations: Innovation[] =
+      await fixtures.saveInnovationsWithAssessment(
+        fixtures.generateInnovation({
+          owner: { id: innovatorRequestUser.id },
+        })
+      );
 
     spyOn(helpers, "authenticateWitGraphAPI").and.stub();
     spyOn(helpers, "getUsersFromB2C").and.returnValues(

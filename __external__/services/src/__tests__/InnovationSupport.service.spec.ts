@@ -36,7 +36,7 @@ describe("Innovation Support Suite", () => {
   let qAccessorRequestUser: RequestUser;
 
   beforeAll(async () => {
-    //await setupTestsConnection();
+    // await setupTestsConnection();
     supportService = new InnovationSupportService(process.env.DB_TESTS_NAME);
 
     const innovatorUser = await fixtures.createInnovatorUser();
@@ -60,14 +60,16 @@ describe("Innovation Support Suite", () => {
     const organisationUnit = await fixtures.createOrganisationUnit(
       accessorOrganisation
     );
-    const organisationUnitQAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
-      organisationQAccessorUser,
-      organisationUnit
-    );
-    const organisationUnitAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
-      organisationAccessorUser,
-      organisationUnit
-    );
+    const organisationUnitQAccessorUser =
+      await fixtures.addOrganisationUserToOrganisationUnit(
+        organisationQAccessorUser,
+        organisationUnit
+      );
+    const organisationUnitAccessorUser =
+      await fixtures.addOrganisationUserToOrganisationUnit(
+        organisationAccessorUser,
+        organisationUnit
+      );
 
     const innovationObj = fixtures.generateInnovation({
       owner: innovatorUser,
@@ -111,7 +113,7 @@ describe("Innovation Support Suite", () => {
     await query.from(Innovation).execute();
     await query.from(User).execute();
 
-    //closeTestsConnection();
+    // closeTestsConnection();
   });
 
   afterEach(async () => {

@@ -46,10 +46,11 @@ describe("Comment Service Suite", () => {
     const organisationUnit = await fixtures.createOrganisationUnit(
       accessorOrganisation
     );
-    const organisationUnitQAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
-      organisationQAccessorUser,
-      organisationUnit
-    );
+    const organisationUnitQAccessorUser =
+      await fixtures.addOrganisationUserToOrganisationUnit(
+        organisationQAccessorUser,
+        organisationUnit
+      );
 
     const innovatorUser = await fixtures.createInnovatorUser();
     innovation = await fixtures.saveInnovation(

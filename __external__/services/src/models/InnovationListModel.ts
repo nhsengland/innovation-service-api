@@ -1,6 +1,7 @@
 export interface InnovationListModel {
   data: InnovationViewModel[];
   count: number;
+  tabInfo: { [key: string]: number };
 }
 
 export interface InnovationViewModel {
@@ -17,4 +18,8 @@ export interface InnovationViewModel {
     finishedAt: string;
   };
   organisations: string[];
+  notifications?: {
+    count: number;
+    isNew: boolean;
+  };
 }
