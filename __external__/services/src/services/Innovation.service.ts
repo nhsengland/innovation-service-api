@@ -104,7 +104,7 @@ export class InnovationService extends BaseService<Innovation> {
               ["innovationSupports", "assessments"],
               filterRelations
             ),
-            where: `organisation_unit_id = '${organisationUnitUser.organisationUnit.id}'`,
+            where: `Innovation__innovationSupports.organisation_unit_id = '${organisationUnitUser.organisationUnit.id}'`,
           };
         }
 
@@ -236,9 +236,19 @@ export class InnovationService extends BaseService<Innovation> {
       }
     */
     const organisationsMap = await this.getOrganisationsMap(innovations[0]);
+    const notifications = await this.notificationService.getUnreadNotifications(
+      requestUser
+    );
+
+    const aggregatedNotifications =
+      await this.notificationService.getAggregatedInnovationNotifications(
+        requestUser
+      );
 
     const result = {
       data: innovations[0]?.map((inno: Innovation) => {
+        const unread = notifications.filter((n) => n.innovationId === inno.id);
+
         const innovationSupport = inno.innovationSupports?.find(
           (is: InnovationSupport) =>
             is.organisationUnit.id === organisationUnit.id
@@ -274,9 +284,17 @@ export class InnovationService extends BaseService<Innovation> {
               : { id: null },
           // GRAB THE ORGANISATION ACRONYMS ARRAY FROM THE MAP BY THE KEY = INNOVATION ID
           organisations: organisationsMap[inno.id] || [],
+          notifications: {
+            count: unread?.length || 0,
+            hasNew:
+              unread.filter(
+                (u) => u.contextType === NotificationContextType.INNOVATION
+              ).length > 0 && !support.id,
+          },
         };
       }),
       count: innovations[1],
+      tabInfo: aggregatedNotifications,
     };
 
     return result;
@@ -352,6 +370,12 @@ export class InnovationService extends BaseService<Innovation> {
       });
     });
 
+    const notifications =
+      await this.notificationService.getUnreadNotificationsCounts(
+        requestUser,
+        innovation.id
+      );
+
     const result: InnovatorInnovationSummary = {
       id: innovation.id,
       name: innovation.name,
@@ -363,6 +387,7 @@ export class InnovationService extends BaseService<Innovation> {
       submittedAt: innovation.submittedAt,
       assessment,
       actions,
+      notifications,
     };
 
     return result;
@@ -420,14 +445,22 @@ export class InnovationService extends BaseService<Innovation> {
       id: null,
       status: null,
     };
-    const innovationSupport: InnovationSupport = innovation?.innovationSupports.find(
-      (is: InnovationSupport) => is.organisationUnit.id === organisationUnit.id
-    );
+    const innovationSupport: InnovationSupport =
+      innovation?.innovationSupports.find(
+        (is: InnovationSupport) =>
+          is.organisationUnit.id === organisationUnit.id
+      );
 
     if (innovationSupport) {
       support.id = innovationSupport.id;
       support.status = innovationSupport.status;
     }
+
+    const notifications =
+      await this.notificationService.getUnreadNotificationsCounts(
+        requestUser,
+        innovation.id
+      );
 
     return {
       summary: {
@@ -446,6 +479,7 @@ export class InnovationService extends BaseService<Innovation> {
       },
       assessment,
       support,
+      notifications,
     };
   }
 
@@ -482,6 +516,12 @@ export class InnovationService extends BaseService<Innovation> {
       assessment.assignToName = b2cAssessmentUser.displayName;
     }
 
+    const notifications =
+      await this.notificationService.getUnreadNotificationsCounts(
+        requestUser,
+        innovation.id
+      );
+
     return {
       summary: {
         id: innovation.id,
@@ -500,6 +540,7 @@ export class InnovationService extends BaseService<Innovation> {
         phone: b2cOwnerUser.phone,
       },
       assessment,
+      notifications,
     };
   }
 
@@ -554,9 +595,27 @@ export class InnovationService extends BaseService<Innovation> {
       }));
     }
 
+    const notifications = await this.notificationService.getUnreadNotifications(
+      requestUser
+    );
+
+    let aggregatedNotifications;
+    if (requestUser.type === UserType.ASSESSMENT) {
+      aggregatedNotifications =
+        await this.notificationService.getAggregatedInnovationNotificationsAssessment(
+          requestUser
+        );
+    } else {
+      aggregatedNotifications =
+        await this.notificationService.getAggregatedInnovationNotifications(
+          requestUser
+        );
+    }
+
     return {
-      data: this.mapResponse(res),
+      data: this.mapResponse(res, notifications),
       count: result[1],
+      tabInfo: aggregatedNotifications,
     };
   }
 
@@ -592,6 +651,7 @@ export class InnovationService extends BaseService<Innovation> {
       NotificationAudience.ASSESSMENT_USERS,
       innovation.id,
       NotificationContextType.INNOVATION,
+
       innovation.id,
       `The innovation ${innovation.name} was submitted for assessment.`
     );
@@ -821,23 +881,31 @@ export class InnovationService extends BaseService<Innovation> {
     });
   }
 
-  private mapResponse(res: any[]): InnovationViewModel[] {
-    const result: InnovationViewModel[] = res.map((r) => ({
-      id: r.id,
-      name: r.name,
-      submittedAt: r.submittedAt,
-      countryName: r.countryName,
-      postCode: r.postcode,
-      mainCategory: r.mainCategory,
-      otherMainCategoryDescription: r.otherMainCategoryDescription,
-      assessment: {
-        id: r.assessments[0]?.id,
-        createdAt: r.assessments[0]?.createdAt,
-        assignTo: { name: r.assessments?.user?.name },
-        finishedAt: r.assessments[0]?.finishedAt,
-      },
-      organisations: r.organisations || [],
-    }));
+  private mapResponse(res: any[], notifications: any[]): InnovationViewModel[] {
+    const result: InnovationViewModel[] = res.map((r) => {
+      const unread = notifications?.filter((n) => n.contextId === r.id);
+
+      return {
+        id: r.id,
+        name: r.name,
+        submittedAt: r.submittedAt,
+        countryName: r.countryName,
+        postCode: r.postcode,
+        mainCategory: r.mainCategory,
+        otherMainCategoryDescription: r.otherMainCategoryDescription,
+        assessment: {
+          id: r.assessments[0]?.id,
+          createdAt: r.assessments[0]?.createdAt,
+          assignTo: { name: r.assessments?.user?.name },
+          finishedAt: r.assessments[0]?.finishedAt,
+        },
+        organisations: r.organisations || [],
+        notifications: {
+          count: unread?.length || 0,
+          isNew: r.assessments.length === 0,
+        },
+      };
+    });
 
     return result;
   }
@@ -846,7 +914,7 @@ export class InnovationService extends BaseService<Innovation> {
     innovations: Innovation[]
   ): Promise<{ [key: string]: string[] } | []> {
     const innovationIds: string[] = innovations.map((o) => o.id);
-    //return await this.supportRepo.findByInnovationIds(innovationIds) || [];
+    // return await this.supportRepo.findByInnovationIds(innovationIds) || [];
     // FROM THE INNOVATIONS PASSED IN
     // GRAB THE SUPPORTS WITH THE STATUS = ENGAGING
 

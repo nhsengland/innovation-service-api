@@ -1,7 +1,8 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class alterInnovRegulationTable1619768473367
-  implements MigrationInterface {
+  implements MigrationInterface
+{
   name = "alterInnovRegulationTable1619768473367";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
