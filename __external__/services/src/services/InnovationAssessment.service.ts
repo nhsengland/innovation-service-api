@@ -186,7 +186,7 @@ export class InnovationAssessmentService {
         NotificationAudience.QUALIFYING_ACCESSORS,
         innovationId,
         NotificationContextType.INNOVATION,
-        result.id,
+        innovationId,
         `Innovation with id ${innovationId} is now available for Qualifying Accessors`
       );
     }
