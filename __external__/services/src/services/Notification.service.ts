@@ -118,7 +118,6 @@ export class NotificationService {
     contextType: NotificationContextType,
     contextId: string
   ): Promise<NotificationDismissResult> {
-
     const notificationUsers = await this.notificationUserRepo.find({
       relations: ["user", "notification"],
       join: {
@@ -144,16 +143,15 @@ export class NotificationService {
 
       if (notificationIds.length > 0) {
         result = await this.notificationUserRepo
-        .createQueryBuilder()
-        .update(NotificationUser)
-        .set({ readAt: () => "CURRENT_TIMESTAMP" })
-        .where(
-          "user = :userId and notification in (:...notificationId) and read_at IS NULL",
-          { userId: requestUser.id, notificationId: notificationIds }
-        )
-        .execute();
+          .createQueryBuilder()
+          .update(NotificationUser)
+          .set({ readAt: () => "CURRENT_TIMESTAMP" })
+          .where(
+            "user = :userId and notification in (:...notificationId) and read_at IS NULL",
+            { userId: requestUser.id, notificationId: notificationIds }
+          )
+          .execute();
       }
-
     } catch (error) {
       return {
         error,

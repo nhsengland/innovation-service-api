@@ -2,7 +2,13 @@ import { HttpRequest } from "@azure/functions";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
 import * as Responsify from "../utils/responsify";
-import { AllowedUserType, AppInsights, JwtDecoder, SQLConnector, Validator } from "../utils/decorators";
+import {
+  AllowedUserType,
+  AppInsights,
+  JwtDecoder,
+  SQLConnector,
+  Validator,
+} from "../utils/decorators";
 import { CustomContext } from "../utils/types";
 import { UserType } from "@domain/index";
 
