@@ -99,11 +99,9 @@ export class CommentService {
           s.accessors.map((a) => a.id)
         );
 
-        const userIds = await this.organisationService.findUserFromUnitUsers(
+        targetNotificationUsers = await this.organisationService.findUserFromUnitUsers(
           accessorsUnitIds
         );
-
-        targetNotificationUsers = userIds.filter((u) => u !== requestUser.id);
       }
     }
 

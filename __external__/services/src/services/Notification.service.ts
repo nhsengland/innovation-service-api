@@ -65,6 +65,7 @@ export class NotificationService {
     specificUsers?: string[]
   ): Promise<Notification> {
     let notification: Notification;
+
     switch (audience) {
       case NotificationAudience.ACCESSORS:
         notification = await this.createNotificationForAccessors(
@@ -197,6 +198,29 @@ export class NotificationService {
       .select("notifications.context_type", "contextType")
       .addSelect("COUNT(notifications.context_type)", "count")
       .innerJoin(Notification, "notifications", filters, parameters);
+
+    const unreadNotifications = await query
+      .groupBy("notifications.contextType")
+      .addGroupBy("n_users.user_id")
+      .having("n_users.user_id = :userId ", { userId: requestUser.id })
+      .getRawMany();
+
+    return this.convertArrayToObject(unreadNotifications, "contextType");
+  }
+
+  async getAllUnreadNotificationsCounts(
+    requestUser: RequestUser,
+    contextType?: string,
+    contextId?: string
+  ): Promise<{ [key: string]: number }> {
+    const filters =
+      "n_users.notification_id = notifications.id and read_at IS NULL";
+
+    const query = this.notificationUserRepo
+      .createQueryBuilder("n_users")
+      .select("notifications.context_type", "contextType")
+      .addSelect("COUNT(notifications.context_type)", "count")
+      .innerJoin(Notification, "notifications", filters);
 
     const unreadNotifications = await query
       .groupBy("notifications.contextType")
@@ -418,6 +442,7 @@ export class NotificationService {
       }));
     }
 
+    targetUsers = targetUsers.filter((u) => u.user !== requestUser.id);
     const notification = Notification.new({
       contextId,
       contextType,
@@ -436,8 +461,10 @@ export class NotificationService {
     innovationId: string,
     contextType: NotificationContextType,
     contextId: string,
-    message: string
+    message: string,
+    specificUsers?: string[]
   ) {
+    let targetUsers: any[] = [];
     // target users are all qualifying accessors who belong to the suggested organisations of an assessment record
 
     // TODO: For now, QA's only receive notifications intigated when an Innovation finishes the assessment.
@@ -458,10 +485,19 @@ export class NotificationService {
       loadRelationIds: true,
     });
 
-    const targetUsers = orgUsers.map((u) => ({
-      user: u.user,
-      createdBy: requestUser.id,
-    }));
+    if (!specificUsers || specificUsers.length === 0) {
+      targetUsers = orgUsers.map((u) => ({
+        user: u.user,
+        createdBy: requestUser.id,
+      }));
+    } else {
+      targetUsers = specificUsers?.map((u) => ({
+        user: u,
+        createdBy: requestUser.id,
+      }));
+    }
+
+    targetUsers = targetUsers.filter((u) => u.user !== requestUser.id);
 
     const notification = Notification.new({
       contextId,
@@ -491,6 +527,7 @@ export class NotificationService {
       loadRelationIds: true,
     });
 
+    specificUsers = specificUsers.filter((u) => u !== requestUser.id);
     const targetUsers = [innovation.owner, ...specificUsers];
 
     const notification = Notification.new({
@@ -514,8 +551,10 @@ export class NotificationService {
     innovationId: string,
     contextType: NotificationContextType,
     contextId: string,
-    message: string
+    message: string,
+    specificUsers?: string[]
   ) {
+    let targetUsers: any[] = [];
     // target user is the owner of the innovation
     // this is obtained from the innovation entity
 
@@ -525,10 +564,19 @@ export class NotificationService {
       },
     });
 
-    const targetUsers = users.map((u) => ({
-      user: u.id,
-      createdBy: requestUser.id,
-    }));
+    if (!specificUsers || specificUsers.length === 0) {
+      targetUsers = users.map((u) => ({
+        user: u.id,
+        createdBy: requestUser.id,
+      }));
+    } else {
+      targetUsers = specificUsers?.map((u) => ({
+        user: u,
+        createdBy: requestUser.id,
+      }));
+    }
+
+    targetUsers = targetUsers.filter((u) => u.user !== requestUser.id);
 
     const notification = Notification.new({
       contextId,

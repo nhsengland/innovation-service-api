@@ -392,7 +392,6 @@ export class InnovationActionService {
         updatedAt: ia.updatedAt,
         notifications: {
           count: unread?.length || 0,
-          data: unread,
         },
       };
     });
