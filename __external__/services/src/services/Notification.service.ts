@@ -208,6 +208,29 @@ export class NotificationService {
     return this.convertArrayToObject(unreadNotifications, "contextType");
   }
 
+  async getAllUnreadNotificationsCounts(
+    requestUser: RequestUser,
+    contextType?: string,
+    contextId?: string
+  ): Promise<{ [key: string]: number }> {
+    const filters =
+      "n_users.notification_id = notifications.id and read_at IS NULL";
+
+    const query = this.notificationUserRepo
+      .createQueryBuilder("n_users")
+      .select("notifications.context_type", "contextType")
+      .addSelect("COUNT(notifications.context_type)", "count")
+      .innerJoin(Notification, "notifications", filters);
+
+    const unreadNotifications = await query
+      .groupBy("notifications.contextType")
+      .addGroupBy("n_users.user_id")
+      .having("n_users.user_id = :userId ", { userId: requestUser.id })
+      .getRawMany();
+
+    return this.convertArrayToObject(unreadNotifications, "contextType");
+  }
+
   async getAggregatedInnovationNotifications(
     requestUser: RequestUser
   ): Promise<{ [key: string]: number }> {
