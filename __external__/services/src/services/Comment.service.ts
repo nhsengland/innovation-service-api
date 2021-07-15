@@ -102,8 +102,6 @@ export class CommentService {
         const userIds = await this.organisationService.findUserFromUnitUsers(
           accessorsUnitIds
         );
-
-        targetNotificationUsers = userIds.filter((u) => u !== requestUser.id);
       }
     }
 
