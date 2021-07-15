@@ -91,8 +91,7 @@ export class UserService {
         ],
       });
       if (userDb) {
-        const organisations: OrganisationUser[] =
-          await userDb.userOrganisations;
+        const organisations: OrganisationUser[] = await userDb.userOrganisations;
 
         profile.type = userDb.type;
         profile.organisations = [];

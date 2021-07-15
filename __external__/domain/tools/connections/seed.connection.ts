@@ -8,7 +8,7 @@ export const getSeedConnection = (): ConnectionOptions => {
   return {
     ...defaultConnection,
     name: C.TYPEORM_SEEDING_CONNECTION_NAME,
-    entities: ["../../src/entity/**/*.ts"],
+    entities: [helpers.rootDir("src/entity/*/**.entity.ts")],
     migrations: [helpers.rootDir(`${C.TYPEORM_SEEDING_DIR}/*.ts`)],
     migrationsTableName: C.TYPEORM_SEEDS_TABLE_NAME,
     cli: {

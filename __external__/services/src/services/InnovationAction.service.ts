@@ -106,11 +106,9 @@ export class InnovationActionService {
 
     const organisationUnit = requestUser.organisationUnitUser.organisationUnit;
 
-    const innovationSupport: InnovationSupport =
-      innovation?.innovationSupports.find(
-        (is: InnovationSupport) =>
-          is.organisationUnit.id === organisationUnit.id
-      );
+    const innovationSupport: InnovationSupport = innovation?.innovationSupports.find(
+      (is: InnovationSupport) => is.organisationUnit.id === organisationUnit.id
+    );
     if (!innovationSupport) {
       throw new InnovationSupportNotFoundError(
         "Invalid parameters. Innovation Support not found."

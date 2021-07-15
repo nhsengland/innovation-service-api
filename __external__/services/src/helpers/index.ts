@@ -111,8 +111,7 @@ export async function createB2CUser(
     extension_fea2c0ddca9c4af4b191987bb2a08057_termsOfUseConsentVersion: "V1",
     extension_fea2c0ddca9c4af4b191987bb2a08057_termsOfUseConsentChoice:
       "AgreeToTermsOfUseConsentYes",
-    extension_fea2c0ddca9c4af4b191987bb2a08057_termsOfUseConsentDateTime:
-      new Date().toISOString(),
+    extension_fea2c0ddca9c4af4b191987bb2a08057_termsOfUseConsentDateTime: new Date().toISOString(),
   };
 
   try {

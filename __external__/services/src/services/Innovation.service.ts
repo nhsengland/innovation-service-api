@@ -240,10 +240,9 @@ export class InnovationService extends BaseService<Innovation> {
       requestUser
     );
 
-    const aggregatedNotifications =
-      await this.notificationService.getAggregatedInnovationNotifications(
-        requestUser
-      );
+    const aggregatedNotifications = await this.notificationService.getAggregatedInnovationNotifications(
+      requestUser
+    );
 
     const result = {
       data: innovations[0]?.map((inno: Innovation) => {
@@ -370,11 +369,10 @@ export class InnovationService extends BaseService<Innovation> {
       });
     });
 
-    const notifications =
-      await this.notificationService.getUnreadNotificationsCounts(
-        requestUser,
-        innovation.id
-      );
+    const notifications = await this.notificationService.getUnreadNotificationsCounts(
+      requestUser,
+      innovation.id
+    );
 
     const result: InnovatorInnovationSummary = {
       id: innovation.id,
@@ -445,22 +443,19 @@ export class InnovationService extends BaseService<Innovation> {
       id: null,
       status: null,
     };
-    const innovationSupport: InnovationSupport =
-      innovation?.innovationSupports.find(
-        (is: InnovationSupport) =>
-          is.organisationUnit.id === organisationUnit.id
-      );
+    const innovationSupport: InnovationSupport = innovation?.innovationSupports.find(
+      (is: InnovationSupport) => is.organisationUnit.id === organisationUnit.id
+    );
 
     if (innovationSupport) {
       support.id = innovationSupport.id;
       support.status = innovationSupport.status;
     }
 
-    const notifications =
-      await this.notificationService.getUnreadNotificationsCounts(
-        requestUser,
-        innovation.id
-      );
+    const notifications = await this.notificationService.getUnreadNotificationsCounts(
+      requestUser,
+      innovation.id
+    );
 
     return {
       summary: {
@@ -516,11 +511,10 @@ export class InnovationService extends BaseService<Innovation> {
       assessment.assignToName = b2cAssessmentUser.displayName;
     }
 
-    const notifications =
-      await this.notificationService.getUnreadNotificationsCounts(
-        requestUser,
-        innovation.id
-      );
+    const notifications = await this.notificationService.getUnreadNotificationsCounts(
+      requestUser,
+      innovation.id
+    );
 
     return {
       summary: {
@@ -601,15 +595,13 @@ export class InnovationService extends BaseService<Innovation> {
 
     let aggregatedNotifications;
     if (requestUser.type === UserType.ASSESSMENT) {
-      aggregatedNotifications =
-        await this.notificationService.getAggregatedInnovationNotificationsAssessment(
-          requestUser
-        );
+      aggregatedNotifications = await this.notificationService.getAggregatedInnovationNotificationsAssessment(
+        requestUser
+      );
     } else {
-      aggregatedNotifications =
-        await this.notificationService.getAggregatedInnovationNotifications(
-          requestUser
-        );
+      aggregatedNotifications = await this.notificationService.getAggregatedInnovationNotifications(
+        requestUser
+      );
     }
 
     return {

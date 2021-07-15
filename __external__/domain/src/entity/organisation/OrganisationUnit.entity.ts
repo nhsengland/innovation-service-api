@@ -22,6 +22,9 @@ export class OrganisationUnit extends Base {
   @Column({ nullable: true })
   acronym: string;
 
+  @Column({ name: "is_shadow", nullable: false, default: false })
+  isShadow: boolean;
+
   //relationships
   @ManyToOne(() => Organisation, { nullable: false })
   @JoinColumn({ name: "organisation_id" })
