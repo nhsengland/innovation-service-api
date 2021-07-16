@@ -64,6 +64,76 @@ export async function getUsersFromB2C(
   }
 }
 
+export async function getUserFromB2CByEmail(
+  accessToken: string,
+  email: string
+) {
+  const odataFilter = `$filter=identities/any(c:c/issuerAssignedId eq '${email}' and c/issuer eq '${process.env.AD_TENANT_NAME}.onmicrosoft.com')`;
+
+  try {
+    const config = {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    };
+
+    const result = await axios.get(
+      `https://graph.microsoft.com/v1.0/users?${odataFilter}`,
+      config
+    );
+    return result.data.value && result.data.value.length > 0
+      ? result.data.value[0]
+      : null;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function createB2CUser(
+  accessToken: string,
+  name: string,
+  email: string,
+  password: string
+) {
+  const termsOfUseConsentVersion = `extension_${process.env.AD_EXTENSION_ID}_termsOfUseConsentVersion`;
+  const termsOfUseConsentChoice = `extension_${process.env.AD_EXTENSION_ID}_termsOfUseConsentChoice`;
+  const termsOfUseConsentDateTime = `extension_${process.env.AD_EXTENSION_ID}_termsOfUseConsentDateTime`;
+
+  const payload = {
+    accountEnabled: true,
+    displayName: name,
+    passwordPolicies: "DisablePasswordExpiration",
+    passwordProfile: {
+      password: password,
+      forceChangePasswordNextSignIn: false,
+    },
+    identities: [
+      {
+        signInType: "emailAddress",
+        issuer: `${process.env.AD_TENANT_NAME}.onmicrosoft.com`,
+        issuerAssignedId: email,
+      },
+    ],
+  };
+
+  payload[termsOfUseConsentVersion] = "V1";
+  payload[termsOfUseConsentChoice] = "AgreeToTermsOfUseConsentYes";
+  payload[termsOfUseConsentDateTime] = new Date().toISOString();
+
+  try {
+    const config = {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    };
+
+    const result = await axios.post(
+      `https://graph.microsoft.com/v1.0/users`,
+      payload,
+      config
+    );
+    return result.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
 export async function saveB2CUser(
   accessToken: string,
   oid: string,

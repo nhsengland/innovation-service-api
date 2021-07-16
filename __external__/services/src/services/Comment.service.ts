@@ -1,5 +1,6 @@
 import {
   Comment,
+  InnovationSupport,
   NotificationAudience,
   NotificationContextType,
   UserType,
@@ -14,7 +15,9 @@ import { CommentModel } from "@services/models/CommentModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { InnovationService } from "./Innovation.service";
+import { InnovationSupportService } from "./InnovationSupport.service";
 import { NotificationService } from "./Notification.service";
+import { OrganisationService } from "./Organisation.service";
 import { UserService } from "./User.service";
 
 export class CommentService {
@@ -23,6 +26,8 @@ export class CommentService {
   private readonly innovationService: InnovationService;
   private readonly userService: UserService;
   private readonly notificationService: NotificationService;
+  private readonly innovationSupportService: InnovationSupportService;
+  private readonly organisationService: OrganisationService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -30,6 +35,10 @@ export class CommentService {
     this.innovationService = new InnovationService(connectionName);
     this.userService = new UserService(connectionName);
     this.notificationService = new NotificationService(connectionName);
+    this.innovationSupportService = new InnovationSupportService(
+      connectionName
+    );
+    this.organisationService = new OrganisationService(connectionName);
   }
 
   async create(
@@ -75,6 +84,27 @@ export class CommentService {
 
     const result = await this.commentRepo.save(commentObj);
 
+    let targetNotificationUsers;
+    // If the comment if made by an accessor, it also has to send a notification for assigned accessors regardless of the unit they belong to.
+    // The create method already knows it has to create a notification to the owner of the innovation.
+    // But we need to pass in the accessors that are assigned to this innovation.
+    if (requestUser.type === UserType.ACCESSOR) {
+      const supports = await this.innovationSupportService.findAllByInnovation(
+        requestUser,
+        innovationId
+      );
+
+      if (supports.length > 0) {
+        const accessorsUnitIds = supports.flatMap((s) =>
+          s.accessors.map((a) => a.id)
+        );
+
+        targetNotificationUsers = await this.organisationService.findUserFromUnitUsers(
+          accessorsUnitIds
+        );
+      }
+    }
+
     await this.notificationService.create(
       requestUser,
       requestUser.type === UserType.INNOVATOR
@@ -83,7 +113,8 @@ export class CommentService {
       innovationId,
       NotificationContextType.COMMENT,
       result.id,
-      `A ${NotificationContextType.COMMENT} was created by ${requestUser.id}`
+      `A ${NotificationContextType.COMMENT} was created by ${requestUser.id}`,
+      targetNotificationUsers || []
     );
 
     return result;
@@ -109,6 +140,12 @@ export class CommentService {
       );
     }
 
+    const notifications = await this.notificationService.getUnreadNotifications(
+      requestUser,
+      innovationId,
+      NotificationContextType.COMMENT
+    );
+
     const filterOptions = {
       relations: ["user", "organisationUnit", "replyTo"],
       where: { innovation: innovationId },
@@ -127,7 +164,7 @@ export class CommentService {
     const result = comments
       .filter((comment: Comment) => comment.replyTo === null)
       .map((comment: Comment) =>
-        this.getFormattedComment(comment, b2cUserNames)
+        this.getFormattedComment(comment, b2cUserNames, notifications)
       );
 
     result.map((res) => {
@@ -136,7 +173,7 @@ export class CommentService {
           (comment: Comment) => comment.replyTo && comment.replyTo.id === res.id
         )
         .map((comment: Comment) =>
-          this.getFormattedComment(comment, b2cUserNames)
+          this.getFormattedComment(comment, b2cUserNames, notifications)
         );
     });
 
@@ -145,8 +182,17 @@ export class CommentService {
 
   private getFormattedComment(
     comment: Comment,
-    b2cUserNames: { [key: string]: string }
+    b2cUserNames: { [key: string]: string },
+    notifications?: {
+      id: string;
+      contextType: string;
+      contextId: string;
+      innovationId: string;
+      readAt: string;
+    }[]
   ): CommentModel {
+    const unread = notifications?.filter((n) => n.contextId === comment.id);
+
     const commentModel: CommentModel = {
       id: comment.id,
       message: comment.message,
@@ -155,6 +201,10 @@ export class CommentService {
         id: comment.user.id,
         type: comment.user.type,
         name: b2cUserNames[comment.user.id],
+      },
+      notifications: {
+        count: unread?.length || 0,
+        data: unread,
       },
     };
 

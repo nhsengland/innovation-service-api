@@ -248,8 +248,9 @@ export class InnovationSupportService {
       NotificationAudience.ACCESSORS,
       innovationId,
       NotificationContextType.INNOVATION,
+
       innovationId,
-      `The Innovation with id ${innovationId} was assigned to the accessors of ${requestUser.organisationUnitUser.organisationUnit.name}`,
+      `Support was created for the Innovation with id ${innovationId} with the status ${support.status}`,
       targetNotificationUsers
     );
 
@@ -302,8 +303,6 @@ export class InnovationSupportService {
 
     const organisationUnit = requestUser.organisationUnitUser.organisationUnit;
 
-    let targetNotificationUsers: string[] = [];
-
     const result = await this.connection.transaction(
       async (transactionManager) => {
         if (support.comment) {
@@ -346,31 +345,47 @@ export class InnovationSupportService {
           innovationSupport.organisationUnitUsers = support.accessors?.map(
             (id) => ({ id })
           );
-          const usersToBeNotified =
-            innovationSupport.organisationUnitUsers?.map((u) => u.id) || [];
-          targetNotificationUsers = await this.organisationService.findUserFromUnitUsers(
-            usersToBeNotified
-          );
         }
 
         innovationSupport.status = support.status;
         innovationSupport.updatedBy = requestUser.id;
+
+        if (
+          [
+            InnovationSupportStatus.WITHDRAWN,
+            InnovationSupportStatus.NOT_YET,
+            InnovationSupportStatus.WAITING,
+          ].includes(support.status)
+        ) {
+          await this.notificationService.create(
+            requestUser,
+            NotificationAudience.ASSESSMENT_USERS,
+            innovationId,
+            NotificationContextType.INNOVATION,
+            innovationId,
+            `The innovation with id ${innovationId} has had its support status changed to ${innovationSupport.status}`
+          );
+        }
+
+        if (
+          support.status === InnovationSupportStatus.ENGAGING ||
+          support.status === InnovationSupportStatus.COMPLETE
+        ) {
+          await this.notificationService.create(
+            requestUser,
+            NotificationAudience.ACCESSORS,
+            innovationId,
+            NotificationContextType.INNOVATION,
+            innovationId,
+            `The innovation with id ${innovationId} has had its support status changed to ${innovationSupport.status}`
+          );
+        }
 
         return await transactionManager.save(
           InnovationSupport,
           innovationSupport
         );
       }
-    );
-
-    await this.notificationService.create(
-      requestUser,
-      NotificationAudience.ACCESSORS,
-      innovationId,
-      NotificationContextType.INNOVATION,
-      innovationId,
-      `The support for the Innovation with id ${innovationId} was updated and notification was created for the accessors of ${requestUser.organisationUnitUser.organisationUnit.name}`,
-      targetNotificationUsers
     );
 
     return result;

@@ -293,7 +293,7 @@ export function AppInsights() {
   };
 }
 
-export function AllowedUserType(type: UserType) {
+export function AllowedUserType(...type: UserType[]) {
   return function (
     target: object,
     propertyKey: string,
@@ -307,7 +307,7 @@ export function AllowedUserType(type: UserType) {
       const oid = context.auth.decodedJwt.oid;
       const user = await context.services.UserService.getUser(oid);
 
-      if (!user || user.type !== type) {
+      if (!user || !type.includes(user.type)) {
         context.log.error(
           `Invalid user. User is of wrong type for this endpoint. {oid: ${oid}}`
         );

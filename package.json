@@ -41,9 +41,9 @@
     "migrations:run": "npm run orm -- migration:run --config __external__/domain/ormconfig.ts --connection 'migration'",
     "migrations:revert": "npm run orm -- migration:revert --config __external__/domain/ormconfig.ts --connection 'migration'",
     "migrations:run:tests": "npm run orm -- migration:run --config __external__/domain/ormconfig.ts --connection 'tests'",
-    "seeds:new": "ts-node tools/generators/seed-generator.ts generate",
-    "seeds:run": "npm run orm -- migration:run --connection 'seeding'",
-    "seeds:revert": "npm run orm -- migration:revert --connection 'seeding'"
+    "seeds:new": "ts-node __external__/domain/tools/generators/seed-generator.ts generate",
+    "seeds:run": "npm run orm -- migration:run --config __external__/domain/ormconfig.ts --connection 'seeding'",
+    "seeds:revert": "npm run orm -- migration:revert --config __external__/domain/ormconfig.ts --connection 'seeding'"
   },
   "devDependencies": {
     "@azure/core-http": "^1.1.4",
