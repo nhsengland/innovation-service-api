@@ -13,7 +13,8 @@
     "paths": {
       "@domain/*": ["__external__/domain/src/*"],
       "@services/*": ["__external__/services/src/*"],
-      "@entities/*": ["__external__/services/src/entities/*"]
+      "@entities/*": ["__external__/services/src/entities/*"],
+      "@config/*": ["__config/*"]
     },
     "plugins": [
       {

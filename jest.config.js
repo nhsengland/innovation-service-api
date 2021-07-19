@@ -49,7 +49,8 @@ module.exports = {
   moduleNameMapper: {
     "@domain/(.*)": "<rootDir>/__external__/domain/src/$1",
     "@services/(.*)": "<rootDir>/__external__/services/src/$1",
-    "@entities/(.*)": "<rootDir>/__external__/services/src/entities/$1"
+    "@entities/(.*)": "<rootDir>/__external__/services/src/entities/$1",
+    "@config/(.*)": "<rootDir>/__config/$1",
   },
   restoreMocks: true,
   clearMocks: true,

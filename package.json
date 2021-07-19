@@ -9,11 +9,14 @@
     "applicationinsights": "^2.0.0",
     "axios": "^0.21.1",
     "class-transformer": "^0.4.0",
+    "convict": "^6.2.0",
     "joi": "^17.4.0",
+    "jsonwebtoken": "^8.5.1",
     "jwt-decode": "^3.1.2",
     "memory-cache": "^0.2.0",
     "mongoose": "^5.12.0",
     "mssql": "^6.3.1",
+    "notifications-node-client": "^5.1.0",
     "tslib": "^1.9.3",
     "typeorm": "^0.2.32"
   },
@@ -48,6 +51,7 @@
   "devDependencies": {
     "@azure/core-http": "^1.1.4",
     "@azure/functions": "^1.0.2-beta2",
+    "@types/convict": "^6.1.1",
     "@types/faker": "^5.5.5",
     "@types/jest": "^26.0.21",
     "@types/memory-cache": "^0.2.1",

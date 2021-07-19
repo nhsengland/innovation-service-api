@@ -11,7 +11,10 @@ import {
   InvalidParamsError,
   InvalidUserTypeError,
 } from "@services/errors";
-import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
+import {
+  ProfileSlimModel,
+  UserEmailModel,
+} from "@services/models/ProfileSlimModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { UserCreationModel } from "@services/models/UserCreationModel";
 import { UserCreationResult } from "@services/models/UserCreationResult";
@@ -119,6 +122,25 @@ export class UserService {
     }
 
     return profile;
+  }
+
+  async getUserEmail(id: string): Promise<UserEmailModel[]> {
+    if (!id) {
+      return null;
+    }
+    const accessToken = await authenticateWitGraphAPI();
+    const odataFilter = `$filter=id in (${id})`;
+
+    const user = (await getUsersFromB2C(accessToken, odataFilter)) || [];
+
+    const result = user.map((u) => ({
+      id: u.id,
+      displayName: u.displayName,
+      email: u.identities.find((i) => i.signInType === "emailAddress")
+        ?.issuerAssignedId,
+    }));
+
+    return result;
   }
 
   async getListOfUsers(ids: string[]): Promise<ProfileSlimModel[]> {
