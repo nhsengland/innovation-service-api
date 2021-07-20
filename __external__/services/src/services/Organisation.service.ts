@@ -1,6 +1,7 @@
 import {
   AccessorOrganisationRole,
   Organisation,
+  OrganisationType,
   OrganisationUnit,
   OrganisationUnitUser,
   OrganisationUser,
@@ -12,6 +13,7 @@ import {
   MissingUserOrganisationError,
   MissingUserOrganisationUnitError,
 } from "@services/errors";
+import { OrganisationModel } from "@services/models/OrganisationModel";
 import { OrganisationUnitUserModel } from "@services/models/OrganisationUnitUserModel";
 import { RequestUser } from "@services/models/RequestUser";
 import {
@@ -51,11 +53,42 @@ export class OrganisationService extends BaseService<Organisation> {
       );
     }
 
+    if (filter.type !== OrganisationType.ACCESSOR) {
+      throw new InvalidParamsError(
+        "Invalid filter. You must define a valid organisation type."
+      );
+    }
+
     const filterOptions = {
       ...filter,
     };
 
     return await this.repository.find(filterOptions);
+  }
+
+  async findAllWithOrganisationUnits(): Promise<OrganisationModel[]> {
+    const data = await this.repository
+      .createQueryBuilder("organisation")
+      .innerJoinAndSelect("organisation.organisationUnits", "organisationUnits")
+      .where("organisation.type = :type", {
+        type: OrganisationType.ACCESSOR,
+      })
+      .getMany();
+
+    return data.map((org: any) => {
+      return {
+        id: org.id,
+        name: org.name,
+        acronym: org.acronym,
+        organisationUnits: org.__organisationUnits__?.map(
+          (orgUnit: OrganisationUnit) => ({
+            id: orgUnit.id,
+            name: orgUnit.name,
+            acronym: orgUnit.acronym,
+          })
+        ),
+      };
+    });
   }
 
   async findUserOrganisations(userId: string): Promise<OrganisationUser[]> {
@@ -129,7 +162,7 @@ export class OrganisationService extends BaseService<Organisation> {
     );
 
     // Get user personal information from b2c
-    const b2cMap = await this.getOrganisationUnitUsersNames(
+    const b2cMap = await this.findOrganisationUnitUsersNames(
       organisationUnitUsers
     );
 
@@ -146,7 +179,7 @@ export class OrganisationService extends BaseService<Organisation> {
     );
   }
 
-  async getOrganisationUnitUsersNames(
+  async findOrganisationUnitUsersNames(
     organisationUnitUsers: OrganisationUnitUser[]
   ) {
     const userIds = organisationUnitUsers.map(
