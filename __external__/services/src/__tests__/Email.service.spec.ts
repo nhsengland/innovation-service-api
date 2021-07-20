@@ -4,6 +4,8 @@ import { UserService } from "@services/services/User.service";
 import { EmailService } from "@services/services/Email.service";
 import * as helpers from "../helpers";
 import { closeTestsConnection, setupTestsConnection } from "..";
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import { InvalidEmailTemplateProps } from "@services/errors";
 
 describe("Email Service Suite", () => {
   let userService: UserService;
@@ -16,12 +18,7 @@ describe("Email Service Suite", () => {
   });
 
   afterAll(async () => {
-    // const query = getConnection(process.env.DB_TESTS_NAME)
-    //   .createQueryBuilder()
-    //   .delete();
-    // await query.from(Innovation).execute();
-    // await query.from(User).execute();
-    // await closeTestsConnection();
+    //await closeTestsConnection();
   });
 
   it("should instantiate the Email service", () => {
@@ -29,6 +26,35 @@ describe("Email Service Suite", () => {
   });
 
   it("should send a test email", async () => {
+    spyOn(helpers, "authenticateWitGraphAPI");
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      id: ":accessor_user_id_1",
+      displayName: "Accessor 1",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "antonio.simoes@bjss.com",
+        },
+      ],
+    });
+
+    const props = {
+      display_name: "Accessor 1",
+      innovator_name: "Innovator Name 1",
+      innovation_name: "The Innovation",
+      action_url: "https://example.com/action_1",
+    };
+
+    const actual = await emailService.send(
+      ":accessor_user_id_1",
+      EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
+      props
+    );
+
+    expect(actual.id).toBeDefined();
+  });
+
+  it("should fail sending email when personalisation has incorrect properties", async () => {
     spyOn(helpers, "authenticateWitGraphAPI");
     spyOn(helpers, "getUsersFromB2C").and.returnValue([
       {
@@ -44,18 +70,58 @@ describe("Email Service Suite", () => {
     ]);
 
     const props = {
-      "first name": "Accessor 1",
-      "innovator name": "Innovator Name 1",
-      "innovation name": "The Innovation",
-      "action name with URL": "https://example.com/action_1",
+      display_name: "Accessor 1",
+      innovator_name: "Innovator Name 1",
+      innovation_name: "The Innovation",
+      incorrect_property: "https://example.com/action_1",
     };
 
-    const actual = await emailService.send(
-      ":accessor_user_id_1",
-      "ACCESSORS_ACTION_TO_REVIEW",
-      props
-    );
+    let err;
+    try {
+      await emailService.send(
+        ":accessor_user_id_1",
+        EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
+        props
+      );
+    } catch (error) {
+      err = error;
+    }
 
-    expect(actual.id).toBeDefined();
+    expect(err).toBeDefined();
+    expect(err.name).toBe("InvalidEmailTemplateProps");
+  });
+
+  it("should fail sending email when personalisation has missing properties", async () => {
+    spyOn(helpers, "authenticateWitGraphAPI");
+    spyOn(helpers, "getUsersFromB2C").and.returnValue([
+      {
+        id: ":accessor_user_id_1",
+        displayName: "Accessor 1",
+        identities: [
+          {
+            signInType: "emailAddress",
+            issuerAssignedId: "antonio.simoes@bjss.com",
+          },
+        ],
+      },
+    ]);
+
+    const props = {
+      display_name: "Accessor 1",
+    };
+
+    let err;
+    try {
+      await emailService.send(
+        ":accessor_user_id_1",
+        EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
+        props
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err.name).toBe("InvalidEmailTemplateProps");
   });
 });

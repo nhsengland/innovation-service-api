@@ -1,3 +1,4 @@
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   Innovation,
   InnovationAction,
@@ -345,7 +346,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     }
 
     const innovSections = await innovation.sections;
-    const updatedActions: string[] = [];
+    const updatedActions: InnovationAction[] = [];
 
     const result = await this.connection.transaction(
       async (transactionManager) => {
@@ -373,7 +374,6 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
                 ia.status === InnovationActionStatus.REQUESTED
             );
             for (let i = 0; i < actions.length; i++) {
-              updatedActions.push(actions[i].id);
               await transactionManager.update(
                 InnovationAction,
                 { id: actions[i].id },
@@ -382,6 +382,8 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
                   updatedBy: requestUser.id,
                 }
               );
+              actions[i].status = InnovationActionStatus.IN_REVIEW;
+              updatedActions.push(actions[i]);
             }
 
             await transactionManager.update(
@@ -400,14 +402,24 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
 
     for (let index = 0; index < updatedActions.length; index++) {
       const element = updatedActions[index];
+
       await this.notificationService.create(
         requestUser,
         NotificationAudience.ACCESSORS,
         innovationId,
         NotificationContextType.ACTION,
-        element,
+        element.id,
         `The action with id ${element} was updated by the innovator with id ${requestUser.id} for the innovation with id ${innovationId}`
       );
+
+      if (element.status === InnovationActionStatus.IN_REVIEW) {
+        await this.notificationService.sendEmail(
+          requestUser,
+          EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
+          innovationId,
+          element.id
+        );
+      }
     }
 
     return result;

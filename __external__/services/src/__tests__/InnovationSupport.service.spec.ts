@@ -80,6 +80,12 @@ describe("Innovation Support Suite", () => {
     spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
     spyOn(helpers, "getUserFromB2C").and.returnValue({
       displayName: "Q Accessor A",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "example@bjss.com",
+        },
+      ],
     });
     spyOn(helpers, "getUsersFromB2C").and.returnValues([
       { id: accessorUser.id, displayName: ":ACCESSOR" },

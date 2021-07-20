@@ -47,15 +47,17 @@ export async function getUserFromB2C(accessToken: string, id: string) {
 
 export async function getUsersFromB2C(
   accessToken: string,
-  odataFilter: string
+  odataFilter: string,
+  apiVersion?: string
 ) {
   try {
+    apiVersion = apiVersion || "v1.0";
     const config = {
       headers: { Authorization: `Bearer ${accessToken}` },
     };
 
     const result = await axios.get(
-      `https://graph.microsoft.com/v1.0/users?${odataFilter}`,
+      `https://graph.microsoft.com/${apiVersion}/users?${odataFilter}`,
       config
     );
     return result.data.value || [];

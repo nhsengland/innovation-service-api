@@ -1204,15 +1204,6 @@
         "@types/node": "*"
       }
     },
-    "@types/convict": {
-      "version": "6.1.1",
-      "resolved": "https://registry.npmjs.org/@types/convict/-/convict-6.1.1.tgz",
-      "integrity": "sha512-R+JLaTvhsD06p4jyjUDtbd5xMtZTRE3c0iI+lrFWZogSVEjgTWPYwvJPVf+t92E+yrlbXa4X4Eg9ro6gPdUt4w==",
-      "dev": true,
-      "requires": {
-        "@types/node": "*"
-      }
-    },
     "@types/faker": {
       "version": "5.5.5",
       "resolved": "https://registry.npmjs.org/@types/faker/-/faker-5.5.5.tgz",

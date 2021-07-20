@@ -124,21 +124,20 @@ export class UserService {
     return profile;
   }
 
-  async getUserEmail(id: string): Promise<UserEmailModel[]> {
+  async getUserEmail(id: string): Promise<UserEmailModel> {
     if (!id) {
       return null;
     }
     const accessToken = await authenticateWitGraphAPI();
-    const odataFilter = `$filter=id in (${id})`;
 
-    const user = (await getUsersFromB2C(accessToken, odataFilter)) || [];
+    const user = (await getUserFromB2C(accessToken, id)) || [];
 
-    const result = user.map((u) => ({
-      id: u.id,
-      displayName: u.displayName,
-      email: u.identities.find((i) => i.signInType === "emailAddress")
+    const result = {
+      id: user.id,
+      displayName: user.displayName,
+      email: user.identities.find((i) => i.signInType === "emailAddress")
         ?.issuerAssignedId,
-    }));
+    };
 
     return result;
   }

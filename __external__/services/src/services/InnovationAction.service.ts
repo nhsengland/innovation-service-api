@@ -1,3 +1,4 @@
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   AccessorOrganisationRole,
   Comment,
@@ -5,6 +6,7 @@ import {
   InnovationActionStatus,
   InnovationSectionAliasCatalogue,
   InnovationSupport,
+  InnovationSupportStatus,
   NotificationAudience,
   NotificationContextType,
 } from "@domain/index";
@@ -36,6 +38,7 @@ import { UserService } from "./User.service";
 export class InnovationActionService {
   private readonly connection: Connection;
   private readonly actionRepo: Repository<InnovationAction>;
+  private readonly innovationSupportRepo: Repository<InnovationSupport>;
   private readonly innovationService: InnovationService;
   private readonly innovationSectionService: InnovationSectionService;
   private readonly userService: UserService;
@@ -44,6 +47,10 @@ export class InnovationActionService {
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.actionRepo = getRepository(InnovationAction, connectionName);
+    this.innovationSupportRepo = getRepository(
+      InnovationSupport,
+      connectionName
+    );
     this.innovationService = new InnovationService(connectionName);
     this.innovationSectionService = new InnovationSectionService(
       connectionName

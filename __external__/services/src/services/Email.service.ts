@@ -26,6 +26,11 @@ export type EmailResponse = {
   };
 };
 
+export type ValidationResult = {
+  data: EmailProps;
+  errors: string[];
+};
+
 export type EmailProps = {
   [key: string]: string;
 };
@@ -54,7 +59,6 @@ export class EmailService {
   private readonly userService: UserService;
 
   constructor(connectionName?: string) {
-    const key = config.default.get("email.credentials");
     this.userService = new UserService(connectionName);
   }
 
@@ -71,22 +75,28 @@ export class EmailService {
         `Could not find a template with the code ${templateCode}`
       );
 
-    const validProps = this.validateAndParseProps(template, props);
-    if (!validProps)
-      throw new InvalidEmailTemplateProps("Invalid email template properties.");
+    props = {
+      ...props,
+      display_name: "temp",
+    };
 
-    const emails: UserEmailModel[] = await this.userService.getUserEmail(
+    const validProps = this.validateAndParseProps(template, props);
+    if (validProps.errors.length > 0)
+      throw new InvalidEmailTemplateProps(validProps.errors.join(";"));
+
+    const email: UserEmailModel = await this.userService.getUserEmail(
       recipientId
     );
 
-    if (emails.length === 0) return;
+    if (!email) return;
 
-    const email = emails[0];
+    // replaces temp token with actual recipient display name
+    validProps.data.display_name = email.displayName;
 
     const reference = uuid.v4();
 
     const properties: NotifyClientParams = {
-      personalisation: { ...(validProps as EmailProps) },
+      personalisation: { ...validProps.data },
       reference,
     };
 
@@ -165,12 +175,19 @@ export class EmailService {
   private validateAndParseProps(
     template: EmailTemplate,
     props: EmailProps
-  ): EmailProps | boolean {
+  ): ValidationResult {
+    const errors: string[] = [];
+
     for (const key of Object.keys(template.props)) {
-      if (!props[key]) return false;
+      if (!props[key]) errors.push(`${key} is missing or invalid.`);
       template.props[key] = props[key];
     }
 
-    return template.props;
+    const result: ValidationResult = {
+      errors: errors,
+      data: template.props,
+    };
+
+    return result;
   }
 }

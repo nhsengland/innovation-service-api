@@ -51,7 +51,6 @@
   "devDependencies": {
     "@azure/core-http": "^1.1.4",
     "@azure/functions": "^1.0.2-beta2",
-    "@types/convict": "^6.1.1",
     "@types/faker": "^5.5.5",
     "@types/jest": "^26.0.21",
     "@types/memory-cache": "^0.2.1",

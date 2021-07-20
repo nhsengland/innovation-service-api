@@ -55,6 +55,7 @@ import { closeTestsConnection, setupTestsConnection } from "..";
 import { FileService } from "../services/File.service";
 import { InnovationSectionService } from "../services/InnovationSection.service";
 import * as fixtures from "../__fixtures__";
+import * as helpers from "../helpers";
 
 describe("Innovation Section Service Suite", () => {
   let fileService: FileService;
@@ -672,6 +673,16 @@ describe("Innovation Section Service Suite", () => {
   });
 
   it("should submmit sections with correct properties with actions", async () => {
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      displayName: "Q Accessor A",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "example@bjss.com",
+        },
+      ],
+    });
+
     const sectionObj = InnovationSection.new({
       section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
       status: InnovationSectionStatus.DRAFT,

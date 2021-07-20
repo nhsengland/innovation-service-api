@@ -41,10 +41,37 @@ export default convict({
           id: "382c29d3-2263-43dd-b7d7-1e6be73ea098",
           code: "ACCESSORS_ACTION_TO_REVIEW",
           props: {
-            "first name": "",
-            "innovator name": "",
-            "innovation name": "",
-            "action name with URL": "",
+            "display_name": String,
+            "innovator_name": String,
+            "innovation_name": String,
+            "action_url": String,
+          },
+        },
+        {
+          id: "f63b1459-c1ee-48b3-b0da-12bb19863d19",
+          code: "ACCESSORS_ASSIGNED_TO_INNOVATION",
+          props: {
+            "display_name": String,
+            "qa_name": String,
+            "innovation_url": String,
+          },
+        },
+        {
+          id: "384ab7ad-6c0c-4e5d-9b0c-e4502bf07c7e",
+          code: "INNOVATORS_ACTION_REQUEST",
+          props: {
+            "display_name": String,
+            "accessor_name": String,
+            "unit_name": String,
+            "action_url": String,
+          },
+        },
+        {
+          id: "078070fd-832a-4df2-8f7b-ad616654cbbd",
+          code: "QA_ORGANISATION_SUGGESTED",
+          props: {
+            "display_name": String,
+            "innovation_url": String,
           },
         },
       ],

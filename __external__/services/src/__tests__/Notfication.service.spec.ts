@@ -32,6 +32,7 @@ import {
 } from "..";
 import { NotificationService } from "../services/Notification.service";
 import * as fixtures from "../__fixtures__";
+import * as helpers from "../helpers";
 
 describe("Notification Service Suite", () => {
   let notificationService: NotificationService;
@@ -930,6 +931,17 @@ describe("Notification Service Suite", () => {
   });
 
   it("should get aggregated unread Innovations count", async () => {
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      id: ":accessor_user_id_1",
+      displayName: "Accessor 1",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "antonio.simoes@bjss.com",
+        },
+      ],
+    });
+
     const innovatorUser = await fixtures.createInnovatorUser();
     const qualAccessorUser = await fixtures.createAccessorUser();
     const accessorUser = await fixtures.createAccessorUser();

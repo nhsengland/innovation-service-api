@@ -25,6 +25,7 @@ import { InnovationService } from "./Innovation.service";
 import { OrganisationService } from "./Organisation.service";
 import { UserService } from "./User.service";
 import { NotificationService } from "./Notification.service";
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 
 export class InnovationSupportService {
   private readonly connection: Connection;
@@ -355,7 +356,7 @@ export class InnovationSupportService {
             InnovationSupportStatus.WITHDRAWN,
             InnovationSupportStatus.NOT_YET,
             InnovationSupportStatus.WAITING,
-          ].includes(support.status)
+          ].includes(innovationSupport.status)
         ) {
           await this.notificationService.create(
             requestUser,
@@ -368,8 +369,8 @@ export class InnovationSupportService {
         }
 
         if (
-          support.status === InnovationSupportStatus.ENGAGING ||
-          support.status === InnovationSupportStatus.COMPLETE
+          innovationSupport.status === InnovationSupportStatus.ENGAGING ||
+          innovationSupport.status === InnovationSupportStatus.COMPLETE
         ) {
           await this.notificationService.create(
             requestUser,
@@ -378,6 +379,18 @@ export class InnovationSupportService {
             NotificationContextType.INNOVATION,
             innovationId,
             `The innovation with id ${innovationId} has had its support status changed to ${innovationSupport.status}`
+          );
+
+          const targetUsers = await this.organisationService.findUserFromUnitUsers(
+            innovationSupport.organisationUnitUsers.map((u) => u.id)
+          );
+
+          await this.notificationService.sendEmail(
+            requestUser,
+            EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
+            innovationId,
+            innovationId,
+            targetUsers
           );
         }
 
