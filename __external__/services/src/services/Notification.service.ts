@@ -73,14 +73,14 @@ export class NotificationService {
     contextId?: string,
     targetUsers?: string[]
   ) {
-    const handler = emailEngines.find((e) => e.key === templateCode)?.handler;
+    const handler = emailEngines().find((e) => e.key === templateCode)?.handler;
 
     if (handler) {
       await handler(
         requestUser,
         {
           innovationId,
-          contextId
+          contextId,
         },
         targetUsers,
         this.connectionName

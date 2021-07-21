@@ -32,6 +32,8 @@ import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
 import { InnovationService } from "../services/Innovation.service";
 import * as fixtures from "../__fixtures__";
+import * as engines from "../../src/engines/index";
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 
 describe("Innovator Service Suite", () => {
   let innovationService: InnovationService;
@@ -100,6 +102,27 @@ describe("Innovator Service Suite", () => {
       organisationAccessorUser,
       organisationUnitAccessorUser
     );
+
+    spyOn(engines, "emailEngines").and.returnValue([
+      {
+        key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
+        handler: async function () {
+          return [];
+        },
+      },
+      {
+        key: EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
+        handler: async function () {
+          return [];
+        },
+      },
+      {
+        key: EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
+        handler: async function () {
+          return [];
+        },
+      },
+    ]);
   });
 
   afterAll(async () => {
@@ -707,6 +730,19 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should update the innovation organisation shares", async () => {
+    spyOn(helpers, "getUsersFromB2C").and.returnValue([
+      {
+        id: ":accessor_user_id_1",
+        displayName: "Accessor 1",
+        identities: [
+          {
+            signInType: "emailAddress",
+            issuerAssignedId: "antonio.simoes@bjss.com",
+          },
+        ],
+      },
+    ]);
+
     const fakeInnovation = await fixtures.saveInnovation(
       fixtures.generateInnovation({
         owner: { id: innovatorRequestUser.id },

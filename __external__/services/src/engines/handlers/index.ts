@@ -8,14 +8,14 @@ import { RequestUser } from "@services/models/RequestUser";
 import { EmailResponse, EmailService } from "@services/services/Email.service";
 import { getRepository } from "typeorm";
 import * as helpers from "../../helpers";
-import * as config from '@config/index';
+import * as config from "@config/index";
 import { EmailTemplateNotFound, InvalidParamsError } from "@services/errors";
 
 export const accessorsActionToReviewHandler = async (
   requestUser: RequestUser,
   params: {
-    innovationId: string,
-    contextId: string,
+    innovationId: string;
+    contextId: string;
   },
   targetUsers?: string[],
   connectionName?: string
@@ -31,7 +31,10 @@ export const accessorsActionToReviewHandler = async (
   const innovator_name = b2cUser.displayName;
 
   const innovation_name = innovation.name;
-  const action_url = parseUrl(params, EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW);
+  const action_url = parseUrl(
+    params,
+    EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW
+  );
 
   const recipients = await getRecipients(params.innovationId, connectionName);
   const props = {
@@ -52,8 +55,8 @@ export const accessorsActionToReviewHandler = async (
 export const accessorsAssignedToInnovationHandler = async (
   requestUser: RequestUser,
   params: {
-    innovationId: string,
-    contextId: string,
+    innovationId: string;
+    contextId: string;
   },
   targetUsers?: string[],
   connectionName?: string
@@ -62,7 +65,10 @@ export const accessorsAssignedToInnovationHandler = async (
   const b2ctoken = await helpers.authenticateWitGraphAPI();
   const b2cUser = await helpers.getUserFromB2C(b2ctoken, requestUser.id);
   const qa_name = b2cUser.displayName;
-  const innovation_url = parseUrl(params, EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION);
+  const innovation_url = parseUrl(
+    params,
+    EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION
+  );
   const props = {
     qa_name,
     innovation_url,
@@ -83,22 +89,26 @@ export const accessorsAssignedToInnovationHandler = async (
 export const innovatorActionRequested = async (
   requestUser: RequestUser,
   params: {
-    innovationId: string,
-    contextId: string,
+    innovationId: string;
+    contextId: string;
   },
   targetUsers?: string[],
   connectionName?: string
 ): Promise<EmailResponse[]> => {
-
   const innovationRepo = getRepository(Innovation, connectionName);
   const emailService = new EmailService(connectionName);
   const b2ctoken = await helpers.authenticateWitGraphAPI();
   const b2cUser = await helpers.getUserFromB2C(b2ctoken, requestUser.id);
-  const innovation = await innovationRepo.findOne(params.innovationId, { relations: ['owner']});
+  const innovation = await innovationRepo.findOne(params.innovationId, {
+    relations: ["owner"],
+  });
 
   const accessor_name = b2cUser.displayName;
   const unit_name = requestUser.organisationUnitUser.organisationUnit.name;
-  const action_url = parseUrl(params, EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST);
+  const action_url = parseUrl(
+    params,
+    EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST
+  );
   const props = {
     accessor_name,
     unit_name,
@@ -117,21 +127,25 @@ export const innovatorActionRequested = async (
 };
 
 const parseUrl = (params, templateCode): string => {
-  const baseUrl = config.default.get('clients.web');
-  const template = config.default.get('email.templates')?.find(t => t.code === templateCode);
-  if (!template) throw new EmailTemplateNotFound('Could not find email template');
+  const baseUrl = config.default.get("clients.web");
+  const template = config.default
+    .get("email.templates")
+    ?.find((t) => t.code === templateCode);
+  if (!template)
+    throw new EmailTemplateNotFound("Could not find email template");
 
   const path = template.path;
   let url = path.url;
   const parameters = Object.keys(path.params);
 
   for (const param of parameters) {
-    if (!params[param]) throw new InvalidParamsError(`Parameter ${param} is required.`);
+    if (!params[param])
+      throw new InvalidParamsError(`Parameter ${param} is required.`);
     url = url.replace(`:${param}`, params[param]);
   }
 
   return `${baseUrl}/${url}`;
-}
+};
 
 const getRecipients = async (innovationId: string, connectionName?: string) => {
   const innovationSupportRepo = getRepository(

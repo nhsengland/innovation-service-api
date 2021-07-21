@@ -33,6 +33,8 @@ import {
 import { NotificationService } from "../services/Notification.service";
 import * as fixtures from "../__fixtures__";
 import * as helpers from "../helpers";
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import * as engines from "../../src/engines";
 
 describe("Notification Service Suite", () => {
   let notificationService: NotificationService;
@@ -41,6 +43,27 @@ describe("Notification Service Suite", () => {
     //await setupTestsConnection();
     notificationService = new NotificationService(process.env.DB_TESTS_NAME);
     supportService = new InnovationSupportService(process.env.DB_TESTS_NAME);
+
+    spyOn(engines, "emailEngines").and.returnValue([
+      {
+        key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
+        handler: async function () {
+          return [];
+        },
+      },
+      {
+        key: EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
+        handler: async function () {
+          return [];
+        },
+      },
+      {
+        key: EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
+        handler: async function () {
+          return [];
+        },
+      },
+    ]);
   });
 
   afterAll(async () => {

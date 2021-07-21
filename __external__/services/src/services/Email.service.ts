@@ -90,7 +90,7 @@ export class EmailService {
 
     if (recipients.length === 0) return;
 
-    let result: EmailResponse[] = [];
+    const result: EmailResponse[] = [];
 
     for (const recipient of recipients) {
       validProps.data.display_name = recipient.displayName;
@@ -127,7 +127,6 @@ export class EmailService {
       result.push(response.data);
     }
     // replaces temp token with actual recipient display name
-
 
     return result;
   }

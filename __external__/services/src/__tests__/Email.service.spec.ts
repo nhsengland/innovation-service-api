@@ -27,16 +27,18 @@ describe("Email Service Suite", () => {
 
   it("should send a test email", async () => {
     spyOn(helpers, "authenticateWitGraphAPI");
-    spyOn(helpers, "getUserFromB2C").and.returnValue({
-      id: ":accessor_user_id_1",
-      displayName: "Accessor 1",
-      identities: [
-        {
-          signInType: "emailAddress",
-          issuerAssignedId: "antonio.simoes@bjss.com",
-        },
-      ],
-    });
+    spyOn(helpers, "getUsersFromB2C").and.returnValue([
+      {
+        id: ":accessor_user_id_1",
+        displayName: "Accessor 1",
+        identities: [
+          {
+            signInType: "emailAddress",
+            issuerAssignedId: "antonio.simoes@bjss.com",
+          },
+        ],
+      },
+    ]);
 
     const props = {
       display_name: "Accessor 1",
@@ -113,7 +115,7 @@ describe("Email Service Suite", () => {
     let err;
     try {
       await emailService.send(
-       [":accessor_user_id_1"],
+        [":accessor_user_id_1"],
         EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
         props
       );

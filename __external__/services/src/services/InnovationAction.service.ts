@@ -148,7 +148,7 @@ export class InnovationActionService {
       requestUser,
       EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
       innovationId,
-      result.id,
+      result.id
     );
 
     return result;

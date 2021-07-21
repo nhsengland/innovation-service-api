@@ -1,3 +1,4 @@
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   AccessorOrganisationRole,
   Comment,
@@ -26,7 +27,7 @@ import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
 import { InnovationSupportService } from "../services/InnovationSupport.service";
 import * as fixtures from "../__fixtures__";
-
+import * as engines from "../../src/engines";
 describe("Innovation Support Suite", () => {
   let supportService: InnovationSupportService;
   let innovation: Innovation;
@@ -103,6 +104,27 @@ describe("Innovation Support Suite", () => {
       organisationAccessorUser,
       organisationUnitAccessorUser
     );
+
+    spyOn(engines, "emailEngines").and.returnValue([
+      {
+        key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
+        handler: async function () {
+          return [];
+        },
+      },
+      {
+        key: EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
+        handler: async function () {
+          return [];
+        },
+      },
+      {
+        key: EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
+        handler: async function () {
+          return [];
+        },
+      },
+    ]);
   });
 
   afterAll(async () => {

@@ -133,9 +133,10 @@ export class UserService {
     const userIds = uniqueUserIds.map((u) => `"${u}"`).join(",");
     const odataFilter = `$filter=id in (${userIds})`;
 
-    const users = await getUsersFromB2C(accessToken, odataFilter, 'beta') || [];
+    const users =
+      (await getUsersFromB2C(accessToken, odataFilter, "beta")) || [];
 
-    const result = users.map(u => ({
+    const result = users.map((u) => ({
       id: u.id,
       displayName: u.displayName,
       email: u.identities.find((i) => i.signInType === "emailAddress")

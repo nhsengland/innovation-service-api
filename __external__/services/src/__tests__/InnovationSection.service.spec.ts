@@ -56,7 +56,8 @@ import { FileService } from "../services/File.service";
 import { InnovationSectionService } from "../services/InnovationSection.service";
 import * as fixtures from "../__fixtures__";
 import * as helpers from "../helpers";
-
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import * as engines from "../../src/engines";
 describe("Innovation Section Service Suite", () => {
   let fileService: FileService;
   let innovationSectionService: InnovationSectionService;
@@ -73,6 +74,27 @@ describe("Innovation Section Service Suite", () => {
     const innovatorUser = await fixtures.createInnovatorUser();
 
     innovatorRequestUser = fixtures.getRequestUser(innovatorUser);
+
+    spyOn(engines, "emailEngines").and.returnValue([
+      {
+        key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
+        handler: async function () {
+          return [];
+        },
+      },
+      {
+        key: EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
+        handler: async function () {
+          return [];
+        },
+      },
+      {
+        key: EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
+        handler: async function () {
+          return [];
+        },
+      },
+    ]);
   });
 
   afterAll(async () => {
