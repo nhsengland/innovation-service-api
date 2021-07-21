@@ -144,6 +144,13 @@ export class InnovationActionService {
       `An action was created by the accessor with id ${requestUser.id} for the innovation ${innovation.name}(${innovationId})`
     );
 
+    await this.notificationService.sendEmail(
+      requestUser,
+      EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
+      innovationId,
+      result.id,
+    );
+
     return result;
   }
 

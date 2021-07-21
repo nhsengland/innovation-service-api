@@ -46,12 +46,12 @@ describe("Email Service Suite", () => {
     };
 
     const actual = await emailService.send(
-      ":accessor_user_id_1",
+      [":accessor_user_id_1"],
       EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
       props
     );
 
-    expect(actual.id).toBeDefined();
+    expect(actual.length).toBeGreaterThan(0);
   });
 
   it("should fail sending email when personalisation has incorrect properties", async () => {
@@ -79,7 +79,7 @@ describe("Email Service Suite", () => {
     let err;
     try {
       await emailService.send(
-        ":accessor_user_id_1",
+        [":accessor_user_id_1"],
         EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
         props
       );
@@ -113,7 +113,7 @@ describe("Email Service Suite", () => {
     let err;
     try {
       await emailService.send(
-        ":accessor_user_id_1",
+       [":accessor_user_id_1"],
         EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
         props
       );

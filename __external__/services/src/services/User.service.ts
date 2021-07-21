@@ -124,20 +124,23 @@ export class UserService {
     return profile;
   }
 
-  async getUserEmail(id: string): Promise<UserEmailModel> {
-    if (!id) {
+  async getUsersEmail(ids: string[]): Promise<UserEmailModel[]> {
+    if (ids.length === 0) {
       return null;
     }
     const accessToken = await authenticateWitGraphAPI();
+    const uniqueUserIds = ids.filter((x, i, a) => a.indexOf(x) == i);
+    const userIds = uniqueUserIds.map((u) => `"${u}"`).join(",");
+    const odataFilter = `$filter=id in (${userIds})`;
 
-    const user = (await getUserFromB2C(accessToken, id)) || [];
+    const users = await getUsersFromB2C(accessToken, odataFilter, 'beta') || [];
 
-    const result = {
-      id: user.id,
-      displayName: user.displayName,
-      email: user.identities.find((i) => i.signInType === "emailAddress")
+    const result = users.map(u => ({
+      id: u.id,
+      displayName: u.displayName,
+      email: u.identities.find((i) => i.signInType === "emailAddress")
         ?.issuerAssignedId,
-    };
+    }));
 
     return result;
   }

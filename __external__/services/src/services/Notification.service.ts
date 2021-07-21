@@ -80,8 +80,10 @@ export class NotificationService {
     if (handler) {
       await handler(
         requestUser,
-        innovationId,
-        contextId,
+        {
+          innovationId,
+          contextId
+        },
         targetUsers,
         this.connectionName
       );

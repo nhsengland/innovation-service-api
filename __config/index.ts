@@ -1,6 +1,14 @@
 const convict = require("convict");
 
 export default convict({
+  clients: {
+    web: {
+      doc: 'The base url for the web client',
+      type: String,
+      default:'http://localhost:4200',
+      env:'CLIENT_WEB_BASE_URL'
+    }
+  },
   email: {
     replyToId: {
       doc:
@@ -40,6 +48,13 @@ export default convict({
         {
           id: "382c29d3-2263-43dd-b7d7-1e6be73ea098",
           code: "ACCESSORS_ACTION_TO_REVIEW",
+          path: {
+            url: 'accessor/innovations/:innovationId/action-tracker/:contextId',
+            params: {
+              innovationId: String,
+              contextId: String,
+            }
+          },
           props: {
             "display_name": String,
             "innovator_name": String,
@@ -50,6 +65,12 @@ export default convict({
         {
           id: "f63b1459-c1ee-48b3-b0da-12bb19863d19",
           code: "ACCESSORS_ASSIGNED_TO_INNOVATION",
+          path: {
+            url: 'accessor/innovations/:contextId',
+            params: {
+              contextId: String,
+            }
+          },
           props: {
             "display_name": String,
             "qa_name": String,
@@ -59,6 +80,13 @@ export default convict({
         {
           id: "384ab7ad-6c0c-4e5d-9b0c-e4502bf07c7e",
           code: "INNOVATORS_ACTION_REQUEST",
+          path: {
+            url: 'innovator/innovations/:innovationId/action-tracker/:contextId',
+            params: {
+              innovationId: String,
+              contextId: String,
+            }
+          },
           props: {
             "display_name": String,
             "accessor_name": String,
@@ -69,6 +97,13 @@ export default convict({
         {
           id: "078070fd-832a-4df2-8f7b-ad616654cbbd",
           code: "QA_ORGANISATION_SUGGESTED",
+          path: {
+            url: 'accessor/innovations/:contextId',
+            params: {
+              innovationId: String,
+              contextId: String,
+            }
+          },
           props: {
             "display_name": String,
             "innovation_url": String,

@@ -63,10 +63,10 @@ export class EmailService {
   }
 
   async send(
-    recipientId: string,
+    recipientIds: string[],
     templateCode: string,
     props?: EmailProps
-  ): Promise<EmailResponse> {
+  ): Promise<EmailResponse[]> {
     const template = config.default
       .get("email.templates")
       .find((t) => t.code === templateCode);
@@ -84,45 +84,52 @@ export class EmailService {
     if (validProps.errors.length > 0)
       throw new InvalidEmailTemplateProps(validProps.errors.join(";"));
 
-    const email: UserEmailModel = await this.userService.getUserEmail(
-      recipientId
+    const recipients: UserEmailModel[] = await this.userService.getUsersEmail(
+      recipientIds
     );
 
-    if (!email) return;
+    if (recipients.length === 0) return;
 
+    let result: EmailResponse[] = [];
+
+    for (const recipient of recipients) {
+      validProps.data.display_name = recipient.displayName;
+
+      const reference = uuid.v4();
+
+      const properties: NotifyClientParams = {
+        personalisation: { ...validProps.data },
+        reference,
+      };
+
+      const token = config.default.get("email.credentials");
+
+      const jwtToken = this.generateBearerToken(token);
+
+      const postConfig = {
+        headers: { Authorization: `Bearer ${jwtToken}` },
+      };
+
+      const baseUrl = config.default.get("email.api_base_url");
+      const emailPath = config.default.get("email.api_email_path");
+      const url = `${baseUrl}${emailPath}`;
+
+      const response = await axios.post(
+        url,
+        {
+          template_id: template.id,
+          email_address: recipient.email,
+          ...properties,
+        },
+        postConfig
+      );
+
+      result.push(response.data);
+    }
     // replaces temp token with actual recipient display name
-    validProps.data.display_name = email.displayName;
 
-    const reference = uuid.v4();
 
-    const properties: NotifyClientParams = {
-      personalisation: { ...validProps.data },
-      reference,
-    };
-
-    const token = config.default.get("email.credentials");
-
-    const jwtToken = this.generateBearerToken(token);
-
-    const postConfig = {
-      headers: { Authorization: `Bearer ${jwtToken}` },
-    };
-
-    const baseUrl = config.default.get("email.api_base_url");
-    const emailPath = config.default.get("email.api_email_path");
-    const url = `${baseUrl}${emailPath}`;
-
-    const response = await axios.post(
-      url,
-      {
-        template_id: template.id,
-        email_address: email.email,
-        ...properties,
-      },
-      postConfig
-    );
-
-    return response.data;
+    return result;
   }
 
   private generateBearerToken(token: string): string {
