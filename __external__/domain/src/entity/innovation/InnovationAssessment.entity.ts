@@ -22,10 +22,10 @@ export class InnovationAssessment extends Base {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ name: "description", nullable: true, length: 255 })
+  @Column({ name: "description", nullable: true })
   description: string;
 
-  @Column({ name: "summary", nullable: true, length: 255 })
+  @Column({ name: "summary", nullable: true })
   summary: string;
 
   @Column({
@@ -62,7 +62,7 @@ export class InnovationAssessment extends Base {
   })
   hasEvidence: YesPartiallyNoCatalogue;
 
-  @Column({ name: "has_evidence_comment", nullable: true, length: 150 })
+  @Column({ name: "has_evidence_comment", nullable: true })
   hasEvidenceComment: string;
 
   @Column({
@@ -73,7 +73,7 @@ export class InnovationAssessment extends Base {
   })
   hasValidation: YesPartiallyNoCatalogue;
 
-  @Column({ name: "has_validation_comment", nullable: true, length: 150 })
+  @Column({ name: "has_validation_comment", nullable: true })
   hasValidationComment: string;
 
   @Column({
@@ -84,7 +84,7 @@ export class InnovationAssessment extends Base {
   })
   hasProposition: YesPartiallyNoCatalogue;
 
-  @Column({ name: "has_proposition_comment", nullable: true, length: 150 })
+  @Column({ name: "has_proposition_comment", nullable: true })
   hasPropositionComment: string;
 
   @Column({
@@ -125,7 +125,7 @@ export class InnovationAssessment extends Base {
   })
   hasScaleResource: YesPartiallyNoCatalogue;
 
-  @Column({ name: "has_scale_resource_comment", nullable: true, length: 150 })
+  @Column({ name: "has_scale_resource_comment", nullable: true })
   hasScaleResourceComment: string;
 
   // relationships
