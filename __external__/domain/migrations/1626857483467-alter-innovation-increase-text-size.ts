@@ -111,6 +111,14 @@ export class alterInnovationIncreaseTextSize1626857483467
 
     // innovation_assessment table
     await queryRunner.query(
+      `ALTER TABLE "innovation_assessment" ALTER COLUMN description nvarchar(max);`
+    );
+
+    await queryRunner.query(
+      `ALTER TABLE "innovation_assessment" ALTER COLUMN summary nvarchar(max);`
+    );
+
+    await queryRunner.query(
       `ALTER TABLE "innovation_assessment" ALTER COLUMN has_regulatory_approvals_comment nvarchar(max);`
     );
 
