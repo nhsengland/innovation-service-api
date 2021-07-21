@@ -5,8 +5,6 @@ import {
   InnovationStatus,
   NotificationAudience,
   NotificationContextType,
-  Organisation,
-  OrganisationUnit,
   UserType,
 } from "@domain/index";
 import {
@@ -62,7 +60,15 @@ export class InnovationAssessmentService {
       throw new ResourceNotFoundError("Assessment not found!");
     }
 
-    const b2cUser = await this.userService.getProfile(assessment.assignTo.id);
+    const b2cUsers = await this.userService.getListOfUsers([
+      assessment.assignTo.id,
+      assessment.createdBy,
+      assessment.updatedBy,
+    ]);
+    const b2cUserNames = b2cUsers.reduce((map, obj) => {
+      map[obj.id] = obj.displayName;
+      return map;
+    }, {});
 
     const organisations = [];
     if (assessment.organisationUnits.length > 0) {
@@ -95,7 +101,11 @@ export class InnovationAssessmentService {
     return {
       id: assessment.id,
       description: assessment.description,
-      assignToName: b2cUser.displayName,
+      assignToName: b2cUserNames[assessment.assignTo.id],
+      createdBy: b2cUserNames[assessment.createdBy],
+      createdAt: assessment.createdAt,
+      updatedBy: b2cUserNames[assessment.updatedBy],
+      updatedAt: assessment.updatedAt,
       innovation: {
         id: assessment.innovation.id,
         name: assessment.innovation.name,
