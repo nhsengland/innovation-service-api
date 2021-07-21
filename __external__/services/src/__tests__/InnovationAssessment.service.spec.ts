@@ -10,10 +10,8 @@ import {
   OrganisationType,
   OrganisationUser,
   User,
-  UserType,
 } from "@domain/index";
 import { RequestUser } from "@services/models/RequestUser";
-import { UserService } from "@services/services/User.service";
 import { getConnection } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
@@ -28,7 +26,6 @@ const dummy = {
 
 describe("Innovation Assessment Suite", () => {
   let assessmentService: InnovationAssessmentService;
-  let userService: UserService;
   let innovation: Innovation;
 
   let assessmentRequestUser: RequestUser;
@@ -41,7 +38,6 @@ describe("Innovation Assessment Suite", () => {
     assessmentService = new InnovationAssessmentService(
       process.env.DB_TESTS_NAME
     );
-    userService = new UserService(process.env.DB_TESTS_NAME);
 
     const innovatorUser = await fixtures.createInnovatorUser();
     const assessmentUser = await fixtures.createAssessmentUser();
@@ -138,24 +134,12 @@ describe("Innovation Assessment Suite", () => {
 
   it("should find an assessment by innovation id", async () => {
     spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
-    spyOn(helpers, "getUserFromB2C").and.returnValue({
-      displayName: ":display_name",
-      identities: [
-        {
-          signInType: "emailAddress",
-          issuerAssignedId: "test_user@example.com",
-        },
-      ],
-      mobilePhone: "+351960000000",
-    });
-    spyOn(userService, "getProfile").and.returnValue({
-      id: assessmentRequestUser.id,
-      displayName: ":displayName",
-      type: UserType.ASSESSMENT,
-      organisations: [],
-      email: "test_user@example.com",
-      phone: "+351960000000",
-    });
+    spyOn(helpers, "getUsersFromB2C").and.returnValue([
+      {
+        id: assessmentRequestUser.id,
+        displayName: ":displayName",
+      },
+    ]);
 
     const assessmentObj = {
       ...dummy.assessment,
@@ -239,24 +223,12 @@ describe("Innovation Assessment Suite", () => {
 
   it("should find an assessment by qualifying accessor", async () => {
     spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
-    spyOn(helpers, "getUserFromB2C").and.returnValue({
-      displayName: ":display_name",
-      identities: [
-        {
-          signInType: "emailAddress",
-          issuerAssignedId: "test_user@example.com",
-        },
-      ],
-      mobilePhone: "+351960000000",
-    });
-    spyOn(userService, "getProfile").and.returnValue({
-      id: assessmentRequestUser.id,
-      displayName: ":displayName",
-      type: UserType.ASSESSMENT,
-      organisations: [],
-      email: "test_user@example.com",
-      phone: "+351960000000",
-    });
+    spyOn(helpers, "getUsersFromB2C").and.returnValue([
+      {
+        id: assessmentRequestUser.id,
+        displayName: ":displayName",
+      },
+    ]);
 
     const assessmentObj = {
       ...dummy.assessment,
@@ -282,24 +254,12 @@ describe("Innovation Assessment Suite", () => {
 
   it("should find an assessment by innovator", async () => {
     spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
-    spyOn(helpers, "getUserFromB2C").and.returnValue({
-      displayName: ":display_name",
-      identities: [
-        {
-          signInType: "emailAddress",
-          issuerAssignedId: "test_user@example.com",
-        },
-      ],
-      mobilePhone: "+351960000000",
-    });
-    spyOn(userService, "getProfile").and.returnValue({
-      id: assessmentRequestUser.id,
-      displayName: ":displayName",
-      type: UserType.ASSESSMENT,
-      organisations: [],
-      email: "test_user@example.com",
-      phone: "+351960000000",
-    });
+    spyOn(helpers, "getUsersFromB2C").and.returnValue([
+      {
+        id: assessmentRequestUser.id,
+        displayName: ":displayName",
+      },
+    ]);
 
     const assessmentObj = {
       ...dummy.assessment,

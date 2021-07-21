@@ -21,7 +21,7 @@ const payloadSchema = Joi.object({
   hasImplementationPlanComment: Joi.string().allow(null).allow("").optional(),
   hasScaleResource: Joi.string().allow(null).allow("").optional(),
   hasScaleResourceComment: Joi.string().allow(null).allow("").optional(),
-  organisations: Joi.array().items(Joi.string()).optional(),
+  organisationUnits: Joi.array().items(Joi.string()).optional(),
   isSubmission: Joi.boolean().optional(),
 }).required();
 
