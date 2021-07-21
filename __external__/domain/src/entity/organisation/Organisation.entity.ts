@@ -1,8 +1,15 @@
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  ManyToMany,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import { OrganisationType } from "../../enums/organisation.enums";
 import { Base } from "../Base.entity";
 import { Innovation } from "../innovation/Innovation.entity";
 import { InnovationAssessment } from "../innovation/InnovationAssessment.entity";
+import { OrganisationUnit } from "./OrganisationUnit.entity";
 
 @Entity("organisation")
 export class Organisation extends Base {
@@ -33,8 +40,10 @@ export class Organisation extends Base {
   @ManyToMany(() => Innovation, (record) => record.organisationShares)
   innovationShares: Innovation[];
 
-  @ManyToMany(() => InnovationAssessment, (record) => record.organisations)
-  innovationAssessments: InnovationAssessment[];
+  @OneToMany(() => OrganisationUnit, (record) => record.organisation, {
+    lazy: true,
+  })
+  organisationUnits: OrganisationUnit[];
 
   // static constructor
   static new(data) {

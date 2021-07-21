@@ -21,6 +21,10 @@ export interface InnovationAssessmentResult {
   hasScaleResourceComment?: string;
   finishedAt?: Date;
   assignToName: string;
+  createdBy: string;
+  createdAt: Date;
+  updatedBy: string;
+  updatedAt: Date;
   innovation: {
     id: string;
     name: string;

@@ -1568,6 +1568,30 @@ paths:
         "401":
           description: "Unauthorized"
 
+  "/organisation-units":
+    get:
+      tags:
+        - "OrganisationUnit"
+        - "List"
+      description: "Retrieves the list of all organisation and units"
+      operationId: "organisation-units-get-all"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - organisations_list
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
   "/assessments/{userId}/innovations/{innovationId}":
     get:
       tags:

@@ -381,7 +381,7 @@ describe("Notification Service Suite", () => {
       requestUser,
       assessment.id,
       innovation.id,
-      [organisation]
+      [unit]
     );
 
     const notification = await notificationService.create(

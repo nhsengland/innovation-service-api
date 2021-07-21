@@ -5,7 +5,6 @@ import {
   InnovationStatus,
   NotificationAudience,
   NotificationContextType,
-  Organisation,
   UserType,
 } from "@domain/index";
 import {
@@ -13,6 +12,7 @@ import {
   InvalidParamsError,
   ResourceNotFoundError,
 } from "@services/errors";
+import { OrganisationModel } from "@services/models/OrganisationModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { InnovationAssessmentResult } from "../models/InnovationAssessmentResult";
@@ -60,20 +60,52 @@ export class InnovationAssessmentService {
       throw new ResourceNotFoundError("Assessment not found!");
     }
 
-    const b2cUser = await this.userService.getProfile(assessment.assignTo.id);
+    const b2cUsers = await this.userService.getListOfUsers([
+      assessment.assignTo.id,
+      assessment.createdBy,
+      assessment.updatedBy,
+    ]);
+    const b2cUserNames = b2cUsers.reduce((map, obj) => {
+      map[obj.id] = obj.displayName;
+      return map;
+    }, {});
 
-    const organisations = assessment.organisations?.map(
-      (obj: Organisation) => ({
-        id: obj.id,
-        name: obj.name,
-        acronym: obj.acronym,
-      })
-    );
+    const organisations = [];
+    if (assessment.organisationUnits.length > 0) {
+      const uniqueOrganisations = [
+        ...new Set(
+          assessment.organisationUnits.map((item) => item.organisation.id)
+        ),
+      ];
+
+      for (let idx = 0; idx < uniqueOrganisations.length; idx++) {
+        const units = assessment.organisationUnits.filter(
+          (unit) => unit.organisation.id === uniqueOrganisations[idx]
+        );
+
+        const organisation: OrganisationModel = {
+          id: units[0].organisation.id,
+          name: units[0].organisation.name,
+          acronym: units[0].organisation.acronym,
+          organisationUnits: units.map((unit) => ({
+            id: unit.id,
+            name: unit.name,
+            acronym: unit.acronym,
+          })),
+        };
+
+        organisations.push(organisation);
+      }
+    }
 
     return {
       id: assessment.id,
       description: assessment.description,
-      assignToName: b2cUser.displayName,
+      assignToName: b2cUserNames[assessment.assignTo.id],
+      createdBy: b2cUserNames[assessment.createdBy],
+      createdAt: assessment.createdAt,
+      updatedBy: b2cUserNames[assessment.updatedBy],
+      updatedAt: assessment.updatedAt,
       innovation: {
         id: assessment.innovation.id,
         name: assessment.innovation.name,
@@ -172,7 +204,7 @@ export class InnovationAssessmentService {
           }
         }
         assessmentDb.updatedBy = requestUser.id;
-        assessmentDb.organisations = assessment.organisations?.map(
+        assessmentDb.organisationUnits = assessment.organisationUnits?.map(
           (id: string) => ({ id })
         );
 
@@ -200,7 +232,12 @@ export class InnovationAssessmentService {
   ): Promise<InnovationAssessment> {
     const filterOptions = {
       where: { innovation: innovationId },
-      relations: ["organisations", "innovation", "assignTo"],
+      relations: [
+        "organisationUnits",
+        "organisationUnits.organisation",
+        "innovation",
+        "assignTo",
+      ],
     };
 
     return await this.assessmentRepo.findOne(id, filterOptions);

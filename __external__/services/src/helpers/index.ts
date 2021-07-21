@@ -95,6 +95,10 @@ export async function createB2CUser(
   email: string,
   password: string
 ) {
+  const termsOfUseConsentVersion = `extension_${process.env.AD_EXTENSION_ID}_termsOfUseConsentVersion`;
+  const termsOfUseConsentChoice = `extension_${process.env.AD_EXTENSION_ID}_termsOfUseConsentChoice`;
+  const termsOfUseConsentDateTime = `extension_${process.env.AD_EXTENSION_ID}_termsOfUseConsentDateTime`;
+
   const payload = {
     accountEnabled: true,
     displayName: name,
@@ -110,11 +114,11 @@ export async function createB2CUser(
         issuerAssignedId: email,
       },
     ],
-    extension_fea2c0ddca9c4af4b191987bb2a08057_termsOfUseConsentVersion: "V1",
-    extension_fea2c0ddca9c4af4b191987bb2a08057_termsOfUseConsentChoice:
-      "AgreeToTermsOfUseConsentYes",
-    extension_fea2c0ddca9c4af4b191987bb2a08057_termsOfUseConsentDateTime: new Date().toISOString(),
   };
+
+  payload[termsOfUseConsentVersion] = "V1";
+  payload[termsOfUseConsentChoice] = "AgreeToTermsOfUseConsentYes";
+  payload[termsOfUseConsentDateTime] = new Date().toISOString();
 
   try {
     const config = {

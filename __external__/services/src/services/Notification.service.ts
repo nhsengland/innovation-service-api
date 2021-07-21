@@ -3,7 +3,6 @@ import {
   AccessorOrganisationRole,
   Innovation,
   InnovationAssessment,
-  InnovationStatus,
   InnovationSupport,
   InnovationSupportStatus,
   Notification,
@@ -15,15 +14,14 @@ import {
   UserType,
 } from "@domain/index";
 import { RequestUser } from "@services/models/RequestUser";
-
 import {
+  Connection,
   getConnection,
   getRepository,
   In,
-  Repository,
-  Connection,
-  ObjectLiteral,
   IsNull,
+  ObjectLiteral,
+  Repository,
 } from "typeorm";
 
 import { EmailProps, EmailResponse, EmailService } from "./Email.service";
@@ -505,11 +503,11 @@ export class NotificationService {
     // TODO: For now, QA's only receive notifications intigated when an Innovation finishes the assessment.
     const assessment = await this.assessmentRepo.find({
       where: { innovation: innovationId },
-      relations: ["organisations"],
+      relations: ["organisationUnits", "organisationUnits.organisation"],
     });
 
     const organisations = assessment.flatMap((s) =>
-      s.organisations.map((x) => x.id)
+      s.organisationUnits.map((x) => x.organisation.id)
     );
 
     const orgUsers = await this.organisationUserRepo.find({

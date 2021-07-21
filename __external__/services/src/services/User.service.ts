@@ -232,7 +232,7 @@ export class UserService {
     }
 
     if (!userModel.password) {
-      userModel.password = Math.random().toString(36).slice(2) + "!";
+      userModel.password = Math.random().toString(36).slice(2) + "0aA!";
     }
 
     let oid: string;

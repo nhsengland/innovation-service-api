@@ -1,4 +1,3 @@
-import { Base } from "../Base.entity";
 import {
   Column,
   Entity,
@@ -8,13 +7,14 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { User } from "../user/User.entity";
 import {
   MaturityLevelCatalogue,
   YesPartiallyNoCatalogue,
 } from "../../enums/catalog.enums";
+import { Base } from "../Base.entity";
+import { OrganisationUnit } from "../organisation/OrganisationUnit.entity";
+import { User } from "../user/User.entity";
 import { Innovation } from "./Innovation.entity";
-import { Organisation } from "../organisation/Organisation.entity";
 
 @Entity("innovation_assessment")
 export class InnovationAssessment extends Base {
@@ -22,10 +22,10 @@ export class InnovationAssessment extends Base {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ name: "description", nullable: true, length: 255 })
+  @Column({ name: "description", nullable: true })
   description: string;
 
-  @Column({ name: "summary", nullable: true, length: 255 })
+  @Column({ name: "summary", nullable: true })
   summary: string;
 
   @Column({
@@ -62,7 +62,7 @@ export class InnovationAssessment extends Base {
   })
   hasEvidence: YesPartiallyNoCatalogue;
 
-  @Column({ name: "has_evidence_comment", nullable: true, length: 150 })
+  @Column({ name: "has_evidence_comment", nullable: true })
   hasEvidenceComment: string;
 
   @Column({
@@ -73,7 +73,7 @@ export class InnovationAssessment extends Base {
   })
   hasValidation: YesPartiallyNoCatalogue;
 
-  @Column({ name: "has_validation_comment", nullable: true, length: 150 })
+  @Column({ name: "has_validation_comment", nullable: true })
   hasValidationComment: string;
 
   @Column({
@@ -84,7 +84,7 @@ export class InnovationAssessment extends Base {
   })
   hasProposition: YesPartiallyNoCatalogue;
 
-  @Column({ name: "has_proposition_comment", nullable: true, length: 150 })
+  @Column({ name: "has_proposition_comment", nullable: true })
   hasPropositionComment: string;
 
   @Column({
@@ -125,7 +125,7 @@ export class InnovationAssessment extends Base {
   })
   hasScaleResource: YesPartiallyNoCatalogue;
 
-  @Column({ name: "has_scale_resource_comment", nullable: true, length: 150 })
+  @Column({ name: "has_scale_resource_comment", nullable: true })
   hasScaleResourceComment: string;
 
   // relationships
@@ -137,21 +137,25 @@ export class InnovationAssessment extends Base {
   @JoinColumn({ name: "assign_to_id" })
   assignTo: User;
 
-  @ManyToMany(() => Organisation, (record) => record.innovationAssessments, {
-    nullable: true,
-  })
+  @ManyToMany(
+    () => OrganisationUnit,
+    (record) => record.innovationAssessments,
+    {
+      nullable: true,
+    }
+  )
   @JoinTable({
-    name: "innovation_assessment_organisation",
+    name: "innovation_assessment_organisation_unit",
     joinColumn: {
       name: "innovation_assessment_id",
       referencedColumnName: "id",
     },
     inverseJoinColumn: {
-      name: "organisation_id",
+      name: "organisation_unit_id",
       referencedColumnName: "id",
     },
   })
-  organisations: Organisation[];
+  organisationUnits: OrganisationUnit[];
 
   //static constructor
   static new(data) {
