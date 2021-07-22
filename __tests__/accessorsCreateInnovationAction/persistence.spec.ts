@@ -5,8 +5,15 @@ import {
 import * as typeorm from "typeorm";
 import * as persistence from "../../accessorsCreateInnovationAction/persistence";
 import { CustomContext } from "../../utils/types";
+import * as dotenv from "dotenv";
+import * as path from "path";
 
 describe("[accessorsCreateInnovationAction] Persistence suite", () => {
+  beforeAll(() => {
+    dotenv.config({
+      path: path.resolve(__dirname, "../.environment"),
+    });
+  });
   describe("createInnovationAction", () => {
     it("should create an innovation action", async () => {
       // Arrange

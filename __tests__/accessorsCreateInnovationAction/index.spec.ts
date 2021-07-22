@@ -10,6 +10,8 @@ import * as validation from "../../accessorsCreateInnovationAction/validation";
 import * as authentication from "../../utils/authentication";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
+import * as dotenv from "dotenv";
+import * as path from "path";
 
 jest.mock("../../utils/logging/insights", () => ({
   start: () => { },

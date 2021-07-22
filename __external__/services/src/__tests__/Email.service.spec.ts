@@ -6,6 +6,8 @@ import * as helpers from "../helpers";
 import { closeTestsConnection, setupTestsConnection } from "..";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import { InvalidEmailTemplateProps } from "@services/errors";
+import * as dotenv from "dotenv";
+import * as path from "path";
 
 describe("Email Service Suite", () => {
   let userService: UserService;
@@ -13,6 +15,10 @@ describe("Email Service Suite", () => {
 
   beforeAll(async () => {
     //await setupTestsConnection();
+
+    dotenv.config({
+      path: path.resolve(__dirname, "./.environment"),
+    });
     emailService = new EmailService(process.env.DB_TESTS_NAME);
     userService = new UserService(process.env.DB_TESTS_NAME);
   });

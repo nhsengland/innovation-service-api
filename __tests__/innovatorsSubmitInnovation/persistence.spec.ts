@@ -2,8 +2,14 @@ import { InnovationService } from "@services/index";
 import * as typeorm from "typeorm";
 import * as persistence from "../../innovatorsSubmitInnovation/persistence";
 import { CustomContext } from "../../utils/types";
-
+import * as dotenv from "dotenv";
+import * as path from "path";
 describe("[innovatorsSubmitInnovation] Persistence suite", () => {
+  beforeAll(() => {
+    dotenv.config({
+      path: path.resolve(__dirname, "../.environment"),
+    });
+  });
   describe("submitInnovation", () => {
     it("should submit an innovation", async () => {
       // Arrange

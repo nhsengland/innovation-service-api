@@ -8,8 +8,14 @@ import {
 import * as typeorm from "typeorm";
 import * as persistence from "../../innovatorsCreateOne/persistence";
 import { CustomContext } from "../../utils/types";
-
+import * as dotenv from "dotenv";
+import * as path from "path";
 describe("[innovatorsCreateOne] Persistence suite", () => {
+  beforeAll(() => {
+    dotenv.config({
+      path: path.resolve(__dirname, "../.environment"),
+    });
+  });
   describe("createInnovator", () => {
     it("should create an Innovator and its dependencies", async () => {
       // Arrange

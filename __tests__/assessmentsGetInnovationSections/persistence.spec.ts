@@ -5,8 +5,14 @@ import {
 } from "@services/index";
 import * as typeorm from "typeorm";
 import { CustomContext } from "../../utils/types";
-
+import * as dotenv from "dotenv";
+import * as path from "path";
 describe("[assessmentsGetInnovationSection] Persistence suite", () => {
+  beforeAll(() => {
+    dotenv.config({
+      path: path.resolve(__dirname, "../.environment"),
+    });
+  });
   describe("findInnovationSection", () => {
     it("should assess if an innovation section exists", async () => {
       // Arrange

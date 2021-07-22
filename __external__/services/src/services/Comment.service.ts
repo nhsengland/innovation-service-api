@@ -19,6 +19,7 @@ import { InnovationSupportService } from "./InnovationSupport.service";
 import { NotificationService } from "./Notification.service";
 import { OrganisationService } from "./Organisation.service";
 import { UserService } from "./User.service";
+import { LoggerService } from "./Logger.service";
 
 export class CommentService {
   private readonly connection: Connection;
@@ -28,6 +29,7 @@ export class CommentService {
   private readonly notificationService: NotificationService;
   private readonly innovationSupportService: InnovationSupportService;
   private readonly organisationService: OrganisationService;
+  private readonly logService: LoggerService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -39,6 +41,7 @@ export class CommentService {
       connectionName
     );
     this.organisationService = new OrganisationService(connectionName);
+    this.logService = new LoggerService();
   }
 
   async create(
@@ -105,17 +108,24 @@ export class CommentService {
       }
     }
 
-    await this.notificationService.create(
-      requestUser,
-      requestUser.type === UserType.INNOVATOR
-        ? NotificationAudience.ACCESSORS
-        : NotificationAudience.INNOVATORS,
-      innovationId,
-      NotificationContextType.COMMENT,
-      result.id,
-      `A ${NotificationContextType.COMMENT} was created by ${requestUser.id}`,
-      targetNotificationUsers || []
-    );
+    try {
+      await this.notificationService.create(
+        requestUser,
+        requestUser.type === UserType.INNOVATOR
+          ? NotificationAudience.ACCESSORS
+          : NotificationAudience.INNOVATORS,
+        innovationId,
+        NotificationContextType.COMMENT,
+        result.id,
+        `A ${NotificationContextType.COMMENT} was created by ${requestUser.id}`,
+        targetNotificationUsers || []
+      );
+    } catch (error) {
+      this.logService.error(
+        `An error has occured while creating a notification of type ${NotificationContextType.COMMENT} from ${requestUser.id}`,
+        error
+      );
+    }
 
     return result;
   }

@@ -44,13 +44,14 @@ import {
 import { BaseService } from "./Base.service";
 import { NotificationService } from "./Notification.service";
 import { UserService } from "./User.service";
+import { LoggerService } from "./Logger.service";
 
 export class InnovationService extends BaseService<Innovation> {
   private readonly connection: Connection;
   private readonly userService: UserService;
   private readonly supportRepo: Repository<InnovationSupport>;
   private readonly notificationService: NotificationService;
-
+  private readonly logService: LoggerService;
   constructor(connectionName?: string) {
     super(Innovation, connectionName);
     this.connection = getConnection(connectionName);
@@ -58,6 +59,7 @@ export class InnovationService extends BaseService<Innovation> {
     this.userService = new UserService(connectionName);
     this.notificationService = new NotificationService(connectionName);
     this.supportRepo = getRepository(InnovationSupport, connectionName);
+    this.logService = new LoggerService();
   }
 
   async findInnovation(
@@ -638,15 +640,22 @@ export class InnovationService extends BaseService<Innovation> {
       updatedBy: requestUser.id,
     });
 
-    await this.notificationService.create(
-      requestUser,
-      NotificationAudience.ASSESSMENT_USERS,
-      innovation.id,
-      NotificationContextType.INNOVATION,
+    try {
+      await this.notificationService.create(
+        requestUser,
+        NotificationAudience.ASSESSMENT_USERS,
+        innovation.id,
+        NotificationContextType.INNOVATION,
 
-      innovation.id,
-      `The innovation ${innovation.name} was submitted for assessment.`
-    );
+        innovation.id,
+        `The innovation ${innovation.name} was submitted for assessment.`
+      );
+    } catch (error) {
+      this.logService.error(
+        `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
+        error
+      );
+    }
 
     return {
       id: innovation.id,

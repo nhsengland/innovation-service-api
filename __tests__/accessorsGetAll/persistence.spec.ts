@@ -2,8 +2,14 @@ import * as persistence from "../../accessorsGetAll/persistence";
 import { OrganisationService } from "@services/index";
 import * as typeorm from "typeorm";
 import { CustomContext } from "../../utils/types";
-
+import * as dotenv from "dotenv";
+import * as path from "path";
 describe("[accessorsGetAll] Persistence suite", () => {
+  beforeAll(() => {
+    dotenv.config({
+      path: path.resolve(__dirname, "../.environment"),
+    });
+  });
   describe("findUserOrganisationUnitUsers", () => {
     it("should get accessors list", async () => {
       // Arrange

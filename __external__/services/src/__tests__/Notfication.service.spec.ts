@@ -35,14 +35,28 @@ import * as fixtures from "../__fixtures__";
 import * as helpers from "../helpers";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import * as engines from "../../src/engines";
-
+import * as insights from "../../../../utils/logging/insights";
+import * as dotenv from "dotenv";
+import * as path from "path";
 describe("Notification Service Suite", () => {
   let notificationService: NotificationService;
   let supportService: InnovationSupportService;
   beforeAll(async () => {
     //await setupTestsConnection();
+
+    dotenv.config({
+      path: path.resolve(__dirname, "./.environment"),
+    });
     notificationService = new NotificationService(process.env.DB_TESTS_NAME);
     supportService = new InnovationSupportService(process.env.DB_TESTS_NAME);
+
+    spyOn(insights, "getInstance").and.returnValue({
+      default: {
+        trackTrace: () => {
+          return;
+        },
+      },
+    });
 
     spyOn(engines, "emailEngines").and.returnValue([
       {

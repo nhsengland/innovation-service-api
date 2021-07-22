@@ -4,12 +4,18 @@ import { FileService } from "../services/File.service";
 import { InnovationService } from "../services/Innovation.service";
 import { InnovatorService } from "../services/Innovator.service";
 import * as storage_blob from "@azure/storage-blob";
+import * as dotenv from "dotenv";
+import * as path from "path";
 describe("File Service Suite", () => {
   let fileService: FileService;
   let innovationService: InnovationService;
   let innovatorService: InnovatorService;
 
   beforeAll(async () => {
+    dotenv.config({
+      path: path.resolve(__dirname, "./.environment"),
+    });
+
     fileService = new FileService(process.env.DB_TESTS_NAME);
     innovationService = new InnovationService(process.env.DB_TESTS_NAME);
     innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);

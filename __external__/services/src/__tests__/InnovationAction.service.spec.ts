@@ -29,7 +29,8 @@ import * as helpers from "../helpers";
 import { InnovationActionService } from "../services/InnovationAction.service";
 import * as fixtures from "../__fixtures__";
 import * as engines from "../../src/engines";
-
+import * as dotenv from "dotenv";
+import * as path from "path";
 describe("Innovation Action Suite", () => {
   let actionService: InnovationActionService;
   let innovation: Innovation;
@@ -43,6 +44,10 @@ describe("Innovation Action Suite", () => {
 
   beforeAll(async () => {
     // await setupTestsConnection();
+
+    dotenv.config({
+      path: path.resolve(__dirname, "./.environment"),
+    });
     actionService = new InnovationActionService(process.env.DB_TESTS_NAME);
 
     innovatorUser = await fixtures.createInnovatorUser();

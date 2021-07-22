@@ -58,6 +58,10 @@ import * as fixtures from "../__fixtures__";
 import * as helpers from "../helpers";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import * as engines from "../../src/engines";
+import { NotificationService } from "@services/services/Notification.service";
+import { LoggerService } from "@services/services/Logger.service";
+import * as dotenv from "dotenv";
+import * as path from "path";
 describe("Innovation Section Service Suite", () => {
   let fileService: FileService;
   let innovationSectionService: InnovationSectionService;
@@ -66,6 +70,10 @@ describe("Innovation Section Service Suite", () => {
 
   beforeAll(async () => {
     // await setupTestsConnection();
+
+    dotenv.config({
+      path: path.resolve(__dirname, "./.environment"),
+    });
     fileService = new FileService(process.env.DB_TESTS_NAME);
     innovationSectionService = new InnovationSectionService(
       process.env.DB_TESTS_NAME
@@ -792,6 +800,108 @@ describe("Innovation Section Service Suite", () => {
     expect(count).toEqual(2);
   });
 
+  it("should submmit sections with correct properties with actions even when notifications fail", async () => {
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      displayName: "Q Accessor A",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "example@bjss.com",
+        },
+      ],
+    });
+
+    spyOn(NotificationService.prototype, "create").and.throwError("error");
+
+    const spy = spyOn(LoggerService.prototype, "error");
+
+    const sectionObj = InnovationSection.new({
+      section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+      status: InnovationSectionStatus.DRAFT,
+    });
+
+    const qualAccessorUser = await fixtures.createAccessorUser();
+    const accessorOrganisation = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
+    );
+    const qAccessorUserOrganisation = await fixtures.addUserToOrganisation(
+      qualAccessorUser,
+      accessorOrganisation,
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    );
+    const organisationUnit = await fixtures.createOrganisationUnit(
+      accessorOrganisation
+    );
+    const organisationQuaAccessorUnitUser = await fixtures.addOrganisationUserToOrganisationUnit(
+      qAccessorUserOrganisation,
+      organisationUnit
+    );
+
+    const qAccessorRequestUser: RequestUser = {
+      id: qualAccessorUser.id,
+      type: UserType.ACCESSOR,
+      organisationUser: {
+        id: qAccessorUserOrganisation.id,
+        role: qAccessorUserOrganisation.role,
+        organisation: {
+          id: accessorOrganisation.id,
+          name: accessorOrganisation.name,
+        },
+      },
+      organisationUnitUser: {
+        id: organisationQuaAccessorUnitUser.id,
+        organisationUnit: {
+          id: organisationUnit.id,
+          name: organisationUnit.name,
+        },
+      },
+    };
+
+    const innovationObj = fixtures.generateInnovation({
+      owner: innovatorRequestUser.id,
+      name: "My Innovation",
+      surveyId: "abc",
+      impactPatients: false,
+      impactClinicians: false,
+      status: InnovationStatus.IN_PROGRESS,
+      sections: [sectionObj],
+      organisationShares: [accessorOrganisation],
+    });
+    const innovation = await fixtures.saveInnovation(innovationObj);
+
+    await fixtures.createSupportInInnovation(
+      qAccessorRequestUser,
+      innovation,
+      organisationQuaAccessorUnitUser.id
+    );
+    await fixtures.createInnovationAction(qAccessorRequestUser, innovation);
+
+    // Act
+    await innovationSectionService.submitSections(
+      innovatorRequestUser,
+      innovation.id,
+      [
+        InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+        InnovationSectionCatalogue.UNDERSTANDING_OF_NEEDS,
+      ]
+    );
+
+    const result = await innovationSectionService.findAllInnovationSections(
+      innovatorRequestUser,
+      innovation.id
+    );
+    const count = result.sections.reduce(
+      (counter: number, obj: InnovationSectionModel) => {
+        if (obj.status === InnovationSectionStatus.SUBMITTED) counter += 1;
+        return counter;
+      },
+      0
+    );
+
+    // Assert
+    expect(count).toEqual(2);
+    expect(spy).toHaveBeenCalled();
+  });
   it("should throw when id is null in submitSections()", async () => {
     let err;
     try {

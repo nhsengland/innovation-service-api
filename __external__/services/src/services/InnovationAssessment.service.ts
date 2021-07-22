@@ -19,6 +19,7 @@ import { InnovationAssessmentResult } from "../models/InnovationAssessmentResult
 import { InnovationService } from "./Innovation.service";
 import { NotificationService } from "./Notification.service";
 import { UserService } from "./User.service";
+import { LoggerService } from "./Logger.service";
 
 export class InnovationAssessmentService {
   private readonly connection: Connection;
@@ -26,6 +27,7 @@ export class InnovationAssessmentService {
   private readonly userService: UserService;
   private readonly innovationService: InnovationService;
   private readonly notificationService: NotificationService;
+  private readonly logService: LoggerService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -33,6 +35,7 @@ export class InnovationAssessmentService {
     this.userService = new UserService(connectionName);
     this.innovationService = new InnovationService(connectionName);
     this.notificationService = new NotificationService(connectionName);
+    this.logService = new LoggerService();
   }
 
   async find(
@@ -213,14 +216,21 @@ export class InnovationAssessmentService {
     );
 
     if (assessment.isSubmission) {
-      await this.notificationService.create(
-        requestUser,
-        NotificationAudience.QUALIFYING_ACCESSORS,
-        innovationId,
-        NotificationContextType.INNOVATION,
-        innovationId,
-        `Innovation with id ${innovationId} is now available for Qualifying Accessors`
-      );
+      try {
+        await this.notificationService.create(
+          requestUser,
+          NotificationAudience.QUALIFYING_ACCESSORS,
+          innovationId,
+          NotificationContextType.INNOVATION,
+          innovationId,
+          `Innovation with id ${innovationId} is now available for Qualifying Accessors`
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
+          error
+        );
+      }
     }
 
     return result;

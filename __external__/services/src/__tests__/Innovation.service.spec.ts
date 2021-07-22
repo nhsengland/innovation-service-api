@@ -34,6 +34,11 @@ import { InnovationService } from "../services/Innovation.service";
 import * as fixtures from "../__fixtures__";
 import * as engines from "../../src/engines/index";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import { NotificationService } from "@services/services/Notification.service";
+import { LoggerService } from "@services/services/Logger.service";
+
+import * as dotenv from "dotenv";
+import * as path from "path";
 
 describe("Innovator Service Suite", () => {
   let innovationService: InnovationService;
@@ -47,6 +52,10 @@ describe("Innovator Service Suite", () => {
 
   beforeAll(async () => {
     //await setupTestsConnection();
+    dotenv.config({
+      path: path.resolve(__dirname, "./.environment"),
+    });
+
     innovationService = new InnovationService(process.env.DB_TESTS_NAME);
     userService = new UserService(process.env.DB_TESTS_NAME);
 
@@ -155,6 +164,27 @@ describe("Innovator Service Suite", () => {
 
   it("should instantiate the innovation service", async () => {
     expect(innovationService).toBeDefined();
+  });
+
+  it("should log an error and carry on when NotificationService fails", async () => {
+    const innovationObj = fixtures.generateInnovation({
+      owner: { id: innovatorRequestUser.id },
+      surveyId: "abc",
+    });
+    const innovation = await fixtures.saveInnovation(innovationObj);
+
+    spyOn(NotificationService.prototype, "create").and.throwError("error");
+    spyOn(NotificationService.prototype, "sendEmail").and.throwError("error");
+
+    const spy = spyOn(LoggerService.prototype, "error");
+
+    const actual = await innovationService.submitInnovation(
+      innovatorRequestUser,
+      innovation.id
+    );
+
+    expect(spy).toHaveBeenCalled();
+    expect(actual).toBeDefined();
   });
 
   it("should throw invalid operation when findAll()", async () => {

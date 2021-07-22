@@ -26,6 +26,7 @@ import { OrganisationService } from "./Organisation.service";
 import { UserService } from "./User.service";
 import { NotificationService } from "./Notification.service";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import { LoggerService } from "./Logger.service";
 
 export class InnovationSupportService {
   private readonly connection: Connection;
@@ -34,6 +35,7 @@ export class InnovationSupportService {
   private readonly organisationService: OrganisationService;
   private readonly userService: UserService;
   private readonly notificationService: NotificationService;
+  private readonly logService: LoggerService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -42,6 +44,7 @@ export class InnovationSupportService {
     this.organisationService = new OrganisationService(connectionName);
     this.userService = new UserService(connectionName);
     this.notificationService = new NotificationService(connectionName);
+    this.logService = new LoggerService();
   }
 
   async find(
@@ -244,16 +247,23 @@ export class InnovationSupportService {
       }
     );
 
-    await this.notificationService.create(
-      requestUser,
-      NotificationAudience.ACCESSORS,
-      innovationId,
-      NotificationContextType.INNOVATION,
+    try {
+      await this.notificationService.create(
+        requestUser,
+        NotificationAudience.ACCESSORS,
+        innovationId,
+        NotificationContextType.INNOVATION,
 
-      innovationId,
-      `Support was created for the Innovation with id ${innovationId} with the status ${support.status}`,
-      targetNotificationUsers
-    );
+        innovationId,
+        `Support was created for the Innovation with id ${innovationId} with the status ${support.status}`,
+        targetNotificationUsers
+      );
+    } catch (error) {
+      this.logService.error(
+        `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
+        error
+      );
+    }
 
     return result;
   }
@@ -358,40 +368,61 @@ export class InnovationSupportService {
             InnovationSupportStatus.WAITING,
           ].includes(innovationSupport.status)
         ) {
-          await this.notificationService.create(
-            requestUser,
-            NotificationAudience.ASSESSMENT_USERS,
-            innovationId,
-            NotificationContextType.INNOVATION,
-            innovationId,
-            `The innovation with id ${innovationId} has had its support status changed to ${innovationSupport.status}`
-          );
+          try {
+            await this.notificationService.create(
+              requestUser,
+              NotificationAudience.ASSESSMENT_USERS,
+              innovationId,
+              NotificationContextType.INNOVATION,
+              innovationId,
+              `The innovation with id ${innovationId} has had its support status changed to ${innovationSupport.status}`
+            );
+          } catch (error) {
+            this.logService.error(
+              `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
+              error
+            );
+          }
         }
 
         if (
           innovationSupport.status === InnovationSupportStatus.ENGAGING ||
           innovationSupport.status === InnovationSupportStatus.COMPLETE
         ) {
-          await this.notificationService.create(
-            requestUser,
-            NotificationAudience.ACCESSORS,
-            innovationId,
-            NotificationContextType.INNOVATION,
-            innovationId,
-            `The innovation with id ${innovationId} has had its support status changed to ${innovationSupport.status}`
-          );
+          try {
+            await this.notificationService.create(
+              requestUser,
+              NotificationAudience.ACCESSORS,
+              innovationId,
+              NotificationContextType.INNOVATION,
+              innovationId,
+              `The innovation with id ${innovationId} has had its support status changed to ${innovationSupport.status}`
+            );
+          } catch (error) {
+            this.logService.error(
+              `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
+              error
+            );
+          }
 
-          const targetUsers = await this.organisationService.findUserFromUnitUsers(
-            innovationSupport.organisationUnitUsers.map((u) => u.id)
-          );
+          try {
+            const targetUsers = await this.organisationService.findUserFromUnitUsers(
+              innovationSupport.organisationUnitUsers.map((u) => u.id)
+            );
 
-          await this.notificationService.sendEmail(
-            requestUser,
-            EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
-            innovationId,
-            innovationId,
-            targetUsers
-          );
+            await this.notificationService.sendEmail(
+              requestUser,
+              EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
+              innovationId,
+              innovationId,
+              targetUsers
+            );
+          } catch (error) {
+            this.logService.error(
+              `An error has occured while sending an email with template ${EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION} from ${requestUser.id}`,
+              error
+            );
+          }
         }
 
         return await transactionManager.save(

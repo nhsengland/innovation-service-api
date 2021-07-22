@@ -12,12 +12,15 @@ import {
   User,
 } from "@domain/index";
 import { RequestUser } from "@services/models/RequestUser";
+import { LoggerService } from "@services/services/Logger.service";
+import { NotificationService } from "@services/services/Notification.service";
 import { getConnection } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
 import { InnovationAssessmentService } from "../services/InnovationAssessment.service";
 import * as fixtures from "../__fixtures__";
-
+import * as dotenv from "dotenv";
+import * as path from "path";
 const dummy = {
   assessment: {
     description: "Assessment Desc",
@@ -35,6 +38,9 @@ describe("Innovation Assessment Suite", () => {
   beforeAll(async () => {
     // await setupTestsConnection();
 
+    dotenv.config({
+      path: path.resolve(__dirname, "./.environment"),
+    });
     assessmentService = new InnovationAssessmentService(
       process.env.DB_TESTS_NAME
     );
@@ -219,6 +225,42 @@ describe("Innovation Assessment Suite", () => {
     expect(item).toBeDefined();
     expect(item.maturityLevel).toEqual(MaturityLevelCatalogue.ADVANCED);
     expect(item.finishedAt).toBeDefined();
+  });
+
+  it("should update an assessment with submission even when notifications fail", async () => {
+    spyOn(NotificationService.prototype, "create").and.throwError("error");
+    spyOn(NotificationService.prototype, "sendEmail").and.throwError("error");
+
+    const spy = spyOn(LoggerService.prototype, "error");
+
+    const assessmentObj = {
+      ...dummy.assessment,
+      innovation: innovation.id,
+      assignTo: assessmentRequestUser.id,
+    };
+
+    const assessment = await assessmentService.create(
+      assessmentRequestUser,
+      innovation.id,
+      assessmentObj
+    );
+
+    const updAssessment = {
+      maturityLevel: MaturityLevelCatalogue.ADVANCED,
+      isSubmission: true,
+      test: "test",
+    };
+    const item = await assessmentService.update(
+      assessmentRequestUser,
+      assessment.id,
+      innovation.id,
+      updAssessment
+    );
+
+    expect(item).toBeDefined();
+    expect(item.maturityLevel).toEqual(MaturityLevelCatalogue.ADVANCED);
+    expect(item.finishedAt).toBeDefined();
+    expect(spy).toHaveBeenCalled();
   });
 
   it("should find an assessment by qualifying accessor", async () => {
