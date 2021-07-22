@@ -69,7 +69,7 @@ export class OrganisationService extends BaseService<Organisation> {
   async findAllWithOrganisationUnits(): Promise<OrganisationModel[]> {
     const data = await this.repository
       .createQueryBuilder("organisation")
-      .innerJoinAndSelect("organisation.organisationUnits", "organisationUnits")
+      .leftJoinAndSelect("organisation.organisationUnits", "organisationUnits")
       .where("organisation.type = :type", {
         type: OrganisationType.ACCESSOR,
       })
