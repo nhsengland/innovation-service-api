@@ -1,20 +1,24 @@
 import { HttpRequest } from "@azure/functions";
-import { UserType } from "@services/index";
+import { AccessorOrganisationRole, UserType } from "@services/index";
 import {
-  AllowedUserType,
   AppInsights,
   JwtDecoder,
+  OrganisationRoleValidator,
   SQLConnector,
 } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 
-class InnovatorsGetInnovationSupports {
+class AccessorsGetInnovationSupports {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder()
-  @AllowedUserType(UserType.INNOVATOR)
+  @OrganisationRoleValidator(
+    UserType.ACCESSOR,
+    AccessorOrganisationRole.ACCESSOR,
+    AccessorOrganisationRole.QUALIFYING_ACCESSOR
+  )
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
@@ -41,4 +45,4 @@ class InnovatorsGetInnovationSupports {
   }
 }
 
-export default InnovatorsGetInnovationSupports.httpTrigger;
+export default AccessorsGetInnovationSupports.httpTrigger;
