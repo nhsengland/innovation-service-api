@@ -22,9 +22,9 @@ import { InnovationSupportModel } from "@services/models/InnovationSupportModel"
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { InnovationService } from "./Innovation.service";
+import { NotificationService } from "./Notification.service";
 import { OrganisationService } from "./Organisation.service";
 import { UserService } from "./User.service";
-import { NotificationService } from "./Notification.service";
 
 export class InnovationSupportService {
   private readonly connection: Connection;
@@ -93,7 +93,8 @@ export class InnovationSupportService {
 
   async findAllByInnovation(
     requestUser: RequestUser,
-    innovationId: string
+    innovationId: string,
+    full?: boolean
   ): Promise<InnovationSupportModel[]> {
     if (!requestUser || !innovationId) {
       throw new InvalidParamsError("Invalid parameters.");
@@ -125,28 +126,44 @@ export class InnovationSupportService {
       return [];
     }
 
-    const userIds = innovationSupports.flatMap((sup: InnovationSupport) => {
-      if (sup.status === InnovationSupportStatus.ENGAGING) {
-        return sup.organisationUnitUsers.map(
-          (ouu: OrganisationUnitUser) => ouu.organisationUser.user.id
-        );
-      } else {
-        return [];
-      }
-    });
-    const b2cUsers = await this.userService.getListOfUsers(userIds);
-    const b2cUserNames = b2cUsers.reduce((map, obj) => {
-      map[obj.id] = obj.displayName;
-      return map;
-    }, {});
+    let b2cUserNames;
+    if (full) {
+      const userIds = innovationSupports.flatMap((sup: InnovationSupport) => {
+        if (sup.status === InnovationSupportStatus.ENGAGING) {
+          return sup.organisationUnitUsers.map(
+            (ouu: OrganisationUnitUser) => ouu.organisationUser.user.id
+          );
+        } else {
+          return [];
+        }
+      });
+      const b2cUsers = await this.userService.getListOfUsers(userIds);
+      b2cUserNames = b2cUsers.reduce((map, obj) => {
+        map[obj.id] = obj.displayName;
+        return map;
+      }, {});
+    }
 
     return innovationSupports.map((sup: InnovationSupport) => {
       const organisationUnit = sup.organisationUnit;
       const organisation = organisationUnit.organisation;
-      let accessors = [];
 
-      if (sup.status === InnovationSupportStatus.ENGAGING) {
-        accessors = sup.organisationUnitUsers?.map(
+      const response: InnovationSupportModel = {
+        id: sup.id,
+        status: sup.status,
+        organisationUnit: {
+          id: organisationUnit.id,
+          name: organisationUnit.name,
+          organisation: {
+            id: organisation.id,
+            name: organisation.name,
+            acronym: organisation.acronym,
+          },
+        },
+      };
+
+      if (full && sup.status === InnovationSupportStatus.ENGAGING) {
+        response.accessors = sup.organisationUnitUsers?.map(
           (organisationUnitUser: OrganisationUnitUser) => ({
             id: organisationUnitUser.id,
             name: b2cUserNames[organisationUnitUser.organisationUser.user.id],
@@ -154,20 +171,7 @@ export class InnovationSupportService {
         );
       }
 
-      return {
-        id: sup.id,
-        status: sup.status,
-        organisation: {
-          id: organisation.id,
-          name: organisation.name,
-          acronym: organisation.acronym,
-        },
-        organisationUnit: {
-          id: organisationUnit.id,
-          name: organisationUnit.name,
-        },
-        accessors,
-      };
+      return response;
     });
   }
 
