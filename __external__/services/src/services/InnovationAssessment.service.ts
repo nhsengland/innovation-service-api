@@ -190,7 +190,7 @@ export class InnovationAssessmentService {
 
     const result = await this.connection.transaction(
       async (transactionManager) => {
-        if (assessment.isSubmission) {
+        if (assessment.isSubmission && !assessmentDb.finishedAt) {
           assessmentDb.finishedAt = new Date();
 
           await transactionManager.update(
