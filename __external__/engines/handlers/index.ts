@@ -7,8 +7,8 @@ import {
 import { RequestUser } from "@services/models/RequestUser";
 import { EmailResponse, EmailService } from "@services/services/Email.service";
 import { getRepository } from "typeorm";
-import * as helpers from "../../helpers";
-import * as config from "@config/index";
+import * as helpers from "@helpers/index";
+import { getTemplates } from "../templates";
 import { EmailTemplateNotFound, InvalidParamsError } from "@services/errors";
 
 export const accessorsActionToReviewHandler = async (
@@ -127,10 +127,8 @@ export const innovatorActionRequested = async (
 };
 
 const parseUrl = (params, templateCode): string => {
-  const baseUrl = config.default.get("clients.web");
-  const template = config.default
-    .get("email.templates")
-    ?.find((t) => t.code === templateCode);
+  const baseUrl = process.env.CLIENT_WEB_BASE_URL;
+  const template = getTemplates().find((t) => t.code === templateCode);
   if (!template)
     throw new EmailTemplateNotFound("Could not find email template");
 

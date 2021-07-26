@@ -32,7 +32,7 @@ import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
 import { InnovationService } from "../services/Innovation.service";
 import * as fixtures from "../__fixtures__";
-import * as engines from "../../src/engines/index";
+import * as engines from "@engines/index";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import { NotificationService } from "@services/services/Notification.service";
 import { LoggerService } from "@services/services/Logger.service";

@@ -34,7 +34,7 @@ import { NotificationService } from "../services/Notification.service";
 import * as fixtures from "../__fixtures__";
 import * as helpers from "../helpers";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
-import * as engines from "../../src/engines";
+import * as engines from "@engines/index";
 import * as insights from "../../../../utils/logging/insights";
 import * as dotenv from "dotenv";
 import * as path from "path";

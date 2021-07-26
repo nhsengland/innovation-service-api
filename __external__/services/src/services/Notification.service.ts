@@ -24,13 +24,8 @@ import {
   Repository,
 } from "typeorm";
 
-import { EmailProps, EmailResponse, EmailService } from "./Email.service";
-
-import * as config from "@config/index";
-import { emailEngines } from "../engines";
-
-import { authenticateWitGraphAPI, getUserFromB2C } from "../helpers";
-import { InvalidParamsError } from "@services/errors";
+import { EmailService } from "./Email.service";
+import { emailEngines } from "@engines/index";
 
 export type NotificationDismissResult = {
   affected: number;
