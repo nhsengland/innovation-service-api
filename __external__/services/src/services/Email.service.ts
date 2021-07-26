@@ -160,20 +160,11 @@ export class EmailService {
 
     */
 
-    // the combination between iss and secret must be 72 + 1 (the '-' character that separates both)
-    if (!token || token.length < 73) {
-      throw new InvalidAPIKey("Invalid Notify Api Key.");
-    }
+    const iss = config.default.get("email.credentials.issuer");
+    const secret = config.default.get("email.credentials.secret");
 
-    const issAndSecret = token.replace(
-      `${config.default.get("email.api_key_name")}-`,
-      ""
-    );
-
-    // gets iss which is the character chain between index 0 and has 36 of length
-    const iss = issAndSecret.substring(0, 36);
-    // gets the secret which is the character chain from position 37 onwards
-    const secret = issAndSecret.substring(37);
+    if (!iss) throw new InvalidAPIKey("Invalid EMAIL API Issuer");
+    if (!secret) throw new InvalidAPIKey("Invalid EMAIL API Secret");
 
     return jwt.sign({ iss }, secret, { algorithm: "HS256" });
   }

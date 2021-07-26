@@ -18,10 +18,18 @@ export default convict({
       env: "EMAIL_NOTIFICATION_REPLY_TO_ID",
     },
     credentials: {
-      doc: "email notification service credentials",
-      format: String,
-      default: "",
-      env: "EMAIL_NOTIFICATION_API_KEY",
+      issuer: {
+        doc: "email notification service ISSUER",
+        format: String,
+        default: "",
+        env: "EMAIL_NOTIFICATION_API_ISSUER",
+      },
+      secret: {
+        doc: "email notification service SECRET",
+        format: String,
+        default: "",
+        env: "EMAIL_NOTIFICATION_API_SECRET",
+      },
     },
     api_key_name: {
       doc: "the api key name. Used to extract ISS and Secret from key",
