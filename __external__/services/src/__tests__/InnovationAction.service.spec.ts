@@ -1,3 +1,4 @@
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   AccessorOrganisationRole,
   Comment,
@@ -27,7 +28,9 @@ import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
 import { InnovationActionService } from "../services/InnovationAction.service";
 import * as fixtures from "../__fixtures__";
-
+import * as engines from "../../src/engines";
+import * as dotenv from "dotenv";
+import * as path from "path";
 describe("Innovation Action Suite", () => {
   let actionService: InnovationActionService;
   let innovation: Innovation;
@@ -41,6 +44,10 @@ describe("Innovation Action Suite", () => {
 
   beforeAll(async () => {
     // await setupTestsConnection();
+
+    dotenv.config({
+      path: path.resolve(__dirname, "./.environment"),
+    });
     actionService = new InnovationActionService(process.env.DB_TESTS_NAME);
 
     innovatorUser = await fixtures.createInnovatorUser();
@@ -118,6 +125,27 @@ describe("Innovation Action Suite", () => {
     spyOn(helpers, "getUsersFromB2C").and.returnValues([
       { id: accessorUser.id, displayName: ":ACCESSOR" },
       { id: qualAccessorUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
+
+    spyOn(engines, "emailEngines").and.returnValue([
+      {
+        key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
+        handler: async function () {
+          return [];
+        },
+      },
+      {
+        key: EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
+        handler: async function () {
+          return [];
+        },
+      },
+      {
+        key: EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
+        handler: async function () {
+          return [];
+        },
+      },
     ]);
   });
 

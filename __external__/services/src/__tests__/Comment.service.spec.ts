@@ -22,6 +22,8 @@ import {
   MissingUserOrganisationError,
 } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
+import * as dotenv from "dotenv";
+import * as path from "path";
 
 describe("Comment Service Suite", () => {
   let commentService: CommentService;
@@ -32,6 +34,10 @@ describe("Comment Service Suite", () => {
 
   beforeAll(async () => {
     // await setupTestsConnection();
+
+    dotenv.config({
+      path: path.resolve(__dirname, "./.environment"),
+    });
     commentService = new CommentService(process.env.DB_TESTS_NAME);
 
     const qualAccessorUser = await fixtures.createAccessorUser();

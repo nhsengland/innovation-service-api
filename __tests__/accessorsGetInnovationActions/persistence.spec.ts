@@ -2,8 +2,14 @@ import { InnovationActionService } from "@services/index";
 import * as typeorm from "typeorm";
 import * as persistence from "../../accessorsGetInnovationActions/persistence";
 import { CustomContext } from "../../utils/types";
-
+import * as dotenv from "dotenv";
+import * as path from "path";
 describe("[accessorsGetInnovationActions] Persistence suite", () => {
+  beforeAll(() => {
+    dotenv.config({
+      path: path.resolve(__dirname, "../.environment"),
+    });
+  });
   describe("findInnovationActions", () => {
     it("should assess if innovation actions exists", async () => {
       // Arrange

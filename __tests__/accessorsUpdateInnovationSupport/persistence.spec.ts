@@ -2,8 +2,14 @@ import { InnovationSupportService } from "@services/index";
 import * as typeorm from "typeorm";
 import * as persistence from "../../accessorsUpdateInnovationSupport/persistence";
 import { CustomContext } from "../../utils/types";
-
+import * as dotenv from "dotenv";
+import * as path from "path";
 describe("[accessorsUpdateInnovationSupport] Persistence suite", () => {
+  beforeAll(() => {
+    dotenv.config({
+      path: path.resolve(__dirname, "../.environment"),
+    });
+  });
   describe("updateInnovationSupport", () => {
     it("should update an innovation support", async () => {
       // Arrange

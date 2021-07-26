@@ -1,3 +1,4 @@
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   AccessorOrganisationRole,
   Comment,
@@ -5,6 +6,7 @@ import {
   InnovationActionStatus,
   InnovationSectionAliasCatalogue,
   InnovationSupport,
+  InnovationSupportStatus,
   NotificationAudience,
   NotificationContextType,
 } from "@domain/index";
@@ -32,24 +34,32 @@ import { InnovationService } from "./Innovation.service";
 import { InnovationSectionService } from "./InnovationSection.service";
 import { NotificationService } from "./Notification.service";
 import { UserService } from "./User.service";
+import { LoggerService } from "./Logger.service";
 
 export class InnovationActionService {
   private readonly connection: Connection;
   private readonly actionRepo: Repository<InnovationAction>;
+  private readonly innovationSupportRepo: Repository<InnovationSupport>;
   private readonly innovationService: InnovationService;
   private readonly innovationSectionService: InnovationSectionService;
   private readonly userService: UserService;
   private readonly notificationService: NotificationService;
+  private readonly logService: LoggerService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.actionRepo = getRepository(InnovationAction, connectionName);
+    this.innovationSupportRepo = getRepository(
+      InnovationSupport,
+      connectionName
+    );
     this.innovationService = new InnovationService(connectionName);
     this.innovationSectionService = new InnovationSectionService(
       connectionName
     );
     this.userService = new UserService(connectionName);
     this.notificationService = new NotificationService(connectionName);
+    this.logService = new LoggerService();
   }
 
   async create(requestUser: RequestUser, innovationId: string, action: any) {
@@ -127,15 +137,36 @@ export class InnovationActionService {
 
     const result = await this.actionRepo.save(actionObj);
 
-    await this.notificationService.create(
-      requestUser,
-      NotificationAudience.INNOVATORS,
-      innovationId,
-      NotificationContextType.ACTION,
+    try {
+      await this.notificationService.create(
+        requestUser,
+        NotificationAudience.INNOVATORS,
+        innovationId,
+        NotificationContextType.ACTION,
 
-      result.id,
-      `An action was created by the accessor with id ${requestUser.id} for the innovation ${innovation.name}(${innovationId})`
-    );
+        result.id,
+        `An action was created by the accessor with id ${requestUser.id} for the innovation ${innovation.name}(${innovationId})`
+      );
+    } catch (error) {
+      this.logService.error(
+        `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
+        error
+      );
+    }
+
+    try {
+      await this.notificationService.sendEmail(
+        requestUser,
+        EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
+        innovationId,
+        result.id
+      );
+    } catch (error) {
+      this.logService.error(
+        `An error has occured an email with the template ${EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST} from ${requestUser.id}`,
+        error
+      );
+    }
 
     return result;
   }
@@ -191,14 +222,21 @@ export class InnovationActionService {
       action
     );
 
-    await this.notificationService.create(
-      requestUser,
-      NotificationAudience.INNOVATORS,
-      innovationId,
-      NotificationContextType.ACTION,
-      result.id,
-      `An action was updated by the accessor with id ${requestUser.id} for the innovation ${innovation.name}(${innovationId})`
-    );
+    try {
+      await this.notificationService.create(
+        requestUser,
+        NotificationAudience.INNOVATORS,
+        innovationId,
+        NotificationContextType.ACTION,
+        result.id,
+        `An action was updated by the accessor with id ${requestUser.id} for the innovation ${innovation.name}(${innovationId})`
+      );
+    } catch (error) {
+      this.logService.error(
+        `An error has occured while creating a notification of type ${NotificationContextType.ACTION} from ${requestUser.id}`,
+        error
+      );
+    }
 
     return result;
   }
@@ -230,14 +268,21 @@ export class InnovationActionService {
       action
     );
 
-    await this.notificationService.create(
-      requestUser,
-      NotificationAudience.ACCESSORS,
-      innovationId,
-      NotificationContextType.ACTION,
-      innovationAction.id,
-      `An action was updated by the innovator with id ${requestUser.id} for the innovation with id ${innovationId}`
-    );
+    try {
+      await this.notificationService.create(
+        requestUser,
+        NotificationAudience.ACCESSORS,
+        innovationId,
+        NotificationContextType.ACTION,
+        innovationAction.id,
+        `An action was updated by the innovator with id ${requestUser.id} for the innovation with id ${innovationId}`
+      );
+    } catch (error) {
+      this.logService.error(
+        `An error has occured while creating a notification of type ${NotificationContextType.ACTION} from ${requestUser.id}`,
+        error
+      );
+    }
 
     return result;
   }

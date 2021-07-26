@@ -5,8 +5,14 @@ import {
 import * as typeorm from "typeorm";
 import * as persistence from "../../innovatorsUpdateInnovationEvidence/persistence";
 import { CustomContext } from "../../utils/types";
-
+import * as dotenv from "dotenv";
+import * as path from "path";
 describe("[innovatorsUpdateInnovationEvidence] Persistence suite", () => {
+  beforeAll(() => {
+    dotenv.config({
+      path: path.resolve(__dirname, "../.environment"),
+    });
+  });
   describe("updateInnovationEvidence", () => {
     it("should update an innovation evidence", async () => {
       // Arrange

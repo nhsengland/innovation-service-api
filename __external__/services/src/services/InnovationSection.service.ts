@@ -1,3 +1,4 @@
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   Innovation,
   InnovationAction,
@@ -25,12 +26,14 @@ import { BaseService } from "./Base.service";
 import { FileService } from "./File.service";
 import { InnovationService } from "./Innovation.service";
 import { NotificationService } from "./Notification.service";
+import { LoggerService } from "./Logger.service";
 
 export class InnovationSectionService extends BaseService<InnovationSection> {
   private readonly connection: Connection;
   private readonly fileService: FileService;
   private readonly innovationService: InnovationService;
   private readonly notificationService: NotificationService;
+  private readonly logService: LoggerService;
 
   constructor(connectionName?: string) {
     super(InnovationSection, connectionName);
@@ -38,6 +41,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     this.fileService = new FileService(connectionName);
     this.innovationService = new InnovationService(connectionName);
     this.notificationService = new NotificationService(connectionName);
+    this.logService = new LoggerService();
   }
 
   async findAllInnovationSections(
@@ -345,7 +349,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     }
 
     const innovSections = await innovation.sections;
-    const updatedActions: string[] = [];
+    const updatedActions: InnovationAction[] = [];
 
     const result = await this.connection.transaction(
       async (transactionManager) => {
@@ -373,7 +377,6 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
                 ia.status === InnovationActionStatus.REQUESTED
             );
             for (let i = 0; i < actions.length; i++) {
-              updatedActions.push(actions[i].id);
               await transactionManager.update(
                 InnovationAction,
                 { id: actions[i].id },
@@ -382,6 +385,8 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
                   updatedBy: requestUser.id,
                 }
               );
+              actions[i].status = InnovationActionStatus.IN_REVIEW;
+              updatedActions.push(actions[i]);
             }
 
             await transactionManager.update(
@@ -400,14 +405,31 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
 
     for (let index = 0; index < updatedActions.length; index++) {
       const element = updatedActions[index];
-      await this.notificationService.create(
-        requestUser,
-        NotificationAudience.ACCESSORS,
-        innovationId,
-        NotificationContextType.ACTION,
-        element,
-        `The action with id ${element} was updated by the innovator with id ${requestUser.id} for the innovation with id ${innovationId}`
-      );
+
+      try {
+        await this.notificationService.create(
+          requestUser,
+          NotificationAudience.ACCESSORS,
+          innovationId,
+          NotificationContextType.ACTION,
+          element.id,
+          `The action with id ${element} was updated by the innovator with id ${requestUser.id} for the innovation with id ${innovationId}`
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while creating a notification of type ${NotificationContextType.ACTION} from ${requestUser.id}`,
+          error
+        );
+      }
+
+      if (element.status === InnovationActionStatus.IN_REVIEW) {
+        await this.notificationService.sendEmail(
+          requestUser,
+          EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
+          innovationId,
+          element.id
+        );
+      }
     }
 
     return result;

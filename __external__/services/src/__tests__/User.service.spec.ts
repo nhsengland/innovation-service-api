@@ -24,6 +24,8 @@ import { AccessorService } from "../services/Accessor.service";
 import { OrganisationService } from "../services/Organisation.service";
 import { UserService } from "../services/User.service";
 import * as fixtures from "../__fixtures__";
+import * as dotenv from "dotenv";
+import * as path from "path";
 
 const dummy = {
   requestUser: {
@@ -41,6 +43,10 @@ describe("User Service Suite", () => {
 
   beforeAll(async () => {
     // await setupTestsConnection();
+
+    dotenv.config({
+      path: path.resolve(__dirname, "./.environment"),
+    });
     userService = new UserService(process.env.DB_TESTS_NAME);
     accessorService = new AccessorService(process.env.DB_TESTS_NAME);
     organisationService = new OrganisationService(process.env.DB_TESTS_NAME);

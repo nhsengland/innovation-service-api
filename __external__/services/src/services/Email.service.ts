@@ -1,0 +1,190 @@
+import * as config from "@config/index";
+import { UserService } from "./User.service";
+import { UserEmailModel } from "@services/models/ProfileSlimModel";
+import {
+  EmailTemplateNotFound,
+  InvalidAPIKey,
+  InvalidEmailTemplateProps,
+} from "@services/errors";
+import * as uuid from "uuid";
+import axios from "axios";
+import * as jwt from "jsonwebtoken";
+
+export type EmailResponse = {
+  id: string;
+  reference: string | null | undefined;
+  content: {
+    subject: string;
+    body: string;
+    from_email: string;
+  };
+  uri: string;
+  template: {
+    id: string;
+    version: number;
+    uri: string;
+  };
+};
+
+export type ValidationResult = {
+  data: EmailProps;
+  errors: string[];
+};
+
+export type EmailProps = {
+  [key: string]: string;
+};
+
+export type EmailTemplate = {
+  id: string;
+  code: string;
+  props: EmailProps;
+};
+
+export type NotifyClientParams = {
+  personalisation?: EmailProps;
+  reference?: string;
+  emailReplyToId?: string;
+};
+
+export type NotifyClient = {
+  sendEmail(
+    templateId: string,
+    emailAddress: string,
+    params?: NotifyClientParams
+  );
+};
+
+export class EmailService {
+  private readonly userService: UserService;
+
+  constructor(connectionName?: string) {
+    this.userService = new UserService(connectionName);
+  }
+
+  async send(
+    recipientIds: string[],
+    templateCode: string,
+    props?: EmailProps
+  ): Promise<EmailResponse[]> {
+    const template = config.default
+      .get("email.templates")
+      .find((t) => t.code === templateCode);
+    if (!template)
+      throw new EmailTemplateNotFound(
+        `Could not find a template with the code ${templateCode}`
+      );
+
+    props = {
+      ...props,
+      display_name: "temp",
+    };
+
+    const validProps = this.validateAndParseProps(template, props);
+    if (validProps.errors.length > 0)
+      throw new InvalidEmailTemplateProps(validProps.errors.join(";"));
+
+    const recipients: UserEmailModel[] = await this.userService.getUsersEmail(
+      recipientIds
+    );
+
+    if (recipients.length === 0) return;
+
+    const result: EmailResponse[] = [];
+
+    for (const recipient of recipients) {
+      validProps.data.display_name = recipient.displayName;
+
+      const reference = uuid.v4();
+
+      const properties: NotifyClientParams = {
+        personalisation: { ...validProps.data },
+        reference,
+      };
+
+      const token = config.default.get("email.credentials");
+
+      const jwtToken = this.generateBearerToken(token);
+
+      const postConfig = {
+        headers: { Authorization: `Bearer ${jwtToken}` },
+      };
+
+      const baseUrl = config.default.get("email.api_base_url");
+      const emailPath = config.default.get("email.api_email_path");
+      const url = `${baseUrl}${emailPath}`;
+
+      const response = await axios.post(
+        url,
+        {
+          template_id: template.id,
+          email_address: recipient.email,
+          ...properties,
+        },
+        postConfig
+      );
+
+      result.push(response.data);
+    }
+    // replaces temp token with actual recipient display name
+
+    return result;
+  }
+
+  private generateBearerToken(token: string): string {
+    /*
+      source: https://docs.notifications.service.gov.uk/rest-api.html
+
+      JSON Web Tokens have a standard header and a payload. The header consists of:
+        {
+          "typ": "JWT",
+          "alg": "HS256"
+        }
+      The payload consists of:
+        {
+          "iss": "26785a09-ab16-4eb0-8407-a37497a57506",
+          "iat": 1568818578
+        }
+
+      JSON Web Tokens are encoded using a secret key with the following format:
+
+        3d844edf-8d35-48ac-975b-e847b4f122b0
+
+      That secret key forms a part of your API key, which follows the format {key_name}-{iss-uuid}-{secret-key-uuid}
+      i.e.:
+      if your API key is my_test_key-26785a09-ab16-4eb0-8407-a37497a57506-3d844edf-8d35-48ac-975b-e847b4f122b0
+
+      then:
+       iss = 26785a09-ab16-4eb0-8407-a37497a57506
+       secret = 3d844edf-8d35-48ac-975b-e847b4f122b0
+
+    */
+
+    const iss = config.default.get("email.credentials.issuer");
+    const secret = config.default.get("email.credentials.secret");
+
+    if (!iss) throw new InvalidAPIKey("Invalid EMAIL API Issuer");
+    if (!secret) throw new InvalidAPIKey("Invalid EMAIL API Secret");
+
+    return jwt.sign({ iss }, secret, { algorithm: "HS256" });
+  }
+
+  private validateAndParseProps(
+    template: EmailTemplate,
+    props: EmailProps
+  ): ValidationResult {
+    const errors: string[] = [];
+
+    for (const key of Object.keys(template.props)) {
+      if (!props[key]) errors.push(`${key} is missing or invalid.`);
+      template.props[key] = props[key];
+    }
+
+    const result: ValidationResult = {
+      errors: errors,
+      data: template.props,
+    };
+
+    return result;
+  }
+}

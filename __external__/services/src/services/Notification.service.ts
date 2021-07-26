@@ -1,3 +1,4 @@
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   AccessorOrganisationRole,
   Innovation,
@@ -23,6 +24,14 @@ import {
   Repository,
 } from "typeorm";
 
+import { EmailProps, EmailResponse, EmailService } from "./Email.service";
+
+import * as config from "@config/index";
+import { emailEngines } from "../engines";
+
+import { authenticateWitGraphAPI, getUserFromB2C } from "../helpers";
+import { InvalidParamsError } from "@services/errors";
+
 export type NotificationDismissResult = {
   affected: number;
   updated: ObjectLiteral[];
@@ -38,8 +47,11 @@ export class NotificationService {
   private readonly organisationUserRepo: Repository<OrganisationUser>;
   private readonly userRepo: Repository<User>;
   private readonly connection: Connection;
+  private readonly emailService: EmailService;
+  private readonly connectionName: string;
 
   constructor(connectionName?: string) {
+    this.connectionName = connectionName;
     this.connection = getConnection(connectionName);
     this.notificationRepo = getRepository(Notification, connectionName);
     this.notificationUserRepo = getRepository(NotificationUser, connectionName);
@@ -51,6 +63,29 @@ export class NotificationService {
     this.assessmentRepo = getRepository(InnovationAssessment, connectionName);
     this.organisationUserRepo = getRepository(OrganisationUser, connectionName);
     this.userRepo = getRepository(User, connectionName);
+    this.emailService = new EmailService(connectionName);
+  }
+
+  async sendEmail(
+    requestUser: RequestUser,
+    templateCode: EmailNotificationTemplate,
+    innovationId?: string,
+    contextId?: string,
+    targetUsers?: string[]
+  ) {
+    const handler = emailEngines().find((e) => e.key === templateCode)?.handler;
+
+    if (handler) {
+      await handler(
+        requestUser,
+        {
+          innovationId,
+          contextId,
+        },
+        targetUsers,
+        this.connectionName
+      );
+    }
   }
 
   async create(

@@ -1,4 +1,4 @@
-/* eslint-disable */ 
+/* eslint-disable */
 import * as appInsights from "applicationinsights";
 
 export const start = () => {
@@ -13,3 +13,4 @@ export type CustomProperties = {
 };
 
 export const getInstance = () => appInsights;
+export const getInstanceAndDefault = () => appInsights.defaultClient;

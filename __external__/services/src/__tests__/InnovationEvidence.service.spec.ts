@@ -18,7 +18,8 @@ import { getConnection } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
 import { InnovationEvidenceService } from "../services/InnovationEvidence.service";
 import * as fixtures from "../__fixtures__";
-
+import * as dotenv from "dotenv";
+import * as path from "path";
 const dummy = {
   evidence: {
     summary: "test evidence",
@@ -37,6 +38,10 @@ describe("Innovation Evidence Suite", () => {
 
   beforeAll(async () => {
     // await setupTestsConnection();
+
+    dotenv.config({
+      path: path.resolve(__dirname, "./.environment"),
+    });
     evidenceService = new InnovationEvidenceService(process.env.DB_TESTS_NAME);
     fileService = new FileService(process.env.DB_TESTS_NAME);
 

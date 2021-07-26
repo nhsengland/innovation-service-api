@@ -1,3 +1,4 @@
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   AccessorOrganisationRole,
   Comment,
@@ -26,7 +27,11 @@ import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
 import { InnovationSupportService } from "../services/InnovationSupport.service";
 import * as fixtures from "../__fixtures__";
-
+import * as engines from "../../src/engines";
+import { NotificationService } from "@services/services/Notification.service";
+import { LoggerService } from "@services/services/Logger.service";
+import * as dotenv from "dotenv";
+import * as path from "path";
 describe("Innovation Support Suite", () => {
   let supportService: InnovationSupportService;
   let innovation: Innovation;
@@ -37,6 +42,10 @@ describe("Innovation Support Suite", () => {
 
   beforeAll(async () => {
     // await setupTestsConnection();
+
+    dotenv.config({
+      path: path.resolve(__dirname, "./.environment"),
+    });
     supportService = new InnovationSupportService(process.env.DB_TESTS_NAME);
 
     const innovatorUser = await fixtures.createInnovatorUser();
@@ -80,6 +89,12 @@ describe("Innovation Support Suite", () => {
     spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
     spyOn(helpers, "getUserFromB2C").and.returnValue({
       displayName: "Q Accessor A",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "example@bjss.com",
+        },
+      ],
     });
     spyOn(helpers, "getUsersFromB2C").and.returnValues([
       { id: accessorUser.id, displayName: ":ACCESSOR" },
@@ -97,6 +112,27 @@ describe("Innovation Support Suite", () => {
       organisationAccessorUser,
       organisationUnitAccessorUser
     );
+
+    spyOn(engines, "emailEngines").and.returnValue([
+      {
+        key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
+        handler: async function () {
+          return [];
+        },
+      },
+      {
+        key: EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
+        handler: async function () {
+          return [];
+        },
+      },
+      {
+        key: EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
+        handler: async function () {
+          return [];
+        },
+      },
+    ]);
   });
 
   afterAll(async () => {
@@ -139,6 +175,29 @@ describe("Innovation Support Suite", () => {
       supportObj
     );
 
+    expect(item).toBeDefined();
+    expect(item.status).toEqual(InnovationSupportStatus.ENGAGING);
+  });
+
+  it("should create an support even when notification fails", async () => {
+    const supportObj = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [accessorRequestUser.organisationUnitUser.id],
+      comment: "test comment",
+    };
+
+    spyOn(NotificationService.prototype, "create").and.throwError("error");
+    spyOn(NotificationService.prototype, "sendEmail").and.throwError("error");
+
+    const spy = spyOn(LoggerService.prototype, "error");
+
+    const item = await supportService.create(
+      qAccessorRequestUser,
+      innovation.id,
+      supportObj
+    );
+
+    expect(spy).toHaveBeenCalled();
     expect(item).toBeDefined();
     expect(item.status).toEqual(InnovationSupportStatus.ENGAGING);
   });

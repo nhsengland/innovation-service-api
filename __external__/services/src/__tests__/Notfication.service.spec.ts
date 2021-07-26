@@ -32,14 +32,52 @@ import {
 } from "..";
 import { NotificationService } from "../services/Notification.service";
 import * as fixtures from "../__fixtures__";
-
+import * as helpers from "../helpers";
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import * as engines from "../../src/engines";
+import * as insights from "../../../../utils/logging/insights";
+import * as dotenv from "dotenv";
+import * as path from "path";
 describe("Notification Service Suite", () => {
   let notificationService: NotificationService;
   let supportService: InnovationSupportService;
   beforeAll(async () => {
     //await setupTestsConnection();
+
+    dotenv.config({
+      path: path.resolve(__dirname, "./.environment"),
+    });
     notificationService = new NotificationService(process.env.DB_TESTS_NAME);
     supportService = new InnovationSupportService(process.env.DB_TESTS_NAME);
+
+    spyOn(insights, "getInstance").and.returnValue({
+      default: {
+        trackTrace: () => {
+          return;
+        },
+      },
+    });
+
+    spyOn(engines, "emailEngines").and.returnValue([
+      {
+        key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
+        handler: async function () {
+          return [];
+        },
+      },
+      {
+        key: EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
+        handler: async function () {
+          return [];
+        },
+      },
+      {
+        key: EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
+        handler: async function () {
+          return [];
+        },
+      },
+    ]);
   });
 
   afterAll(async () => {
@@ -930,6 +968,17 @@ describe("Notification Service Suite", () => {
   });
 
   it("should get aggregated unread Innovations count", async () => {
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      id: ":accessor_user_id_1",
+      displayName: "Accessor 1",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "antonio.simoes@bjss.com",
+        },
+      ],
+    });
+
     const innovatorUser = await fixtures.createInnovatorUser();
     const qualAccessorUser = await fixtures.createAccessorUser();
     const accessorUser = await fixtures.createAccessorUser();
