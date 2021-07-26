@@ -9,6 +9,7 @@ import * as uuid from "uuid";
 import axios from "axios";
 import * as jwt from "jsonwebtoken";
 import { getTemplates } from "@engines/templates/index";
+import { LoggerService } from "./Logger.service";
 
 export type EmailResponse = {
   id: string;
@@ -58,9 +59,10 @@ export type NotifyClient = {
 
 export class EmailService {
   private readonly userService: UserService;
-
+  private readonly loggerService: LoggerService;
   constructor(connectionName?: string) {
     this.userService = new UserService(connectionName);
+    this.loggerService = new LoggerService();
   }
 
   async send(
@@ -120,6 +122,12 @@ export class EmailService {
         },
         postConfig
       );
+
+      this.loggerService.log(`An email was sent`, 1, {
+        email_address: recipient.email,
+        template_id: template.id,
+        response: response.data,
+      });
 
       result.push(response.data);
     }
