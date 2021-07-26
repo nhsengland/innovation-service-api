@@ -1,4 +1,3 @@
-import * as config from "@config/index";
 import { UserService } from "./User.service";
 import { UserEmailModel } from "@services/models/ProfileSlimModel";
 import {
@@ -9,6 +8,7 @@ import {
 import * as uuid from "uuid";
 import axios from "axios";
 import * as jwt from "jsonwebtoken";
+import { getTemplates } from "@engines/templates/index";
 
 export type EmailResponse = {
   id: string;
@@ -38,6 +38,7 @@ export type EmailProps = {
 export type EmailTemplate = {
   id: string;
   code: string;
+  path: { url: string; params: { [key: string]: string } };
   props: EmailProps;
 };
 
@@ -67,9 +68,7 @@ export class EmailService {
     templateCode: string,
     props?: EmailProps
   ): Promise<EmailResponse[]> {
-    const template = config.default
-      .get("email.templates")
-      .find((t) => t.code === templateCode);
+    const template = getTemplates().find((t) => t.code === templateCode);
     if (!template)
       throw new EmailTemplateNotFound(
         `Could not find a template with the code ${templateCode}`
@@ -102,16 +101,14 @@ export class EmailService {
         reference,
       };
 
-      const token = config.default.get("email.credentials");
-
-      const jwtToken = this.generateBearerToken(token);
+      const jwtToken = this.generateBearerToken();
 
       const postConfig = {
         headers: { Authorization: `Bearer ${jwtToken}` },
       };
 
-      const baseUrl = config.default.get("email.api_base_url");
-      const emailPath = config.default.get("email.api_email_path");
+      const baseUrl = process.env.EMAIL_NOTIFICATION_API_BASE_URL;
+      const emailPath = process.env.EMAIL_NOTIFICATION_API_EMAIL_PATH;
       const url = `${baseUrl}${emailPath}`;
 
       const response = await axios.post(
@@ -131,7 +128,7 @@ export class EmailService {
     return result;
   }
 
-  private generateBearerToken(token: string): string {
+  private generateBearerToken(): string {
     /*
       source: https://docs.notifications.service.gov.uk/rest-api.html
 
@@ -160,8 +157,8 @@ export class EmailService {
 
     */
 
-    const iss = config.default.get("email.credentials.issuer");
-    const secret = config.default.get("email.credentials.secret");
+    const iss = process.env.EMAIL_NOTIFICATION_API_ISSUER;
+    const secret = process.env.EMAIL_NOTIFICATION_API_SECRET;
 
     if (!iss) throw new InvalidAPIKey("Invalid EMAIL API Issuer");
     if (!secret) throw new InvalidAPIKey("Invalid EMAIL API Secret");

@@ -28,7 +28,7 @@ import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
 import { InnovationActionService } from "../services/InnovationAction.service";
 import * as fixtures from "../__fixtures__";
-import * as engines from "../../src/engines";
+import * as engines from "@engines/index";
 import * as dotenv from "dotenv";
 import * as path from "path";
 describe("Innovation Action Suite", () => {

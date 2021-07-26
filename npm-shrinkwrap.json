@@ -2786,15 +2786,6 @@
         }
       }
     },
-    "convict": {
-      "version": "6.2.0",
-      "resolved": "https://registry.npmjs.org/convict/-/convict-6.2.0.tgz",
-      "integrity": "sha512-aCk1+VWt3TG6SJV59u+wwuza7lvtlJfj6zH/fmE1xzx5yZnNby1lPYkccq1mKaJJXHjk9cuVCFWVVIhbkpmwRw==",
-      "requires": {
-        "lodash.clonedeep": "^4.5.0",
-        "yargs-parser": "^20.2.7"
-      }
-    },
     "copy-descriptor": {
       "version": "0.1.1",
       "resolved": "https://pkgs.dev.azure.com/NHSE-I-AAC/InnovationService/_packaging/NHS-I-AAC-NPM/npm/registry/copy-descriptor/-/copy-descriptor-0.1.1.tgz",
@@ -5629,11 +5620,6 @@
       "resolved": "https://pkgs.dev.azure.com/NHSE-I-AAC/InnovationService/_packaging/NHS-I-AAC-NPM/npm/registry/lodash/-/lodash-4.17.21.tgz",
       "integrity": "sha1-Z5WRxWTDv/quhFTPCz3zcMPWkRw=",
       "dev": true
-    },
-    "lodash.clonedeep": {
-      "version": "4.5.0",
-      "resolved": "https://registry.npmjs.org/lodash.clonedeep/-/lodash.clonedeep-4.5.0.tgz",
-      "integrity": "sha1-4j8/nE+Pvd6HJSnBBxhXoIblzO8="
     },
     "lodash.get": {
       "version": "4.4.2",
