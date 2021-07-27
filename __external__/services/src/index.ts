@@ -16,6 +16,7 @@ export { InnovationService } from "../src/services/Innovation.service";
 export { InnovationEvidenceService } from "../src/services/InnovationEvidence.service";
 export { InnovationSectionService } from "../src/services/InnovationSection.service";
 export { InnovationSupportService } from "../src/services/InnovationSupport.service";
+export { InnovationSupportLogService } from "../src/services/InnovationSupportLog.service";
 export { OrganisationService } from "../src/services/Organisation.service";
 
 export { BaseService } from "../src/services/Base.service";
@@ -38,6 +39,7 @@ export {
   InnovationSubgroup,
   InnovationSubgroupBenefit,
   InnovationSupport,
+  InnovationSupportLog,
   InnovationSupportType,
   InnovationUserTest,
   Organisation,

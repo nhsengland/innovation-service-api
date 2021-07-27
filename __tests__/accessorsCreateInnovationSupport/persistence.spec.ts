@@ -27,7 +27,7 @@ describe("[accessorsCreateInnovationSupport] Persistence suite", () => {
         auth: {
           requestUser: {
             id: ":userId",
-            type: "ACCESSOR",
+            type: "QUALIFYING_ACCESSOR",
           },
         },
       };

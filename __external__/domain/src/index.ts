@@ -16,6 +16,7 @@ export { InnovationSection } from "./entity/innovation/InnovationSection.entity"
 export { InnovationSubgroup } from "./entity/innovation/InnovationSubgroup.entity";
 export { InnovationSubgroupBenefit } from "./entity/innovation/InnovationSubgroupBenefit.entity";
 export { InnovationSupport } from "./entity/innovation/InnovationSupport.entity";
+export { InnovationSupportLog } from "./entity/innovation/InnovationSupportLog.entity";
 export { InnovationSupportType } from "./entity/innovation/InnovationSupportType.entity";
 export { InnovationUserTest } from "./entity/innovation/InnovationUserTest.entity";
 

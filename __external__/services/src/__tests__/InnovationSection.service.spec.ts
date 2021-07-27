@@ -42,6 +42,7 @@ import {
   GeneralBenefitCatalogue,
   EnvironmentalBenefitCatalogue,
   SubgroupBenefitCatalogue,
+  InnovationSupportLog,
 } from "@domain/index";
 import {
   InnovationNotFoundError,
@@ -119,6 +120,7 @@ describe("Innovation Section Service Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(InnovationSupportLog).execute();
     await query.from(NotificationUser).execute();
     await query.from(Notification).execute();
     await query.from(Comment).execute();

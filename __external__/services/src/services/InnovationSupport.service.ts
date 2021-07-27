@@ -1,9 +1,12 @@
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   AccessorOrganisationRole,
   Comment,
+  Innovation,
   InnovationAction,
   InnovationActionStatus,
   InnovationSupport,
+  InnovationSupportLogType,
   InnovationSupportStatus,
   NotificationAudience,
   NotificationContextType,
@@ -22,16 +25,17 @@ import { InnovationSupportModel } from "@services/models/InnovationSupportModel"
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { InnovationService } from "./Innovation.service";
+import { InnovationSupportLogService } from "./InnovationSupportLog.service";
+import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
 import { OrganisationService } from "./Organisation.service";
 import { UserService } from "./User.service";
-import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
-import { LoggerService } from "./Logger.service";
 
 export class InnovationSupportService {
   private readonly connection: Connection;
   private readonly supportRepo: Repository<InnovationSupport>;
   private readonly innovationService: InnovationService;
+  private readonly innovationSupportLogService: InnovationSupportLogService;
   private readonly organisationService: OrganisationService;
   private readonly userService: UserService;
   private readonly notificationService: NotificationService;
@@ -41,6 +45,9 @@ export class InnovationSupportService {
     this.connection = getConnection(connectionName);
     this.supportRepo = getRepository(InnovationSupport, connectionName);
     this.innovationService = new InnovationService(connectionName);
+    this.innovationSupportLogService = new InnovationSupportLogService(
+      connectionName
+    );
     this.organisationService = new OrganisationService(connectionName);
     this.userService = new UserService(connectionName);
     this.notificationService = new NotificationService(connectionName);
@@ -269,6 +276,25 @@ export class InnovationSupportService {
       );
     }
 
+    if (
+      support.status === InnovationSupportStatus.ENGAGING ||
+      support.status === InnovationSupportStatus.COMPLETE
+    ) {
+      try {
+        await this.createSupportLog(
+          requestUser,
+          innovation,
+          support.comment,
+          support.status
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while creating support log from ${requestUser.id}`,
+          error
+        );
+      }
+    }
+
     return result;
   }
 
@@ -427,6 +453,20 @@ export class InnovationSupportService {
               error
             );
           }
+
+          try {
+            await this.createSupportLog(
+              requestUser,
+              innovation,
+              support.comment,
+              innovationSupport.status
+            );
+          } catch (error) {
+            this.logService.error(
+              `An error has occured while creating support log from ${requestUser.id}`,
+              error
+            );
+          }
         }
 
         return await transactionManager.save(
@@ -453,5 +493,23 @@ export class InnovationSupportService {
     };
 
     return await this.supportRepo.findOne(id, filterOptions);
+  }
+
+  private async createSupportLog(
+    requestUser: RequestUser,
+    innovation: Innovation,
+    comment: string,
+    supportStatus: InnovationSupportStatus
+  ) {
+    return await this.innovationSupportLogService.create(
+      requestUser,
+      innovation.id,
+      {
+        type: InnovationSupportLogType.STATUS_UPDATE,
+        description: comment || "",
+        innovationSupportStatus: supportStatus,
+      },
+      innovation
+    );
   }
 }
