@@ -34,7 +34,6 @@ import * as fixtures from "../__fixtures__";
 
 describe("Innovation Support Suite", () => {
   let supportLogService: InnovationSupportLogService;
-  let organisationService: OrganisationService;
   let innovation: Innovation;
 
   let innovatorRequestUser: RequestUser;
@@ -43,7 +42,7 @@ describe("Innovation Support Suite", () => {
 
   beforeAll(async () => {
     //await setupTestsConnection();
-    organisationService = new OrganisationService(process.env.DB_TESTS_NAME);
+
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
     });

@@ -84,21 +84,6 @@ export class OrganisationService extends BaseService<Organisation> {
     const units = await query.execute();
 
     return units.map((u) => u.id);
-    // const units = await this.orgUnitRepo.findByIds(unitIds, {
-    //   relations: [
-    //     "organisationUnitUsers",
-    //     "organisationUnitUsers.organisationUser",
-    //     "organisationUnitUsers.organisationUser.user",
-    //   ],
-    // });
-
-    // const users = await Promise.all(units.map(u => u.organisationUnitUsers));
-
-    // const qualifyingAccessors = users.flatMap(
-    //   u => u.filter(u => u.organisationUser.role === AccessorOrganisationRole.QUALIFYING_ACCESSOR).map( i => i.organisationUser.user.id)
-    // );
-
-    // return qualifyingAccessors;
   }
 
   async findAllWithOrganisationUnits(): Promise<OrganisationModel[]> {
