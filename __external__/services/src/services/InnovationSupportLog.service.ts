@@ -121,13 +121,20 @@ export class InnovationSupportLogService {
       );
 
       if (targetUsers && targetUsers.length > 0) {
-        await this.notificationService.sendEmail(
-          requestUser,
-          EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED,
-          innovationId,
-          innovationId,
-          targetUsers
-        );
+        try {
+          await this.notificationService.sendEmail(
+            requestUser,
+            EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED,
+            innovationId,
+            innovationId,
+            targetUsers
+          );
+        } catch (error) {
+          this.loggerService.error(
+            `An error has occured when sending an email to Qualifying Accessors`,
+            error
+          );
+        }
       } else {
         this.loggerService.log(
           "Qualifying Accessors not found. No emails will be sent. Potential problem.",
