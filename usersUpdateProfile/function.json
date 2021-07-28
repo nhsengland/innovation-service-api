@@ -5,7 +5,8 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": ["post"]
+      "methods": ["put"],
+      "route": "me"
     },
     {
       "type": "http",
@@ -13,5 +14,5 @@
       "name": "res"
     }
   ],
-  "scriptFile": "../dist/usersUpdateInfo/index.js"
+  "scriptFile": "../dist/usersUpdateProfile/index.js"
 }

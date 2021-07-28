@@ -17,12 +17,9 @@ export const createInnovator = async (
   return result;
 };
 
-export const updateUserDisplayName = async (ctx: CustomContext, data: any) => {
+export const updateB2CUser = async (ctx: CustomContext, data: any) => {
   try {
-    await ctx.services.UserService.updateUserDisplayName(
-      { ...data.user },
-      data.oid
-    );
+    await ctx.services.UserService.updateB2CUser({ ...data.user }, data.oid);
   } catch (error) {
     throw error;
   }

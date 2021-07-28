@@ -94,7 +94,7 @@ class InnovatorsCreateOne {
     };
 
     try {
-      await persistence.updateUserDisplayName(context, {
+      await persistence.updateB2CUser(context, {
         user: payload.user,
         oid,
       });
