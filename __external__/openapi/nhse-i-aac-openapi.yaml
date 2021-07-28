@@ -343,6 +343,79 @@ paths:
         "403":
           description: "Forbidden"
 
+  "/accessors/{userId}/innovations/{innovationId}/support-logs":
+    get:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "GetInnovationSupportLogs"
+      description: "Get an Innovation Support Logs associated with the Innovation"
+      operationId: "accessors-get-innovation-support-logs"
+      security:
+        - OpenId:
+            - innovation_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+    post:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "CreateInnovationSupportLog"
+      description: "Creates an Innovation Support Log associated with the Innovation"
+      operationId: "accessors-create-innovation-support-log"
+      security:
+        - OpenId:
+            - supports_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/accessors-create-support-payload"
+      responses:
+        "201":
+          description: "Created"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
 
   "/accessors/{userId}/actions":
     get:

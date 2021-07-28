@@ -68,3 +68,8 @@ export enum InnovationSectionAliasCatalogue {
   REVENUE_MODEL = "RM",
   IMPLEMENTATION_PLAN = "IM",
 }
+
+export enum InnovationSupportLogType {
+  STATUS_UPDATE = "STATUS_UPDATE",
+  ACCESSOR_SUGGESTION = "ACCESSOR_SUGGESTION",
+}

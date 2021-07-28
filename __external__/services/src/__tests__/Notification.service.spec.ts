@@ -10,6 +10,7 @@ import {
   InnovationAssessment,
   InnovationSection,
   InnovationSupport,
+  InnovationSupportLog,
   InnovationSupportStatus,
   Notification,
   NotificationAudience,
@@ -88,6 +89,8 @@ describe("Notification Service Suite", () => {
     const query = getConnection(process.env.DB_TESTS_NAME)
       .createQueryBuilder()
       .delete();
+
+    await query.from(InnovationSupportLog).execute();
     await query.from(Comment).execute();
     await query.from(InnovationAction).execute();
     await query.from(InnovationSection).execute();

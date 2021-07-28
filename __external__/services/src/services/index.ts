@@ -7,6 +7,7 @@ import { InnovationAssessmentService } from "./InnovationAssessment.service";
 import { InnovationEvidenceService } from "./InnovationEvidence.service";
 import { InnovationSectionService } from "./InnovationSection.service";
 import { InnovationSupportService } from "./InnovationSupport.service";
+import { InnovationSupportLogService } from "./InnovationSupportLog.service";
 import { InnovatorService } from "./Innovator.service";
 import { OrganisationService } from "./Organisation.service";
 import { UserService } from "./User.service";
@@ -23,6 +24,7 @@ export type Services = {
   InnovationEvidenceService?: InnovationEvidenceService;
   InnovationSectionService?: InnovationSectionService;
   InnovationSupportService?: InnovationSupportService;
+  InnovationSupportLogService?: InnovationSupportLogService;
   InnovatorService?: InnovatorService;
   OrganisationService?: OrganisationService;
   NotificationService?: NotificationService;
@@ -53,6 +55,7 @@ export const initializeAllServices = (connectionName?: string): Services => {
     InnovationEvidenceService,
     InnovationSectionService,
     InnovationSupportService,
+    InnovationSupportLogService,
     InnovatorService,
     OrganisationService,
     NotificationService,
