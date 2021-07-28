@@ -66,6 +66,41 @@ export class OrganisationService extends BaseService<Organisation> {
     return await this.repository.find(filterOptions);
   }
 
+  async findQualifyingAccessorsFromUnits(unitIds: string[]) {
+    if (!unitIds || unitIds.length === 0) return [];
+
+    const query = this.orgUnitUserRepo
+      .createQueryBuilder("unitUser")
+      .select("user.id", "id")
+      .innerJoin("unitUser.organisationUnit", "unit")
+      .innerJoin("unitUser.organisationUser", "orgUser")
+      .innerJoin("orgUser.user", "user")
+      .where("unit.id in (:...unitIds) and orgUser.role = :role", {
+        unitIds,
+        role: AccessorOrganisationRole.QUALIFYING_ACCESSOR,
+      });
+
+    const sql = query.getSql();
+    const units = await query.execute();
+
+    return units.map((u) => u.id);
+    // const units = await this.orgUnitRepo.findByIds(unitIds, {
+    //   relations: [
+    //     "organisationUnitUsers",
+    //     "organisationUnitUsers.organisationUser",
+    //     "organisationUnitUsers.organisationUser.user",
+    //   ],
+    // });
+
+    // const users = await Promise.all(units.map(u => u.organisationUnitUsers));
+
+    // const qualifyingAccessors = users.flatMap(
+    //   u => u.filter(u => u.organisationUser.role === AccessorOrganisationRole.QUALIFYING_ACCESSOR).map( i => i.organisationUser.user.id)
+    // );
+
+    // return qualifyingAccessors;
+  }
+
   async findAllWithOrganisationUnits(): Promise<OrganisationModel[]> {
     const data = await this.repository
       .createQueryBuilder("organisation")

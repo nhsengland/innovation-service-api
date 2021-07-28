@@ -126,6 +126,36 @@ export const innovatorActionRequested = async (
   return result;
 };
 
+export const qaOrganisationSuggestedForSupport = async (
+  requestUser: RequestUser,
+  params: {
+    innovationId: string;
+    contextId: string;
+  },
+  targetUsers?: string[],
+  connectionName?: string
+): Promise<EmailResponse[]> => {
+  const emailService = new EmailService(connectionName);
+  const innovation_url = parseUrl(
+    params,
+    EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED
+  );
+  const props = {
+    innovation_url,
+  };
+
+  let recipients = targetUsers;
+  recipients = recipients.filter((r) => r !== requestUser.id);
+
+  const result = await emailService.send(
+    recipients,
+    EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED,
+    props
+  );
+
+  return result;
+};
+
 const parseUrl = (params, templateCode): string => {
   const baseUrl = process.env.CLIENT_WEB_BASE_URL;
   const template = getTemplates().find((t) => t.code === templateCode);

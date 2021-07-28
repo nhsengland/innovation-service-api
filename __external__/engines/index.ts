@@ -13,4 +13,8 @@ export const emailEngines = () => [
     key: EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
     handler: handlers.innovatorActionRequested,
   },
+  {
+    key: EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED,
+    handler: handlers.qaOrganisationSuggestedForSupport,
+  },
 ];

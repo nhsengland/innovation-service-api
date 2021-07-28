@@ -1,6 +1,8 @@
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   Innovation,
   InnovationSupportLog,
+  InnovationSupportLogType,
   InnovationSupportStatus,
 } from "@domain/index";
 import {
@@ -13,18 +15,27 @@ import { InnovationSupportLogModel } from "@services/models/InnovationSupportLog
 import { RequestUser } from "@services/models/RequestUser";
 import { getConnection, getRepository, Repository } from "typeorm";
 import { InnovationService } from "./Innovation.service";
+import { LoggerService } from "./Logger.service";
+import { NotificationService } from "./Notification.service";
+import { OrganisationService } from "./Organisation.service";
 import { UserService } from "./User.service";
 
 export class InnovationSupportLogService {
   private readonly supportLogRepo: Repository<InnovationSupportLog>;
   private readonly innovationService: InnovationService;
   private readonly userService: UserService;
+  private readonly organisationService: OrganisationService;
+  private readonly notificationService: NotificationService;
+  private readonly loggerService: LoggerService;
 
   constructor(connectionName?: string) {
     getConnection(connectionName);
     this.supportLogRepo = getRepository(InnovationSupportLog, connectionName);
     this.innovationService = new InnovationService(connectionName);
     this.userService = new UserService(connectionName);
+    this.organisationService = new OrganisationService(connectionName);
+    this.notificationService = new NotificationService(connectionName);
+    this.loggerService = new LoggerService();
   }
 
   async create(
@@ -103,7 +114,32 @@ export class InnovationSupportLogService {
       updatedBy: requestUser.id,
     });
 
-    return await this.supportLogRepo.save(supportLogObj);
+    const result = await this.supportLogRepo.save(supportLogObj);
+    if (supportLog.type === InnovationSupportLogType.ACCESSOR_SUGGESTION) {
+      const targetUsers = await this.organisationService.findQualifyingAccessorsFromUnits(
+        supportLog?.organisationUnits
+      );
+
+      if (targetUsers && targetUsers.length > 0) {
+        await this.notificationService.sendEmail(
+          requestUser,
+          EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED,
+          innovationId,
+          innovationId,
+          targetUsers
+        );
+      } else {
+        this.loggerService.log(
+          "Qualifying Accessors not found. No emails will be sent. Potential problem.",
+          1,
+          {
+            organisationUnits: supportLog?.organisationUnits,
+          }
+        );
+      }
+    }
+
+    return result;
   }
 
   async findAllByInnovation(requestUser: RequestUser, innovationId: string) {
