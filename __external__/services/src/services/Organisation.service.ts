@@ -66,7 +66,10 @@ export class OrganisationService extends BaseService<Organisation> {
     return await this.repository.find(filterOptions);
   }
 
-  async findQualifyingAccessorsFromUnits(unitIds: string[]) {
+  async findQualifyingAccessorsFromUnits(
+    unitIds: string[],
+    innovationId: string
+  ): Promise<string[]> {
     if (!unitIds || unitIds.length === 0) return [];
 
     const query = this.orgUnitUserRepo
@@ -75,12 +78,18 @@ export class OrganisationService extends BaseService<Organisation> {
       .innerJoin("unitUser.organisationUnit", "unit")
       .innerJoin("unitUser.organisationUser", "orgUser")
       .innerJoin("orgUser.user", "user")
+      .innerJoin("orgUser.organisation", "organisation")
+      .innerJoin(
+        "organisation.innovationShares",
+        "shares",
+        "shares.id = :innovationId",
+        { innovationId }
+      )
       .where("unit.id in (:...unitIds) and orgUser.role = :role", {
         unitIds,
         role: AccessorOrganisationRole.QUALIFYING_ACCESSOR,
       });
 
-    const sql = query.getSql();
     const units = await query.execute();
 
     return units.map((u) => u.id);
