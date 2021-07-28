@@ -1651,6 +1651,30 @@ paths:
           description: "Not Found"
         "401":
           description: "Unauthorized"
+    put:
+      tags:
+        - "Users"
+        - "UpdateProfile"
+      description: "Retrieves the user profile"
+      operationId: "users-update-profile"
+      security:
+        - OpenId:
+            - user_profile
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "Ok"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
 
   "/organisations":
     get:

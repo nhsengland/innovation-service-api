@@ -92,7 +92,7 @@ describe("User Service Suite", () => {
 
     let err;
     try {
-      await userService.updateUserDisplayName({ displayName: "test" }, ":oid");
+      await userService.updateB2CUser({ displayName: "test" }, ":oid");
     } catch (error) {
       err = error;
     }
@@ -294,5 +294,39 @@ describe("User Service Suite", () => {
     });
 
     expect(result).toBeDefined();
+  });
+
+  it("should throw when updateProfile with invalid params", async () => {
+    let err;
+    try {
+      await userService.updateProfile(null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should update an user", async () => {
+    // arranje
+    spyOn(userService, "updateB2CUser").and.callFake;
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      displayName: "Accessor A",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "test_user@example.com",
+        },
+      ],
+      mobilePhone: "+351960000000",
+    });
+
+    const result = await userService.updateProfile(dummy.requestUser, {
+      displayName: ":displayName",
+    });
+
+    expect(result).toBeDefined();
+    expect(result.id).toEqual(dummy.requestUser.id);
   });
 });

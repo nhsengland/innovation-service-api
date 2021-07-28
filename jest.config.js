@@ -21,7 +21,6 @@ module.exports = {
     "utils/connection.ts",
     "utils/serviceLoader.ts",
     "utils/types.ts",
-    "usersUpdateInfo",
     "utils/decorators",
     "commitizen.js",
     ".eslintrc.js",

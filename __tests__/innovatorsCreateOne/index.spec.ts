@@ -93,7 +93,7 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(persistence, "createInnovator").and.returnValue({});
-      spyOn(persistence, "updateUserDisplayName").and.returnValue({});
+      spyOn(persistence, "updateB2CUser").and.returnValue({});
       spyOn(persistence, "getSurvey").and.returnValue({ answers: new Map() });
       const data = {
         payload: dummy.validPayload,
@@ -112,7 +112,7 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(persistence, "createInnovator").and.returnValue({});
-      spyOn(persistence, "updateUserDisplayName").and.throwError(null);
+      spyOn(persistence, "updateB2CUser").and.throwError(null);
       spyOn(persistence, "getSurvey").and.returnValue({ answers: new Map() });
 
       const data = {
@@ -131,7 +131,7 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(persistence, "createInnovator").and.returnValue({});
-      spyOn(persistence, "updateUserDisplayName").and.throwError(null);
+      spyOn(persistence, "updateB2CUser").and.throwError(null);
       spyOn(persistence, "getSurvey").and.returnValue({ answers: new Map() });
 
       const data = {
@@ -150,7 +150,7 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
       spyOn(persistence, "createInnovator").and.throwError(null);
-      spyOn(persistence, "updateUserDisplayName").and.returnValue(null);
+      spyOn(persistence, "updateB2CUser").and.returnValue(null);
       spyOn(persistence, "getSurvey").and.returnValue({ answers: new Map() });
 
       const data = {
