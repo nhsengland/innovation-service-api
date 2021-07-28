@@ -23,6 +23,7 @@ import {
   MissingUserOrganisationError,
 } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
+import { OrganisationService } from "@services/services/Organisation.service";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import { getConnection } from "typeorm";
@@ -40,7 +41,7 @@ describe("Innovation Support Suite", () => {
   let organisationUnit: OrganisationUnit;
 
   beforeAll(async () => {
-    // await setupTestsConnection();
+    //await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -78,6 +79,7 @@ describe("Innovation Support Suite", () => {
       organisationAccessorUser,
       organisationUnit
     );
+
     organisationUnit = await fixtures.createOrganisationUnit(
       accessorOrganisation
     );
@@ -87,6 +89,7 @@ describe("Innovation Support Suite", () => {
       surveyId: "abc",
       organisationShares: [{ id: accessorOrganisation.id }],
     });
+
     const innovations = await fixtures.saveInnovations(innovationObj);
     innovation = innovations[0];
 
@@ -101,8 +104,26 @@ describe("Innovation Support Suite", () => {
       ],
     });
     spyOn(helpers, "getUsersFromB2C").and.returnValues([
-      { id: accessorUser.id, displayName: ":ACCESSOR" },
-      { id: qualAccessorUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+      {
+        id: accessorUser.id,
+        displayName: ":ACCESSOR",
+        identities: [
+          {
+            signInType: "emailAddress",
+            issuerAssignedId: "example@bjss.com",
+          },
+        ],
+      },
+      {
+        id: qualAccessorUser.id,
+        displayName: ":QUALIFYING_ACCESSOR",
+        identities: [
+          {
+            signInType: "emailAddress",
+            issuerAssignedId: "example@bjss.com",
+          },
+        ],
+      },
     ]);
 
     innovatorRequestUser = fixtures.getRequestUser(innovatorUser);
@@ -137,7 +158,7 @@ describe("Innovation Support Suite", () => {
     await query.from(Innovation).execute();
     await query.from(User).execute();
 
-    // closeTestsConnection();
+    //closeTestsConnection();
   });
 
   afterEach(async () => {
