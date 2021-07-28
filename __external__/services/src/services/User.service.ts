@@ -18,6 +18,7 @@ import {
 import { RequestUser } from "@services/models/RequestUser";
 import { UserCreationModel } from "@services/models/UserCreationModel";
 import { UserCreationResult } from "@services/models/UserCreationResult";
+import { UserUpdateModel } from "@services/models/UserUpdateModel";
 import {
   Connection,
   EntityManager,
@@ -56,15 +57,24 @@ export class UserService {
     return await this.userRepo.findOne(id);
   }
 
-  async updateUserDisplayName(payload, oid): Promise<boolean> {
-    const accessToken = await authenticateWitGraphAPI();
+  async updateB2CUser(
+    payload: any,
+    oid: string,
+    accessToken?: string
+  ): Promise<boolean> {
+    if (!accessToken) {
+      accessToken = await authenticateWitGraphAPI();
+    }
     await saveB2CUser(accessToken, oid, payload);
 
     return true;
   }
 
-  async getProfile(id): Promise<ProfileModel> {
-    const accessToken = await authenticateWitGraphAPI();
+  async getProfile(id: string, accessToken?: string): Promise<ProfileModel> {
+    if (!accessToken) {
+      accessToken = await authenticateWitGraphAPI();
+    }
+
     const user = await getUserFromB2C(accessToken, id);
 
     if (!user) {
@@ -108,6 +118,7 @@ export class UserService {
           profile.organisations.push({
             id: org.id,
             name: org.name,
+            size: org.size,
             role: orgUser.role,
             isShadow: org.isShadow,
             organisationUnits: orgUnits?.map((ouu: OrganisationUnitUser) => ({
@@ -341,5 +352,23 @@ export class UserService {
         return result;
       }
     );
+  }
+
+  async updateProfile(requestUser: RequestUser, user: UserUpdateModel) {
+    if (!requestUser || !user) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    const accessToken = await authenticateWitGraphAPI();
+    const currentProfile = await this.getProfile(requestUser.id, accessToken);
+    if (user.displayName != currentProfile.displayName) {
+      await this.updateB2CUser(
+        { displayName: user.displayName },
+        requestUser.id,
+        accessToken
+      );
+    }
+
+    return { id: requestUser.id };
   }
 }

@@ -5,5 +5,6 @@ export interface OrganisationUserModel {
   role: string;
   name: string;
   isShadow: boolean;
+  size?: string;
   organisationUnits: OrganisationUnitModel[];
 }
