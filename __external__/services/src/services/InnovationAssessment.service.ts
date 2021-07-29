@@ -5,6 +5,7 @@ import {
   InnovationStatus,
   NotificationAudience,
   NotificationContextType,
+  OrganisationUnit,
   UserType,
 } from "@domain/index";
 import {
@@ -17,9 +18,11 @@ import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { getOrganisationsFromOrganisationUnitsObj } from "../helpers";
 import { InnovationAssessmentResult } from "../models/InnovationAssessmentResult";
 import { InnovationService } from "./Innovation.service";
-import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
 import { UserService } from "./User.service";
+import { LoggerService } from "./Logger.service";
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import { OrganisationService } from "./Organisation.service";
 
 export class InnovationAssessmentService {
   private readonly connection: Connection;
@@ -28,6 +31,7 @@ export class InnovationAssessmentService {
   private readonly innovationService: InnovationService;
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
+  private readonly organisationService: OrganisationService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -36,6 +40,7 @@ export class InnovationAssessmentService {
     this.innovationService = new InnovationService(connectionName);
     this.notificationService = new NotificationService(connectionName);
     this.logService = new LoggerService();
+    this.organisationService = new OrganisationService(connectionName);
   }
 
   async find(
@@ -165,6 +170,8 @@ export class InnovationAssessmentService {
       throw new ResourceNotFoundError("Assessment not found!");
     }
 
+    let suggestedOrganisationUnits: OrganisationUnit[];
+
     const result = await this.connection.transaction(
       async (transactionManager) => {
         if (assessment.isSubmission && !assessmentDb.finishedAt) {
@@ -188,6 +195,7 @@ export class InnovationAssessmentService {
           (id: string) => ({ id })
         );
 
+        suggestedOrganisationUnits = assessmentDb.organisationUnits;
         return await transactionManager.save(assessmentDb);
       }
     );
@@ -205,6 +213,27 @@ export class InnovationAssessmentService {
       } catch (error) {
         this.logService.error(
           `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
+          error
+        );
+      }
+
+      try {
+        const units = suggestedOrganisationUnits.map((u) => u.id);
+        const qualifyingAccessors = await this.organisationService.findQualifyingAccessorsFromUnits(
+          units,
+          innovationId
+        );
+
+        await this.notificationService.sendEmail(
+          requestUser,
+          EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED,
+          innovationId,
+          innovationId,
+          qualifyingAccessors
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while sending an email of type ${EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED}`,
           error
         );
       }
