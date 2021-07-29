@@ -117,7 +117,8 @@ export class InnovationSupportLogService {
     const result = await this.supportLogRepo.save(supportLogObj);
     if (supportLog.type === InnovationSupportLogType.ACCESSOR_SUGGESTION) {
       const targetUsers = await this.organisationService.findQualifyingAccessorsFromUnits(
-        supportLog?.organisationUnits
+        supportLog?.organisationUnits,
+        innovationId
       );
 
       if (targetUsers && targetUsers.length > 0) {
