@@ -150,7 +150,11 @@ export class InnovationSupportLogService {
     return result;
   }
 
-  async findAllByInnovation(requestUser: RequestUser, innovationId: string) {
+  async findAllByInnovation(
+    requestUser: RequestUser,
+    innovationId: string,
+    type?: InnovationSupportLogType
+  ) {
     if (!requestUser || !innovationId) {
       throw new InvalidParamsError("Invalid parameters.");
     }
@@ -165,25 +169,10 @@ export class InnovationSupportLogService {
       );
     }
 
-    const innovationLogs = await this.supportLogRepo
-      .createQueryBuilder("innovationSupportLog")
-      .leftJoinAndSelect(
-        "innovationSupportLog.organisationUnit",
-        "organisationUnit"
-      )
-      .leftJoinAndSelect("organisationUnit.organisation", "organisation")
-      .leftJoinAndSelect(
-        "innovationSupportLog.suggestedOrganisationUnits",
-        "suggestedOrganisationUnits"
-      )
-      .leftJoinAndSelect(
-        "suggestedOrganisationUnits.organisation",
-        "suggestedOrganisation"
-      )
-      .where("innovation_id = :innovationId", {
-        innovationId: innovationId,
-      })
-      .getMany();
+    const innovationLogs: InnovationSupportLog[] = await this.findMany(
+      innovationId,
+      type
+    );
 
     const userIds = innovationLogs.map(
       (sup: InnovationSupportLog) => sup.createdBy
@@ -238,5 +227,34 @@ export class InnovationSupportLogService {
     });
 
     return response;
+  }
+
+  async findMany(innovationId: string, type?: InnovationSupportLogType) {
+    const query = await this.supportLogRepo
+      .createQueryBuilder("innovationSupportLog")
+      .leftJoinAndSelect(
+        "innovationSupportLog.organisationUnit",
+        "organisationUnit"
+      )
+      .leftJoinAndSelect("organisationUnit.organisation", "organisation")
+      .leftJoinAndSelect(
+        "innovationSupportLog.suggestedOrganisationUnits",
+        "suggestedOrganisationUnits"
+      )
+      .leftJoinAndSelect(
+        "suggestedOrganisationUnits.organisation",
+        "suggestedOrganisation"
+      )
+      .where("innovation_id = :innovationId", {
+        innovationId: innovationId,
+      });
+
+    if (type) {
+      query.andWhere("innovationSupportLog.type = :type", {
+        type,
+      });
+    }
+
+    return query.getMany();
   }
 }

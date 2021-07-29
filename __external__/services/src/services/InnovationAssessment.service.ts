@@ -13,9 +13,9 @@ import {
   InvalidParamsError,
   ResourceNotFoundError,
 } from "@services/errors";
-import { OrganisationModel } from "@services/models/OrganisationModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
+import { getOrganisationsFromOrganisationUnitsObj } from "../helpers";
 import { InnovationAssessmentResult } from "../models/InnovationAssessmentResult";
 import { InnovationService } from "./Innovation.service";
 import { NotificationService } from "./Notification.service";
@@ -78,33 +78,10 @@ export class InnovationAssessmentService {
       return map;
     }, {});
 
-    const organisations = [];
-    if (assessment.organisationUnits.length > 0) {
-      const uniqueOrganisations = [
-        ...new Set(
-          assessment.organisationUnits.map((item) => item.organisation.id)
-        ),
-      ];
-
-      for (let idx = 0; idx < uniqueOrganisations.length; idx++) {
-        const units = assessment.organisationUnits.filter(
-          (unit) => unit.organisation.id === uniqueOrganisations[idx]
-        );
-
-        const organisation: OrganisationModel = {
-          id: units[0].organisation.id,
-          name: units[0].organisation.name,
-          acronym: units[0].organisation.acronym,
-          organisationUnits: units.map((unit) => ({
-            id: unit.id,
-            name: unit.name,
-            acronym: unit.acronym,
-          })),
-        };
-
-        organisations.push(organisation);
-      }
-    }
+    const organisations =
+      assessment.organisationUnits.length > 0
+        ? getOrganisationsFromOrganisationUnitsObj(assessment.organisationUnits)
+        : [];
 
     return {
       id: assessment.id,
@@ -265,9 +242,9 @@ export class InnovationAssessmentService {
     return result;
   }
 
-  private async findOne(
-    id: string,
-    innovationId: string
+  async findOne(
+    id?: string,
+    innovationId?: string
   ): Promise<InnovationAssessment> {
     const filterOptions = {
       where: { innovation: innovationId },

@@ -3,11 +3,11 @@ import {
   Comment,
   Innovation,
   InnovationAction,
+  InnovationAssessment,
   InnovationSection,
   InnovationSupport,
   InnovationSupportLog,
   InnovationSupportLogType,
-  InnovationSupportStatus,
   Notification,
   NotificationUser,
   Organisation,
@@ -16,22 +16,19 @@ import {
   OrganisationUnitUser,
   OrganisationUser,
   User,
-  UserType,
 } from "@domain/index";
-import {
-  InvalidParamsError,
-  MissingUserOrganisationError,
-} from "@services/errors";
+import { InvalidParamsError } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
+import { InnovationSuggestionService } from "@services/services/InnovationSuggestion.service";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import { getConnection } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
-import * as helpers from "../helpers";
 import { InnovationSupportLogService } from "../services/InnovationSupportLog.service";
 import * as fixtures from "../__fixtures__";
 
 describe("Innovation Support Suite", () => {
+  let suggestionService: InnovationSuggestionService;
   let supportLogService: InnovationSupportLogService;
   let innovation: Innovation;
 
@@ -40,7 +37,7 @@ describe("Innovation Support Suite", () => {
   let organisationUnit: OrganisationUnit;
 
   beforeAll(async () => {
-    //await setupTestsConnection();
+    // await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -48,10 +45,14 @@ describe("Innovation Support Suite", () => {
     supportLogService = new InnovationSupportLogService(
       process.env.DB_TESTS_NAME
     );
+    suggestionService = new InnovationSuggestionService(
+      process.env.DB_TESTS_NAME
+    );
 
     const innovatorUser = await fixtures.createInnovatorUser();
     const qualAccessorUser = await fixtures.createAccessorUser();
     const accessorUser = await fixtures.createAccessorUser();
+    const assessmentUser = await fixtures.createAssessmentUser();
 
     const accessorOrganisation = await fixtures.createOrganisation(
       OrganisationType.ACCESSOR
@@ -89,41 +90,18 @@ describe("Innovation Support Suite", () => {
       organisationShares: [{ id: accessorOrganisation.id }],
     });
 
-    const innovations = await fixtures.saveInnovations(innovationObj);
-    innovation = innovations[0];
-
-    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
-    spyOn(helpers, "getUserFromB2C").and.returnValue({
-      displayName: "Q Accessor A",
-      identities: [
-        {
-          signInType: "emailAddress",
-          issuerAssignedId: "example@bjss.com",
-        },
-      ],
-    });
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
-      {
-        id: accessorUser.id,
-        displayName: ":ACCESSOR",
-        identities: [
-          {
-            signInType: "emailAddress",
-            issuerAssignedId: "example@bjss.com",
-          },
-        ],
-      },
-      {
-        id: qualAccessorUser.id,
-        displayName: ":QUALIFYING_ACCESSOR",
-        identities: [
-          {
-            signInType: "emailAddress",
-            issuerAssignedId: "example@bjss.com",
-          },
-        ],
-      },
-    ]);
+    innovation = await fixtures.saveInnovation(innovationObj);
+    const assessmentRequestUser = fixtures.getRequestUser(assessmentUser);
+    const assessment = await fixtures.createAssessment(
+      assessmentRequestUser,
+      innovation
+    );
+    await fixtures.addSuggestionsToAssessment(
+      assessmentRequestUser,
+      assessment.id,
+      innovation.id,
+      [organisationUnit]
+    );
 
     innovatorRequestUser = fixtures.getRequestUser(innovatorUser);
     qAccessorRequestUser = fixtures.getRequestUser(
@@ -154,10 +132,11 @@ describe("Innovation Support Suite", () => {
     await query.from(OrganisationUnit).execute();
     await query.from(OrganisationUser).execute();
     await query.from(Organisation).execute();
+    await query.from(InnovationAssessment).execute();
     await query.from(Innovation).execute();
     await query.from(User).execute();
 
-    //closeTestsConnection();
+    // closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -168,91 +147,7 @@ describe("Innovation Support Suite", () => {
     await query.from(InnovationSupportLog).execute();
   });
 
-  it("should create a STATUS_UPDATE support log", async () => {
-    const supportLogObj = {
-      type: InnovationSupportLogType.STATUS_UPDATE,
-      description: ":description",
-    };
-
-    const item = await supportLogService.create(
-      qAccessorRequestUser,
-      innovation.id,
-      supportLogObj
-    );
-
-    expect(item).toBeDefined();
-    expect(item.innovationSupportStatus).toEqual(
-      InnovationSupportStatus.ENGAGING
-    );
-  });
-
-  it("should create a ACCESSOR_SUGGESTION support log", async () => {
-    const supportLogObj = {
-      type: InnovationSupportLogType.ACCESSOR_SUGGESTION,
-      description: ":description",
-      organisationUnits: [organisationUnit.id],
-    };
-
-    const item = await supportLogService.create(
-      qAccessorRequestUser,
-      innovation.id,
-      supportLogObj
-    );
-
-    expect(item).toBeDefined();
-    expect(item.innovationSupportStatus).toEqual(
-      InnovationSupportStatus.ENGAGING
-    );
-  });
-
-  it("should throw when create with invalid params", async () => {
-    let err;
-    try {
-      await supportLogService.create(null, null, null);
-    } catch (error) {
-      err = error;
-    }
-
-    expect(err).toBeDefined();
-    expect(err).toBeInstanceOf(InvalidParamsError);
-  });
-
-  it("should throw when create with invalid support log params", async () => {
-    let err;
-    try {
-      await supportLogService.create(
-        { id: ":id", type: UserType.ACCESSOR },
-        "a",
-        {}
-      );
-    } catch (error) {
-      err = error;
-    }
-
-    expect(err).toBeDefined();
-    expect(err).toBeInstanceOf(InvalidParamsError);
-  });
-
-  it("should throw when create without user organisations", async () => {
-    let err;
-    try {
-      await supportLogService.create(
-        { id: ":id", type: UserType.ACCESSOR },
-        "a",
-        {
-          type: InnovationSupportLogType.ACCESSOR_SUGGESTION,
-          description: ":description",
-        }
-      );
-    } catch (error) {
-      err = error;
-    }
-
-    expect(err).toBeDefined();
-    expect(err).toBeInstanceOf(MissingUserOrganisationError);
-  });
-
-  it("should find all support logs by innovation", async () => {
+  it("should find all suggestions by innovation", async () => {
     await supportLogService.create(qAccessorRequestUser, innovation.id, {
       type: InnovationSupportLogType.STATUS_UPDATE,
       description: ":description",
@@ -264,41 +159,18 @@ describe("Innovation Support Suite", () => {
       organisationUnits: [organisationUnit.id],
     });
 
-    const item = await supportLogService.findAllByInnovation(
+    const item = await suggestionService.findAllByInnovation(
       innovatorRequestUser,
       innovation.id
     );
 
     expect(item).toBeDefined();
-    expect(item.length).toEqual(2);
-  });
-
-  it("should find all support logs by innovation and type", async () => {
-    await supportLogService.create(qAccessorRequestUser, innovation.id, {
-      type: InnovationSupportLogType.STATUS_UPDATE,
-      description: ":description",
-    });
-
-    await supportLogService.create(qAccessorRequestUser, innovation.id, {
-      type: InnovationSupportLogType.ACCESSOR_SUGGESTION,
-      description: ":description",
-      organisationUnits: [organisationUnit.id],
-    });
-
-    const item = await supportLogService.findAllByInnovation(
-      innovatorRequestUser,
-      innovation.id,
-      InnovationSupportLogType.ACCESSOR_SUGGESTION
-    );
-
-    expect(item).toBeDefined();
-    expect(item.length).toEqual(1);
   });
 
   it("should throw when findAllByInnovation with invalid params", async () => {
     let err;
     try {
-      await supportLogService.findAllByInnovation(null, null);
+      await suggestionService.findAllByInnovation(null, null);
     } catch (error) {
       err = error;
     }

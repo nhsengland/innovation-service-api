@@ -319,7 +319,7 @@ export const createAssessment = async (
   );
 };
 
-export const addSharesToAssessment = async (
+export const addSuggestionsToAssessment = async (
   requestUser: RequestUser,
   id: string,
   innovationId: string,
