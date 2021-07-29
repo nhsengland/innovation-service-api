@@ -417,7 +417,7 @@ describe("Notification Service Suite", () => {
       type: UserType.ASSESSMENT,
     };
 
-    await fixtures.addSharesToAssessment(
+    await fixtures.addSuggestionsToAssessment(
       requestUser,
       assessment.id,
       innovation.id,
