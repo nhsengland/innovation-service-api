@@ -96,7 +96,9 @@ export class InnovationSupportLogService {
       );
 
       innovationSupportStatus =
-        innovationSupport.status || InnovationSupportStatus.UNASSIGNED;
+        innovationSupport && innovationSupport.status
+          ? innovationSupport.status
+          : InnovationSupportStatus.UNASSIGNED;
     }
 
     const supportLogObj = InnovationSupportLog.new({
