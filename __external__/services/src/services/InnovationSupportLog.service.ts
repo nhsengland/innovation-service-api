@@ -96,7 +96,9 @@ export class InnovationSupportLogService {
       );
 
       innovationSupportStatus =
-        innovationSupport.status || InnovationSupportStatus.UNASSIGNED;
+        innovationSupport && innovationSupport.status
+          ? innovationSupport.status
+          : InnovationSupportStatus.UNASSIGNED;
     }
 
     const supportLogObj = InnovationSupportLog.new({
@@ -115,7 +117,7 @@ export class InnovationSupportLogService {
     });
 
     const result = await this.supportLogRepo.save(supportLogObj);
-    if (supportLog.type === InnovationSupportLogType.ACCESSOR_SUGGESTION) {
+    if (supportLog.type === "ACCESSOR_SUGGESTION") {
       const targetUsers = await this.organisationService.findQualifyingAccessorsFromUnits(
         supportLog?.organisationUnits,
         innovationId
