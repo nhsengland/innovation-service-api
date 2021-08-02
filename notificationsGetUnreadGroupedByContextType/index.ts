@@ -6,13 +6,14 @@ import {
   AllowedUserType,
   AppInsights,
   JwtDecoder,
+  OrganisationRoleValidator,
   SQLConnector,
   Validator,
 } from "../utils/decorators";
 import { CustomContext } from "../utils/types";
-import { UserType } from "@domain/index";
+import { AccessorOrganisationRole, InnovatorOrganisationRole, UserType } from "@domain/index";
 
-class NotificationsGetUnread {
+class NotificationsGetUnreadGroupedByContext {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder()
@@ -22,7 +23,10 @@ class NotificationsGetUnread {
     req: HttpRequest
   ): Promise<void> {
     const innovationId = req.query.innovationId;
-    const result = await persistence.getUnreadNotificationsCounts(context, innovationId);
+    const result = await persistence.getAllUnreadNotificationsCounts(
+      context,
+      innovationId
+    );
 
     if (result) {
       context.res = Responsify.Ok(result);
@@ -33,4 +37,4 @@ class NotificationsGetUnread {
   }
 }
 
-export default NotificationsGetUnread.httpTrigger;
+export default NotificationsGetUnreadGroupedByContext.httpTrigger;

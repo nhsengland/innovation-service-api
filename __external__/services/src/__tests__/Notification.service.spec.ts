@@ -1110,7 +1110,7 @@ describe("Notification Service Suite", () => {
       innovation1.id,
       "test 3"
     );
-    const notificationByStatus = await notificationService.getAggregatedInnovationNotifications(
+    const notificationByStatus = await notificationService.getNotificationsGroupedBySupportStatus(
       accessorRequestUser
     );
 

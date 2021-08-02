@@ -195,6 +195,11 @@ export class NotificationService {
     };
   }
 
+  /**
+   * @deprecated This method should no longer be used. It has beend replaced by getAllUnreadNotificationsCounts which is
+   * consumed by an azure function at notificationsGetUnread. The clients now call that function to get the counts of unread
+   * notifications grouped by context type.
+   */
   async getUnreadNotificationsCounts(
     requestUser: RequestUser,
     innovationId: string,
@@ -262,7 +267,7 @@ export class NotificationService {
     return this.convertArrayToObject(unreadNotifications, "contextType");
   }
 
-  async getAggregatedInnovationNotifications(
+  async getNotificationsGroupedBySupportStatus(
     requestUser: RequestUser
   ): Promise<{ [key: string]: number }> {
     let innovations = this.innovationRepo
@@ -339,7 +344,7 @@ export class NotificationService {
 
     return this.convertArrayToObject(result, "status");
   }
-  async getAggregatedInnovationNotificationsAssessment(
+  async getNotificationsGroupedByInnovationStatus(
     requestUser: RequestUser
   ): Promise<{ [key: string]: number }> {
     const innovations = this.innovationRepo

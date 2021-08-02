@@ -6,7 +6,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["get"],
-      "route": "notifications"
+      "route": "notifications/status"
     },
     {
       "type": "http",
@@ -14,5 +14,5 @@
       "name": "res"
     }
   ],
-  "scriptFile": "../dist/notificationsGetUnread/index.js"
+  "scriptFile": "../dist/notificationsGetUnreadGroupedByStatus/index.js"
 }

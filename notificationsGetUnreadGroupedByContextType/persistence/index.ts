@@ -1,6 +1,6 @@
 import { CustomContext } from "../../utils/types";
 
-export const getUnreadNotificationsCounts = async (
+export const getAllUnreadNotificationsCounts = async (
   ctx: CustomContext,
   innovatonId?: string
 ) => {

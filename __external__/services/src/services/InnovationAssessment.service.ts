@@ -170,13 +170,13 @@ export class InnovationAssessmentService {
       throw new ResourceNotFoundError("Assessment not found!");
     }
 
-
-    const currentUnits = assessmentDb.organisationUnits?.map(u => u.id) ||  [];
+    const currentUnits = assessmentDb.organisationUnits?.map((u) => u.id) || [];
     let organisationSuggestionsDiff;
-    if (assessment.organisationUnits ) {
-      organisationSuggestionsDiff = assessment.organisationUnits.filter( ou => !currentUnits.includes(ou));
+    if (assessment.organisationUnits) {
+      organisationSuggestionsDiff = assessment.organisationUnits.filter(
+        (ou) => !currentUnits.includes(ou)
+      );
     }
-
 
     let suggestedOrganisationUnits: OrganisationUnit[];
 

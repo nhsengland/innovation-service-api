@@ -322,10 +322,48 @@ export function AllowedUserType(...type: UserType[]) {
         return;
       }
 
-      context.auth.requestUser = {
-        id: oid,
-        type: user.type,
-      };
+      let requestUser;
+
+      if (user.type === UserType.ACCESSOR ) {
+        const userOrganisations: OrganisationUser[] = await context.services.OrganisationService.findUserOrganisations(
+          oid
+        );
+
+        let organisationUnitUser = null;
+        if (userOrganisations[0].userOrganisationUnits) {
+          organisationUnitUser =
+            userOrganisations[0].userOrganisationUnits[0];
+
+          organisationUnitUser = {
+            id: organisationUnitUser.id,
+            organisationUnit: {
+              id: organisationUnitUser.organisationUnit.id,
+              name: organisationUnitUser.organisationUnit.name,
+            },
+          };
+        }
+
+        requestUser = {
+          id: oid,
+          type: user.type,
+          organisationUser: {
+            id: userOrganisations[0].id,
+            role: userOrganisations[0].role,
+            organisation: {
+              id: userOrganisations[0].organisation.id,
+              name: userOrganisations[0].organisation.name,
+            },
+          },
+          organisationUnitUser,
+        };
+      } else {
+        requestUser = {
+          id: oid,
+          type: user.type,
+        }
+      }
+
+      context.auth.requestUser = requestUser;
 
       await original.apply(this, args);
       return;
