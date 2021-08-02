@@ -172,7 +172,7 @@ const parseUrl = (params, templateCode): string => {
     url = url.replace(`:${param}`, params[param]);
   }
 
-  return `${baseUrl}/transactional/${url}`;
+  return `${baseUrl}/${url}`;
 };
 
 const getRecipients = async (innovationId: string, connectionName?: string) => {
