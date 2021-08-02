@@ -9,6 +9,8 @@ export enum NotificationContextType {
   INNOVATION = "INNOVATION",
   ACTION = "ACTION",
   COMMENT = "COMMENT",
+  SUPPORT = "SUPPORT",
+  DATA_SHARING = "DATA_SHARING",
 }
 export enum NotificationAudience {
   ACCESSORS = "ACCESSORS",

@@ -238,11 +238,14 @@ export class NotificationService {
 
   async getAllUnreadNotificationsCounts(
     requestUser: RequestUser,
-    contextType?: string,
-    contextId?: string
+    innovationId?: string,
   ): Promise<{ [key: string]: number }> {
-    const filters =
+    let filters =
       "n_users.notification_id = notifications.id and read_at IS NULL";
+
+    if (innovationId) {
+      filters += ` and notifications.innovation_id = ${innovationId}`;
+    }
 
     const query = this.notificationUserRepo
       .createQueryBuilder("n_users")

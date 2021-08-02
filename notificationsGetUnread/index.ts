@@ -21,7 +21,8 @@ class NotificationsGetUnread {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const result = await persistence.getUnreadNotificationsCounts(context);
+    const innovationId = req.query.innovationId;
+    const result = await persistence.getUnreadNotificationsCounts(context, innovationId);
 
     if (result) {
       context.res = Responsify.Ok(result);

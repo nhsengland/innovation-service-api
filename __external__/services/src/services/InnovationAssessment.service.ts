@@ -218,6 +218,22 @@ export class InnovationAssessmentService {
       }
 
       try {
+        await this.notificationService.create(
+          requestUser,
+          NotificationAudience.INNOVATORS,
+          innovationId,
+          NotificationContextType.DATA_SHARING,
+          innovationId,
+          `Organisations were suggested by the needs assessment team for the innovation ${innovationId}`
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
+          error
+        );
+      }
+
+      try {
         const units = suggestedOrganisationUnits.map((u) => u.id);
         const qualifyingAccessors = await this.organisationService.findQualifyingAccessorsFromUnits(
           units,
