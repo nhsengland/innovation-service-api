@@ -170,6 +170,14 @@ export class InnovationAssessmentService {
       throw new ResourceNotFoundError("Assessment not found!");
     }
 
+
+    const currentUnits = assessmentDb.organisationUnits?.map(u => u.id) ||  [];
+    let organisationSuggestionsDiff;
+    if (assessment.organisationUnits ) {
+      organisationSuggestionsDiff = assessment.organisationUnits.filter( ou => !currentUnits.includes(ou));
+    }
+
+
     let suggestedOrganisationUnits: OrganisationUnit[];
 
     const result = await this.connection.transaction(
@@ -218,22 +226,6 @@ export class InnovationAssessmentService {
       }
 
       try {
-        await this.notificationService.create(
-          requestUser,
-          NotificationAudience.INNOVATORS,
-          innovationId,
-          NotificationContextType.DATA_SHARING,
-          innovationId,
-          `Organisations were suggested by the needs assessment team for the innovation ${innovationId}`
-        );
-      } catch (error) {
-        this.logService.error(
-          `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
-          error
-        );
-      }
-
-      try {
         const units = suggestedOrganisationUnits.map((u) => u.id);
         const qualifyingAccessors = await this.organisationService.findQualifyingAccessorsFromUnits(
           units,
@@ -250,6 +242,24 @@ export class InnovationAssessmentService {
       } catch (error) {
         this.logService.error(
           `An error has occured while sending an email of type ${EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED}`,
+          error
+        );
+      }
+    }
+
+    if (organisationSuggestionsDiff && organisationSuggestionsDiff.length > 0) {
+      try {
+        await this.notificationService.create(
+          requestUser,
+          NotificationAudience.INNOVATORS,
+          innovationId,
+          NotificationContextType.DATA_SHARING,
+          innovationId,
+          `Innovation with id ${innovationId} has received Data sharing suggestions from the needs assessment team`
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while creating a notification of type ${NotificationContextType.DATA_SHARING} from ${requestUser.id}`,
           error
         );
       }
