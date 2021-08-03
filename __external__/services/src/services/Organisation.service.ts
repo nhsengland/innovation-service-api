@@ -102,6 +102,7 @@ export class OrganisationService extends BaseService<Organisation> {
       .where("organisation.type = :type", {
         type: OrganisationType.ACCESSOR,
       })
+      .orderBy("organisation.name", "ASC")
       .getMany();
 
     return data.map((org: any) => {
