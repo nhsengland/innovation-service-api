@@ -1,12 +1,18 @@
 import { AccessorService } from "../services/Accessor.service";
 import { getConnection } from "typeorm";
 import { User } from "@domain/index";
+import * as dotenv from "dotenv";
+import * as path from "path";
 
 describe("Accessor Service Suite", () => {
   let accessorService: AccessorService;
 
   beforeAll(async () => {
     accessorService = new AccessorService(process.env.DB_TESTS_NAME);
+
+    dotenv.config({
+      path: path.resolve(__dirname, "./.environment"),
+    });
   });
 
   afterEach(async () => {

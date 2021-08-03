@@ -20,12 +20,15 @@ class InnovatorsGetInnovationSupports {
     req: HttpRequest
   ): Promise<void> {
     const innovationId = req.params.innovationId;
+    const query = req.query;
+    const full = query.full && query.full.toLocaleLowerCase() === "true";
 
     let result;
     try {
       result = await persistence.findAllInnovationSupports(
         context,
-        innovationId
+        innovationId,
+        full
       );
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });

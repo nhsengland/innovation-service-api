@@ -44,13 +44,14 @@ import {
 import { BaseService } from "./Base.service";
 import { NotificationService } from "./Notification.service";
 import { UserService } from "./User.service";
+import { LoggerService } from "./Logger.service";
 
 export class InnovationService extends BaseService<Innovation> {
   private readonly connection: Connection;
   private readonly userService: UserService;
   private readonly supportRepo: Repository<InnovationSupport>;
   private readonly notificationService: NotificationService;
-
+  private readonly logService: LoggerService;
   constructor(connectionName?: string) {
     super(Innovation, connectionName);
     this.connection = getConnection(connectionName);
@@ -58,6 +59,7 @@ export class InnovationService extends BaseService<Innovation> {
     this.userService = new UserService(connectionName);
     this.notificationService = new NotificationService(connectionName);
     this.supportRepo = getRepository(InnovationSupport, connectionName);
+    this.logService = new LoggerService();
   }
 
   async findInnovation(
@@ -240,7 +242,7 @@ export class InnovationService extends BaseService<Innovation> {
       requestUser
     );
 
-    const aggregatedNotifications = await this.notificationService.getAggregatedInnovationNotifications(
+    const aggregatedNotifications = await this.notificationService.getNotificationsGroupedBySupportStatus(
       requestUser
     );
 
@@ -369,11 +371,6 @@ export class InnovationService extends BaseService<Innovation> {
       });
     });
 
-    const notifications = await this.notificationService.getUnreadNotificationsCounts(
-      requestUser,
-      innovation.id
-    );
-
     const result: InnovatorInnovationSummary = {
       id: innovation.id,
       name: innovation.name,
@@ -385,7 +382,6 @@ export class InnovationService extends BaseService<Innovation> {
       submittedAt: innovation.submittedAt,
       assessment,
       actions,
-      notifications,
     };
 
     return result;
@@ -452,11 +448,6 @@ export class InnovationService extends BaseService<Innovation> {
       support.status = innovationSupport.status;
     }
 
-    const notifications = await this.notificationService.getUnreadNotificationsCounts(
-      requestUser,
-      innovation.id
-    );
-
     return {
       summary: {
         id: innovation.id,
@@ -474,7 +465,6 @@ export class InnovationService extends BaseService<Innovation> {
       },
       assessment,
       support,
-      notifications,
     };
   }
 
@@ -511,11 +501,6 @@ export class InnovationService extends BaseService<Innovation> {
       assessment.assignToName = b2cAssessmentUser.displayName;
     }
 
-    const notifications = await this.notificationService.getUnreadNotificationsCounts(
-      requestUser,
-      innovation.id
-    );
-
     return {
       summary: {
         id: innovation.id,
@@ -534,7 +519,6 @@ export class InnovationService extends BaseService<Innovation> {
         phone: b2cOwnerUser.phone,
       },
       assessment,
-      notifications,
     };
   }
 
@@ -595,11 +579,11 @@ export class InnovationService extends BaseService<Innovation> {
 
     let aggregatedNotifications;
     if (requestUser.type === UserType.ASSESSMENT) {
-      aggregatedNotifications = await this.notificationService.getAggregatedInnovationNotificationsAssessment(
+      aggregatedNotifications = await this.notificationService.getNotificationsGroupedByInnovationStatus(
         requestUser
       );
     } else {
-      aggregatedNotifications = await this.notificationService.getAggregatedInnovationNotifications(
+      aggregatedNotifications = await this.notificationService.getNotificationsGroupedBySupportStatus(
         requestUser
       );
     }
@@ -638,15 +622,22 @@ export class InnovationService extends BaseService<Innovation> {
       updatedBy: requestUser.id,
     });
 
-    await this.notificationService.create(
-      requestUser,
-      NotificationAudience.ASSESSMENT_USERS,
-      innovation.id,
-      NotificationContextType.INNOVATION,
+    try {
+      await this.notificationService.create(
+        requestUser,
+        NotificationAudience.ASSESSMENT_USERS,
+        innovation.id,
+        NotificationContextType.INNOVATION,
 
-      innovation.id,
-      `The innovation ${innovation.name} was submitted for assessment.`
-    );
+        innovation.id,
+        `The innovation ${innovation.name} was submitted for assessment.`
+      );
+    } catch (error) {
+      this.logService.error(
+        `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
+        error
+      );
+    }
 
     return {
       id: innovation.id,

@@ -319,11 +319,11 @@ export const createAssessment = async (
   );
 };
 
-export const addSharesToAssessment = async (
+export const addSuggestionsToAssessment = async (
   requestUser: RequestUser,
   id: string,
   innovationId: string,
-  shares?: Organisation[]
+  shares?: OrganisationUnit[]
 ) => {
   const assessmentService = new InnovationAssessmentService(
     process.env.DB_TESTS_NAME
@@ -332,7 +332,7 @@ export const addSharesToAssessment = async (
   const assessmentObj = {
     innovationId,
     isSubmission: true,
-    organisations: shares.map((o) => o.id),
+    organisationUnits: shares.map((o) => o.id),
   };
 
   return await assessmentService.update(

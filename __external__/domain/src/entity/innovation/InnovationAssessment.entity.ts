@@ -1,4 +1,3 @@
-import { Base } from "../Base.entity";
 import {
   Column,
   Entity,
@@ -8,13 +7,14 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { User } from "../user/User.entity";
 import {
   MaturityLevelCatalogue,
   YesPartiallyNoCatalogue,
 } from "../../enums/catalog.enums";
+import { Base } from "../Base.entity";
+import { OrganisationUnit } from "../organisation/OrganisationUnit.entity";
+import { User } from "../user/User.entity";
 import { Innovation } from "./Innovation.entity";
-import { Organisation } from "../organisation/Organisation.entity";
 
 @Entity("innovation_assessment")
 export class InnovationAssessment extends Base {
@@ -137,21 +137,25 @@ export class InnovationAssessment extends Base {
   @JoinColumn({ name: "assign_to_id" })
   assignTo: User;
 
-  @ManyToMany(() => Organisation, (record) => record.innovationAssessments, {
-    nullable: true,
-  })
+  @ManyToMany(
+    () => OrganisationUnit,
+    (record) => record.innovationAssessments,
+    {
+      nullable: true,
+    }
+  )
   @JoinTable({
-    name: "innovation_assessment_organisation",
+    name: "innovation_assessment_organisation_unit",
     joinColumn: {
       name: "innovation_assessment_id",
       referencedColumnName: "id",
     },
     inverseJoinColumn: {
-      name: "organisation_id",
+      name: "organisation_unit_id",
       referencedColumnName: "id",
     },
   })
-  organisations: Organisation[];
+  organisationUnits: OrganisationUnit[];
 
   //static constructor
   static new(data) {

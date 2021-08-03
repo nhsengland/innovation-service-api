@@ -2,8 +2,14 @@ import { InnovationSupportService } from "@services/index";
 import * as typeorm from "typeorm";
 import * as persistence from "../../accessorsCreateInnovationSupport/persistence";
 import { CustomContext } from "../../utils/types";
-
+import * as dotenv from "dotenv";
+import * as path from "path";
 describe("[accessorsCreateInnovationSupport] Persistence suite", () => {
+  beforeAll(() => {
+    dotenv.config({
+      path: path.resolve(__dirname, "../.environment"),
+    });
+  });
   describe("createInnovationSupport", () => {
     it("should create an innovation support", async () => {
       // Arrange
@@ -21,7 +27,7 @@ describe("[accessorsCreateInnovationSupport] Persistence suite", () => {
         auth: {
           requestUser: {
             id: ":userId",
-            type: "ACCESSOR",
+            type: "QUALIFYING_ACCESSOR",
           },
         },
       };

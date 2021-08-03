@@ -1,8 +1,8 @@
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   AccessorOrganisationRole,
   Innovation,
   InnovationAssessment,
-  InnovationStatus,
   InnovationSupport,
   InnovationSupportStatus,
   Notification,
@@ -14,16 +14,18 @@ import {
   UserType,
 } from "@domain/index";
 import { RequestUser } from "@services/models/RequestUser";
-
 import {
+  Connection,
   getConnection,
   getRepository,
   In,
-  Repository,
-  Connection,
-  ObjectLiteral,
   IsNull,
+  ObjectLiteral,
+  Repository,
 } from "typeorm";
+
+import { EmailService } from "./Email.service";
+import { emailEngines } from "@engines/index";
 
 export type NotificationDismissResult = {
   affected: number;
@@ -40,8 +42,11 @@ export class NotificationService {
   private readonly organisationUserRepo: Repository<OrganisationUser>;
   private readonly userRepo: Repository<User>;
   private readonly connection: Connection;
+  private readonly emailService: EmailService;
+  private readonly connectionName: string;
 
   constructor(connectionName?: string) {
+    this.connectionName = connectionName;
     this.connection = getConnection(connectionName);
     this.notificationRepo = getRepository(Notification, connectionName);
     this.notificationUserRepo = getRepository(NotificationUser, connectionName);
@@ -53,6 +58,29 @@ export class NotificationService {
     this.assessmentRepo = getRepository(InnovationAssessment, connectionName);
     this.organisationUserRepo = getRepository(OrganisationUser, connectionName);
     this.userRepo = getRepository(User, connectionName);
+    this.emailService = new EmailService(connectionName);
+  }
+
+  async sendEmail(
+    requestUser: RequestUser,
+    templateCode: EmailNotificationTemplate,
+    innovationId?: string,
+    contextId?: string,
+    targetUsers?: string[]
+  ) {
+    const handler = emailEngines().find((e) => e.key === templateCode)?.handler;
+
+    if (handler) {
+      await handler(
+        requestUser,
+        {
+          innovationId,
+          contextId,
+        },
+        targetUsers,
+        this.connectionName
+      );
+    }
   }
 
   async create(
@@ -167,6 +195,11 @@ export class NotificationService {
     };
   }
 
+  /**
+   * @deprecated This method should no longer be used. It has beend replaced by getAllUnreadNotificationsCounts which is
+   * consumed by an azure function at notificationsGetUnread. The clients now call that function to get the counts of unread
+   * notifications grouped by context type.
+   */
   async getUnreadNotificationsCounts(
     requestUser: RequestUser,
     innovationId: string,
@@ -210,11 +243,14 @@ export class NotificationService {
 
   async getAllUnreadNotificationsCounts(
     requestUser: RequestUser,
-    contextType?: string,
-    contextId?: string
+    innovationId?: string
   ): Promise<{ [key: string]: number }> {
-    const filters =
+    let filters =
       "n_users.notification_id = notifications.id and read_at IS NULL";
+
+    if (innovationId) {
+      filters += ` and notifications.innovation_id = '${innovationId}'`;
+    }
 
     const query = this.notificationUserRepo
       .createQueryBuilder("n_users")
@@ -231,7 +267,7 @@ export class NotificationService {
     return this.convertArrayToObject(unreadNotifications, "contextType");
   }
 
-  async getAggregatedInnovationNotifications(
+  async getNotificationsGroupedBySupportStatus(
     requestUser: RequestUser
   ): Promise<{ [key: string]: number }> {
     let innovations = this.innovationRepo
@@ -308,7 +344,7 @@ export class NotificationService {
 
     return this.convertArrayToObject(result, "status");
   }
-  async getAggregatedInnovationNotificationsAssessment(
+  async getNotificationsGroupedByInnovationStatus(
     requestUser: RequestUser
   ): Promise<{ [key: string]: number }> {
     const innovations = this.innovationRepo
@@ -470,11 +506,11 @@ export class NotificationService {
     // TODO: For now, QA's only receive notifications intigated when an Innovation finishes the assessment.
     const assessment = await this.assessmentRepo.find({
       where: { innovation: innovationId },
-      relations: ["organisations"],
+      relations: ["organisationUnits", "organisationUnits.organisation"],
     });
 
     const organisations = assessment.flatMap((s) =>
-      s.organisations.map((x) => x.id)
+      s.organisationUnits.map((x) => x.organisation.id)
     );
 
     const orgUsers = await this.organisationUserRepo.find({

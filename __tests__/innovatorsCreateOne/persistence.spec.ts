@@ -8,8 +8,14 @@ import {
 import * as typeorm from "typeorm";
 import * as persistence from "../../innovatorsCreateOne/persistence";
 import { CustomContext } from "../../utils/types";
-
+import * as dotenv from "dotenv";
+import * as path from "path";
 describe("[innovatorsCreateOne] Persistence suite", () => {
+  beforeAll(() => {
+    dotenv.config({
+      path: path.resolve(__dirname, "../.environment"),
+    });
+  });
   describe("createInnovator", () => {
     it("should create an Innovator and its dependencies", async () => {
       // Arrange
@@ -57,10 +63,9 @@ describe("[innovatorsCreateOne] Persistence suite", () => {
       // Arrange
       spyOn(typeorm, "getRepository");
       spyOn(typeorm, "getConnection");
-      const spy = spyOn(
-        UserService.prototype,
-        "updateUserDisplayName"
-      ).and.returnValue(null);
+      const spy = spyOn(UserService.prototype, "updateB2CUser").and.returnValue(
+        null
+      );
 
       const ctx = {
         services: {
@@ -74,7 +79,7 @@ describe("[innovatorsCreateOne] Persistence suite", () => {
         },
       };
       // Act
-      await persistence.updateUserDisplayName(ctx as CustomContext, {
+      await persistence.updateB2CUser(ctx as CustomContext, {
         user: {},
         oid: "",
       });

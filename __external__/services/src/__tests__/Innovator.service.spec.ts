@@ -7,8 +7,14 @@ import {
 import { getConnection } from "typeorm";
 import { v4 as uuid } from "uuid";
 import { InnovatorService } from "../services/Innovator.service";
-
+import * as dotenv from "dotenv";
+import * as path from "path";
 describe("Innovator Service Suite", () => {
+  beforeAll(() => {
+    dotenv.config({
+      path: path.resolve(__dirname, "./.environment"),
+    });
+  });
   afterEach(async () => {
     const query = getConnection(process.env.DB_TESTS_NAME)
       .createQueryBuilder()

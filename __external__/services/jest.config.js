@@ -9,13 +9,17 @@ module.exports =  {
   collectCoverageFrom: [
     "src/services/**/*.(t|j)s"
   ],
+  testEnvironment: "node",
   coverageDirectory: "./coverage",
   coveragePathIgnorePatterns: [
-    
+
   ],
   moduleNameMapper: {
     "@domain/(.*)": "<rootDir>/__external__/domain/src/$1",
-    "@services/(.*)": "<rootDir>/__external__/services/src/$1"
+    "@services/(.*)": "<rootDir>/__external__/services/src/$1",
+    "@engines/(.*)": "<rootDir>/__external__/engines/$1",
+    "@helpers/(.*)": "<rootDir>/__external__/services/src/helpers/$1",
+    "@config/(.*)": "<rootDir>/__config/$1",
   },
   coverageThreshold: {
     global: {

@@ -13,7 +13,9 @@
     "paths": {
       "@domain/*": ["__external__/domain/src/*"],
       "@services/*": ["__external__/services/src/*"],
-      "@entities/*": ["__external__/services/src/entities/*"]
+      "@entities/*": ["__external__/services/src/entities/*"],
+      "@engines/*": ["__external__/engines/*"],
+      "@helpers/*": ["__external__/services/src/helpers/*"],
     },
     "plugins": [
       {

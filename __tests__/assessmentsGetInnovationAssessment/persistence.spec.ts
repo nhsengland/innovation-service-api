@@ -2,8 +2,14 @@ import { InnovationAssessmentService } from "@services/index";
 import * as typeorm from "typeorm";
 import * as persistence from "../../assessmentsGetInnovationAssessment/persistence";
 import { CustomContext } from "../../utils/types";
-
+import * as dotenv from "dotenv";
+import * as path from "path";
 describe("[assessmentsGetInnovationAssessment] Persistence suite", () => {
+  beforeAll(() => {
+    dotenv.config({
+      path: path.resolve(__dirname, "../.environment"),
+    });
+  });
   describe("getInnovationAssessment", () => {
     it("should get an innovation assessment", async () => {
       // Arrange

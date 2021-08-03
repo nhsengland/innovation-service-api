@@ -1,4 +1,5 @@
-import { AccessorOrganisationRole } from "@domain/index";
+import { AccessorOrganisationRole, OrganisationUnit } from "@domain/index";
+import { OrganisationModel } from "@services/models/OrganisationModel";
 import axios from "axios";
 
 export async function authenticateWitGraphAPI() {
@@ -47,15 +48,17 @@ export async function getUserFromB2C(accessToken: string, id: string) {
 
 export async function getUsersFromB2C(
   accessToken: string,
-  odataFilter: string
+  odataFilter: string,
+  apiVersion?: string
 ) {
   try {
+    apiVersion = apiVersion || "v1.0";
     const config = {
       headers: { Authorization: `Bearer ${accessToken}` },
     };
 
     const result = await axios.get(
-      `https://graph.microsoft.com/v1.0/users?${odataFilter}`,
+      `https://graph.microsoft.com/${apiVersion}/users?${odataFilter}`,
       config
     );
     return result.data.value || [];
@@ -187,4 +190,37 @@ export function hasAccessorRole(roleStr: string) {
       AccessorOrganisationRole.ACCESSOR,
     ].indexOf(role) !== -1
   );
+}
+
+export function getOrganisationsFromOrganisationUnitsObj(
+  organisationUnits: OrganisationUnit[]
+): OrganisationModel[] {
+  const organisations: OrganisationModel[] = [];
+
+  if (organisationUnits.length > 0) {
+    const uniqueOrganisations = [
+      ...new Set(organisationUnits.map((item) => item.organisation.id)),
+    ];
+
+    for (let idx = 0; idx < uniqueOrganisations.length; idx++) {
+      const units = organisationUnits.filter(
+        (unit) => unit.organisation.id === uniqueOrganisations[idx]
+      );
+
+      const organisation: OrganisationModel = {
+        id: units[0].organisation.id,
+        name: units[0].organisation.name,
+        acronym: units[0].organisation.acronym,
+        organisationUnits: units.map((unit) => ({
+          id: unit.id,
+          name: unit.name,
+          acronym: unit.acronym,
+        })),
+      };
+
+      organisations.push(organisation);
+    }
+  }
+
+  return organisations;
 }

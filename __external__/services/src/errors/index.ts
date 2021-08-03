@@ -74,3 +74,24 @@ export class InvalidUserTypeError extends Error {
     this.name = "InvalidUserTypeError";
   }
 }
+
+export class InvalidEmailTemplateProps extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InvalidEmailTemplateProps";
+  }
+}
+
+export class EmailTemplateNotFound extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "EmailTemplateNotFound";
+  }
+}
+
+export class InvalidAPIKey extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InvalidAPIKey";
+  }
+}

@@ -20,7 +20,8 @@ import * as helpers from "../helpers";
 import { AccessorService } from "../services/Accessor.service";
 import { OrganisationService } from "../services/Organisation.service";
 import * as fixtures from "../__fixtures__";
-
+import * as dotenv from "dotenv";
+import * as path from "path";
 const dummy = {
   baseOrganisation: {
     name: "my org name",
@@ -33,6 +34,10 @@ describe("Organisation Service Suite", () => {
 
   beforeAll(async () => {
     // await setupTestsConnection();
+
+    dotenv.config({
+      path: path.resolve(__dirname, "./.environment"),
+    });
     organisationService = new OrganisationService(process.env.DB_TESTS_NAME);
     accessorService = new AccessorService(process.env.DB_TESTS_NAME);
   });
@@ -106,7 +111,7 @@ describe("Organisation Service Suite", () => {
     await organisationService.create(organisation);
 
     const filter = {
-      type: "accessor",
+      type: OrganisationType.ACCESSOR,
     };
     const actual = await organisationService.findAll(filter);
 
@@ -267,5 +272,37 @@ describe("Organisation Service Suite", () => {
 
     expect(result).toBeDefined();
     expect(result.length).toEqual(2);
+  });
+
+  it("should return organisation unit users", async () => {
+    spyOn(helpers, "authenticateWitGraphAPI").and.stub();
+    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+      { id: "abc-def-ghi", displayName: ":ACCESSOR" },
+      { id: "ttt-aaa-ddd", displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
+
+    const organisationObj = Organisation.new({
+      ...dummy.baseOrganisation,
+      type: OrganisationType.ACCESSOR,
+    });
+    const organisation = await organisationService.create(organisationObj);
+
+    let unitObj = OrganisationUnit.new({
+      name: "newUnit",
+      organisation,
+    });
+    await organisationService.addOrganisationUnit(unitObj);
+
+    unitObj = OrganisationUnit.new({
+      name: "newUnit2",
+      organisation,
+    });
+    await organisationService.addOrganisationUnit(unitObj);
+
+    const result = await organisationService.findAllWithOrganisationUnits();
+
+    expect(result).toBeDefined();
+    expect(result.length).toEqual(1);
+    expect(result[0].organisationUnits.length).toEqual(2);
   });
 });

@@ -186,6 +186,41 @@ paths:
           description: "Forbidden"
 
   "/accessors/{userId}/innovations/{innovationId}/supports":
+    get:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "GetInnovationSupports"
+      description: "Get an Innovation Supports associated with the Innovation"
+      operationId: "accessors-get-innovation-supports"
+      security:
+        - OpenId:
+            - innovation_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
     post:
       tags:
         - "Accessor"
@@ -308,6 +343,79 @@ paths:
         "403":
           description: "Forbidden"
 
+  "/accessors/{userId}/innovations/{innovationId}/support-logs":
+    get:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "GetInnovationSupportLogs"
+      description: "Get an Innovation Support Logs associated with the Innovation"
+      operationId: "accessors-get-innovation-support-logs"
+      security:
+        - OpenId:
+            - innovation_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+    post:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "CreateInnovationSupportLog"
+      description: "Creates an Innovation Support Log associated with the Innovation"
+      operationId: "accessors-create-innovation-support-log"
+      security:
+        - OpenId:
+            - supports_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/accessors-create-support-payload"
+      responses:
+        "201":
+          description: "Created"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
 
   "/accessors/{userId}/actions":
     get:
@@ -1478,6 +1586,80 @@ paths:
         "403":
           description: "Forbidden"
 
+  "/innovators/{userId}/innovations/{innovationId}/support-logs":
+    get:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "GetInnovationSupportLogs"
+      description: "Get Innovation Support Logs associated with the Innovation"
+      operationId: "innovators-get-innovation-support-logs"
+      security:
+        - OpenId:
+            - innovation_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/innovators/{userId}/innovations/{innovationId}/suggestions":
+    get:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "GetInnovationSuggestions"
+      description: "Get Innovation Suggestions associated with the Innovation"
+      operationId: "innovators-get-innovation-suggestions"
+      security:
+        - OpenId:
+            - innovation_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
   "/innovators/{userId}/innovations/{innovationId}/assessments/{assessmentId}":
     get:
       tags:
@@ -1543,6 +1725,30 @@ paths:
           description: "Not Found"
         "401":
           description: "Unauthorized"
+    put:
+      tags:
+        - "Users"
+        - "UpdateProfile"
+      description: "Retrieves the user profile"
+      operationId: "users-update-profile"
+      security:
+        - OpenId:
+            - user_profile
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "Ok"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
 
   "/organisations":
     get:
@@ -1563,6 +1769,30 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/organisations-get-all-200"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
+  "/organisation-units":
+    get:
+      tags:
+        - "OrganisationUnit"
+        - "List"
+      description: "Retrieves the list of all organisation and units"
+      operationId: "organisation-units-get-all"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - organisations_list
+      responses:
+        "200":
+          description: "OK"
         "404":
           description: "Not Found"
         "401":
@@ -1898,28 +2128,6 @@ paths:
           description: "Forbidden"
 
   "/notifications":
-    get:
-      tags:
-        - "Notifications"
-        - "List"
-      description: "Retrieves the list of all notifications grouped by context type for a given authenticated user"
-      operationId: "notifications-get-all"
-      parameters:
-        - name: Authorization
-          in: header
-          schema:
-            type: string
-          required: true
-      security:
-        - OpenId:
-            - notifications_list
-      responses:
-        "200":
-          description: "OK"
-        "404":
-          description: "Not Found"
-        "401":
-          description: "Unauthorized"
     patch:
       tags:
         - "Notifications"
@@ -1955,6 +2163,58 @@ paths:
           description: "Not Found"
         "401":
           description: "Unauthorized"
+  "/notifications/context":
+    get:
+      tags:
+        - "NotificationsGroupedByContext"
+        - "List"
+      description: "Retrieves the list of all notifications grouped by context type for a given authenticated user"
+      operationId: "notifications-get-grouped-by-context"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - notifications_list
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+  "/notifications/status":
+    get:
+      tags:
+        - "NotificationsGroupedByStatus"
+        - "List"
+      description: "Retrieves the list of all notifications grouped by status. Either Innovation Status or Support status. Defined by scope querystring [INNOVATION_STATUS, SUPPORT_STATUS]"
+      operationId: "notifications-get-grouped-by-status"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: scope
+          in: query
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - notifications_list
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
 components:
   schemas:
     accessor-schema:
