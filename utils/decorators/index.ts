@@ -324,15 +324,14 @@ export function AllowedUserType(...type: UserType[]) {
 
       let requestUser;
 
-      if (user.type === UserType.ACCESSOR ) {
+      if (user.type === UserType.ACCESSOR) {
         const userOrganisations: OrganisationUser[] = await context.services.OrganisationService.findUserOrganisations(
           oid
         );
 
         let organisationUnitUser = null;
         if (userOrganisations[0].userOrganisationUnits) {
-          organisationUnitUser =
-            userOrganisations[0].userOrganisationUnits[0];
+          organisationUnitUser = userOrganisations[0].userOrganisationUnits[0];
 
           organisationUnitUser = {
             id: organisationUnitUser.id,
@@ -360,7 +359,7 @@ export function AllowedUserType(...type: UserType[]) {
         requestUser = {
           id: oid,
           type: user.type,
-        }
+        };
       }
 
       context.auth.requestUser = requestUser;

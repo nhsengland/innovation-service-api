@@ -2,19 +2,19 @@ import { CustomContext } from "../../utils/types";
 
 export const getNotificationsGroupedByStatus = async (
   ctx: CustomContext,
-  scope: string,
+  scope: string
 ) => {
   let result;
 
   switch (scope) {
-    case 'INNOVATION_STATUS':
+    case "INNOVATION_STATUS":
       result = await ctx.services.NotificationService.getNotificationsGroupedByInnovationStatus(
-        ctx.auth.requestUser,
+        ctx.auth.requestUser
       );
       break;
-    case 'SUPPORT_STATUS':
+    case "SUPPORT_STATUS":
       result = await ctx.services.NotificationService.getNotificationsGroupedBySupportStatus(
-        ctx.auth.requestUser,
+        ctx.auth.requestUser
       );
       break;
     default:
