@@ -99,6 +99,7 @@ export async function createB2CUser(
   const termsOfUseConsentVersion = `extension_${process.env.AD_EXTENSION_ID}_termsOfUseConsentVersion`;
   const termsOfUseConsentChoice = `extension_${process.env.AD_EXTENSION_ID}_termsOfUseConsentChoice`;
   const termsOfUseConsentDateTime = `extension_${process.env.AD_EXTENSION_ID}_termsOfUseConsentDateTime`;
+  const passwordResetOn = `extension_${process.env.AD_EXTENSION_ID}_passwordResetOn`;
 
   const payload = {
     accountEnabled: true,
@@ -120,6 +121,7 @@ export async function createB2CUser(
   payload[termsOfUseConsentVersion] = "V1";
   payload[termsOfUseConsentChoice] = "AgreeToTermsOfUseConsentYes";
   payload[termsOfUseConsentDateTime] = new Date().toISOString();
+  payload[passwordResetOn] = new Date().toISOString();
 
   try {
     const config = {

@@ -192,6 +192,7 @@ export class InnovationSupportLogService {
         description: log.description,
         innovationSupportStatus: log.innovationSupportStatus,
         createdBy: b2cUserNames[log.createdBy],
+        createdAt: log.createdAt,
       };
 
       if (log.organisationUnit) {
@@ -256,6 +257,8 @@ export class InnovationSupportLogService {
         type,
       });
     }
+
+    query.orderBy("innovationSupportLog.createdAt", "ASC");
 
     return query.getMany();
   }

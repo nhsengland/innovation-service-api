@@ -6,6 +6,7 @@ export interface InnovationSupportLogModel {
   description: string;
   innovationSupportStatus: string;
   createdBy: string;
+  createdAt: Date;
   organisationUnit?: OrganisationUnitModel;
   suggestedOrganisationUnits?: OrganisationUnitModel[];
 }
