@@ -11,11 +11,7 @@ import {
   Validator,
 } from "../utils/decorators";
 import { CustomContext } from "../utils/types";
-import {
-  AccessorOrganisationRole,
-  InnovatorOrganisationRole,
-  UserType,
-} from "@domain/index";
+import { UserType } from "@domain/index";
 
 class NotificationsGetUnreadGroupedByContext {
   @AppInsights()
