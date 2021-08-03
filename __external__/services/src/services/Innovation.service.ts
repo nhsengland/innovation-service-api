@@ -242,7 +242,7 @@ export class InnovationService extends BaseService<Innovation> {
       requestUser
     );
 
-    const aggregatedNotifications = await this.notificationService.getAggregatedInnovationNotifications(
+    const aggregatedNotifications = await this.notificationService.getNotificationsGroupedBySupportStatus(
       requestUser
     );
 
@@ -371,11 +371,6 @@ export class InnovationService extends BaseService<Innovation> {
       });
     });
 
-    const notifications = await this.notificationService.getUnreadNotificationsCounts(
-      requestUser,
-      innovation.id
-    );
-
     const result: InnovatorInnovationSummary = {
       id: innovation.id,
       name: innovation.name,
@@ -387,7 +382,6 @@ export class InnovationService extends BaseService<Innovation> {
       submittedAt: innovation.submittedAt,
       assessment,
       actions,
-      notifications,
     };
 
     return result;
@@ -454,11 +448,6 @@ export class InnovationService extends BaseService<Innovation> {
       support.status = innovationSupport.status;
     }
 
-    const notifications = await this.notificationService.getUnreadNotificationsCounts(
-      requestUser,
-      innovation.id
-    );
-
     return {
       summary: {
         id: innovation.id,
@@ -476,7 +465,6 @@ export class InnovationService extends BaseService<Innovation> {
       },
       assessment,
       support,
-      notifications,
     };
   }
 
@@ -513,11 +501,6 @@ export class InnovationService extends BaseService<Innovation> {
       assessment.assignToName = b2cAssessmentUser.displayName;
     }
 
-    const notifications = await this.notificationService.getUnreadNotificationsCounts(
-      requestUser,
-      innovation.id
-    );
-
     return {
       summary: {
         id: innovation.id,
@@ -536,7 +519,6 @@ export class InnovationService extends BaseService<Innovation> {
         phone: b2cOwnerUser.phone,
       },
       assessment,
-      notifications,
     };
   }
 
@@ -597,11 +579,11 @@ export class InnovationService extends BaseService<Innovation> {
 
     let aggregatedNotifications;
     if (requestUser.type === UserType.ASSESSMENT) {
-      aggregatedNotifications = await this.notificationService.getAggregatedInnovationNotificationsAssessment(
+      aggregatedNotifications = await this.notificationService.getNotificationsGroupedByInnovationStatus(
         requestUser
       );
     } else {
-      aggregatedNotifications = await this.notificationService.getAggregatedInnovationNotifications(
+      aggregatedNotifications = await this.notificationService.getNotificationsGroupedBySupportStatus(
         requestUser
       );
     }

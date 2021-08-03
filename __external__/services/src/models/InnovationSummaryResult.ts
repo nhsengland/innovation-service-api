@@ -16,7 +16,6 @@ export interface InnovatorInnovationSummary {
   assessment: {
     id: string;
   };
-  notifications?: { [key: string]: number };
 }
 
 export interface AccessorInnovationSummary {
@@ -41,7 +40,6 @@ export interface AccessorInnovationSummary {
     id: string;
     status: InnovationSupportStatus;
   };
-  notifications?: { [key: string]: number };
 }
 
 export interface AssessmentInnovationSummary {
@@ -65,5 +63,4 @@ export interface AssessmentInnovationSummary {
     id: string;
     assignToName: string;
   };
-  notifications?: { [key: string]: number };
 }

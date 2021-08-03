@@ -646,7 +646,7 @@ describe("Notification Service Suite", () => {
       type: UserType.INNOVATOR,
     };
 
-    const actual = await notificationService.getUnreadNotificationsCounts(
+    const actual = await notificationService.getAllUnreadNotificationsCounts(
       innovatorUser,
       innovation.id
     );
@@ -723,14 +723,13 @@ describe("Notification Service Suite", () => {
       type: UserType.INNOVATOR,
     };
 
-    const actual = await notificationService.getUnreadNotificationsCounts(
+    const actual = await notificationService.getAllUnreadNotificationsCounts(
       innovatorUser,
-      innovation.id,
-      NotificationContextType.ACTION
+      innovation.id
     );
 
     expect(actual).toBeDefined();
-    expect(actual).toEqual({ ACTION: 1 });
+    expect(actual.ACTION).toEqual(1);
   });
 
   it("should get unread COMMENT notifications counts by contextId", async () => {
@@ -801,10 +800,8 @@ describe("Notification Service Suite", () => {
       type: UserType.INNOVATOR,
     };
 
-    const actual = await notificationService.getUnreadNotificationsCounts(
+    const actual = await notificationService.getAllUnreadNotificationsCounts(
       innovatorUser,
-      innovation.id,
-      null,
       innovation.id
     );
 
@@ -882,13 +879,11 @@ describe("Notification Service Suite", () => {
 
     const actual = await notificationService.getUnreadNotificationsCounts(
       innovatorUser,
-      innovation.id,
-      NotificationContextType.INNOVATION,
       innovation.id
     );
 
     expect(actual).toBeDefined();
-    expect(actual).toEqual({ INNOVATION: 1 });
+    expect(actual.INNOVATION).toEqual(1);
   });
 
   it("should get unread ACTION notifications list", async () => {
@@ -1110,7 +1105,7 @@ describe("Notification Service Suite", () => {
       innovation1.id,
       "test 3"
     );
-    const notificationByStatus = await notificationService.getAggregatedInnovationNotifications(
+    const notificationByStatus = await notificationService.getNotificationsGroupedBySupportStatus(
       accessorRequestUser
     );
 

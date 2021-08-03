@@ -1,8 +1,12 @@
 import { CustomContext } from "../../utils/types";
 
-export const getUnreadNotificationsCounts = async (ctx: CustomContext) => {
+export const getAllUnreadNotificationsCounts = async (
+  ctx: CustomContext,
+  innovatonId?: string
+) => {
   const result = await ctx.services.NotificationService.getAllUnreadNotificationsCounts(
-    ctx.auth.requestUser
+    ctx.auth.requestUser,
+    innovatonId
   );
   return result;
 };

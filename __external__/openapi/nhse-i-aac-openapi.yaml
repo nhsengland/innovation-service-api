@@ -2128,28 +2128,6 @@ paths:
           description: "Forbidden"
 
   "/notifications":
-    get:
-      tags:
-        - "Notifications"
-        - "List"
-      description: "Retrieves the list of all notifications grouped by context type for a given authenticated user"
-      operationId: "notifications-get-all"
-      parameters:
-        - name: Authorization
-          in: header
-          schema:
-            type: string
-          required: true
-      security:
-        - OpenId:
-            - notifications_list
-      responses:
-        "200":
-          description: "OK"
-        "404":
-          description: "Not Found"
-        "401":
-          description: "Unauthorized"
     patch:
       tags:
         - "Notifications"
@@ -2185,6 +2163,58 @@ paths:
           description: "Not Found"
         "401":
           description: "Unauthorized"
+  "/notifications/context":
+    get:
+      tags:
+        - "NotificationsGroupedByContext"
+        - "List"
+      description: "Retrieves the list of all notifications grouped by context type for a given authenticated user"
+      operationId: "notifications-get-grouped-by-context"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - notifications_list
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+  "/notifications/status":
+    get:
+      tags:
+        - "NotificationsGroupedByStatus"
+        - "List"
+      description: "Retrieves the list of all notifications grouped by status. Either Innovation Status or Support status. Defined by scope querystring [INNOVATION_STATUS, SUPPORT_STATUS]"
+      operationId: "notifications-get-grouped-by-status"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: scope
+          in: query
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - notifications_list
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
 components:
   schemas:
     accessor-schema:
