@@ -1,6 +1,5 @@
 import {
   Comment,
-  InnovationSupport,
   NotificationAudience,
   NotificationContextType,
   UserType,
@@ -16,10 +15,10 @@ import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { InnovationService } from "./Innovation.service";
 import { InnovationSupportService } from "./InnovationSupport.service";
+import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
 import { OrganisationService } from "./Organisation.service";
 import { UserService } from "./User.service";
-import { LoggerService } from "./Logger.service";
 
 export class CommentService {
   private readonly connection: Connection;
@@ -97,14 +96,16 @@ export class CommentService {
         innovationId
       );
 
-      if (supports.length > 0) {
-        const accessorsUnitIds = supports.flatMap((s) =>
-          s.accessors.map((a) => a.id)
-        );
+      if (supports && supports.length > 0) {
+        const accessorsUnitIds = supports
+          .filter((s) => s.accessors && s.accessors.length > 0)
+          .flatMap((s) => s.accessors.map((a) => a.id));
 
-        targetNotificationUsers = await this.organisationService.findUserFromUnitUsers(
-          accessorsUnitIds
-        );
+        if (accessorsUnitIds && accessorsUnitIds.length > 0) {
+          targetNotificationUsers = await this.organisationService.findUserFromUnitUsers(
+            accessorsUnitIds
+          );
+        }
       }
     }
 
