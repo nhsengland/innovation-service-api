@@ -3,7 +3,8 @@ export interface UserProfileUpdateModel {
   mobilePhone?: string;
   organisation?: {
     id: string;
-    name: string;
-    size: string;
+    isShadow?: boolean;
+    name?: string;
+    size?: string;
   };
 }

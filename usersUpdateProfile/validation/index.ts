@@ -6,7 +6,7 @@ const payloadSchema = Joi.object({
   organisation: Joi.object({
     id: Joi.string().required(),
     name: Joi.string().optional(),
-    isShadow: Joi.string().optional(),
+    isShadow: Joi.boolean().optional(),
     size: Joi.string().optional(),
   }).optional(),
 })

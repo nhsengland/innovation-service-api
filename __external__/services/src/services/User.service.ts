@@ -194,6 +194,12 @@ export class UserService {
       );
     }
 
+    if (user.organisation) {
+      const organisationId = user.organisation.id;
+      delete user.organisation.id;
+      await this.orgRepo.update(organisationId, user.organisation);
+    }
+
     return { id: requestUser.id };
   }
 
