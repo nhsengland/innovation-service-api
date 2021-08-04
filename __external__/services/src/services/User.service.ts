@@ -18,7 +18,9 @@ import {
 import { RequestUser } from "@services/models/RequestUser";
 import { UserCreationModel } from "@services/models/UserCreationModel";
 import { UserCreationResult } from "@services/models/UserCreationResult";
+import { UserProfileUpdateModel } from "@services/models/UserProfileUpdateModel";
 import { UserUpdateModel } from "@services/models/UserUpdateModel";
+import { UserUpdateResult } from "@services/models/UserUpdateResult";
 import {
   Connection,
   EntityManager,
@@ -175,6 +177,24 @@ export class UserService {
     }));
 
     return result;
+  }
+
+  async updateProfile(requestUser: RequestUser, user: UserProfileUpdateModel) {
+    if (!requestUser || !user) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    const accessToken = await authenticateWitGraphAPI();
+    const currentProfile = await this.getProfile(requestUser.id, accessToken);
+    if (user.displayName != currentProfile.displayName) {
+      await this.updateB2CUser(
+        { displayName: user.displayName },
+        requestUser.id,
+        accessToken
+      );
+    }
+
+    return { id: requestUser.id };
   }
 
   async createUsers(
@@ -354,21 +374,71 @@ export class UserService {
     );
   }
 
-  async updateProfile(requestUser: RequestUser, user: UserUpdateModel) {
-    if (!requestUser || !user) {
+  async updateUsers(
+    requestUser: RequestUser,
+    users: UserUpdateModel[]
+  ): Promise<UserUpdateResult[]> {
+    if (!requestUser || !users || users.length === 0) {
       throw new InvalidParamsError("Invalid params.");
     }
 
-    const accessToken = await authenticateWitGraphAPI();
-    const currentProfile = await this.getProfile(requestUser.id, accessToken);
-    if (user.displayName != currentProfile.displayName) {
-      await this.updateB2CUser(
-        { displayName: user.displayName },
-        requestUser.id,
-        accessToken
-      );
+    const graphAccessToken = await authenticateWitGraphAPI();
+    const results: UserUpdateResult[] = [];
+
+    for (let i = 0; i < users.length; i++) {
+      const user = users[i];
+      let result: UserUpdateResult;
+
+      try {
+        result = await this.updateUser(requestUser, users[i], graphAccessToken);
+      } catch (err) {
+        result = {
+          id: user.id,
+          status: "ERROR",
+          error: {
+            code: err.constructor.name,
+            message: err.message,
+          },
+        };
+      }
+
+      results.push(result);
     }
 
-    return { id: requestUser.id };
+    return results;
+  }
+
+  async updateUser(
+    requestUser: RequestUser,
+    userModel: UserUpdateModel,
+    graphAccessToken?: string
+  ): Promise<UserUpdateResult> {
+    if (!requestUser || !userModel) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    if (!graphAccessToken) {
+      graphAccessToken = await authenticateWitGraphAPI();
+    }
+
+    const user = await getUserFromB2C(graphAccessToken, userModel.id);
+    if (!user) {
+      throw new Error("Invalid user id.");
+    }
+
+    try {
+      await this.updateB2CUser(
+        userModel.properties,
+        userModel.id,
+        graphAccessToken
+      );
+    } catch {
+      throw new Error("Error updating user.");
+    }
+
+    return {
+      id: userModel.id,
+      status: "OK",
+    };
   }
 }
