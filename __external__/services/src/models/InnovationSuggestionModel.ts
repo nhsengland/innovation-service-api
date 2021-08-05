@@ -1,8 +1,3 @@
-import {
-  InnovationActionStatus,
-  InnovationSectionCatalogue,
-  InnovationSectionStatus,
-} from "@domain/index";
 import { OrganisationModel } from "./OrganisationModel";
 import { OrganisationUnitModel } from "./OrganisationUnitModel";
 
