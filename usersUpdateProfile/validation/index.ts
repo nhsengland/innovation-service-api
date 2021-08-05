@@ -5,9 +5,9 @@ const payloadSchema = Joi.object({
   mobilePhone: Joi.string().optional(),
   organisation: Joi.object({
     id: Joi.string().required(),
-    name: Joi.string().optional(),
+    name: Joi.string().allow(null).allow("").optional(),
     isShadow: Joi.boolean().optional(),
-    size: Joi.string().optional(),
+    size: Joi.string().allow(null).allow("").optional(),
   }).optional(),
 })
   .required()
