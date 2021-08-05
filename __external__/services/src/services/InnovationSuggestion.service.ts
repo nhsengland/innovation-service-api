@@ -1,5 +1,6 @@
 import { InnovationSupportLogType } from "@domain/index";
 import { InnovationNotFoundError, InvalidParamsError } from "@services/errors";
+import { InnovationSuggestionModel } from "@services/models/InnovationSuggestionModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { getConnection } from "typeorm";
 import { getOrganisationsFromOrganisationUnitsObj } from "../helpers";
@@ -45,8 +46,13 @@ export class InnovationSuggestionService {
       innovationId
     );
 
-    return {
-      assessment: {
+    const result: InnovationSuggestionModel = {
+      assessment: {},
+      accessors: [],
+    };
+
+    if (innovationAssessment) {
+      result.assessment = {
         id: innovationAssessment.id,
         suggestedOrganisations:
           innovationAssessment.organisationUnits.length > 0
@@ -54,8 +60,11 @@ export class InnovationSuggestionService {
                 innovationAssessment.organisationUnits
               )
             : [],
-      },
-      accessors: innovationSupportLogs.map((log) => ({
+      };
+    }
+
+    if (innovationSupportLogs && innovationSupportLogs.length > 0) {
+      result.accessors = innovationSupportLogs.map((log) => ({
         organisationUnit: {
           id: log.organisationUnit.id,
           name: log.organisationUnit.name,
@@ -72,7 +81,9 @@ export class InnovationSuggestionService {
                 log.suggestedOrganisationUnits
               )
             : [],
-      })),
-    };
+      }));
+    }
+
+    return result;
   }
 }
