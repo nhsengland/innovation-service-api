@@ -1,9 +1,6 @@
+import { AccessorOrganisationRole, UserType } from "@domain/index";
+
 export interface UserUpdateModel {
-  displayName: string;
-  mobilePhone?: string;
-  organisation?: {
-    id: string;
-    name: string;
-    size: string;
-  };
+  id: string;
+  properties: { [key: string]: string };
 }

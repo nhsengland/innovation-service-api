@@ -1,9 +1,9 @@
-import { UserUpdateModel } from "@services/models/UserUpdateModel";
+import { UserProfileUpdateModel } from "@services/models/UserProfileUpdateModel";
 import { CustomContext } from "../../utils/types";
 
 export const updateProfile = async (
   ctx: CustomContext,
-  user: UserUpdateModel
+  user: UserProfileUpdateModel
 ) => {
   const result = await ctx.services.UserService.updateProfile(
     ctx.auth.requestUser,
