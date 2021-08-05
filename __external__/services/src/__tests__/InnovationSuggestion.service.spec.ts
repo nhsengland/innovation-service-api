@@ -35,6 +35,7 @@ describe("Innovation Support Suite", () => {
   let innovatorRequestUser: RequestUser;
   let qAccessorRequestUser: RequestUser;
   let organisationUnit: OrganisationUnit;
+  let innovatorUser: User;
 
   beforeAll(async () => {
     // await setupTestsConnection();
@@ -49,7 +50,7 @@ describe("Innovation Support Suite", () => {
       process.env.DB_TESTS_NAME
     );
 
-    const innovatorUser = await fixtures.createInnovatorUser();
+    innovatorUser = await fixtures.createInnovatorUser();
     const qualAccessorUser = await fixtures.createAccessorUser();
     const accessorUser = await fixtures.createAccessorUser();
     const assessmentUser = await fixtures.createAssessmentUser();
@@ -147,7 +148,7 @@ describe("Innovation Support Suite", () => {
     await query.from(InnovationSupportLog).execute();
   });
 
-  it("should find all suggestions by innovation", async () => {
+  it("should find all suggestions by innovation with supports", async () => {
     await supportLogService.create(qAccessorRequestUser, innovation.id, {
       type: InnovationSupportLogType.STATUS_UPDATE,
       description: ":description",
@@ -158,6 +159,23 @@ describe("Innovation Support Suite", () => {
       description: ":description",
       organisationUnits: [organisationUnit.id],
     });
+
+    const item = await suggestionService.findAllByInnovation(
+      innovatorRequestUser,
+      innovation.id
+    );
+
+    expect(item).toBeDefined();
+  });
+
+  it("should find all suggestions by innovation without assessment", async () => {
+    const innovationObj = fixtures.generateInnovation({
+      owner: innovatorUser,
+      surveyId: "abcd",
+      organisationShares: [],
+    });
+
+    innovation = await fixtures.saveInnovation(innovationObj);
 
     const item = await suggestionService.findAllByInnovation(
       innovatorRequestUser,
