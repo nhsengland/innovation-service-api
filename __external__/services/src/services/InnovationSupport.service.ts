@@ -21,6 +21,7 @@ import {
   MissingUserOrganisationUnitError,
   ResourceNotFoundError,
 } from "@services/errors";
+import { checkIfValidUUID } from "@services/helpers";
 import { InnovationSupportModel } from "@services/models/InnovationSupportModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
@@ -59,7 +60,12 @@ export class InnovationSupportService {
     id: string,
     innovationId: string
   ): Promise<InnovationSupportModel> {
-    if (!id || !requestUser || !innovationId) {
+    if (
+      !id ||
+      !requestUser ||
+      !innovationId ||
+      !checkIfValidUUID(innovationId)
+    ) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
@@ -107,7 +113,7 @@ export class InnovationSupportService {
     innovationId: string,
     full?: boolean
   ): Promise<InnovationSupportModel[]> {
-    if (!requestUser || !innovationId) {
+    if (!requestUser || !innovationId || !checkIfValidUUID(innovationId)) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 

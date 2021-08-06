@@ -10,6 +10,7 @@ import {
   MissingUserOrganisationError,
   MissingUserOrganisationUnitError,
 } from "@services/errors";
+import { checkIfValidUUID } from "@services/helpers";
 import { CommentModel } from "@services/models/CommentModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
@@ -136,7 +137,7 @@ export class CommentService {
     innovationId: string,
     order?: { [key: string]: string }
   ) {
-    if (!requestUser || !innovationId) {
+    if (!requestUser || !innovationId || !checkIfValidUUID(innovationId)) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 

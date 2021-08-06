@@ -6,7 +6,6 @@ import {
   InnovationActionStatus,
   InnovationSectionAliasCatalogue,
   InnovationSupport,
-  InnovationSupportStatus,
   NotificationAudience,
   NotificationContextType,
 } from "@domain/index";
@@ -20,7 +19,7 @@ import {
   MissingUserOrganisationUnitError,
   ResourceNotFoundError,
 } from "@services/errors";
-import { hasAccessorRole } from "@services/helpers";
+import { checkIfValidUUID, hasAccessorRole } from "@services/helpers";
 import { InnovationActionModel } from "@services/models/InnovationActionModel";
 import { RequestUser } from "@services/models/RequestUser";
 import {
@@ -32,14 +31,13 @@ import {
 } from "typeorm";
 import { InnovationService } from "./Innovation.service";
 import { InnovationSectionService } from "./InnovationSection.service";
+import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
 import { UserService } from "./User.service";
-import { LoggerService } from "./Logger.service";
 
 export class InnovationActionService {
   private readonly connection: Connection;
   private readonly actionRepo: Repository<InnovationAction>;
-  private readonly innovationSupportRepo: Repository<InnovationSupport>;
   private readonly innovationService: InnovationService;
   private readonly innovationSectionService: InnovationSectionService;
   private readonly userService: UserService;
@@ -49,10 +47,6 @@ export class InnovationActionService {
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.actionRepo = getRepository(InnovationAction, connectionName);
-    this.innovationSupportRepo = getRepository(
-      InnovationSupport,
-      connectionName
-    );
     this.innovationService = new InnovationService(connectionName);
     this.innovationSectionService = new InnovationSectionService(
       connectionName
@@ -292,7 +286,12 @@ export class InnovationActionService {
     id: string,
     innovationId: string
   ): Promise<InnovationActionModel> {
-    if (!requestUser || !innovationId) {
+    if (
+      !requestUser ||
+      !innovationId ||
+      !checkIfValidUUID(id) ||
+      !checkIfValidUUID(innovationId)
+    ) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
@@ -451,7 +450,7 @@ export class InnovationActionService {
     requestUser: RequestUser,
     innovationId: string
   ): Promise<InnovationActionModel[]> {
-    if (!requestUser || !innovationId) {
+    if (!requestUser || !innovationId || !checkIfValidUUID(innovationId)) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 

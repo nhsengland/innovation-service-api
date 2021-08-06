@@ -3,7 +3,10 @@ import { InnovationNotFoundError, InvalidParamsError } from "@services/errors";
 import { InnovationSuggestionModel } from "@services/models/InnovationSuggestionModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { getConnection } from "typeorm";
-import { getOrganisationsFromOrganisationUnitsObj } from "../helpers";
+import {
+  checkIfValidUUID,
+  getOrganisationsFromOrganisationUnitsObj,
+} from "../helpers";
 import { InnovationService } from "./Innovation.service";
 import { InnovationAssessmentService } from "./InnovationAssessment.service";
 import { InnovationSupportLogService } from "./InnovationSupportLog.service";
@@ -25,7 +28,7 @@ export class InnovationSuggestionService {
   }
 
   async findAllByInnovation(requestUser: RequestUser, innovationId: string) {
-    if (!requestUser || !innovationId) {
+    if (!requestUser || !innovationId || !checkIfValidUUID(innovationId)) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 

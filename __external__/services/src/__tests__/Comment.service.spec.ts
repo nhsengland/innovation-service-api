@@ -1,9 +1,8 @@
-import { getConnection } from "typeorm";
-import { CommentService } from "../services/Comment.service";
 import {
   AccessorOrganisationRole,
   Comment,
   Innovation,
+  Notification,
   NotificationUser,
   Organisation,
   OrganisationType,
@@ -12,11 +11,7 @@ import {
   OrganisationUser,
   User,
   UserType,
-  Notification,
 } from "@domain/index";
-import * as fixtures from "../__fixtures__";
-import * as helpers from "../helpers";
-import { closeTestsConnection, setupTestsConnection } from "..";
 import {
   InvalidParamsError,
   MissingUserOrganisationError,
@@ -24,6 +19,11 @@ import {
 import { RequestUser } from "@services/models/RequestUser";
 import * as dotenv from "dotenv";
 import * as path from "path";
+import { getConnection } from "typeorm";
+import { closeTestsConnection, setupTestsConnection } from "..";
+import * as helpers from "../helpers";
+import { CommentService } from "../services/Comment.service";
+import * as fixtures from "../__fixtures__";
 
 describe("Comment Service Suite", () => {
   let commentService: CommentService;

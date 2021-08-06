@@ -1,20 +1,17 @@
-import { Innovation, User } from "@domain/index";
-import { getConnection } from "typeorm";
-import { UserService } from "@services/services/User.service";
-import { EmailService } from "@services/services/Email.service";
-import * as helpers from "../helpers";
-import { closeTestsConnection, setupTestsConnection } from "..";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
-import { InvalidEmailTemplateProps } from "@services/errors";
+import { EmailService } from "@services/services/Email.service";
+import { UserService } from "@services/services/User.service";
 import * as dotenv from "dotenv";
 import * as path from "path";
+import { closeTestsConnection, setupTestsConnection } from "..";
+import * as helpers from "../helpers";
 
 describe("Email Service Suite", () => {
   let userService: UserService;
   let emailService: EmailService;
 
   beforeAll(async () => {
-    //await setupTestsConnection();
+    // await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -24,7 +21,7 @@ describe("Email Service Suite", () => {
   });
 
   afterAll(async () => {
-    //await closeTestsConnection();
+    // await closeTestsConnection();
   });
 
   it("should instantiate the Email service", () => {
