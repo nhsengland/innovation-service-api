@@ -1,8 +1,11 @@
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   AccessorOrganisationRole,
   ClinicalEvidenceTypeCatalogue,
   Comment,
+  EnvironmentalBenefitCatalogue,
   EvidenceTypeCatalogue,
+  GeneralBenefitCatalogue,
   HasRegulationKnowledegeCatalogue,
   Innovation,
   InnovationAction,
@@ -11,19 +14,23 @@ import {
   InnovationCareSetting,
   InnovationCategory,
   InnovationCategoryCatalogue,
+  InnovationCertificationCatalogue,
   InnovationClinicalArea,
   InnovationDeploymentPlan,
+  InnovationEnvironmentalBenefit,
   InnovationEvidence,
   InnovationFile,
+  InnovationGeneralBenefit,
   InnovationRevenue,
   InnovationSection,
   InnovationSectionCatalogue,
   InnovationSectionStatus,
   InnovationStandard,
-  InnovationCertificationCatalogue,
   InnovationStatus,
   InnovationSubgroup,
+  InnovationSubgroupBenefit,
   InnovationSupport,
+  InnovationSupportLog,
   InnovationUserTest,
   Notification,
   NotificationUser,
@@ -33,17 +40,12 @@ import {
   OrganisationUnitUser,
   OrganisationUser,
   StandardMetCatalogue,
+  SubgroupBenefitCatalogue,
   User,
   UserType,
   YesOrNoCatalogue,
-  InnovationSubgroupBenefit,
-  InnovationGeneralBenefit,
-  InnovationEnvironmentalBenefit,
-  GeneralBenefitCatalogue,
-  EnvironmentalBenefitCatalogue,
-  SubgroupBenefitCatalogue,
-  InnovationSupportLog,
 } from "@domain/index";
+import * as engines from "@engines/index";
 import {
   InnovationNotFoundError,
   InvalidParamsError,
@@ -51,18 +53,17 @@ import {
 } from "@services/errors";
 import { InnovationSectionModel } from "@services/models/InnovationSectionModel";
 import { RequestUser } from "@services/models/RequestUser";
+import { LoggerService } from "@services/services/Logger.service";
+import { NotificationService } from "@services/services/Notification.service";
+import * as dotenv from "dotenv";
+import * as path from "path";
 import { getConnection } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
+import * as helpers from "../helpers";
 import { FileService } from "../services/File.service";
 import { InnovationSectionService } from "../services/InnovationSection.service";
 import * as fixtures from "../__fixtures__";
-import * as helpers from "../helpers";
-import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
-import * as engines from "@engines/index";
-import { NotificationService } from "@services/services/Notification.service";
-import { LoggerService } from "@services/services/Logger.service";
-import * as dotenv from "dotenv";
-import * as path from "path";
+
 describe("Innovation Section Service Suite", () => {
   let fileService: FileService;
   let innovationSectionService: InnovationSectionService;
@@ -353,7 +354,7 @@ describe("Innovation Section Service Suite", () => {
     try {
       await innovationSectionService.findSection(
         innovatorRequestUser,
-        "T85C433E-F36B-1410-80E0-0032FE5B194B",
+        "BDB7433E-F36B-1410-8103-0032FE5B194B",
         "invalid"
       );
     } catch (error) {

@@ -64,7 +64,7 @@ describe("[HttpTrigger] usersUpdateProfile Test Suite", () => {
       const services = {
         UserService: {
           getUser: () => ({
-            type: UserType.ASSESSMENT,
+            type: UserType.ADMIN,
           }),
         },
       };

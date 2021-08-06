@@ -33,6 +33,7 @@ import { NotificationService } from "@services/services/Notification.service";
 import { LoggerService } from "@services/services/Logger.service";
 import * as dotenv from "dotenv";
 import * as path from "path";
+
 describe("Innovation Support Suite", () => {
   let supportService: InnovationSupportService;
   let innovation: Innovation;

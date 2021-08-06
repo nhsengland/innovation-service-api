@@ -11,6 +11,7 @@ import {
   MissingUserOrganisationError,
   MissingUserOrganisationUnitError,
 } from "@services/errors";
+import { checkIfValidUUID } from "@services/helpers";
 import { InnovationSupportLogModel } from "@services/models/InnovationSupportLogModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { getConnection, getRepository, Repository } from "typeorm";
@@ -157,7 +158,7 @@ export class InnovationSupportLogService {
     innovationId: string,
     type?: InnovationSupportLogType
   ) {
-    if (!requestUser || !innovationId) {
+    if (!requestUser || !innovationId || !checkIfValidUUID(innovationId)) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 

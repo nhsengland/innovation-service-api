@@ -13,6 +13,9 @@ import {
   User,
   UserType,
 } from "@domain/index";
+import { emailEngines } from "@engines/index";
+import { InvalidParamsError } from "@services/errors";
+import { checkIfValidUUID } from "@services/helpers";
 import { RequestUser } from "@services/models/RequestUser";
 import {
   Connection,
@@ -23,9 +26,6 @@ import {
   ObjectLiteral,
   Repository,
 } from "typeorm";
-
-import { EmailService } from "./Email.service";
-import { emailEngines } from "@engines/index";
 
 export type NotificationDismissResult = {
   affected: number;
@@ -42,7 +42,6 @@ export class NotificationService {
   private readonly organisationUserRepo: Repository<OrganisationUser>;
   private readonly userRepo: Repository<User>;
   private readonly connection: Connection;
-  private readonly emailService: EmailService;
   private readonly connectionName: string;
 
   constructor(connectionName?: string) {
@@ -58,7 +57,6 @@ export class NotificationService {
     this.assessmentRepo = getRepository(InnovationAssessment, connectionName);
     this.organisationUserRepo = getRepository(OrganisationUser, connectionName);
     this.userRepo = getRepository(User, connectionName);
-    this.emailService = new EmailService(connectionName);
   }
 
   async sendEmail(
@@ -147,6 +145,10 @@ export class NotificationService {
     contextType: NotificationContextType,
     contextId: string
   ): Promise<NotificationDismissResult> {
+    if (!checkIfValidUUID(contextId)) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+
     const notificationUsers = await this.notificationUserRepo.find({
       relations: ["user", "notification"],
       join: {
@@ -195,68 +197,29 @@ export class NotificationService {
     };
   }
 
-  /**
-   * @deprecated This method should no longer be used. It has beend replaced by getAllUnreadNotificationsCounts which is
-   * consumed by an azure function at notificationsGetUnread. The clients now call that function to get the counts of unread
-   * notifications grouped by context type.
-   */
-  async getUnreadNotificationsCounts(
-    requestUser: RequestUser,
-    innovationId: string,
-    contextType?: string,
-    contextId?: string
-  ): Promise<{ [key: string]: number }> {
-    let parameters: any = { innovationId };
-    let filters =
-      "n_users.notification_id = notifications.id and notifications.innovation_id = :innovationId and read_at IS NULL";
-
-    if (contextType) {
-      filters += " and notifications.context_type = :contextType";
-      parameters = {
-        ...parameters,
-        contextType,
-      };
-    }
-
-    if (contextId) {
-      filters += " and notifications.context_id = :contextId";
-      parameters = {
-        ...parameters,
-        contextId,
-      };
-    }
-
-    const query = this.notificationUserRepo
-      .createQueryBuilder("n_users")
-      .select("notifications.context_type", "contextType")
-      .addSelect("COUNT(notifications.context_type)", "count")
-      .innerJoin(Notification, "notifications", filters, parameters);
-
-    const unreadNotifications = await query
-      .groupBy("notifications.contextType")
-      .addGroupBy("n_users.user_id")
-      .having("n_users.user_id = :userId ", { userId: requestUser.id })
-      .getRawMany();
-
-    return this.convertArrayToObject(unreadNotifications, "contextType");
-  }
-
   async getAllUnreadNotificationsCounts(
     requestUser: RequestUser,
     innovationId?: string
   ): Promise<{ [key: string]: number }> {
-    let filters =
-      "n_users.notification_id = notifications.id and read_at IS NULL";
-
-    if (innovationId) {
-      filters += ` and notifications.innovation_id = '${innovationId}'`;
+    if (innovationId && !checkIfValidUUID(innovationId)) {
+      throw new InvalidParamsError("Invalid parameters.");
     }
 
     const query = this.notificationUserRepo
       .createQueryBuilder("n_users")
       .select("notifications.context_type", "contextType")
       .addSelect("COUNT(notifications.context_type)", "count")
-      .innerJoin(Notification, "notifications", filters);
+      .innerJoin(
+        Notification,
+        "notifications",
+        "n_users.notification_id = notifications.id and read_at IS NULL"
+      );
+
+    if (innovationId) {
+      query.where("notifications.innovation_id = :innovationId", {
+        innovationId: innovationId,
+      });
+    }
 
     const unreadNotifications = await query
       .groupBy("notifications.contextType")
@@ -344,6 +307,7 @@ export class NotificationService {
 
     return this.convertArrayToObject(result, "status");
   }
+
   async getNotificationsGroupedByInnovationStatus(
     requestUser: RequestUser
   ): Promise<{ [key: string]: number }> {
@@ -385,6 +349,13 @@ export class NotificationService {
       readAt: string;
     }[]
   > {
+    if (
+      (innovationId && !checkIfValidUUID(innovationId)) ||
+      (contextId && !checkIfValidUUID(contextId))
+    ) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+
     let parameters: any = {};
     let filters =
       "n_users.notification_id = notifications.id and read_at IS NULL";

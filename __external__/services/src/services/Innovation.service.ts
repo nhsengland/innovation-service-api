@@ -18,7 +18,11 @@ import {
   InvalidUserRoleError,
   MissingUserOrganisationError,
 } from "@services/errors";
-import { getMergedArray, hasAccessorRole } from "@services/helpers";
+import {
+  checkIfValidUUID,
+  getMergedArray,
+  hasAccessorRole,
+} from "@services/helpers";
 import {
   InnovationListModel,
   InnovationViewModel,
@@ -42,9 +46,9 @@ import {
   InnovatorInnovationSummary,
 } from "../models/InnovationSummaryResult";
 import { BaseService } from "./Base.service";
+import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
 import { UserService } from "./User.service";
-import { LoggerService } from "./Logger.service";
 
 export class InnovationService extends BaseService<Innovation> {
   private readonly connection: Connection;
@@ -67,7 +71,7 @@ export class InnovationService extends BaseService<Innovation> {
     innovationId: string,
     filter?: any
   ) {
-    if (!requestUser || !innovationId) {
+    if (!requestUser || !innovationId || !checkIfValidUUID(innovationId)) {
       throw new InvalidParamsError(
         "Invalid params. You must define the user id and the innovation id."
       );
@@ -127,7 +131,7 @@ export class InnovationService extends BaseService<Innovation> {
 
   async findAllByAccessorAndSupportStatus(
     requestUser: RequestUser,
-    supportStatus: string,
+    supportStatus: InnovationSupportStatus,
     assignedToMe: boolean,
     skip: number,
     take: number,
@@ -323,7 +327,7 @@ export class InnovationService extends BaseService<Innovation> {
     requestUser: RequestUser,
     id: string
   ): Promise<InnovatorInnovationSummary> {
-    if (!id || !requestUser) {
+    if (!id || !requestUser || !checkIfValidUUID(id)) {
       throw new InvalidParamsError(
         "Invalid parameters. You must define the id and the request user."
       );
@@ -391,7 +395,7 @@ export class InnovationService extends BaseService<Innovation> {
     requestUser: RequestUser,
     id: string
   ): Promise<AccessorInnovationSummary> {
-    if (!id || !requestUser) {
+    if (!id || !requestUser || !checkIfValidUUID(id)) {
       throw new InvalidParamsError(
         "Invalid parameters. You must define the id and the request user."
       );
@@ -472,7 +476,7 @@ export class InnovationService extends BaseService<Innovation> {
     requestUser: RequestUser,
     id: string
   ): Promise<AssessmentInnovationSummary> {
-    if (!id || !requestUser) {
+    if (!id || !requestUser || !checkIfValidUUID(id)) {
       throw new InvalidParamsError(
         "Invalid parameters. You must define the id and the request user."
       );
@@ -596,7 +600,7 @@ export class InnovationService extends BaseService<Innovation> {
   }
 
   async submitInnovation(requestUser: RequestUser, id: string) {
-    if (!id || !requestUser) {
+    if (!id || !requestUser || !checkIfValidUUID(id)) {
       throw new InvalidParamsError(
         "Invalid parameters. You must define the id and the request user."
       );
@@ -646,7 +650,7 @@ export class InnovationService extends BaseService<Innovation> {
   }
 
   async getOrganisationShares(requestUser: RequestUser, innovationId: string) {
-    if (!innovationId || !requestUser) {
+    if (!innovationId || !requestUser || !checkIfValidUUID(innovationId)) {
       throw new InvalidParamsError(
         "Invalid parameters. You must define the innovationId and the request user."
       );
@@ -710,7 +714,7 @@ export class InnovationService extends BaseService<Innovation> {
     innovationId: string,
     organisations: string[]
   ) {
-    if (!innovationId || !requestUser.id) {
+    if (!innovationId || !requestUser.id || !checkIfValidUUID(innovationId)) {
       throw new InvalidParamsError(
         "Invalid parameters. You must define the innovationId and the request user."
       );

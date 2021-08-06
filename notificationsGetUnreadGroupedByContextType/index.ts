@@ -1,17 +1,14 @@
 import { HttpRequest } from "@azure/functions";
-import * as persistence from "./persistence";
-import * as validation from "./validation";
-import * as Responsify from "../utils/responsify";
+import { UserType } from "@domain/index";
 import {
   AllowedUserType,
   AppInsights,
   JwtDecoder,
-  OrganisationRoleValidator,
   SQLConnector,
-  Validator,
 } from "../utils/decorators";
-import { CustomContext } from "../utils/types";
-import { UserType } from "@domain/index";
+import * as Responsify from "../utils/responsify";
+import { CustomContext, Severity } from "../utils/types";
+import * as persistence from "./persistence";
 
 class NotificationsGetUnreadGroupedByContext {
   @AppInsights()
@@ -23,10 +20,19 @@ class NotificationsGetUnreadGroupedByContext {
     req: HttpRequest
   ): Promise<void> {
     const innovationId = req.query.innovationId;
-    const result = await persistence.getAllUnreadNotificationsCounts(
-      context,
-      innovationId
-    );
+
+    let result: any;
+    try {
+      result = await persistence.getAllUnreadNotificationsCounts(
+        context,
+        innovationId
+      );
+    } catch (error) {
+      context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
+      context.log.error(error);
+      context.res = Responsify.ErroHandling(error);
+      return;
+    }
 
     if (result) {
       context.res = Responsify.Ok(result);

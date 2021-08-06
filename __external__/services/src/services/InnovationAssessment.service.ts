@@ -1,3 +1,4 @@
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   Comment,
   Innovation,
@@ -15,14 +16,16 @@ import {
 } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
-import { getOrganisationsFromOrganisationUnitsObj } from "../helpers";
+import {
+  checkIfValidUUID,
+  getOrganisationsFromOrganisationUnitsObj,
+} from "../helpers";
 import { InnovationAssessmentResult } from "../models/InnovationAssessmentResult";
 import { InnovationService } from "./Innovation.service";
-import { NotificationService } from "./Notification.service";
-import { UserService } from "./User.service";
 import { LoggerService } from "./Logger.service";
-import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import { NotificationService } from "./Notification.service";
 import { OrganisationService } from "./Organisation.service";
+import { UserService } from "./User.service";
 
 export class InnovationAssessmentService {
   private readonly connection: Connection;
@@ -48,7 +51,13 @@ export class InnovationAssessmentService {
     id: string,
     innovationId: string
   ): Promise<InnovationAssessmentResult> {
-    if (!requestUser || !id || !innovationId) {
+    if (
+      !requestUser ||
+      !id ||
+      !innovationId ||
+      !checkIfValidUUID(id) ||
+      !checkIfValidUUID(innovationId)
+    ) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 

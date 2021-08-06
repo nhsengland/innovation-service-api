@@ -19,19 +19,20 @@ import {
   User,
   UserType,
 } from "@domain/index";
+import * as engines from "@engines/index";
 import {
   InvalidParamsError,
   MissingUserOrganisationError,
 } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
+import * as dotenv from "dotenv";
+import * as path from "path";
 import { getConnection } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
 import { InnovationActionService } from "../services/InnovationAction.service";
 import * as fixtures from "../__fixtures__";
-import * as engines from "@engines/index";
-import * as dotenv from "dotenv";
-import * as path from "path";
+
 describe("Innovation Action Suite", () => {
   let actionService: InnovationActionService;
   let innovation: Innovation;
