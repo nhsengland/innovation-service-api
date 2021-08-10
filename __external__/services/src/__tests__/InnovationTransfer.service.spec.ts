@@ -46,6 +46,7 @@ describe("Innovation Transfer Suite", () => {
     newInnovatorRequestUser = fixtures.getRequestUser(innovatorUser);
 
     spyOn(NotificationService.prototype, "sendEmail").and.returnValue({});
+    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
   });
 
   afterAll(async () => {
