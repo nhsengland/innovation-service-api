@@ -156,6 +156,121 @@ export const qaOrganisationSuggestedForSupport = async (
   return result;
 };
 
+export const innovatorsTransferOwnershipNewUser = async (
+  requestUser: RequestUser,
+  params: {
+    innovationId: string;
+    contextId: string;
+  },
+  targetUsers?: string[],
+  connectionName?: string
+): Promise<EmailResponse[]> => {
+  const innovationRepo = getRepository(Innovation, connectionName);
+  const emailService = new EmailService(connectionName);
+  const b2ctoken = await helpers.authenticateWitGraphAPI();
+  const b2cUser = await helpers.getUserFromB2C(b2ctoken, requestUser.id);
+  const innovation = await innovationRepo.findOne(params.innovationId, {
+    relations: ["owner"],
+  });
+
+  const transfer_url = parseUrl(
+    params,
+    EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_NEW_USER
+  );
+
+  const props = {
+    innovator_name: b2cUser.displayName,
+    innovation_name: innovation.name,
+    transfer_url,
+  };
+
+  const recipients = targetUsers;
+
+  const result = await emailService.send(
+    recipients,
+    EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_NEW_USER,
+    props
+  );
+
+  return result;
+};
+
+export const innovatorsTransferOwnershipExistingUser = async (
+  requestUser: RequestUser,
+  params: {
+    innovationId: string;
+    contextId: string;
+  },
+  targetUsers?: string[],
+  connectionName?: string
+): Promise<EmailResponse[]> => {
+  const innovationRepo = getRepository(Innovation, connectionName);
+  const emailService = new EmailService(connectionName);
+  const b2ctoken = await helpers.authenticateWitGraphAPI();
+  const b2cUser = await helpers.getUserFromB2C(b2ctoken, requestUser.id);
+  const innovation = await innovationRepo.findOne(params.innovationId, {
+    relations: ["owner"],
+  });
+
+  const transfer_url = parseUrl(
+    params,
+    EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_EXISTING_USER
+  );
+
+  const props = {
+    innovator_name: b2cUser.displayName,
+    innovation_name: innovation.name,
+    transfer_url,
+  };
+
+  const recipients = targetUsers;
+
+  const result = await emailService.send(
+    recipients,
+    EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_EXISTING_USER,
+    props
+  );
+
+  return result;
+};
+
+// TODO : FINISH EMAIL HANDLER
+export const innovatorsTransferOwnershipConfirmation = async (
+  requestUser: RequestUser,
+  params: {
+    innovationId: string;
+    contextId: string;
+  },
+  targetUsers?: string[],
+  connectionName?: string
+): Promise<EmailResponse[]> => {
+  const innovationRepo = getRepository(Innovation, connectionName);
+  const emailService = new EmailService(connectionName);
+  const b2ctoken = await helpers.authenticateWitGraphAPI();
+  const b2cUser = await helpers.getUserFromB2C(b2ctoken, requestUser.id);
+  const innovation = await innovationRepo.findOne(params.innovationId, {
+    relations: ["owner"],
+  });
+
+  // TODO : REVIEW PARAMETERS
+  const props = {
+    innovator_name: "",
+    innovation_name: innovation.name,
+    new_innovator_name: b2cUser.displayName,
+    new_innovator_email: "",
+  };
+
+  const recipients = targetUsers;
+
+  const result = await emailService.send(
+    recipients,
+    EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_CONFIRMATION,
+    props
+  );
+
+  return result;
+};
+
 const parseUrl = (params, templateCode): string => {
   const baseUrl = process.env.CLIENT_WEB_BASE_URL;
   const template = getTemplates().find((t) => t.code === templateCode);

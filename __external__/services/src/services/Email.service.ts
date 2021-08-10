@@ -39,7 +39,7 @@ export type EmailProps = {
 export type EmailTemplate = {
   id: string;
   code: string;
-  path: { url: string; params: { [key: string]: string } };
+  path?: { url: string; params: { [key: string]: string } };
   props: EmailProps;
 };
 

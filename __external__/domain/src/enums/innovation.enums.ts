@@ -35,6 +35,14 @@ export enum InnovationSupportStatus {
   COMPLETE = "COMPLETE",
 }
 
+export enum InnovationTransferStatus {
+  PENDING = "PENDING",
+  COMPLETED = "COMPLETED",
+  DECLINED = "DECLINED",
+  CANCELED = "CANCELED",
+  EXPIRED = "EXPIRED",
+}
+
 export enum InnovationSectionCatalogue {
   INNOVATION_DESCRIPTION = "INNOVATION_DESCRIPTION",
   VALUE_PROPOSITION = "VALUE_PROPOSITION",

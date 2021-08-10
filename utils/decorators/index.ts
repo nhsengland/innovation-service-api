@@ -123,7 +123,7 @@ export function Validator(
             error: validate.error,
           }
         );
-        context.res = Responsify.BadData({
+        context.res = Responsify.UnprocessableEntity({
           error: errorMessage || "validation failed",
         });
         return;

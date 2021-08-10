@@ -1,0 +1,14 @@
+{
+  "bindings": [
+    {
+      "authLevel": "anonymous",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": ["get"],
+      "route": "innovators/innovation-transfers"
+    },
+    { "type": "http", "direction": "out", "name": "res" }
+  ],
+  "scriptFile": "../dist/innovatorsGetInnovationTransfers/index.js"
+}

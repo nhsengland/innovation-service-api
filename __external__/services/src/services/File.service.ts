@@ -33,7 +33,7 @@ export class FileService extends BaseService<InnovationFile> {
 
   private getUrl(filename: string, permissions: string) {
     const starts = new Date();
-    const expires = new Date(starts.getTime() + 86400_000); // 24h
+    const expires = new Date(starts.getTime() + 900_000); // 15min
 
     const signatureValues: BlobSASSignatureValues = {
       protocol: SASProtocol.HttpsAndHttp,

@@ -1,6 +1,8 @@
 import {
   InnovationNotFoundError,
   InnovationSupportNotFoundError,
+  InnovationTransferAlreadyExistsError,
+  InnovationTransferNotFoundError,
   InvalidDataError,
   InvalidParamsError,
   InvalidUserRoleError,
@@ -67,7 +69,7 @@ export const NotFound = (data?: any, headers?: any) => {
   return getFormattedRes(404, data, headers);
 };
 
-export const BadData = (data?: any, headers?: any) => {
+export const UnprocessableEntity = (data?: any, headers?: any) => {
   return getFormattedRes(422, data, headers);
 };
 
@@ -84,6 +86,7 @@ export const ErroHandling = (error: Error) => {
     error instanceof InvalidParamsError ||
     error instanceof InnovationNotFoundError ||
     error instanceof InnovationSupportNotFoundError ||
+    error instanceof InnovationTransferNotFoundError ||
     error instanceof SectionNotFoundError ||
     error instanceof InvalidDataError
   ) {
@@ -101,6 +104,10 @@ export const ErroHandling = (error: Error) => {
     error instanceof InvalidUserTypeError
   ) {
     return Forbidden({
+      error: error.name,
+    });
+  } else if (error instanceof InnovationTransferAlreadyExistsError) {
+    return UnprocessableEntity({
       error: error.name,
     });
   } else {
