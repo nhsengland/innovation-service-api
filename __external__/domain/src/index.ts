@@ -18,6 +18,7 @@ export { InnovationSubgroupBenefit } from "./entity/innovation/InnovationSubgrou
 export { InnovationSupport } from "./entity/innovation/InnovationSupport.entity";
 export { InnovationSupportLog } from "./entity/innovation/InnovationSupportLog.entity";
 export { InnovationSupportType } from "./entity/innovation/InnovationSupportType.entity";
+export { InnovationTransfer } from "./entity/innovation/InnovationTransfer.entity";
 export { InnovationUserTest } from "./entity/innovation/InnovationUserTest.entity";
 
 export { Organisation } from "./entity/organisation/Organisation.entity";

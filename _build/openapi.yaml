@@ -1666,6 +1666,88 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
+  /innovators/innovation-transfers:
+    get:
+      tags:
+        - Innovator
+        - Innovation
+        - GetInnovationTransfers
+      description: Get Innovation Transfers associated with the Innovation
+      operationId: innovators-get-innovation-transfers
+      security:
+        - OpenId:
+            - innovators_details
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+    post:
+      tags:
+        - Innovator
+        - Innovation
+        - CreateInnovationTransfer
+      description: Creates an Innovation Transfer associated with the Innovation
+      operationId: innovators-create-innovation-transfer
+      security:
+        - OpenId:
+            - innovators_write
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/innovators/innovation-transfers/{transferId}':
+    get:
+      tags:
+        - Innovator
+        - Innovation
+        - GetInnovationTransfer
+      description: Get an Innovation Transfer associated with the Innovation
+      operationId: innovators-get-innovation-transfer
+      security:
+        - OpenId:
+            - innovators_details
+      parameters:
+        - name: transferId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
   /me:
     get:
       tags:
@@ -2081,28 +2163,6 @@ paths:
         '404':
           description: Not Found
   /notifications:
-    get:
-      tags:
-        - Notifications
-        - List
-      description: Retrieves the list of all notifications grouped by context type for a given authenticated user
-      operationId: notifications-get-all
-      parameters:
-        - name: Authorization
-          in: header
-          schema:
-            type: string
-          required: true
-      security:
-        - OpenId:
-            - notifications_list
-      responses:
-        '200':
-          description: OK
-        '401':
-          description: Unauthorized
-        '404':
-          description: Not Found
     patch:
       tags:
         - Notifications
@@ -2130,6 +2190,57 @@ paths:
                   type: string
                 contextType:
                   type: string
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+  /notifications/context:
+    get:
+      tags:
+        - NotificationsGroupedByContext
+        - List
+      description: Retrieves the list of all notifications grouped by context type for a given authenticated user
+      operationId: notifications-get-grouped-by-context
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - notifications_list
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+  /notifications/status:
+    get:
+      tags:
+        - NotificationsGroupedByStatus
+        - List
+      description: 'Retrieves the list of all notifications grouped by status. Either Innovation Status or Support status. Defined by scope querystring [INNOVATION_STATUS, SUPPORT_STATUS]'
+      operationId: notifications-get-grouped-by-status
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: scope
+          in: query
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - notifications_list
       responses:
         '200':
           description: OK

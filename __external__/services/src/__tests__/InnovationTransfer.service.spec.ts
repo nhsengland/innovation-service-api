@@ -1,0 +1,250 @@
+import { Innovation, InnovationTransfer, User } from "@domain/index";
+import {
+  InnovationTransferAlreadyExistsError,
+  InvalidParamsError,
+} from "@services/errors";
+import { RequestUser } from "@services/models/RequestUser";
+import { InnovationTransferService } from "@services/services/InnovationTransfer.service";
+import { NotificationService } from "@services/services/Notification.service";
+import * as dotenv from "dotenv";
+import * as path from "path";
+import { getConnection } from "typeorm";
+import { closeTestsConnection, setupTestsConnection } from "..";
+import * as helpers from "../helpers";
+import * as fixtures from "../__fixtures__";
+
+const dummy = {
+  newEmail: "new_email@email.com",
+};
+describe("Innovation Transfer Suite", () => {
+  let transferService: InnovationTransferService;
+  let innovation: Innovation;
+
+  let innovatorRequestUser: RequestUser;
+
+  beforeAll(async () => {
+    // await setupTestsConnection();
+
+    dotenv.config({
+      path: path.resolve(__dirname, "./.environment"),
+    });
+
+    transferService = new InnovationTransferService(process.env.DB_TESTS_NAME);
+
+    const innovatorUser = await fixtures.createInnovatorUser();
+    const innovationObj = fixtures.generateInnovation({
+      owner: innovatorUser,
+      surveyId: "abc",
+    });
+
+    innovation = await fixtures.saveInnovation(innovationObj);
+    innovatorRequestUser = fixtures.getRequestUser(innovatorUser);
+
+    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
+    spyOn(NotificationService.prototype, "sendEmail").and.returnValue({});
+  });
+
+  afterAll(async () => {
+    const query = getConnection(process.env.DB_TESTS_NAME)
+      .createQueryBuilder()
+      .delete();
+
+    await query.from(Innovation).execute();
+    await query.from(User).execute();
+
+    // closeTestsConnection();
+  });
+
+  afterEach(async () => {
+    const query = getConnection(process.env.DB_TESTS_NAME)
+      .createQueryBuilder()
+      .delete();
+
+    await query.from(InnovationTransfer).execute();
+  });
+
+  it("should instantiate the User service", async () => {
+    expect(transferService).toBeDefined();
+  });
+
+  it("should create a innovation transfer for an existing user", async () => {
+    spyOn(helpers, "getUserFromB2CByEmail").and.returnValue({
+      id: ":userOid",
+      displayName: ":userName",
+    });
+
+    const item = await transferService.create(
+      innovatorRequestUser,
+      innovation.id,
+      dummy.newEmail
+    );
+
+    expect(item).toBeDefined();
+    expect(item.email).toEqual(dummy.newEmail);
+  });
+
+  it("should create a innovation transfer for a new user", async () => {
+    spyOn(helpers, "getUserFromB2CByEmail").and.returnValue(undefined);
+
+    const item = await transferService.create(
+      innovatorRequestUser,
+      innovation.id,
+      dummy.newEmail
+    );
+
+    expect(item).toBeDefined();
+    expect(item.email).toEqual(dummy.newEmail);
+  });
+
+  it("should throw when create with invalid params", async () => {
+    let err;
+    try {
+      await transferService.create(null, null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw when create with invalid innovationId format", async () => {
+    let err;
+    try {
+      await transferService.create(innovatorRequestUser, dummy.newEmail, "abc");
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw when create and innovation not found", async () => {
+    let err;
+    try {
+      await transferService.create(
+        innovatorRequestUser,
+        dummy.newEmail,
+        "C435433E-F36B-1410-8105-0032FE5B194B"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw when create and transfer already exists for the innovation", async () => {
+    spyOn(helpers, "getUserFromB2CByEmail").and.returnValue(undefined);
+
+    await transferService.create(
+      innovatorRequestUser,
+      innovation.id,
+      dummy.newEmail
+    );
+
+    let err;
+    try {
+      await transferService.create(
+        innovatorRequestUser,
+        innovation.id,
+        dummy.newEmail
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationTransferAlreadyExistsError);
+  });
+
+  it("should throw when create for the innovation owner", async () => {
+    spyOn(helpers, "getUserFromB2CByEmail").and.returnValue({
+      id: innovatorRequestUser.id,
+      displayName: ":userName",
+    });
+
+    let err;
+    try {
+      await transferService.create(
+        innovatorRequestUser,
+        innovation.id,
+        dummy.newEmail
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should find one innovation transfer by ID", async () => {
+    spyOn(helpers, "getUserFromB2CByEmail").and.returnValue(undefined);
+
+    const item = await transferService.create(
+      innovatorRequestUser,
+      innovation.id,
+      dummy.newEmail
+    );
+
+    const result = await transferService.findOne(innovatorRequestUser, item.id);
+
+    expect(result).toBeDefined();
+    expect(result.email).toEqual(dummy.newEmail);
+  });
+
+  it("should throw when find one with invalid params", async () => {
+    let err;
+    try {
+      await transferService.findOne(null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw when find one with invalid innovationId format", async () => {
+    let err;
+    try {
+      await transferService.findOne(innovatorRequestUser, "abc");
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should find all innovation transfers by user", async () => {
+    spyOn(helpers, "getUserFromB2CByEmail").and.returnValue(undefined);
+
+    const item = await transferService.create(
+      innovatorRequestUser,
+      innovation.id,
+      dummy.newEmail
+    );
+
+    const result = await transferService.findAll(innovatorRequestUser);
+
+    expect(result).toBeDefined();
+    expect(result.length).toEqual(1);
+    expect(result[0].email).toEqual(dummy.newEmail);
+  });
+
+  it("should throw when find all with invalid params", async () => {
+    let err;
+    try {
+      await transferService.findAll(null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+});

@@ -16,7 +16,9 @@ class SurveyCreateOne {
     const validationRes = ValidatePayload(surveyItem);
     if (validationRes.error) {
       context.log.error(validationRes.error);
-      context.res = Responsify.BadData({ error: "Payload validation failed." });
+      context.res = Responsify.UnprocessableEntity({
+        error: "Payload validation failed.",
+      });
       return;
     }
 
