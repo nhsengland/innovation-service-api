@@ -1786,6 +1786,33 @@ paths:
         "403":
           description: "Forbidden"
 
+  "/innovators/innovation-transfers/{transferId}/check":
+    get:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "GetInnovationTransfer"
+      description: "Check if innovation transfer exists and if the users exists"
+      operationId: "innovators-check-innovation-transfer"
+      security:
+        - OpenId:
+            - innovators_details
+      parameters:
+        - name: transferId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
   "/me":
     get:
       tags:

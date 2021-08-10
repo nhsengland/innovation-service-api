@@ -30,7 +30,11 @@ export async function authenticateWitGraphAPI() {
   return accessToken;
 }
 
-export async function getUserFromB2C(accessToken: string, id: string) {
+export async function getUserFromB2C(id: string, accessToken?: string) {
+  if (!accessToken) {
+    accessToken = await authenticateWitGraphAPI();
+  }
+
   try {
     const config = {
       headers: { Authorization: `Bearer ${accessToken}` },
@@ -68,9 +72,13 @@ export async function getUsersFromB2C(
 }
 
 export async function getUserFromB2CByEmail(
-  accessToken: string,
-  email: string
+  email: string,
+  accessToken?: string
 ) {
+  if (!accessToken) {
+    accessToken = await authenticateWitGraphAPI();
+  }
+
   const odataFilter = `$filter=identities/any(c:c/issuerAssignedId eq '${email}' and c/issuer eq '${process.env.AD_TENANT_NAME}.onmicrosoft.com')`;
 
   try {

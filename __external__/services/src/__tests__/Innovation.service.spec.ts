@@ -768,7 +768,7 @@ describe("Innovator Service Suite", () => {
         identities: [
           {
             signInType: "emailAddress",
-            issuerAssignedId: "antonio.simoes@bjss.com",
+            issuerAssignedId: "email@email.com",
           },
         ],
       },

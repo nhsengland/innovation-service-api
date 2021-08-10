@@ -1,31 +1,24 @@
 import { HttpRequest } from "@azure/functions";
-import { UserType } from "@domain/index";
-import {
-  AllowedUserType,
-  AppInsights,
-  JwtDecoder,
-  SQLConnector,
-} from "../utils/decorators";
+import { AppInsights, SQLConnector } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 
-class InnovatorsGetInnovationTransfers {
+class InnovatorsCheckInnovationTransfer {
   @AppInsights()
   @SQLConnector()
-  @JwtDecoder()
-  @AllowedUserType(UserType.INNOVATOR)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const assignedToMe = req.query.assignedToMe
-      ? req.query.assignedToMe.toLocaleLowerCase() === "true"
-      : false;
+    const transferId = req.params.transferId;
 
     let result;
     try {
-      result = await persistence.findInnovationTransfers(context, assignedToMe);
+      result = await persistence.checkInnovationTransferById(
+        context,
+        transferId
+      );
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
@@ -37,4 +30,4 @@ class InnovatorsGetInnovationTransfers {
   }
 }
 
-export default InnovatorsGetInnovationTransfers.httpTrigger;
+export default InnovatorsCheckInnovationTransfer.httpTrigger;

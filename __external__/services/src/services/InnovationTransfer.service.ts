@@ -13,6 +13,7 @@ import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import {
   authenticateWitGraphAPI,
   checkIfValidUUID,
+  getUserFromB2C,
   getUserFromB2CByEmail,
 } from "../helpers";
 import { InnovationService } from "./Innovation.service";
@@ -40,6 +41,25 @@ export class InnovationTransferService {
     this.logService = new LoggerService();
   }
 
+  async checkOne(id: string) {
+    if (!id || !checkIfValidUUID(id)) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+
+    const transfer = await this.getOne({ id });
+    if (!transfer) {
+      throw new InnovationTransferNotFoundError(
+        "Innovation trasnfer not found."
+      );
+    }
+
+    const b2cUser = await getUserFromB2CByEmail(transfer.email);
+
+    return {
+      userExists: !!b2cUser,
+    };
+  }
+
   async findOne(
     requestUser: RequestUser,
     id: string
@@ -55,7 +75,7 @@ export class InnovationTransferService {
       );
     }
 
-    return {
+    const result: InnovationTransferResult = {
       id: transfer.id,
       email: transfer.email,
       innovation: {
@@ -63,26 +83,67 @@ export class InnovationTransferService {
         name: transfer.innovation.name,
       },
     };
+
+    if (requestUser.id !== transfer.createdBy) {
+      const b2cUser = await getUserFromB2C(transfer.createdBy);
+
+      result.innovation.owner = b2cUser.displayName;
+    }
+
+    return result;
   }
 
-  async findAll(requestUser: RequestUser): Promise<InnovationTransferResult[]> {
+  async findAll(
+    requestUser: RequestUser,
+    assignedToMe?: boolean
+  ): Promise<InnovationTransferResult[]> {
     if (!requestUser) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
+    let email: string = null;
+    let graphAccessToken: string;
+
+    if (assignedToMe) {
+      const graphAccessToken = await authenticateWitGraphAPI();
+      const b2cUser = await getUserFromB2C(requestUser.id, graphAccessToken);
+
+      email = b2cUser.identities.find(
+        (identity: any) => identity.signInType === "emailAddress"
+      ).issuerAssignedId;
+    }
+
     const transfers = await this.getMany(
       requestUser,
-      InnovationTransferStatus.PENDING
+      InnovationTransferStatus.PENDING,
+      email
     );
 
-    return transfers?.map((transfer) => ({
-      id: transfer.id,
-      email: transfer.email,
-      innovation: {
-        id: transfer.innovation.id,
-        name: transfer.innovation.name,
-      },
-    }));
+    const result: InnovationTransferResult[] = [];
+    for (let i = 0; i < transfers.length; i++) {
+      const transfer = transfers[i];
+
+      const obj: InnovationTransferResult = {
+        id: transfer.id,
+        email: transfer.email,
+        innovation: {
+          id: transfer.innovation.id,
+          name: transfer.innovation.name,
+        },
+      };
+
+      if (assignedToMe) {
+        const b2cUser = await getUserFromB2C(
+          transfer.createdBy,
+          graphAccessToken
+        );
+        obj.innovation.owner = b2cUser.displayName;
+      }
+
+      result.push(obj);
+    }
+
+    return result;
   }
 
   async create(
@@ -109,9 +170,7 @@ export class InnovationTransferService {
       );
     }
 
-    const graphAccessToken = await authenticateWitGraphAPI();
-    const b2cUser = await getUserFromB2CByEmail(graphAccessToken, email);
-
+    const b2cUser = await getUserFromB2CByEmail(email);
     if (b2cUser && b2cUser.id === requestUser.id) {
       throw new InvalidParamsError("Invalid parameters.");
     }
@@ -135,6 +194,7 @@ export class InnovationTransferService {
         transferObj
       );
 
+      // TODO : Enable emails
       // try {
       //   await this.notificationService.sendEmail(
       //     requestUser,
@@ -165,14 +225,22 @@ export class InnovationTransferService {
 
   private async getMany(
     requestUser: RequestUser,
-    status: InnovationTransferStatus
+    status: InnovationTransferStatus,
+    email?: string
   ): Promise<InnovationTransfer[]> {
     const query = this.transferRepo
       .createQueryBuilder("innovationTransfer")
-      .innerJoinAndSelect("innovationTransfer.innovation", "innovation")
-      .where("innovationTransfer.created_by = :createdBy", {
+      .innerJoinAndSelect("innovationTransfer.innovation", "innovation");
+
+    if (email) {
+      query.where("innovationTransfer.email = :email", {
+        email,
+      });
+    } else {
+      query.where("innovationTransfer.created_by = :createdBy", {
         createdBy: requestUser.id,
       });
+    }
 
     if (status) {
       query.andWhere("innovationTransfer.status = :status", {

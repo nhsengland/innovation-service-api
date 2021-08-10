@@ -4,8 +4,8 @@ import {
   createHttpTrigger,
   runStubFunctionFromBindings
 } from "stub-azure-function-context";
-import innovatorsGetInnovationTransfers from "../../innovatorsGetInnovationTransfers";
-import * as persistence from "../../innovatorsGetInnovationTransfers/persistence";
+import innovatorsCheckInnovationTransfer from "../../innovatorsCheckInnovationTransfer";
+import * as persistence from "../../innovatorsCheckInnovationTransfer/persistence";
 import * as authentication from "../../utils/authentication";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
@@ -29,18 +29,7 @@ jest.mock("../../utils/logging/insights", () => ({
   }),
 }));
 
-const dummy = {
-  services: {
-    UserService: {
-      getUser: () => ({
-        type: UserType.INNOVATOR,
-      }),
-    },
-  },
-  innovatorId: 'test_innovator_id'
-};
-
-describe("[HttpTrigger] innovatorsGetInnovationTransfers Suite", () => {
+describe("[HttpTrigger] innovatorsCheckInnovationTransfer Suite", () => {
   describe("Function Handler", () => {
     afterEach(() => {
       jest.resetAllMocks();
@@ -60,55 +49,24 @@ describe("[HttpTrigger] innovatorsGetInnovationTransfers Suite", () => {
       );
     });
 
-    it("Should return 200 when get Innovation Transfers", async () => {
+    it("Should return 200 when check Innovation Transfer", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
-      spyOn(authentication, "decodeToken").and.returnValue({
-        oid: dummy.innovatorId,
-      });
-      spyOn(persistence, "findInnovationTransfers").and.returnValue(
+      spyOn(service_loader, "loadAllServices").and.returnValue(null);
+      spyOn(persistence, "checkInnovationTransferById").and.returnValue(
         {
-          id: "", innovation: {
-            owner: {
-              id: dummy.innovatorId,
-            },
-          }
+          userExists: true
         },
       );
 
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(200);
     });
-
-    it("Should return 403 when innovator has an invalid user type", async () => {
-      const services = {
-        UserService: {
-          getUser: () => ({
-            type: UserType.ACCESSOR,
-          }),
-        },
-      };
-
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(services);
-      spyOn(authentication, "decodeToken").and.returnValue({
-        oid: dummy.innovatorId,
-      });
-      spyOn(persistence, "findInnovationTransfers").and.returnValue([
-        { id: "innovation_id" },
-      ]);
-
-      const { res } = await mockedRequestFactory({
-        headers: { authorization: ":access_token" },
-      });
-      expect(res.status).toBe(403);
-    });
   });
 });
 
 async function mockedRequestFactory(data?: any) {
   return runStubFunctionFromBindings(
-    innovatorsGetInnovationTransfers,
+    innovatorsCheckInnovationTransfer,
     [
       {
         type: "httpTrigger",
@@ -116,11 +74,11 @@ async function mockedRequestFactory(data?: any) {
         direction: "in",
         data: createHttpTrigger(
           "GET",
-          "http://nhse-i-aac/api/innovators/innovation-transfers",
+          "http://nhse-i-aac/api/innovators/innovation-transfers/{transferId}/check",
           { ...data.headers }, // headers
-          {},
+          { transferId: "test_transfer_id" },
           null, // payload/body
-          {} // querystring
+          null // querystring
         ),
       },
       { type: "http", name: "res", direction: "out" },

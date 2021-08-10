@@ -6,6 +6,9 @@ import * as path from "path";
 import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
 
+const dummy = {
+  email: "email@email.com",
+};
 describe("Email Service Suite", () => {
   let userService: UserService;
   let emailService: EmailService;
@@ -37,7 +40,7 @@ describe("Email Service Suite", () => {
         identities: [
           {
             signInType: "emailAddress",
-            issuerAssignedId: "antonio.simoes@bjss.com",
+            issuerAssignedId: dummy.email,
           },
         ],
       },
@@ -68,7 +71,7 @@ describe("Email Service Suite", () => {
         identities: [
           {
             signInType: "emailAddress",
-            issuerAssignedId: "antonio.simoes@bjss.com",
+            issuerAssignedId: dummy.email,
           },
         ],
       },
@@ -105,7 +108,7 @@ describe("Email Service Suite", () => {
         identities: [
           {
             signInType: "emailAddress",
-            issuerAssignedId: "antonio.simoes@bjss.com",
+            issuerAssignedId: dummy.email,
           },
         ],
       },
