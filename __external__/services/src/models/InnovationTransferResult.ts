@@ -4,5 +4,6 @@ export interface InnovationTransferResult {
   innovation: {
     id: string;
     name: string;
+    owner?: string;
   };
 }

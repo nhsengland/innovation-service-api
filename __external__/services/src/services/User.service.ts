@@ -77,7 +77,7 @@ export class UserService {
       accessToken = await authenticateWitGraphAPI();
     }
 
-    const user = await getUserFromB2C(accessToken, id);
+    const user = await getUserFromB2C(id, accessToken);
 
     if (!user) {
       throw new Error("Invalid user.");
@@ -277,8 +277,8 @@ export class UserService {
     let user: User;
     // Check if user exists in B2C
     const b2cUser = await getUserFromB2CByEmail(
-      graphAccessToken,
-      userModel.email
+      userModel.email,
+      graphAccessToken
     );
 
     if (b2cUser) {
@@ -427,7 +427,7 @@ export class UserService {
       graphAccessToken = await authenticateWitGraphAPI();
     }
 
-    const user = await getUserFromB2C(graphAccessToken, userModel.id);
+    const user = await getUserFromB2C(userModel.id, graphAccessToken);
     if (!user) {
       throw new Error("Invalid user id.");
     }

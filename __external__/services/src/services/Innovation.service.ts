@@ -30,6 +30,7 @@ import {
 import { ProfileModel } from "@services/models/ProfileModel";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
 import { RequestUser } from "@services/models/RequestUser";
+import { SimpleResult } from "@services/models/SimpleResult";
 import {
   Connection,
   FindManyOptions,
@@ -308,7 +309,7 @@ export class InnovationService extends BaseService<Innovation> {
   async findAllByInnovator(
     requestUser: RequestUser,
     filter?: any
-  ): Promise<Innovation[]> {
+  ): Promise<SimpleResult[]> {
     if (!requestUser) {
       throw new InvalidParamsError(
         "Invalid params. You must define the request user."
@@ -320,7 +321,12 @@ export class InnovationService extends BaseService<Innovation> {
       owner: requestUser.id,
     };
 
-    return await this.repository.find(filterOptions);
+    const innovations = await this.repository.find(filterOptions);
+
+    return innovations?.map((innovation) => ({
+      id: innovation.id,
+      name: innovation.name,
+    }));
   }
 
   async getInnovationOverview(
