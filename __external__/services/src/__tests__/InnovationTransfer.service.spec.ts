@@ -45,8 +45,8 @@ describe("Innovation Transfer Suite", () => {
     innovatorUser = await fixtures.createInnovatorUser();
     newInnovatorRequestUser = fixtures.getRequestUser(innovatorUser);
 
-    spyOn(NotificationService.prototype, "sendEmail").and.returnValue({});
     spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
+    spyOn(NotificationService.prototype, "sendEmail").and.returnValue({});
   });
 
   afterAll(async () => {
@@ -187,6 +187,11 @@ describe("Innovation Transfer Suite", () => {
   });
 
   it("should find one innovation transfer by ID for the owner", async () => {
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      id: innovatorRequestUser.id,
+      displayName: ":innovatorName",
+    });
+
     const item = await transferService.create(
       innovatorRequestUser,
       innovation.id,
@@ -245,6 +250,16 @@ describe("Innovation Transfer Suite", () => {
   });
 
   it("should find all innovation transfers by owner", async () => {
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      displayName: ":userName",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: dummy.newEmail,
+        },
+      ],
+    });
+
     const item = await transferService.create(
       innovatorRequestUser,
       innovation.id,
