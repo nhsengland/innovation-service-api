@@ -187,6 +187,7 @@ describe("Innovation Transfer Suite", () => {
   });
 
   it("should find one innovation transfer by ID for the owner", async () => {
+    spyOn(helpers, "getUserFromB2CByEmail").and.returnValue(undefined);
     spyOn(helpers, "getUserFromB2C").and.returnValue({
       id: innovatorRequestUser.id,
       displayName: ":innovatorName",
@@ -205,6 +206,7 @@ describe("Innovation Transfer Suite", () => {
   });
 
   it("should find one innovation transfer by ID for the new owner", async () => {
+    spyOn(helpers, "getUserFromB2CByEmail").and.returnValue(undefined);
     spyOn(helpers, "getUserFromB2C").and.returnValue({
       id: innovatorRequestUser.id,
       displayName: ":innovatorName",
@@ -250,6 +252,7 @@ describe("Innovation Transfer Suite", () => {
   });
 
   it("should find all innovation transfers by owner", async () => {
+    spyOn(helpers, "getUserFromB2CByEmail").and.returnValue(undefined);
     spyOn(helpers, "getUserFromB2C").and.returnValue({
       displayName: ":userName",
       identities: [
@@ -274,6 +277,7 @@ describe("Innovation Transfer Suite", () => {
   });
 
   it("should find all innovation transfers by new owner", async () => {
+    spyOn(helpers, "getUserFromB2CByEmail").and.returnValue(undefined);
     spyOn(helpers, "getUserFromB2C").and.returnValue({
       displayName: ":userName",
       identities: [

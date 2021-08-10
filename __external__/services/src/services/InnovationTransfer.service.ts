@@ -5,7 +5,7 @@ import {
   InnovationNotFoundError,
   InnovationTransferAlreadyExistsError,
   InnovationTransferNotFoundError,
-  InvalidParamsError
+  InvalidParamsError,
 } from "@services/errors";
 import { InnovationTransferResult } from "@services/models/InnovationTransferResult";
 import { RequestUser } from "@services/models/RequestUser";
@@ -14,7 +14,7 @@ import {
   authenticateWitGraphAPI,
   checkIfValidUUID,
   getUserFromB2C,
-  getUserFromB2CByEmail
+  getUserFromB2CByEmail,
 } from "../helpers";
 import { InnovationService } from "./Innovation.service";
 import { LoggerService } from "./Logger.service";
