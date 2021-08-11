@@ -1,6 +1,6 @@
 import { InnovationTransfer } from "@domain/entity/innovation/InnovationTransfer.entity";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
-import { InnovationTransferStatus } from "@domain/index";
+import { Innovation, InnovationTransferStatus, UserType } from "@domain/index";
 import {
   InnovationNotFoundError,
   InnovationTransferAlreadyExistsError,
@@ -17,19 +17,23 @@ import {
   getUserFromB2CByEmail,
 } from "../helpers";
 import { InnovationService } from "./Innovation.service";
+import { InnovatorService } from "./Innovator.service";
 import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
 
-interface findOneFilter {
+interface QueryFilter {
   id?: string;
-  status?: InnovationTransferStatus;
   innovationId?: string;
+  status?: InnovationTransferStatus;
+  email?: string;
+  createdBy?: string;
 }
 
 export class InnovationTransferService {
   private readonly connection: Connection;
   private readonly transferRepo: Repository<InnovationTransfer>;
   private readonly innovationService: InnovationService;
+  private readonly innovatorService: InnovatorService;
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
 
@@ -37,6 +41,7 @@ export class InnovationTransferService {
     this.connection = getConnection(connectionName);
     this.transferRepo = getRepository(InnovationTransfer, connectionName);
     this.innovationService = new InnovationService(connectionName);
+    this.innovatorService = new InnovatorService(connectionName);
     this.notificationService = new NotificationService(connectionName);
     this.logService = new LoggerService();
   }
@@ -46,10 +51,13 @@ export class InnovationTransferService {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
-    const transfer = await this.getOne({ id });
+    const transfer = await this.getOne({
+      status: InnovationTransferStatus.PENDING,
+      id,
+    });
     if (!transfer) {
       throw new InnovationTransferNotFoundError(
-        "Innovation trasnfer not found."
+        "Innovation transfer not found."
       );
     }
 
@@ -57,6 +65,28 @@ export class InnovationTransferService {
 
     return {
       userExists: !!b2cUser,
+    };
+  }
+
+  async checkUserPendingTransfers(userId: string) {
+    if (!userId) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+
+    const innovator = await this.innovatorService.find(userId);
+    const b2cUser = await getUserFromB2C(userId);
+    if (!b2cUser || (innovator && innovator.type !== UserType.INNOVATOR)) {
+    }
+    const email = this.getUserEmail(b2cUser);
+
+    const transfer = await this.getOne({
+      status: InnovationTransferStatus.PENDING,
+      email,
+    });
+
+    return {
+      hasInvites: !!transfer,
+      userExists: !!innovator,
     };
   }
 
@@ -68,10 +98,13 @@ export class InnovationTransferService {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
-    const transfer = await this.getOne({ id });
+    const transfer = await this.getOne({
+      status: InnovationTransferStatus.PENDING,
+      id,
+    });
     if (!transfer) {
       throw new InnovationTransferNotFoundError(
-        "Innovation trasnfer not found."
+        "Innovation transfer not found."
       );
     }
 
@@ -108,16 +141,13 @@ export class InnovationTransferService {
       const graphAccessToken = await authenticateWitGraphAPI();
       const b2cUser = await getUserFromB2C(requestUser.id, graphAccessToken);
 
-      email = b2cUser.identities.find(
-        (identity: any) => identity.signInType === "emailAddress"
-      ).issuerAssignedId;
+      email = this.getUserEmail(b2cUser);
     }
 
-    const transfers = await this.getMany(
-      requestUser,
-      InnovationTransferStatus.PENDING,
-      email
-    );
+    const transfers = await this.getMany(requestUser, {
+      status: InnovationTransferStatus.PENDING,
+      email,
+    });
 
     const result: InnovationTransferResult[] = [];
     for (let i = 0; i < transfers.length; i++) {
@@ -223,43 +253,125 @@ export class InnovationTransferService {
     });
   }
 
-  private async getMany(
+  async updateStatus(
     requestUser: RequestUser,
-    status: InnovationTransferStatus,
-    email?: string
-  ): Promise<InnovationTransfer[]> {
-    const query = this.transferRepo
-      .createQueryBuilder("innovationTransfer")
-      .innerJoinAndSelect("innovationTransfer.innovation", "innovation");
-
-    if (email) {
-      query.where("innovationTransfer.email = :email", {
-        email,
-      });
-    } else {
-      query.where("innovationTransfer.created_by = :createdBy", {
-        createdBy: requestUser.id,
-      });
+    id: string,
+    status: InnovationTransferStatus
+  ) {
+    if (
+      !requestUser ||
+      requestUser.type !== UserType.INNOVATOR ||
+      !status ||
+      !id ||
+      !checkIfValidUUID(id)
+    ) {
+      throw new InvalidParamsError("Invalid parameters.");
     }
 
-    if (status) {
-      query.andWhere("innovationTransfer.status = :status", {
-        status,
-      });
+    const filter: QueryFilter = {
+      id,
+    };
+
+    let graphAccessToken: string;
+    let destB2cUser: any;
+    let originB2cUser: any;
+
+    switch (status) {
+      case InnovationTransferStatus.CANCELED:
+        filter.createdBy = requestUser.id;
+        break;
+      case InnovationTransferStatus.DECLINED:
+      case InnovationTransferStatus.COMPLETED:
+        graphAccessToken = await authenticateWitGraphAPI();
+        destB2cUser = await getUserFromB2C(requestUser.id, graphAccessToken);
+
+        filter.email = this.getUserEmail(destB2cUser);
+        break;
+      default:
+        throw new InvalidParamsError("Invalid parameters. Invalid status.");
     }
 
-    return await query.getMany();
+    const transfer = await this.getOne(filter);
+    if (!transfer) {
+      throw new InnovationTransferNotFoundError(
+        "Innovation transfer not found."
+      );
+    }
+
+    if (transfer.status !== InnovationTransferStatus.PENDING) {
+      throw new InvalidParamsError("Invalid parameters. Invalid status.");
+    }
+
+    if (status === InnovationTransferStatus.COMPLETED) {
+      originB2cUser = await getUserFromB2C(
+        transfer.createdBy,
+        graphAccessToken
+      );
+    }
+
+    return await this.connection.transaction(async (transactionManager) => {
+      if (status === InnovationTransferStatus.COMPLETED) {
+        await transactionManager.update(
+          Innovation,
+          { id: transfer.innovation.id },
+          {
+            owner: { id: requestUser.id },
+            updatedBy: requestUser.id,
+          }
+        );
+      }
+
+      transfer.status = status;
+      transfer.updatedBy = requestUser.id;
+      transfer.finishedAt = new Date();
+
+      const result = await transactionManager.save(
+        InnovationTransfer,
+        transfer
+      );
+
+      return result;
+      // TODO : Enable emails
+      // try {
+      //   await this.notificationService.sendEmail(
+      //     requestUser,
+      //     emailTemplate,
+      //     innovation.id,
+      //     result.id,
+      //     [email]
+      //   );
+      // } catch (error) {
+      //   this.logService.error(
+      //     `An error has occured while sending an email with template ${emailTemplate} from ${requestUser.id}`,
+      //     error
+      //   );
+
+      //   throw error;
+      // }
+    });
   }
 
-  private async getOne(filter: findOneFilter): Promise<InnovationTransfer> {
+  private getUserEmail(b2cUser: any) {
+    return b2cUser.identities.find(
+      (identity: any) => identity.signInType === "emailAddress"
+    ).issuerAssignedId;
+  }
+
+  private getQuery(filter: QueryFilter) {
     const query = this.transferRepo
       .createQueryBuilder("innovationTransfer")
       .innerJoinAndSelect("innovationTransfer.innovation", "innovation")
-      .where("innovationTransfer.deleted_at is null");
+      .where("DATEDIFF(day, innovationTransfer.created_at, GETDATE()) < 31");
 
     if (filter.id) {
       query.andWhere("innovationTransfer.id = :id", {
         id: filter.id,
+      });
+    }
+
+    if (filter.innovationId) {
+      query.andWhere("innovationTransfer.innovation_id = :innovationId", {
+        innovationId: filter.innovationId,
       });
     }
 
@@ -269,11 +381,36 @@ export class InnovationTransferService {
       });
     }
 
-    if (filter.innovationId) {
-      query.andWhere("innovationTransfer.innovation_id = :innovationId", {
-        innovationId: filter.innovationId,
+    if (filter.email) {
+      query.andWhere("innovationTransfer.email = :email", {
+        email: filter.email,
       });
     }
+
+    if (filter.createdBy) {
+      query.andWhere("innovationTransfer.created_by = :createdBy", {
+        createdBy: filter.createdBy,
+      });
+    }
+
+    return query;
+  }
+
+  private async getMany(
+    requestUser: RequestUser,
+    filter: QueryFilter
+  ): Promise<InnovationTransfer[]> {
+    if (!filter.email) {
+      filter.createdBy = requestUser.id;
+    }
+
+    const query = this.getQuery(filter);
+
+    return await query.getMany();
+  }
+
+  private async getOne(filter: QueryFilter): Promise<InnovationTransfer> {
+    const query = this.getQuery(filter);
 
     return await query.getOne();
   }

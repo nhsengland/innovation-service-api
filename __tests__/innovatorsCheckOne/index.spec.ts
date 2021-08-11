@@ -2,8 +2,8 @@
 import {
   createHttpTrigger, runStubFunctionFromBindings
 } from "stub-azure-function-context";
-import innovatorsHeadOne from "../../innovatorsHeadOne";
-import * as persistence from "../../innovatorsHeadOne/persistence";
+import innovatorsCheckOne from "../../innovatorsCheckOne";
+import * as persistence from "../../innovatorsCheckOne/persistence";
 import * as authentication from '../../utils/authentication';
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
@@ -27,7 +27,7 @@ jest.mock("../../utils/logging/insights", () => ({
   }),
 }));
 
-describe("[HttpTrigger] innovatorsHeadOne Suite", () => {
+describe("[HttpTrigger] innovatorsCheckOne Suite", () => {
   describe("Function Handler", () => {
     afterEach(() => {
       jest.resetAllMocks();
@@ -51,7 +51,7 @@ describe("[HttpTrigger] innovatorsHeadOne Suite", () => {
       spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
-      spyOn(persistence, "findInnovatorById").and.returnValue([
+      spyOn(persistence, "checkUserPendingTransfers").and.returnValue([
         { innovator: "" },
       ]);
 
@@ -63,14 +63,14 @@ describe("[HttpTrigger] innovatorsHeadOne Suite", () => {
 
 async function mockedRequestFactory(data?: any) {
   return runStubFunctionFromBindings(
-    innovatorsHeadOne,
+    innovatorsCheckOne,
     [
       {
         type: "httpTrigger",
         name: "req",
         direction: "in",
         data: createHttpTrigger(
-          "HEAD",
+          "GET",
           "http://nhse-i-aac/api/innovators/{userId}",
           { ...data.headers }, // headers
           { userId: "test_innovator_id" }, // ?

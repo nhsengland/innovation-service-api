@@ -1,6 +1,12 @@
-import { Innovation, InnovationTransfer, User } from "@domain/index";
+import {
+  Innovation,
+  InnovationTransfer,
+  InnovationTransferStatus,
+  User,
+} from "@domain/index";
 import {
   InnovationTransferAlreadyExistsError,
+  InnovationTransferNotFoundError,
   InvalidParamsError,
 } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
@@ -186,6 +192,161 @@ describe("Innovation Transfer Suite", () => {
     expect(err).toBeInstanceOf(InvalidParamsError);
   });
 
+  it("should update a innovation transfer to CANCELED by the innovation owner", async () => {
+    spyOn(helpers, "getUserFromB2CByEmail").and.returnValue({
+      id: newInnovatorRequestUser.id,
+      displayName: ":userName",
+    });
+
+    const item = await transferService.create(
+      innovatorRequestUser,
+      innovation.id,
+      dummy.newEmail
+    );
+
+    const result = await transferService.updateStatus(
+      innovatorRequestUser,
+      item.id,
+      InnovationTransferStatus.CANCELED
+    );
+
+    expect(result).toBeDefined();
+    expect(result.status).toEqual(InnovationTransferStatus.CANCELED);
+  });
+
+  it("should update a innovation transfer to DECLINED by the new innovation owner", async () => {
+    spyOn(helpers, "getUserFromB2CByEmail").and.returnValue({
+      id: newInnovatorRequestUser.id,
+      displayName: ":userName",
+    });
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      displayName: ":userName",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: dummy.newEmail,
+        },
+      ],
+    });
+
+    const item = await transferService.create(
+      innovatorRequestUser,
+      innovation.id,
+      dummy.newEmail
+    );
+
+    const result = await transferService.updateStatus(
+      newInnovatorRequestUser,
+      item.id,
+      InnovationTransferStatus.DECLINED
+    );
+
+    expect(result).toBeDefined();
+    expect(result.status).toEqual(InnovationTransferStatus.DECLINED);
+  });
+
+  it("should update a innovation transfer to CONFIRMED by the new innovation owner", async () => {
+    spyOn(helpers, "getUserFromB2CByEmail").and.returnValue({
+      id: newInnovatorRequestUser.id,
+      displayName: ":userName",
+    });
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      displayName: ":userName",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: dummy.newEmail,
+        },
+      ],
+    });
+
+    const innovationObj = fixtures.generateInnovation({
+      owner: { id: innovatorRequestUser.id },
+      surveyId: "temp",
+    });
+    const innovation = await fixtures.saveInnovation(innovationObj);
+
+    const item = await transferService.create(
+      innovatorRequestUser,
+      innovation.id,
+      dummy.newEmail
+    );
+
+    const result = await transferService.updateStatus(
+      newInnovatorRequestUser,
+      item.id,
+      InnovationTransferStatus.COMPLETED
+    );
+
+    expect(result).toBeDefined();
+    expect(result.finishedAt).toBeDefined();
+    expect(result.status).toEqual(InnovationTransferStatus.COMPLETED);
+  });
+
+  it("should throw when update status with invalid params", async () => {
+    let err;
+    try {
+      await transferService.updateStatus(null, null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw when update status with invalid id format", async () => {
+    let err;
+    try {
+      await transferService.updateStatus(
+        innovatorRequestUser,
+        "abc",
+        InnovationTransferStatus.DECLINED
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw when update status with transfer in invalid status invalid params", async () => {
+    spyOn(helpers, "getUserFromB2CByEmail").and.returnValue({
+      id: newInnovatorRequestUser.id,
+      displayName: ":userName",
+    });
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      displayName: ":userName",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: dummy.newEmail,
+        },
+      ],
+    });
+
+    const item = await transferService.create(
+      innovatorRequestUser,
+      innovation.id,
+      "invalid_email@email.com"
+    );
+
+    let err;
+    try {
+      await transferService.updateStatus(
+        newInnovatorRequestUser,
+        item.id,
+        InnovationTransferStatus.COMPLETED
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationTransferNotFoundError);
+  });
+
   it("should find one innovation transfer by ID for the owner", async () => {
     spyOn(helpers, "getUserFromB2CByEmail").and.returnValue(undefined);
     spyOn(helpers, "getUserFromB2C").and.returnValue({
@@ -362,6 +523,48 @@ describe("Innovation Transfer Suite", () => {
     let err;
     try {
       await transferService.checkOne("abc");
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should checkUserPendingTransfers and return true if user exists and has invitations", async () => {
+    spyOn(helpers, "getUserFromB2CByEmail").and.returnValue({
+      id: newInnovatorRequestUser.id,
+      displayName: ":userName",
+    });
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      displayName: ":userName",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: dummy.newEmail,
+        },
+      ],
+    });
+
+    await transferService.create(
+      innovatorRequestUser,
+      innovation.id,
+      dummy.newEmail
+    );
+
+    const result = await transferService.checkUserPendingTransfers(
+      newInnovatorRequestUser.id
+    );
+
+    expect(result).toBeDefined();
+    expect(result.userExists).toBeTruthy();
+    expect(result.hasInvites).toBeTruthy();
+  });
+
+  it("should throw when check one with invalid params", async () => {
+    let err;
+    try {
+      await transferService.checkUserPendingTransfers(null);
     } catch (error) {
       err = error;
     }
