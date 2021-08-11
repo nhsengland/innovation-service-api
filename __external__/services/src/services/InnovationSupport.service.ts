@@ -237,6 +237,8 @@ export class InnovationSupportService {
             user: { id: requestUser.id },
             innovation: innovation,
             message: support.comment,
+            createdBy: requestUser.id,
+            updatedBy: requestUser.id,
             organisationUnit,
           });
           await transactionManager.save(Comment, comment);

@@ -1,25 +1,24 @@
 import { InnovationTransferService } from "@services/index";
-import * as typeorm from "typeorm";
-import * as persistence from "../../innovatorsCreateInnovationTransfer/persistence";
-import { CustomContext } from "../../utils/types";
 import * as dotenv from "dotenv";
 import * as path from "path";
-
-describe("[innovatorsCreateInnovationTransfer] Persistence suite", () => {
+import * as typeorm from "typeorm";
+import * as persistence from "../../innovatorsCheckOne/persistence";
+import { CustomContext } from "../../utils/types";
+describe("[innovatorsCheckOne] Persistence suite", () => {
   beforeAll(() => {
     dotenv.config({
       path: path.resolve(__dirname, "../.environment"),
     });
   });
-  describe("createInnovationTransfer", () => {
-    it("should create an innovation transfer", async () => {
+  describe("checkInnovationTransfer", () => {
+    it("should check an innovator transfers", async () => {
       // Arrange
       spyOn(typeorm, "getRepository");
       spyOn(typeorm, "getConnection");
       const spy = spyOn(
         InnovationTransferService.prototype,
-        "create"
-      ).and.returnValue([{ id: "" }]);
+        "checkUserPendingTransfers"
+      ).and.returnValue([{ hasInvites: true, userExists: true }]);
 
       const ctx = {
         services: {
@@ -33,10 +32,9 @@ describe("[innovatorsCreateInnovationTransfer] Persistence suite", () => {
         },
       };
       // Act
-      await persistence.createInnovationTransfer(
+      await persistence.checkUserPendingTransfers(
         ctx as CustomContext,
-        ":innovationId",
-        ":email"
+        "E362433E-F36B-1410-80DE-0032FE5B194B"
       );
 
       expect(spy).toHaveBeenCalled();
