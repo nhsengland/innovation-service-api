@@ -127,10 +127,10 @@ export class InnovationTransferService {
   }
 
   async findAll(
-    requestUser: RequestUser,
+    userId: string,
     assignedToMe?: boolean
   ): Promise<InnovationTransferResult[]> {
-    if (!requestUser) {
+    if (!userId) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
@@ -139,15 +139,21 @@ export class InnovationTransferService {
 
     if (assignedToMe) {
       const graphAccessToken = await authenticateWitGraphAPI();
-      const b2cUser = await getUserFromB2C(requestUser.id, graphAccessToken);
+      const b2cUser = await getUserFromB2C(userId, graphAccessToken);
 
       email = this.getUserEmail(b2cUser);
     }
 
-    const transfers = await this.getMany(requestUser, {
-      status: InnovationTransferStatus.PENDING,
-      email,
-    });
+    const transfers = await this.getMany(
+      {
+        id: userId,
+        type: UserType.INNOVATOR,
+      },
+      {
+        status: InnovationTransferStatus.PENDING,
+        email,
+      }
+    );
 
     const result: InnovationTransferResult[] = [];
     for (let i = 0; i < transfers.length; i++) {

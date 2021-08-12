@@ -821,6 +821,8 @@ paths:
           description: "Not Found"
         "401":
           description: "Unauthorized"
+          
+  "/innovators/check":
     get:
       tags:
         - "Innovator"
