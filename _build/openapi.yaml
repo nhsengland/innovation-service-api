@@ -803,6 +803,7 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
+  /innovators/check:
     get:
       tags:
         - Innovator

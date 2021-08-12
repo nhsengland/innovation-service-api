@@ -29,6 +29,9 @@ describe("[innovatorsGetInnovationTransfers] Persistence suite", () => {
             id: ":userId",
             type: "INNOVATOR",
           },
+          decodedJwt: {
+            oid: ":oid",
+          },
         },
       };
       // Act
