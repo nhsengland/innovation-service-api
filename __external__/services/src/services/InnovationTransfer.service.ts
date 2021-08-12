@@ -199,7 +199,10 @@ export class InnovationTransferService {
       throw new InnovationNotFoundError("Innovation not found for the user.");
     }
 
-    const currentTransfer = await this.getOne({ innovationId: innovation.id });
+    const currentTransfer = await this.getOne({
+      status: InnovationTransferStatus.PENDING,
+      innovationId: innovation.id,
+    });
     if (currentTransfer) {
       throw new InnovationTransferAlreadyExistsError(
         "Transfer already exists."
@@ -284,6 +287,7 @@ export class InnovationTransferService {
 
     const filter: QueryFilter = {
       id,
+      status: InnovationTransferStatus.PENDING,
     };
 
     let graphAccessToken: string;
@@ -310,10 +314,6 @@ export class InnovationTransferService {
       throw new InnovationTransferNotFoundError(
         "Innovation transfer not found."
       );
-    }
-
-    if (transfer.status !== InnovationTransferStatus.PENDING) {
-      throw new InvalidParamsError("Invalid parameters. Invalid status.");
     }
 
     if (status === InnovationTransferStatus.COMPLETED) {
