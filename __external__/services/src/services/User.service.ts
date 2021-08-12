@@ -27,6 +27,7 @@ import {
   getConnection,
   getRepository,
   Repository,
+  FindOneOptions,
 } from "typeorm";
 import {
   authenticateWitGraphAPI,
@@ -49,6 +50,11 @@ export class UserService {
     this.userRepo = getRepository(User, connectionName);
     this.orgRepo = getRepository(Organisation, connectionName);
     this.orgUnitRepo = getRepository(OrganisationUnit, connectionName);
+  }
+
+  async find(id: string, options?: FindOneOptions) {
+    if (!id) return;
+    return await this.userRepo.findOne(id, options);
   }
 
   async create(user: User) {

@@ -1,19 +1,21 @@
 import { HttpRequest } from "@azure/functions";
-import { AppInsights, SQLConnector } from "../utils/decorators";
+import { AppInsights, JwtDecoder, SQLConnector } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
 import { CustomContext } from "../utils/types";
 import * as persistence from "./persistence";
 
-class InnovatorsHeadOne {
+class InnovatorsCheckOne {
   @AppInsights()
   @SQLConnector()
+  @JwtDecoder()
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const userId = req.params.userId;
-
-    const result = await persistence.checkUserPendingTransfers(context, userId);
+    const result = await persistence.checkUserPendingTransfers(
+      context,
+      context.auth.decodedJwt.oid
+    );
 
     if (result) {
       context.res = Responsify.Ok(result);
@@ -23,4 +25,4 @@ class InnovatorsHeadOne {
   }
 }
 
-export default InnovatorsHeadOne.httpTrigger;
+export default InnovatorsCheckOne.httpTrigger;

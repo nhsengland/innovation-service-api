@@ -92,7 +92,7 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
       spyOn(mongoose, "connect").and.returnValue(null);
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
-      spyOn(persistence, "createInnovator").and.returnValue({});
+      spyOn(persistence, "createFirstTimeSignIn").and.returnValue({});
       spyOn(persistence, "updateB2CUser").and.returnValue({});
       spyOn(persistence, "getSurvey").and.returnValue({ answers: new Map() });
       const data = {
@@ -111,7 +111,7 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
       spyOn(mongoose, "connect").and.returnValue(null);
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
-      spyOn(persistence, "createInnovator").and.returnValue({});
+      spyOn(persistence, "createFirstTimeSignIn").and.returnValue({});
       spyOn(persistence, "updateB2CUser").and.throwError(null);
       spyOn(persistence, "getSurvey").and.returnValue({ answers: new Map() });
 
@@ -130,7 +130,7 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
       spyOn(mongoose, "connect").and.returnValue(null);
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
-      spyOn(persistence, "createInnovator").and.returnValue({});
+      spyOn(persistence, "createFirstTimeSignIn").and.returnValue({});
       spyOn(persistence, "updateB2CUser").and.throwError(null);
       spyOn(persistence, "getSurvey").and.returnValue({ answers: new Map() });
 
@@ -149,7 +149,7 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
       spyOn(mongoose, "connect").and.returnValue(null);
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(null);
-      spyOn(persistence, "createInnovator").and.throwError(null);
+      spyOn(persistence, "createFirstTimeSignIn").and.throwError(null);
       spyOn(persistence, "updateB2CUser").and.returnValue(null);
       spyOn(persistence, "getSurvey").and.returnValue({ answers: new Map() });
 
@@ -176,7 +176,7 @@ async function mockedRequestFactory(data?: any) {
         direction: "in",
         data: createHttpTrigger(
           "POST",
-          "http://nhse-i-aac/api/surveys",
+          "http://nhse-i-aac/api/innovators",
           { ...data.headers }, // headers
           {}, // ?
           { ...data.payload }, // payload/body
