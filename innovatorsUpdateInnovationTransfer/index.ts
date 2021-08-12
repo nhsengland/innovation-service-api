@@ -22,7 +22,7 @@ class InnovatorsUpdateInnovationTransfer {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const transferId = req.body.transferId;
+    const transferId = req.params.transferId;
     const status = req.body.status;
 
     let result;

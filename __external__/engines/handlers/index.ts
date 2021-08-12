@@ -4,18 +4,23 @@ import {
   InnovationSupport,
   InnovationSupportStatus,
 } from "@domain/index";
-import { RequestUser } from "@services/models/RequestUser";
-import { EmailResponse, EmailService } from "@services/services/Email.service";
-import { getRepository } from "typeorm";
 import * as helpers from "@helpers/index";
-import { getTemplates } from "../templates";
 import { EmailTemplateNotFound, InvalidParamsError } from "@services/errors";
+import { RequestUser } from "@services/models/RequestUser";
+import {
+  EmailProps,
+  EmailResponse,
+  EmailService,
+} from "@services/services/Email.service";
+import { getRepository } from "typeorm";
+import { getTemplates } from "../templates";
 
 export const accessorsActionToReviewHandler = async (
   requestUser: RequestUser,
   params: {
     innovationId: string;
     contextId: string;
+    emailProps?: EmailProps;
   },
   targetUsers?: string[],
   connectionName?: string
@@ -42,7 +47,7 @@ export const accessorsActionToReviewHandler = async (
     action_url,
   };
 
-  const result = await emailService.send(
+  const result = await emailService.sendMany(
     recipients,
     EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
     props
@@ -56,6 +61,7 @@ export const accessorsAssignedToInnovationHandler = async (
   params: {
     innovationId: string;
     contextId: string;
+    emailProps?: EmailProps;
   },
   targetUsers?: string[],
   connectionName?: string
@@ -75,7 +81,7 @@ export const accessorsAssignedToInnovationHandler = async (
   let recipients = targetUsers;
   recipients = recipients.filter((r) => r !== requestUser.id);
 
-  const result = await emailService.send(
+  const result = await emailService.sendMany(
     recipients,
     EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
     props
@@ -89,6 +95,7 @@ export const innovatorActionRequested = async (
   params: {
     innovationId: string;
     contextId: string;
+    emailProps?: EmailProps;
   },
   targetUsers?: string[],
   connectionName?: string
@@ -114,7 +121,7 @@ export const innovatorActionRequested = async (
 
   const recipients = [innovation.owner.id];
 
-  const result = await emailService.send(
+  const result = await emailService.sendMany(
     recipients,
     EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
     props
@@ -128,6 +135,7 @@ export const qaOrganisationSuggestedForSupport = async (
   params: {
     innovationId: string;
     contextId: string;
+    emailProps?: EmailProps;
   },
   targetUsers?: string[],
   connectionName?: string
@@ -144,7 +152,7 @@ export const qaOrganisationSuggestedForSupport = async (
   let recipients = targetUsers;
   recipients = recipients.filter((r) => r !== requestUser.id);
 
-  const result = await emailService.send(
+  const result = await emailService.sendMany(
     recipients,
     EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED,
     props
@@ -158,16 +166,12 @@ export const innovatorsTransferOwnershipNewUser = async (
   params: {
     innovationId: string;
     contextId: string;
+    emailProps?: EmailProps;
   },
   targetUsers?: string[],
   connectionName?: string
 ): Promise<EmailResponse[]> => {
-  const innovationRepo = getRepository(Innovation, connectionName);
   const emailService = new EmailService(connectionName);
-  const b2cUser = await helpers.getUserFromB2C(requestUser.id);
-  const innovation = await innovationRepo.findOne(params.innovationId, {
-    relations: ["owner"],
-  });
 
   const transfer_url = parseUrl(
     params,
@@ -175,15 +179,16 @@ export const innovatorsTransferOwnershipNewUser = async (
   );
 
   const props = {
-    innovator_name: b2cUser.displayName,
-    innovation_name: innovation.name,
+    ...params.emailProps,
     transfer_url,
   };
 
-  const recipients = targetUsers;
+  const recipient = targetUsers[0];
 
-  const result = await emailService.send(
-    recipients,
+  const result = await emailService.sendOne(
+    {
+      email: recipient,
+    },
     EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_NEW_USER,
     props
   );
@@ -196,16 +201,12 @@ export const innovatorsTransferOwnershipExistingUser = async (
   params: {
     innovationId: string;
     contextId: string;
+    emailProps?: EmailProps;
   },
   targetUsers?: string[],
   connectionName?: string
 ): Promise<EmailResponse[]> => {
-  const innovationRepo = getRepository(Innovation, connectionName);
   const emailService = new EmailService(connectionName);
-  const b2cUser = await helpers.getUserFromB2C(requestUser.id);
-  const innovation = await innovationRepo.findOne(params.innovationId, {
-    relations: ["owner"],
-  });
 
   const transfer_url = parseUrl(
     params,
@@ -213,15 +214,16 @@ export const innovatorsTransferOwnershipExistingUser = async (
   );
 
   const props = {
-    innovator_name: b2cUser.displayName,
-    innovation_name: innovation.name,
+    ...params.emailProps,
     transfer_url,
   };
 
-  const recipients = targetUsers;
+  const recipient = targetUsers[0];
 
-  const result = await emailService.send(
-    recipients,
+  const result = await emailService.sendOne(
+    {
+      email: recipient,
+    },
     EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_EXISTING_USER,
     props
   );
@@ -229,37 +231,25 @@ export const innovatorsTransferOwnershipExistingUser = async (
   return result;
 };
 
-// TODO : FINISH EMAIL HANDLER
 export const innovatorsTransferOwnershipConfirmation = async (
   requestUser: RequestUser,
   params: {
     innovationId: string;
     contextId: string;
+    emailProps?: EmailProps;
   },
   targetUsers?: string[],
   connectionName?: string
 ): Promise<EmailResponse[]> => {
-  const innovationRepo = getRepository(Innovation, connectionName);
   const emailService = new EmailService(connectionName);
-  const b2cUser = await helpers.getUserFromB2C(requestUser.id);
-  const innovation = await innovationRepo.findOne(params.innovationId, {
-    relations: ["owner"],
-  });
+  const recipient = targetUsers[0];
 
-  // TODO : REVIEW PARAMETERS
-  const props = {
-    innovator_name: "",
-    innovation_name: innovation.name,
-    new_innovator_name: b2cUser.displayName,
-    new_innovator_email: "",
-  };
-
-  const recipients = targetUsers;
-
-  const result = await emailService.send(
-    recipients,
+  const result = await emailService.sendOne(
+    {
+      email: recipient,
+    },
     EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_CONFIRMATION,
-    props
+    params.emailProps
   );
 
   return result;
