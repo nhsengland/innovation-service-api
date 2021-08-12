@@ -4,7 +4,7 @@ export interface ProfileSlimModel {
 }
 
 export interface UserEmailModel {
-  id: string;
-  displayName: string;
+  id?: string;
+  displayName?: string;
   email: string;
 }

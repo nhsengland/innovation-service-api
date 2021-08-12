@@ -206,12 +206,17 @@ export class InnovationTransferService {
       );
     }
 
-    const b2cUser = await getUserFromB2CByEmail(email);
-    if (b2cUser && b2cUser.id === requestUser.id) {
+    const graphAccessToken = await authenticateWitGraphAPI();
+    const destB2cUser = await getUserFromB2CByEmail(email);
+    if (destB2cUser && destB2cUser.id === requestUser.id) {
       throw new InvalidParamsError("Invalid parameters.");
     }
+    const originB2cUser = await getUserFromB2C(
+      requestUser.id,
+      graphAccessToken
+    );
 
-    const emailTemplate: EmailNotificationTemplate = b2cUser
+    const emailTemplate: EmailNotificationTemplate = destB2cUser
       ? EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_EXISTING_USER
       : EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_NEW_USER;
 
@@ -230,23 +235,26 @@ export class InnovationTransferService {
         transferObj
       );
 
-      // TODO : Enable emails
-      // try {
-      //   await this.notificationService.sendEmail(
-      //     requestUser,
-      //     emailTemplate,
-      //     innovation.id,
-      //     result.id,
-      //     [email]
-      //   );
-      // } catch (error) {
-      //   this.logService.error(
-      //     `An error has occured while sending an email with template ${emailTemplate} from ${requestUser.id}`,
-      //     error
-      //   );
+      try {
+        await this.notificationService.sendEmail(
+          requestUser,
+          emailTemplate,
+          innovation.id,
+          result.id,
+          [email],
+          {
+            innovator_name: originB2cUser.displayName,
+            innovation_name: innovation.name,
+          }
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while sending an email with template ${emailTemplate} from ${requestUser.id}`,
+          error
+        );
 
-      //   throw error;
-      // }
+        throw error;
+      }
 
       return {
         id: result.id,
@@ -325,6 +333,27 @@ export class InnovationTransferService {
             updatedBy: requestUser.id,
           }
         );
+
+        try {
+          await this.notificationService.sendEmail(
+            requestUser,
+            EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_CONFIRMATION,
+            transfer.innovation.id,
+            transfer.id,
+            [filter.email],
+            {
+              innovator_name: originB2cUser.displayName,
+              innovation_name: transfer.innovation.name,
+              new_innovator_name: destB2cUser.displayName,
+              new_innovator_email: filter.email,
+            }
+          );
+        } catch (error) {
+          this.logService.error(
+            `An error has occured while sending an email with template ${EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_CONFIRMATION} from ${requestUser.id}`,
+            error
+          );
+        }
       }
 
       transfer.status = status;
@@ -337,23 +366,6 @@ export class InnovationTransferService {
       );
 
       return result;
-      // TODO : Enable emails
-      // try {
-      //   await this.notificationService.sendEmail(
-      //     requestUser,
-      //     emailTemplate,
-      //     innovation.id,
-      //     result.id,
-      //     [email]
-      //   );
-      // } catch (error) {
-      //   this.logService.error(
-      //     `An error has occured while sending an email with template ${emailTemplate} from ${requestUser.id}`,
-      //     error
-      //   );
-
-      //   throw error;
-      // }
     });
   }
 

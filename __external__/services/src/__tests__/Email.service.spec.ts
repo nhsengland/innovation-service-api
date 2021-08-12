@@ -53,7 +53,7 @@ describe("Email Service Suite", () => {
       action_url: "https://example.com/action_1",
     };
 
-    const actual = await emailService.send(
+    const actual = await emailService.sendMany(
       [":accessor_user_id_1"],
       EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
       props
@@ -86,7 +86,7 @@ describe("Email Service Suite", () => {
 
     let err;
     try {
-      await emailService.send(
+      await emailService.sendMany(
         [":accessor_user_id_1"],
         EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
         props
@@ -120,7 +120,7 @@ describe("Email Service Suite", () => {
 
     let err;
     try {
-      await emailService.send(
+      await emailService.sendMany(
         [":accessor_user_id_1"],
         EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
         props

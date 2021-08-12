@@ -26,6 +26,7 @@ import {
   ObjectLiteral,
   Repository,
 } from "typeorm";
+import { EmailProps } from "./Email.service";
 
 export type NotificationDismissResult = {
   affected: number;
@@ -64,7 +65,8 @@ export class NotificationService {
     templateCode: EmailNotificationTemplate,
     innovationId?: string,
     contextId?: string,
-    targetUsers?: string[]
+    targetUsers?: string[],
+    emailProps?: EmailProps
   ) {
     const handler = emailEngines().find((e) => e.key === templateCode)?.handler;
 
@@ -74,6 +76,7 @@ export class NotificationService {
         {
           innovationId,
           contextId,
+          emailProps,
         },
         targetUsers,
         this.connectionName
