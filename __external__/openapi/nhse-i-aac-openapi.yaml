@@ -833,11 +833,6 @@ paths:
         - OpenId:
             - innovators_details
       parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
         - name: Authorization
           in: header
           schema:
