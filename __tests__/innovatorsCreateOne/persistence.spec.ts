@@ -47,7 +47,7 @@ describe("[innovatorsCreateOne] Persistence suite", () => {
         },
       };
       // Act
-      await persistence.createInnovator(
+      await persistence.createFirstTimeSignIn(
         ctx as CustomContext,
         innovator,
         innovation,

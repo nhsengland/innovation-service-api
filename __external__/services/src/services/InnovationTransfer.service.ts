@@ -17,9 +17,9 @@ import {
   getUserFromB2CByEmail,
 } from "../helpers";
 import { InnovationService } from "./Innovation.service";
-import { InnovatorService } from "./Innovator.service";
 import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
+import { UserService } from "./User.service";
 
 interface QueryFilter {
   id?: string;
@@ -33,16 +33,16 @@ export class InnovationTransferService {
   private readonly connection: Connection;
   private readonly transferRepo: Repository<InnovationTransfer>;
   private readonly innovationService: InnovationService;
-  private readonly innovatorService: InnovatorService;
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
+  private readonly userService: UserService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.transferRepo = getRepository(InnovationTransfer, connectionName);
     this.innovationService = new InnovationService(connectionName);
-    this.innovatorService = new InnovatorService(connectionName);
     this.notificationService = new NotificationService(connectionName);
+    this.userService = new UserService(connectionName);
     this.logService = new LoggerService();
   }
 
@@ -73,7 +73,7 @@ export class InnovationTransferService {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
-    const innovator = await this.innovatorService.find(userId);
+    const innovator = await this.userService.find(userId);
     const b2cUser = await getUserFromB2C(userId);
     if (!b2cUser || (innovator && innovator.type !== UserType.INNOVATOR)) {
     }

@@ -2,7 +2,7 @@ import { Innovation, Organisation, User } from "@domain/index";
 import { Survey } from "../../schemas/Survey";
 import { CustomContext } from "../../utils/types";
 
-export const createInnovator = async (
+export const createFirstTimeSignIn = async (
   ctx: CustomContext,
   innovator: User,
   innovation: Innovation,
@@ -12,6 +12,21 @@ export const createInnovator = async (
     innovator,
     innovation,
     organisation
+  );
+
+  return result;
+};
+
+export const createFirstTimeSignInTransfer = async (
+  ctx: CustomContext,
+  innovator: User,
+  organisation: Organisation,
+  transferId: string
+) => {
+  const result = await ctx.services.InnovatorService.createFirstTimeSignInTransfer(
+    innovator,
+    organisation,
+    transferId
   );
 
   return result;
