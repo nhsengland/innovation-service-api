@@ -39,8 +39,10 @@ describe("Innovation Support Suite", () => {
   let qAccessorRequestUser: RequestUser;
   let organisationUnit: OrganisationUnit;
 
+  let accessorUser: User;
+
   beforeAll(async () => {
-    //await setupTestsConnection();
+    // await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -51,7 +53,7 @@ describe("Innovation Support Suite", () => {
 
     const innovatorUser = await fixtures.createInnovatorUser();
     const qualAccessorUser = await fixtures.createAccessorUser();
-    const accessorUser = await fixtures.createAccessorUser();
+    accessorUser = await fixtures.createAccessorUser();
 
     const accessorOrganisation = await fixtures.createOrganisation(
       OrganisationType.ACCESSOR
@@ -102,28 +104,6 @@ describe("Innovation Support Suite", () => {
         },
       ],
     });
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
-      {
-        id: accessorUser.id,
-        displayName: ":ACCESSOR",
-        identities: [
-          {
-            signInType: "emailAddress",
-            issuerAssignedId: "example@bjss.com",
-          },
-        ],
-      },
-      {
-        id: qualAccessorUser.id,
-        displayName: ":QUALIFYING_ACCESSOR",
-        identities: [
-          {
-            signInType: "emailAddress",
-            issuerAssignedId: "example@bjss.com",
-          },
-        ],
-      },
-    ]);
 
     innovatorRequestUser = fixtures.getRequestUser(innovatorUser);
     qAccessorRequestUser = fixtures.getRequestUser(
@@ -157,7 +137,7 @@ describe("Innovation Support Suite", () => {
     await query.from(Innovation).execute();
     await query.from(User).execute();
 
-    //closeTestsConnection();
+    // closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -253,6 +233,29 @@ describe("Innovation Support Suite", () => {
   });
 
   it("should find all support logs by innovation", async () => {
+    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+      {
+        id: accessorUser.id,
+        displayName: ":ACCESSOR",
+        identities: [
+          {
+            signInType: "emailAddress",
+            issuerAssignedId: "example@bjss.com",
+          },
+        ],
+      },
+      {
+        id: qAccessorRequestUser.id,
+        displayName: ":QUALIFYING_ACCESSOR",
+        identities: [
+          {
+            signInType: "emailAddress",
+            issuerAssignedId: "example@bjss.com",
+          },
+        ],
+      },
+    ]);
+
     await supportLogService.create(qAccessorRequestUser, innovation.id, {
       type: InnovationSupportLogType.STATUS_UPDATE,
       description: ":description",
@@ -274,6 +277,29 @@ describe("Innovation Support Suite", () => {
   });
 
   it("should find all support logs by innovation and type", async () => {
+    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+      {
+        id: accessorUser.id,
+        displayName: ":ACCESSOR",
+        identities: [
+          {
+            signInType: "emailAddress",
+            issuerAssignedId: "example@bjss.com",
+          },
+        ],
+      },
+      {
+        id: qAccessorRequestUser.id,
+        displayName: ":QUALIFYING_ACCESSOR",
+        identities: [
+          {
+            signInType: "emailAddress",
+            issuerAssignedId: "example@bjss.com",
+          },
+        ],
+      },
+    ]);
+
     await supportLogService.create(qAccessorRequestUser, innovation.id, {
       type: InnovationSupportLogType.STATUS_UPDATE,
       description: ":description",

@@ -24,10 +24,10 @@ import { UserUpdateResult } from "@services/models/UserUpdateResult";
 import {
   Connection,
   EntityManager,
+  FindOneOptions,
   getConnection,
   getRepository,
   Repository,
-  FindOneOptions,
 } from "typeorm";
 import {
   authenticateWitGraphAPI,
@@ -171,18 +171,44 @@ export class UserService {
     }
 
     const accessToken = await authenticateWitGraphAPI();
+
+    // remove duplicated userIds
     const uniqueUserIds = ids.filter((x, i, a) => a.indexOf(x) == i);
-    const userIds = uniqueUserIds.map((u) => `"${u}"`).join(",");
-    const odataFilter = `$filter=id in (${userIds})`;
 
-    const user = (await getUsersFromB2C(accessToken, odataFilter)) || [];
+    // limit of users per chunk
+    const userIdsChunkSize = 10;
 
-    const result = user.map((u) => ({
-      id: u.id,
-      displayName: u.displayName,
-    }));
+    // create chunks
+    const userIdsChunks = uniqueUserIds.reduce((resultArray, item, index) => {
+      const chunkIndex = Math.floor(index / userIdsChunkSize);
 
-    return result;
+      if (!resultArray[chunkIndex]) {
+        resultArray[chunkIndex] = [];
+      }
+
+      resultArray[chunkIndex].push(item);
+
+      return resultArray;
+    }, []);
+
+    // prepare promises
+    const promises = [];
+    for (let i = 0; i < userIdsChunks.length; i++) {
+      const userIds = userIdsChunks[i].map((u) => `"${u}"`).join(",");
+      const odataFilter = `$filter=id in (${userIds})`;
+
+      promises.push(getUsersFromB2C(accessToken, odataFilter));
+    }
+
+    // promise all and merge all results
+    return Promise.all(promises).then((results) => {
+      return results.flatMap((result) =>
+        result?.map((u) => ({
+          id: u.id,
+          displayName: u.displayName,
+        }))
+      );
+    });
   }
 
   async updateProfile(requestUser: RequestUser, user: UserProfileUpdateModel) {

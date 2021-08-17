@@ -98,10 +98,6 @@ describe("Innovation Support Suite", () => {
         },
       ],
     });
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
-      { id: accessorUser.id, displayName: ":ACCESSOR" },
-      { id: qualAccessorUser.id, displayName: ":QUALIFYING_ACCESSOR" },
-    ]);
 
     innovatorRequestUser = fixtures.getRequestUser(innovatorUser);
     qAccessorRequestUser = fixtures.getRequestUser(
@@ -235,6 +231,11 @@ describe("Innovation Support Suite", () => {
   });
 
   it("should find an support by innovator", async () => {
+    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+      { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
+      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
+
     const supportObj = {
       status: InnovationSupportStatus.ENGAGING,
       accessors: [accessorRequestUser.organisationUnitUser.id],
@@ -258,6 +259,11 @@ describe("Innovation Support Suite", () => {
   });
 
   it("should find an support by q. accessor", async () => {
+    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+      { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
+      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
+
     const supportObj = {
       status: InnovationSupportStatus.ENGAGING,
       accessors: [accessorRequestUser.organisationUnitUser.id],
@@ -281,6 +287,11 @@ describe("Innovation Support Suite", () => {
   });
 
   it("should find an support by accessor", async () => {
+    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+      { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
+      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
+
     const supportObj = {
       status: InnovationSupportStatus.ENGAGING,
       accessors: [accessorRequestUser.organisationUnitUser.id],
@@ -349,6 +360,11 @@ describe("Innovation Support Suite", () => {
   });
 
   it("should update an support status to add one accessor", async () => {
+    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+      { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
+      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
+
     let supportObj = {
       status: InnovationSupportStatus.ENGAGING,
       accessors: [accessorRequestUser.organisationUnitUser.id],
