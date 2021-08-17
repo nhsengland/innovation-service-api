@@ -41,3 +41,4 @@ Create a new file "local.settings.json" file on the root's project with the abov
 
 
 ## Running the app
+TODO
