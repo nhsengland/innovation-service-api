@@ -340,7 +340,7 @@ export class InnovationTransferService {
             EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_CONFIRMATION,
             transfer.innovation.id,
             transfer.id,
-            [filter.email],
+            [this.getUserEmail(originB2cUser)],
             {
               innovator_name: originB2cUser.displayName,
               innovation_name: transfer.innovation.name,
