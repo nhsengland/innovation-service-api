@@ -10,7 +10,7 @@ describe("[assessmentsGetInnovation] Persistence suite", () => {
       path: path.resolve(__dirname, "../.environment"),
     });
   });
-  describe("findAllInnovationSections", () => {
+  describe("findAllInnovationSectionsMetadata", () => {
     it("should assess if an innovation exists", async () => {
       // Arrange
       spyOn(typeorm, "getRepository");

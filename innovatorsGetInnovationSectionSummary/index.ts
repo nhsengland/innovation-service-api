@@ -23,7 +23,7 @@ class InnovatorsGetInnovationSectionSummary {
 
     let result;
     try {
-      result = await persistence.findAllInnovationSections(
+      result = await persistence.findAllInnovationSectionsMetadata(
         context,
         innovationId
       );
