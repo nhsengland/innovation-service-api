@@ -1,9 +1,8 @@
-import { getConnection } from "typeorm";
-import { CommentService } from "../services/Comment.service";
 import {
   AccessorOrganisationRole,
   Comment,
   Innovation,
+  Notification,
   NotificationUser,
   Organisation,
   OrganisationType,
@@ -12,11 +11,7 @@ import {
   OrganisationUser,
   User,
   UserType,
-  Notification,
 } from "@domain/index";
-import * as fixtures from "../__fixtures__";
-import * as helpers from "../helpers";
-import { closeTestsConnection, setupTestsConnection } from "..";
 import {
   InvalidParamsError,
   MissingUserOrganisationError,
@@ -24,6 +19,11 @@ import {
 import { RequestUser } from "@services/models/RequestUser";
 import * as dotenv from "dotenv";
 import * as path from "path";
+import { getConnection } from "typeorm";
+import { closeTestsConnection, setupTestsConnection } from "..";
+import * as helpers from "../helpers";
+import { CommentService } from "../services/Comment.service";
+import * as fixtures from "../__fixtures__";
 
 describe("Comment Service Suite", () => {
   let commentService: CommentService;
@@ -70,10 +70,6 @@ describe("Comment Service Suite", () => {
     spyOn(helpers, "getUserFromB2C").and.returnValue({
       displayName: "Q Accessor A",
     });
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
-      { id: innovatorUser.id, displayName: ":INNOVATOR" },
-      { id: qualAccessorUser.id, displayName: ":QUALIFYING_ACCESSOR" },
-    ]);
 
     innovatorRequestUser = fixtures.getRequestUser(innovatorUser);
     qAccessorRequestUser = fixtures.getRequestUser(
@@ -179,6 +175,11 @@ describe("Comment Service Suite", () => {
   });
 
   it("should find all comments by an Innovation", async () => {
+    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+      { id: innovatorRequestUser.id, displayName: ":INNOVATOR" },
+      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
+
     await commentService.create(
       innovatorRequestUser,
       innovation.id,
@@ -194,6 +195,11 @@ describe("Comment Service Suite", () => {
   });
 
   it("should find all comments by an Accessor", async () => {
+    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+      { id: innovatorRequestUser.id, displayName: ":INNOVATOR" },
+      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
+
     const comment = await commentService.create(
       innovatorRequestUser,
       innovation.id,

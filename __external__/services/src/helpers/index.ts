@@ -30,7 +30,11 @@ export async function authenticateWitGraphAPI() {
   return accessToken;
 }
 
-export async function getUserFromB2C(accessToken: string, id: string) {
+export async function getUserFromB2C(id: string, accessToken?: string) {
+  if (!accessToken) {
+    accessToken = await authenticateWitGraphAPI();
+  }
+
   try {
     const config = {
       headers: { Authorization: `Bearer ${accessToken}` },
@@ -68,9 +72,13 @@ export async function getUsersFromB2C(
 }
 
 export async function getUserFromB2CByEmail(
-  accessToken: string,
-  email: string
+  email: string,
+  accessToken?: string
 ) {
+  if (!accessToken) {
+    accessToken = await authenticateWitGraphAPI();
+  }
+
   const odataFilter = `$filter=identities/any(c:c/issuerAssignedId eq '${email}' and c/issuer eq '${process.env.AD_TENANT_NAME}.onmicrosoft.com')`;
 
   try {
@@ -99,6 +107,7 @@ export async function createB2CUser(
   const termsOfUseConsentVersion = `extension_${process.env.AD_EXTENSION_ID}_termsOfUseConsentVersion`;
   const termsOfUseConsentChoice = `extension_${process.env.AD_EXTENSION_ID}_termsOfUseConsentChoice`;
   const termsOfUseConsentDateTime = `extension_${process.env.AD_EXTENSION_ID}_termsOfUseConsentDateTime`;
+  const passwordResetOn = `extension_${process.env.AD_EXTENSION_ID}_passwordResetOn`;
 
   const payload = {
     accountEnabled: true,
@@ -120,6 +129,7 @@ export async function createB2CUser(
   payload[termsOfUseConsentVersion] = "V1";
   payload[termsOfUseConsentChoice] = "AgreeToTermsOfUseConsentYes";
   payload[termsOfUseConsentDateTime] = new Date().toISOString();
+  payload[passwordResetOn] = new Date().toISOString();
 
   try {
     const config = {
@@ -223,4 +233,10 @@ export function getOrganisationsFromOrganisationUnitsObj(
   }
 
   return organisations;
+}
+
+export function checkIfValidUUID(str: string): boolean {
+  const regexExp = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
+
+  return regexExp.test(str);
 }

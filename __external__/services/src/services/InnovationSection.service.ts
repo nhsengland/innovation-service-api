@@ -18,6 +18,7 @@ import {
   InvalidParamsError,
   SectionNotFoundError,
 } from "@services/errors";
+import { checkIfValidUUID } from "@services/helpers";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, FindOneOptions, getConnection } from "typeorm";
 import { InnovationSectionModel } from "../models/InnovationSectionModel";
@@ -25,8 +26,8 @@ import { InnovationSectionResult } from "../models/InnovationSectionResult";
 import { BaseService } from "./Base.service";
 import { FileService } from "./File.service";
 import { InnovationService } from "./Innovation.service";
-import { NotificationService } from "./Notification.service";
 import { LoggerService } from "./Logger.service";
+import { NotificationService } from "./Notification.service";
 
 export class InnovationSectionService extends BaseService<InnovationSection> {
   private readonly connection: Connection;
@@ -48,7 +49,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     requestUser: RequestUser,
     innovationId: string
   ) {
-    if (!innovationId || !requestUser) {
+    if (!innovationId || !requestUser || !checkIfValidUUID(innovationId)) {
       throw new InvalidParamsError(
         "Invalid parameters. You must define the innovation id and the userId."
       );
@@ -86,7 +87,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     requestUser: RequestUser,
     innovationId: string
   ) {
-    if (!innovationId || !requestUser) {
+    if (!innovationId || !requestUser || !checkIfValidUUID(innovationId)) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
@@ -124,7 +125,12 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     section: string
   ) {
     // VALIDATIONS
-    if (!innovationId || !section || !requestUser) {
+    if (
+      !innovationId ||
+      !section ||
+      !requestUser ||
+      !checkIfValidUUID(innovationId)
+    ) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 

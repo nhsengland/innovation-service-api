@@ -71,7 +71,7 @@ async function mockedRequestFactory(data?: any) {
         direction: "in",
         data: createHttpTrigger(
           "HEAD",
-          "http://nhse-i-aac/api/surveys",
+          "http://nhse-i-aac/api/innovators/{userId}",
           { ...data.headers }, // headers
           { userId: "test_innovator_id" }, // ?
           {}, // payload/body

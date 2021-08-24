@@ -13,6 +13,53 @@ import * as persistence from "./persistence";
 import * as validation from "./validation";
 
 class InnovatorsCreateOne {
+  static async getSurveyInfo(
+    context: CustomContext,
+    oid: string,
+    surveyId: string
+  ) {
+    let survey: any;
+    try {
+      survey = await persistence.getSurvey(surveyId);
+    } catch (error) {
+      context.log.error(error);
+      context.res = Responsify.Internal();
+      return;
+    }
+
+    if (!survey) {
+      context.res = Responsify.BadRequest({
+        error: "Survey not found!",
+      });
+      return;
+    }
+
+    const surveyAnswers = survey.answers;
+
+    const getTypeObjectArray: Function = (types: String[]) => {
+      return types?.map((type: String) => ({
+        type,
+        createdBy: oid,
+        updatedBy: oid,
+      }));
+    };
+
+    return {
+      mainCategory: surveyAnswers.get("mainCategory"),
+      otherMainCategoryDescription: surveyAnswers.get(
+        "otherMainCategoryDescription"
+      ),
+      hasProblemTackleKnowledge: surveyAnswers.get("hasProblemTackleKnowledge"),
+      hasMarketResearch: surveyAnswers.get("hasMarketResearch"),
+      hasBenefits: surveyAnswers.get("hasBenefits"),
+      hasTests: surveyAnswers.get("hasTests"),
+      hasEvidence: surveyAnswers.get("hasEvidence"),
+      otherCategoryDescription: surveyAnswers.get("otherCategoryDescription"),
+      categories: getTypeObjectArray(surveyAnswers.get("categories")),
+      supportTypes: getTypeObjectArray(surveyAnswers.get("supportTypes")),
+    };
+  }
+
   @AppInsights()
   @SQLConnector()
   @CosmosConnector()
@@ -45,53 +92,21 @@ class InnovatorsCreateOne {
     const oid = jwt.oid;
     const surveyId = jwt.surveyId;
 
-    if (!surveyId) {
-      context.res = Responsify.BadRequest({
-        error: "SurveyId missing from JWT.",
-      });
-      return;
+    let surveyInfo: any = {};
+    if (payload.actionType === "first_time_signin") {
+      if (!surveyId) {
+        context.res = Responsify.BadRequest({
+          error: "SurveyId missing from JWT.",
+        });
+        return;
+      }
+
+      surveyInfo = await InnovatorsCreateOne.getSurveyInfo(
+        context,
+        oid,
+        surveyId
+      );
     }
-
-    let survey: any;
-    try {
-      survey = await persistence.getSurvey(surveyId);
-    } catch (error) {
-      context.log.error(error);
-      context.res = Responsify.Internal();
-      return;
-    }
-
-    if (!survey) {
-      context.res = Responsify.BadRequest({
-        error: "Survey not found!",
-      });
-      return;
-    }
-
-    const surveyAnswers = survey.answers;
-
-    const getTypeObjectArray: Function = (types: String[]) => {
-      return types?.map((type: String) => ({
-        type,
-        createdBy: oid,
-        updatedBy: oid,
-      }));
-    };
-
-    const surveyInfo = {
-      mainCategory: surveyAnswers.get("mainCategory"),
-      otherMainCategoryDescription: surveyAnswers.get(
-        "otherMainCategoryDescription"
-      ),
-      hasProblemTackleKnowledge: surveyAnswers.get("hasProblemTackleKnowledge"),
-      hasMarketResearch: surveyAnswers.get("hasMarketResearch"),
-      hasBenefits: surveyAnswers.get("hasBenefits"),
-      hasTests: surveyAnswers.get("hasTests"),
-      hasEvidence: surveyAnswers.get("hasEvidence"),
-      otherCategoryDescription: surveyAnswers.get("otherCategoryDescription"),
-      categories: getTypeObjectArray(surveyAnswers.get("categories")),
-      supportTypes: getTypeObjectArray(surveyAnswers.get("supportTypes")),
-    };
 
     try {
       await persistence.updateB2CUser(context, {
@@ -106,7 +121,7 @@ class InnovatorsCreateOne {
       return;
     }
 
-    if (payload.actionType === "first_time_signin" && !payload.organisation) {
+    if (!payload.organisation) {
       payload.organisation = Organisation.new({
         name: oid,
         isShadow: true,
@@ -115,34 +130,44 @@ class InnovatorsCreateOne {
 
     try {
       const innovator: User = User.new({ id: oid });
-      const organisationShares = payload.innovation.organisationShares.map(
-        (id) => {
-          return { id };
-        }
-      );
-
-      const innovation: Innovation = Innovation.new({
-        ...surveyInfo,
-        name: payload.innovation.name,
-        description: payload.innovation.description,
-        countryName: payload.innovation.countryName,
-        postcode: payload.innovation.postcode,
-        surveyId,
-        organisationShares,
-      });
-
       const organisation: Organisation = Organisation.new({
         ...payload.organisation,
       });
 
-      const result = await persistence.createInnovator(
-        context,
-        innovator,
-        innovation,
-        organisation
-      );
+      let result: any = {};
+      if (payload.actionType === "first_time_signin") {
+        const organisationShares = payload.innovation.organisationShares.map(
+          (id: string) => {
+            return { id };
+          }
+        );
 
-      context.res = Responsify.Created(result);
+        const innovation: Innovation = Innovation.new({
+          ...surveyInfo,
+          name: payload.innovation.name,
+          description: payload.innovation.description,
+          countryName: payload.innovation.countryName,
+          postcode: payload.innovation.postcode,
+          surveyId,
+          organisationShares,
+        });
+
+        result = await persistence.createFirstTimeSignIn(
+          context,
+          innovator,
+          innovation,
+          organisation
+        );
+      } else {
+        result = await persistence.createFirstTimeSignInTransfer(
+          context,
+          innovator,
+          organisation,
+          payload.transferId
+        );
+      }
+
+      context.res = Responsify.Created({ id: result.id });
       context.log.info("Innovator was created");
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });

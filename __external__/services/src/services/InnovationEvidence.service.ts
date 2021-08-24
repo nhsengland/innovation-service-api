@@ -9,6 +9,7 @@ import {
   ResourceNotFoundError,
   SectionNotFoundError,
 } from "@services/errors";
+import { checkIfValidUUID } from "@services/helpers";
 import { RequestUser } from "@services/models/RequestUser";
 import { getConnection, getRepository, Repository } from "typeorm";
 import { FileService } from "./File.service";
@@ -27,7 +28,7 @@ export class InnovationEvidenceService {
   }
 
   async find(id: string) {
-    if (!id) {
+    if (!id || !checkIfValidUUID(id)) {
       throw new InvalidParamsError("Invalid parameters. You must define id.");
     }
 

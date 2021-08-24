@@ -65,4 +65,44 @@ export const getTemplates = (): EmailTemplate[] => [
       innovation_url: "",
     },
   },
+  {
+    id: "94cab12f-7fb9-40f4-bb36-2f54dc96c801",
+    code: "INNOVATORS_TRANSFER_OWNERSHIP_NEW_USER",
+    path: {
+      url: "transfers/:contextId",
+      params: {
+        contextId: "",
+      },
+    },
+    props: {
+      innovator_name: "",
+      innovation_name: "",
+      transfer_url: "",
+    },
+  },
+  {
+    id: "756c062e-d7c3-490b-99fe-6a57e809c32e",
+    code: "INNOVATORS_TRANSFER_OWNERSHIP_EXISTING_USER",
+    path: {
+      url: "transfers/:contextId",
+      params: {
+        contextId: "",
+      },
+    },
+    props: {
+      innovator_name: "",
+      innovation_name: "",
+      transfer_url: "",
+    },
+  },
+  {
+    id: "b8814f94-f067-4549-aba0-4f0ff435ca38",
+    code: "INNOVATORS_TRANSFER_OWNERSHIP_CONFIRMATION",
+    props: {
+      innovator_name: "",
+      innovation_name: "",
+      new_innovator_name: "",
+      new_innovator_email: "",
+    },
+  },
 ];

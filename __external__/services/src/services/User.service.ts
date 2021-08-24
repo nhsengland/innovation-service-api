@@ -18,10 +18,13 @@ import {
 import { RequestUser } from "@services/models/RequestUser";
 import { UserCreationModel } from "@services/models/UserCreationModel";
 import { UserCreationResult } from "@services/models/UserCreationResult";
+import { UserProfileUpdateModel } from "@services/models/UserProfileUpdateModel";
 import { UserUpdateModel } from "@services/models/UserUpdateModel";
+import { UserUpdateResult } from "@services/models/UserUpdateResult";
 import {
   Connection,
   EntityManager,
+  FindOneOptions,
   getConnection,
   getRepository,
   Repository,
@@ -47,6 +50,11 @@ export class UserService {
     this.userRepo = getRepository(User, connectionName);
     this.orgRepo = getRepository(Organisation, connectionName);
     this.orgUnitRepo = getRepository(OrganisationUnit, connectionName);
+  }
+
+  async find(id: string, options?: FindOneOptions) {
+    if (!id) return;
+    return await this.userRepo.findOne(id, options);
   }
 
   async create(user: User) {
@@ -75,7 +83,7 @@ export class UserService {
       accessToken = await authenticateWitGraphAPI();
     }
 
-    const user = await getUserFromB2C(accessToken, id);
+    const user = await getUserFromB2C(id, accessToken);
 
     if (!user) {
       throw new Error("Invalid user.");
@@ -163,18 +171,68 @@ export class UserService {
     }
 
     const accessToken = await authenticateWitGraphAPI();
+
+    // remove duplicated userIds
     const uniqueUserIds = ids.filter((x, i, a) => a.indexOf(x) == i);
-    const userIds = uniqueUserIds.map((u) => `"${u}"`).join(",");
-    const odataFilter = `$filter=id in (${userIds})`;
 
-    const user = (await getUsersFromB2C(accessToken, odataFilter)) || [];
+    // limit of users per chunk
+    const userIdsChunkSize = 10;
 
-    const result = user.map((u) => ({
-      id: u.id,
-      displayName: u.displayName,
-    }));
+    // create chunks
+    const userIdsChunks = uniqueUserIds.reduce((resultArray, item, index) => {
+      const chunkIndex = Math.floor(index / userIdsChunkSize);
 
-    return result;
+      if (!resultArray[chunkIndex]) {
+        resultArray[chunkIndex] = [];
+      }
+
+      resultArray[chunkIndex].push(item);
+
+      return resultArray;
+    }, []);
+
+    // prepare promises
+    const promises = [];
+    for (let i = 0; i < userIdsChunks.length; i++) {
+      const userIds = userIdsChunks[i].map((u) => `"${u}"`).join(",");
+      const odataFilter = `$filter=id in (${userIds})`;
+
+      promises.push(getUsersFromB2C(accessToken, odataFilter));
+    }
+
+    // promise all and merge all results
+    return Promise.all(promises).then((results) => {
+      return results.flatMap((result) =>
+        result?.map((u) => ({
+          id: u.id,
+          displayName: u.displayName,
+        }))
+      );
+    });
+  }
+
+  async updateProfile(requestUser: RequestUser, user: UserProfileUpdateModel) {
+    if (!requestUser || !user) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    const accessToken = await authenticateWitGraphAPI();
+    const currentProfile = await this.getProfile(requestUser.id, accessToken);
+    if (user.displayName != currentProfile.displayName) {
+      await this.updateB2CUser(
+        { displayName: user.displayName },
+        requestUser.id,
+        accessToken
+      );
+    }
+
+    if (user.organisation) {
+      const organisationId = user.organisation.id;
+      delete user.organisation.id;
+      await this.orgRepo.update(organisationId, user.organisation);
+    }
+
+    return { id: requestUser.id };
   }
 
   async createUsers(
@@ -251,8 +309,8 @@ export class UserService {
     let user: User;
     // Check if user exists in B2C
     const b2cUser = await getUserFromB2CByEmail(
-      graphAccessToken,
-      userModel.email
+      userModel.email,
+      graphAccessToken
     );
 
     if (b2cUser) {
@@ -354,21 +412,71 @@ export class UserService {
     );
   }
 
-  async updateProfile(requestUser: RequestUser, user: UserUpdateModel) {
-    if (!requestUser || !user) {
+  async updateUsers(
+    requestUser: RequestUser,
+    users: UserUpdateModel[]
+  ): Promise<UserUpdateResult[]> {
+    if (!requestUser || !users || users.length === 0) {
       throw new InvalidParamsError("Invalid params.");
     }
 
-    const accessToken = await authenticateWitGraphAPI();
-    const currentProfile = await this.getProfile(requestUser.id, accessToken);
-    if (user.displayName != currentProfile.displayName) {
-      await this.updateB2CUser(
-        { displayName: user.displayName },
-        requestUser.id,
-        accessToken
-      );
+    const graphAccessToken = await authenticateWitGraphAPI();
+    const results: UserUpdateResult[] = [];
+
+    for (let i = 0; i < users.length; i++) {
+      const user = users[i];
+      let result: UserUpdateResult;
+
+      try {
+        result = await this.updateUser(requestUser, users[i], graphAccessToken);
+      } catch (err) {
+        result = {
+          id: user.id,
+          status: "ERROR",
+          error: {
+            code: err.constructor.name,
+            message: err.message,
+          },
+        };
+      }
+
+      results.push(result);
     }
 
-    return { id: requestUser.id };
+    return results;
+  }
+
+  async updateUser(
+    requestUser: RequestUser,
+    userModel: UserUpdateModel,
+    graphAccessToken?: string
+  ): Promise<UserUpdateResult> {
+    if (!requestUser || !userModel) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    if (!graphAccessToken) {
+      graphAccessToken = await authenticateWitGraphAPI();
+    }
+
+    const user = await getUserFromB2C(userModel.id, graphAccessToken);
+    if (!user) {
+      throw new Error("Invalid user id.");
+    }
+
+    try {
+      await this.updateB2CUser(
+        userModel.properties,
+        userModel.id,
+        graphAccessToken
+      );
+    } catch {
+      throw new Error("Error updating user.");
+    }
+
+    return {
+      id: userModel.id,
+      status: "OK",
+    };
   }
 }

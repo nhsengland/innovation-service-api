@@ -1,15 +1,15 @@
-import { UserService } from "./User.service";
-import { UserEmailModel } from "@services/models/ProfileSlimModel";
+import { getTemplates } from "@engines/templates/index";
 import {
   EmailTemplateNotFound,
   InvalidAPIKey,
   InvalidEmailTemplateProps,
 } from "@services/errors";
-import * as uuid from "uuid";
+import { UserEmailModel } from "@services/models/ProfileSlimModel";
 import axios from "axios";
 import * as jwt from "jsonwebtoken";
-import { getTemplates } from "@engines/templates/index";
+import * as uuid from "uuid";
 import { LoggerService } from "./Logger.service";
+import { UserService } from "./User.service";
 
 export type EmailResponse = {
   id: string;
@@ -39,7 +39,7 @@ export type EmailProps = {
 export type EmailTemplate = {
   id: string;
   code: string;
-  path: { url: string; params: { [key: string]: string } };
+  path?: { url: string; params: { [key: string]: string } };
   props: EmailProps;
 };
 
@@ -65,7 +65,29 @@ export class EmailService {
     this.loggerService = new LoggerService();
   }
 
-  async send(
+  async sendOne(
+    recipient: UserEmailModel,
+    templateCode: string,
+    props?: EmailProps
+  ) {
+    const template = getTemplates().find((t) => t.code === templateCode);
+    if (!template) {
+      throw new EmailTemplateNotFound(
+        `Could not find a template with the code ${templateCode}`
+      );
+    }
+
+    const validProps = this.validateAndParseProps(template, props);
+    if (validProps.errors.length > 0) {
+      throw new InvalidEmailTemplateProps(validProps.errors.join(";"));
+    }
+
+    const response = await this.send(recipient.email, template.id, validProps);
+
+    return response;
+  }
+
+  async sendMany(
     recipientIds: string[],
     templateCode: string,
     props?: EmailProps
@@ -96,44 +118,58 @@ export class EmailService {
     for (const recipient of recipients) {
       validProps.data.display_name = recipient.displayName;
 
-      const reference = uuid.v4();
-
-      const properties: NotifyClientParams = {
-        personalisation: { ...validProps.data },
-        reference,
-      };
-
-      const jwtToken = this.generateBearerToken();
-
-      const postConfig = {
-        headers: { Authorization: `Bearer ${jwtToken}` },
-      };
-
-      const baseUrl = process.env.EMAIL_NOTIFICATION_API_BASE_URL;
-      const emailPath = process.env.EMAIL_NOTIFICATION_API_EMAIL_PATH;
-      const url = `${baseUrl}${emailPath}`;
-
-      const response = await axios.post(
-        url,
-        {
-          template_id: template.id,
-          email_address: recipient.email,
-          ...properties,
-        },
-        postConfig
+      const response = await this.send(
+        recipient.email,
+        template.id,
+        validProps
       );
-
-      this.loggerService.log(`An email was sent`, 1, {
-        email_address: recipient.email,
-        template_id: template.id,
-        response: response.data,
-      });
 
       result.push(response.data);
     }
     // replaces temp token with actual recipient display name
 
     return result;
+  }
+
+  private async send(
+    recipientEmail: string,
+    templateId: string,
+    validProps: any
+  ) {
+    const reference = uuid.v4();
+
+    const properties: NotifyClientParams = {
+      personalisation: { ...validProps.data },
+      reference,
+    };
+
+    const jwtToken = this.generateBearerToken();
+
+    const postConfig = {
+      headers: { Authorization: `Bearer ${jwtToken}` },
+    };
+
+    const baseUrl = process.env.EMAIL_NOTIFICATION_API_BASE_URL;
+    const emailPath = process.env.EMAIL_NOTIFICATION_API_EMAIL_PATH;
+    const url = `${baseUrl}${emailPath}`;
+
+    const response = await axios.post(
+      url,
+      {
+        template_id: templateId,
+        email_address: recipientEmail,
+        ...properties,
+      },
+      postConfig
+    );
+
+    this.loggerService.log(`An email was sent`, 1, {
+      email_address: recipientEmail,
+      template_id: templateId,
+      response: response.data,
+    });
+
+    return response.data;
   }
 
   private generateBearerToken(): string {

@@ -1,3 +1,4 @@
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   AccessorOrganisationRole,
   Comment,
@@ -20,6 +21,7 @@ import {
   User,
   UserType,
 } from "@domain/index";
+import * as engines from "@engines/index";
 import {
   InnovationNotFoundError,
   InvalidParamsError,
@@ -27,19 +29,16 @@ import {
 } from "@services/errors";
 import { InnovationListModel } from "@services/models/InnovationListModel";
 import { RequestUser } from "@services/models/RequestUser";
+import { LoggerService } from "@services/services/Logger.service";
+import { NotificationService } from "@services/services/Notification.service";
 import { UserService } from "@services/services/User.service";
+import * as dotenv from "dotenv";
+import * as path from "path";
 import { getConnection } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
 import { InnovationService } from "../services/Innovation.service";
 import * as fixtures from "../__fixtures__";
-import * as engines from "@engines/index";
-import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
-import { NotificationService } from "@services/services/Notification.service";
-import { LoggerService } from "@services/services/Logger.service";
-
-import * as dotenv from "dotenv";
-import * as path from "path";
 
 describe("Innovator Service Suite", () => {
   let innovationService: InnovationService;
@@ -52,7 +51,7 @@ describe("Innovator Service Suite", () => {
   let assessmentRequestUser: RequestUser;
 
   beforeAll(async () => {
-    //await setupTestsConnection();
+    // await setupTestsConnection();
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
     });
@@ -145,7 +144,7 @@ describe("Innovator Service Suite", () => {
     await query.from(OrganisationUser).execute();
     await query.from(Organisation).execute();
     await query.from(User).execute();
-    //closeTestsConnection();
+    // closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -769,7 +768,7 @@ describe("Innovator Service Suite", () => {
         identities: [
           {
             signInType: "emailAddress",
-            issuerAssignedId: "antonio.simoes@bjss.com",
+            issuerAssignedId: "email@email.com",
           },
         ],
       },

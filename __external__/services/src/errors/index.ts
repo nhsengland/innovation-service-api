@@ -15,6 +15,20 @@ export class InnovationSupportNotFoundError extends Error {
   }
 }
 
+export class InnovationTransferNotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InnovationTransferNotFoundError";
+  }
+}
+
+export class InnovationTransferAlreadyExistsError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InnovationTransferAlreadyExistsError";
+  }
+}
+
 export class SectionNotFoundError extends Error {
   constructor(message: string) {
     super(message);

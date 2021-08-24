@@ -17,4 +17,16 @@ export const emailEngines = () => [
     key: EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED,
     handler: handlers.qaOrganisationSuggestedForSupport,
   },
+  {
+    key: EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_NEW_USER,
+    handler: handlers.innovatorsTransferOwnershipNewUser,
+  },
+  {
+    key: EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_EXISTING_USER,
+    handler: handlers.innovatorsTransferOwnershipExistingUser,
+  },
+  {
+    key: EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_CONFIRMATION,
+    handler: handlers.innovatorsTransferOwnershipConfirmation,
+  },
 ];

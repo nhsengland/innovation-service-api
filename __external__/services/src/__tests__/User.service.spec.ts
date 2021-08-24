@@ -16,6 +16,8 @@ import {
   InvalidParamsError,
   InvalidUserTypeError,
 } from "@services/errors";
+import * as dotenv from "dotenv";
+import * as path from "path";
 import { getConnection, getRepository } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
@@ -24,8 +26,6 @@ import { AccessorService } from "../services/Accessor.service";
 import { OrganisationService } from "../services/Organisation.service";
 import { UserService } from "../services/User.service";
 import * as fixtures from "../__fixtures__";
-import * as dotenv from "dotenv";
-import * as path from "path";
 
 const dummy = {
   requestUser: {
@@ -201,6 +201,51 @@ describe("User Service Suite", () => {
     expect(actual.type).toBeNull();
   });
 
+  it("should throw when createUsers with invalid params", async () => {
+    let err;
+    try {
+      await userService.createUsers(null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should createUsers correctly", async () => {
+    const result = await userService.createUsers(dummy.requestUser, [
+      {
+        type: UserType.ACCESSOR,
+        name: ":name",
+        email: "email@email.pt",
+        password: "myNewPassword1!",
+        organisationAcronym: organisation.acronym,
+        organisationUnitAcronym: organisationUnit.acronym,
+        role: AccessorOrganisationRole.ACCESSOR,
+      },
+    ]);
+
+    expect(result).toBeDefined();
+    expect(result[0].organisationUserId).toBeDefined();
+    expect(result[0].organisationUnitUserId).toBeDefined();
+  });
+
+  it("should have errors when createUser with invalid accessor params", async () => {
+    let err;
+    const result = await userService.createUsers(dummy.requestUser, [
+      {
+        type: UserType.ACCESSOR,
+        name: ":name",
+        email: "email@email.pt",
+        password: "myNewPassword1!",
+      },
+    ]);
+
+    expect(result).toBeDefined();
+    expect(result[0].error).toBeDefined();
+  });
+
   it("should throw when createUser with invalid params", async () => {
     let err;
     try {
@@ -296,6 +341,30 @@ describe("User Service Suite", () => {
     expect(result).toBeDefined();
   });
 
+  it("should throw when updateUsers with invalid params", async () => {
+    let err;
+    try {
+      await userService.updateUsers(null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw when updateUser with invalid params", async () => {
+    let err;
+    try {
+      await userService.updateUser(null, null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
   it("should throw when updateProfile with invalid params", async () => {
     let err;
     try {
@@ -308,7 +377,7 @@ describe("User Service Suite", () => {
     expect(err).toBeInstanceOf(InvalidParamsError);
   });
 
-  it("should update an user", async () => {
+  it("should update an user profile", async () => {
     // arranje
     spyOn(userService, "updateB2CUser").and.callFake;
     spyOn(helpers, "getUserFromB2C").and.returnValue({
@@ -324,6 +393,32 @@ describe("User Service Suite", () => {
 
     const result = await userService.updateProfile(dummy.requestUser, {
       displayName: ":displayName",
+    });
+
+    expect(result).toBeDefined();
+    expect(result.id).toEqual(dummy.requestUser.id);
+  });
+
+  it("should update an user profile with organisations", async () => {
+    // arranje
+    spyOn(userService, "updateB2CUser").and.callFake;
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      displayName: "Accessor A",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "test_user@example.com",
+        },
+      ],
+      mobilePhone: "+351960000000",
+    });
+
+    const result = await userService.updateProfile(dummy.requestUser, {
+      displayName: ":displayName",
+      organisation: {
+        id: organisation.id,
+        name: "TEST",
+      },
     });
 
     expect(result).toBeDefined();

@@ -1,6 +1,7 @@
 import {
   InnovationNotFoundError,
   InnovationSupportNotFoundError,
+  InnovationTransferAlreadyExistsError,
   InvalidDataError,
   InvalidParamsError,
   InvalidUserRoleError,
@@ -212,9 +213,9 @@ describe("[Utils] Responsify suite", () => {
     });
   });
 
-  describe("BadData", () => {
+  describe("UnprocessableEntity", () => {
     it("should return 422 with no body", () => {
-      const result = Responsify.BadData(null);
+      const result = Responsify.UnprocessableEntity(null);
       expect(result.body).toBeNull();
       expect(result.status).toBe(422);
     });
@@ -223,7 +224,7 @@ describe("[Utils] Responsify suite", () => {
       const body = {
         prop: 1,
       };
-      const result = Responsify.BadData(body);
+      const result = Responsify.UnprocessableEntity(body);
       expect(result.body).toEqual(body);
       expect(result.status).toBe(422);
     });
@@ -237,7 +238,7 @@ describe("[Utils] Responsify suite", () => {
         "Content-Type": "application/json",
         ...headers,
       };
-      const result = Responsify.BadData(null, headers);
+      const result = Responsify.UnprocessableEntity(null, headers);
       expect(result.headers).toEqual(expected);
       expect(result.status).toBe(422);
     });
@@ -335,6 +336,14 @@ describe("[Utils] Responsify suite", () => {
       const result = Responsify.ErroHandling(new ResourceNotFoundError("test"));
       expect(result.body.error).toBe("ResourceNotFoundError");
       expect(result.status).toBe(404);
+    });
+
+    it("should return 422 UnprocessableEntity if InnovationTransferAlreadyExistsError", () => {
+      const result = Responsify.ErroHandling(
+        new InnovationTransferAlreadyExistsError("test")
+      );
+      expect(result.body.error).toBe("InnovationTransferAlreadyExistsError");
+      expect(result.status).toBe(422);
     });
 
     it("should return 500 InternalServerError if unexpected error", () => {

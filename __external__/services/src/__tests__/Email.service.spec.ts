@@ -1,20 +1,20 @@
-import { Innovation, User } from "@domain/index";
-import { getConnection } from "typeorm";
-import { UserService } from "@services/services/User.service";
-import { EmailService } from "@services/services/Email.service";
-import * as helpers from "../helpers";
-import { closeTestsConnection, setupTestsConnection } from "..";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
-import { InvalidEmailTemplateProps } from "@services/errors";
+import { EmailService } from "@services/services/Email.service";
+import { UserService } from "@services/services/User.service";
 import * as dotenv from "dotenv";
 import * as path from "path";
+import { closeTestsConnection, setupTestsConnection } from "..";
+import * as helpers from "../helpers";
 
+const dummy = {
+  email: "email@email.com",
+};
 describe("Email Service Suite", () => {
   let userService: UserService;
   let emailService: EmailService;
 
   beforeAll(async () => {
-    //await setupTestsConnection();
+    // await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -24,7 +24,7 @@ describe("Email Service Suite", () => {
   });
 
   afterAll(async () => {
-    //await closeTestsConnection();
+    // await closeTestsConnection();
   });
 
   it("should instantiate the Email service", () => {
@@ -40,7 +40,7 @@ describe("Email Service Suite", () => {
         identities: [
           {
             signInType: "emailAddress",
-            issuerAssignedId: "antonio.simoes@bjss.com",
+            issuerAssignedId: dummy.email,
           },
         ],
       },
@@ -53,7 +53,7 @@ describe("Email Service Suite", () => {
       action_url: "https://example.com/action_1",
     };
 
-    const actual = await emailService.send(
+    const actual = await emailService.sendMany(
       [":accessor_user_id_1"],
       EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
       props
@@ -71,7 +71,7 @@ describe("Email Service Suite", () => {
         identities: [
           {
             signInType: "emailAddress",
-            issuerAssignedId: "antonio.simoes@bjss.com",
+            issuerAssignedId: dummy.email,
           },
         ],
       },
@@ -86,7 +86,7 @@ describe("Email Service Suite", () => {
 
     let err;
     try {
-      await emailService.send(
+      await emailService.sendMany(
         [":accessor_user_id_1"],
         EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
         props
@@ -108,7 +108,7 @@ describe("Email Service Suite", () => {
         identities: [
           {
             signInType: "emailAddress",
-            issuerAssignedId: "antonio.simoes@bjss.com",
+            issuerAssignedId: dummy.email,
           },
         ],
       },
@@ -120,7 +120,7 @@ describe("Email Service Suite", () => {
 
     let err;
     try {
-      await emailService.send(
+      await emailService.sendMany(
         [":accessor_user_id_1"],
         EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
         props

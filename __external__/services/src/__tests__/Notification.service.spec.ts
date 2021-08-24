@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 /* tslint:disable */
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   AccessorOrganisationRole,
   Comment,
@@ -24,26 +25,28 @@ import {
   User,
   UserType,
 } from "@domain/index";
+import * as engines from "@engines/index";
+import { InvalidParamsError } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
+import * as dotenv from "dotenv";
+import * as path from "path";
 import { getConnection } from "typeorm";
 import {
   closeTestsConnection,
   InnovationSupportService,
   setupTestsConnection,
 } from "..";
+import * as insights from "../../../../utils/logging/insights";
+import * as helpers from "../helpers";
 import { NotificationService } from "../services/Notification.service";
 import * as fixtures from "../__fixtures__";
-import * as helpers from "../helpers";
-import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
-import * as engines from "@engines/index";
-import * as insights from "../../../../utils/logging/insights";
-import * as dotenv from "dotenv";
-import * as path from "path";
+
 describe("Notification Service Suite", () => {
   let notificationService: NotificationService;
   let supportService: InnovationSupportService;
+
   beforeAll(async () => {
-    //await setupTestsConnection();
+    // await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -82,7 +85,7 @@ describe("Notification Service Suite", () => {
   });
 
   afterAll(async () => {
-    //closeTestsConnection();
+    // closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -521,6 +524,27 @@ describe("Notification Service Suite", () => {
     expect(notificationUsers[0].user).toEqual(assessmentUser.id);
   });
 
+  it("should throw error when dismiss with invalid contextId", async () => {
+    const dismisssRequestUser: RequestUser = {
+      id: ":innovatorId",
+      type: UserType.INNOVATOR,
+    };
+
+    let error: Error;
+    try {
+      await notificationService.dismiss(
+        dismisssRequestUser,
+        NotificationContextType.INNOVATION,
+        "abc"
+      );
+    } catch (err) {
+      error = err;
+    }
+
+    expect(error).toBeDefined();
+    expect(error).toBeInstanceOf(InvalidParamsError);
+  });
+
   it("should dismiss notification from an innovator with given context id and context type", async () => {
     const accessor = await fixtures.createAccessorUser();
     const innovator = await fixtures.createInnovatorUser();
@@ -576,6 +600,57 @@ describe("Notification Service Suite", () => {
     );
 
     expect(actual.affected).toBe(1);
+  });
+
+  it("should fail with sql injection test", async () => {
+    const accessor = await fixtures.createAccessorUser();
+    const innovator = await fixtures.createInnovatorUser();
+    const organisation = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
+    );
+    const orgUser = await fixtures.addUserToOrganisation(
+      accessor,
+      organisation,
+      "ACCESSOR"
+    );
+    const unit = await fixtures.createOrganisationUnit(organisation);
+    await fixtures.addOrganisationUserToOrganisationUnit(orgUser, unit);
+    const innovationObj = fixtures.generateInnovation({
+      owner: { id: innovator.id },
+    });
+    const innovation = await fixtures.saveInnovation(innovationObj);
+
+    const requestUser: RequestUser = {
+      id: accessor.id,
+      type: UserType.ACCESSOR,
+    };
+
+    await notificationService.create(
+      requestUser,
+      NotificationAudience.INNOVATORS,
+      innovation.id,
+      NotificationContextType.INNOVATION,
+
+      innovation.id,
+      "test 1"
+    );
+
+    const innovatorUser: RequestUser = {
+      id: innovator.id,
+      type: UserType.INNOVATOR,
+    };
+
+    let error: Error;
+    try {
+      await notificationService.getAllUnreadNotificationsCounts(
+        innovatorUser,
+        innovation.id + " or 1 = 1"
+      );
+    } catch (err) {
+      error = err;
+    }
+
+    expect(error).toBeDefined();
   });
 
   it("should get all unread notifications counts", async () => {
@@ -809,81 +884,21 @@ describe("Notification Service Suite", () => {
     expect(actual).toEqual({ COMMENT: 2, ACTION: 1, INNOVATION: 1 });
   });
 
-  it("should get unread INNOVATION notifications counts by contextId and contextType INNOVATION", async () => {
-    const accessor = await fixtures.createAccessorUser();
-    const innovator = await fixtures.createInnovatorUser();
-    const organisation = await fixtures.createOrganisation(
-      OrganisationType.ACCESSOR
-    );
-    const orgUser = await fixtures.addUserToOrganisation(
-      accessor,
-      organisation,
-      "ACCESSOR"
-    );
-    const unit = await fixtures.createOrganisationUnit(organisation);
-    await fixtures.addOrganisationUserToOrganisationUnit(orgUser, unit);
-    const innovationObj = fixtures.generateInnovation({
-      owner: { id: innovator.id },
-    });
-    const innovation = await fixtures.saveInnovation(innovationObj);
-
+  it("should throw error when getUnreadNotifications with invalid innovationId", async () => {
     const requestUser: RequestUser = {
-      id: accessor.id,
-      type: UserType.ACCESSOR,
-    };
-
-    const notification1 = await notificationService.create(
-      requestUser,
-      NotificationAudience.INNOVATORS,
-      innovation.id,
-      NotificationContextType.COMMENT,
-
-      innovation.id,
-      "test 1"
-    );
-
-    const notification2 = await notificationService.create(
-      requestUser,
-      NotificationAudience.INNOVATORS,
-      innovation.id,
-      NotificationContextType.INNOVATION,
-
-      innovation.id,
-      "test 2"
-    );
-
-    const notification3 = await notificationService.create(
-      requestUser,
-      NotificationAudience.INNOVATORS,
-      innovation.id,
-      NotificationContextType.COMMENT,
-
-      innovation.id,
-      "test 3"
-    );
-
-    const notification4 = await notificationService.create(
-      requestUser,
-      NotificationAudience.INNOVATORS,
-      innovation.id,
-      NotificationContextType.ACTION,
-
-      innovation.id,
-      "test 3"
-    );
-
-    const innovatorUser: RequestUser = {
-      id: innovator.id,
+      id: ":innovatorId",
       type: UserType.INNOVATOR,
     };
 
-    const actual = await notificationService.getUnreadNotificationsCounts(
-      innovatorUser,
-      innovation.id
-    );
+    let error: Error;
+    try {
+      await notificationService.getUnreadNotifications(requestUser, "abc");
+    } catch (err) {
+      error = err;
+    }
 
-    expect(actual).toBeDefined();
-    expect(actual.INNOVATION).toEqual(1);
+    expect(error).toBeDefined();
+    expect(error).toBeInstanceOf(InvalidParamsError);
   });
 
   it("should get unread ACTION notifications list", async () => {
@@ -972,7 +987,7 @@ describe("Notification Service Suite", () => {
       identities: [
         {
           signInType: "emailAddress",
-          issuerAssignedId: "antonio.simoes@bjss.com",
+          issuerAssignedId: "email@email.com",
         },
       ],
     });
@@ -1113,5 +1128,26 @@ describe("Notification Service Suite", () => {
     expect(Object.keys(notificationByStatus).length).toBe(2);
     expect(Object.keys(notificationByStatus).includes("UNASSIGNED")).toBe(true);
     expect(Object.keys(notificationByStatus).includes("ENGAGING")).toBe(true);
+  });
+
+  it("should throw error when dismiss with invalid contextId", async () => {
+    const dismisssRequestUser: RequestUser = {
+      id: ":innovatorId",
+      type: UserType.INNOVATOR,
+    };
+
+    let error: Error;
+    try {
+      await notificationService.dismiss(
+        dismisssRequestUser,
+        NotificationContextType.INNOVATION,
+        "abc"
+      );
+    } catch (err) {
+      error = err;
+    }
+
+    expect(error).toBeDefined();
+    expect(error).toBeInstanceOf(InvalidParamsError);
   });
 });

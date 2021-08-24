@@ -1,3 +1,4 @@
+import { InnovationSupportStatus } from "@domain/index";
 import { CustomContext } from "../../utils/types";
 export const findAllInnovationsByAccessor = async (
   ctx: CustomContext,
@@ -9,7 +10,7 @@ export const findAllInnovationsByAccessor = async (
 ) => {
   const result = await ctx.services.InnovationService.findAllByAccessorAndSupportStatus(
     ctx.auth.requestUser,
-    supportStatus,
+    supportStatus as InnovationSupportStatus,
     assignedToMe,
     skip,
     take,

@@ -25,6 +25,7 @@ module.exports = {
     "commitizen.js",
     ".eslintrc.js",
     "migrations",
+    "seeds",
     "__jest__",
     "constants",
     "connnections",
