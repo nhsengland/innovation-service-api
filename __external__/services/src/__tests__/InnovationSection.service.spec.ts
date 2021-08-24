@@ -168,7 +168,7 @@ describe("Innovation Section Service Suite", () => {
     const innovation = await fixtures.saveInnovation(innovationObj);
 
     // Act
-    const result = await innovationSectionService.findAllInnovationSections(
+    const result = await innovationSectionService.findAllInnovationSectionsMetadata(
       innovatorRequestUser,
       innovation.id
     );
@@ -178,10 +178,13 @@ describe("Innovation Section Service Suite", () => {
     expect(result.sections.length).toEqual(14);
   });
 
-  it("should throw when id is null in findAllInnovationSections()", async () => {
+  it("should throw when id is null in findAllInnovationSectionsMetadata()", async () => {
     let err;
     try {
-      await innovationSectionService.findAllInnovationSections(null, null);
+      await innovationSectionService.findAllInnovationSectionsMetadata(
+        null,
+        null
+      );
     } catch (error) {
       err = error;
     }
@@ -193,10 +196,10 @@ describe("Innovation Section Service Suite", () => {
     );
   });
 
-  it("should throw when user id or innovator id are invalid in findAllInnovationSections()", async () => {
+  it("should throw when user id or innovator id are invalid in findAllInnovationSectionsMetadata()", async () => {
     let err;
     try {
-      await innovationSectionService.findAllInnovationSections(
+      await innovationSectionService.findAllInnovationSectionsMetadata(
         {
           id: ":id",
           type: UserType.INNOVATOR,
@@ -689,7 +692,7 @@ describe("Innovation Section Service Suite", () => {
       ]
     );
 
-    const result = await innovationSectionService.findAllInnovationSections(
+    const result = await innovationSectionService.findAllInnovationSectionsMetadata(
       innovatorRequestUser,
       innovation.id
     );
@@ -787,7 +790,7 @@ describe("Innovation Section Service Suite", () => {
       ]
     );
 
-    const result = await innovationSectionService.findAllInnovationSections(
+    const result = await innovationSectionService.findAllInnovationSectionsMetadata(
       innovatorRequestUser,
       innovation.id
     );
@@ -889,7 +892,7 @@ describe("Innovation Section Service Suite", () => {
       ]
     );
 
-    const result = await innovationSectionService.findAllInnovationSections(
+    const result = await innovationSectionService.findAllInnovationSectionsMetadata(
       innovatorRequestUser,
       innovation.id
     );
@@ -935,5 +938,46 @@ describe("Innovation Section Service Suite", () => {
     expect(err.message).toContain(
       "Invalid parameters. Innovation not found for the user."
     );
+  });
+
+  it("should find all innovation sections", async () => {
+    const innovationObj = fixtures.generateInnovation({
+      owner: innovatorRequestUser.id,
+      name: "My Innovation",
+      surveyId: "abc",
+      hasFinalProduct: YesOrNoCatalogue.NO,
+      impactPatients: true,
+      impactClinicians: true,
+      hasEvidence: YesOrNoCatalogue.NO,
+      status: InnovationStatus.IN_PROGRESS,
+    });
+    const innovation = await fixtures.saveInnovation(innovationObj);
+
+    // Act
+    await innovationSectionService.saveSection(
+      innovatorRequestUser,
+      innovation.id,
+      InnovationSectionCatalogue.REGULATIONS_AND_STANDARDS,
+      {
+        hasRegulationKnowledge: HasRegulationKnowledegeCatalogue.YES_ALL,
+        hasOtherIntellectual: "cenas variadas",
+        standards: [
+          {
+            type: InnovationCertificationCatalogue.CE_UKCA_CLASS_I,
+            hasMet: StandardMetCatalogue.IN_PROGRESS,
+          },
+        ],
+        files: [],
+      }
+    );
+
+    // Act
+    const result = await innovationSectionService.findAllSections(
+      innovatorRequestUser,
+      innovation.id
+    );
+
+    // Assert
+    expect(result).toBeDefined();
   });
 });

@@ -10,14 +10,14 @@ describe("[innovatorsGetInnovation] Persistence suite", () => {
       path: path.resolve(__dirname, "../.environment"),
     });
   });
-  describe("findAllInnovationSections", () => {
+  describe("findAllInnovationSectionsMetadata", () => {
     it("should assess if an innovation exists", async () => {
       // Arrange
       spyOn(typeorm, "getRepository");
       spyOn(typeorm, "getConnection");
       const spy = spyOn(
         InnovationSectionService.prototype,
-        "findAllInnovationSections"
+        "findAllInnovationSectionsMetadata"
       ).and.returnValue({ id: "innovationA" });
       const ctx = {
         services: {
@@ -31,7 +31,7 @@ describe("[innovatorsGetInnovation] Persistence suite", () => {
         },
       };
       // Act
-      await persistence.findAllInnovationSections(
+      await persistence.findAllInnovationSectionsMetadata(
         ctx as CustomContext,
         "test_innovation_id"
       );

@@ -67,7 +67,7 @@ describe("[HttpTrigger] accessorsGetInnovation Suite", () => {
       });
       spyOn(
         persistence,
-        "findAllInnovationSections"
+        "findAllInnovationSectionsMetadata"
       ).and.returnValue([{ innovation: "test_accessor_id" }]);
 
       const { res } = await mockedRequestFactory({});
@@ -82,7 +82,7 @@ describe("[HttpTrigger] accessorsGetInnovation Suite", () => {
       });
       spyOn(
         persistence,
-        "findAllInnovationSections"
+        "findAllInnovationSectionsMetadata"
       ).and.returnValue([{ id: "innovation_id" }]);
 
       const { res } = await mockedRequestFactory({

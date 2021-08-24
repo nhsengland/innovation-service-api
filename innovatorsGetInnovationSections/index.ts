@@ -31,11 +31,18 @@ class InnovatorsGetInnovationSections {
 
     let result;
     try {
-      result = await persistence.findInnovationSectionByInnovator(
-        context,
-        innovationId,
-        section
-      );
+      if (section) {
+        result = await persistence.findInnovationSectionByInnovator(
+          context,
+          innovationId,
+          section
+        );
+      } else {
+        result = await persistence.findAllInnovationSectionsByInnovator(
+          context,
+          innovationId
+        );
+      }
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
