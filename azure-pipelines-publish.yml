@@ -16,7 +16,7 @@ pr: none
 name: InnovationServiceAPI_$(SourceBranchName)_1.0.0_$(Date:yyyyMMdd)_$(Rev:.r)
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'windows-latest'
 
 
 services:
