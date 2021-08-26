@@ -1,4 +1,4 @@
-/* eslint-disable */ 
+/* eslint-disable */
 import { AccessorOrganisationRole } from "@services/index";
 import {
   createHttpTrigger, runStubFunctionFromBindings
@@ -11,7 +11,7 @@ import * as service_loader from "../../utils/serviceLoader";
 
 
 jest.mock("../../utils/logging/insights", () => ({
-  start: () => {},
+  start: () => { },
   getInstance: () => ({
     startOperation: () => ({
       operation: {
@@ -22,9 +22,9 @@ jest.mock("../../utils/logging/insights", () => ({
       return func;
     },
     defaultClient: {
-      trackTrace: () => {},
-      trackRequest: () => {},
-      flush: () => {},
+      trackTrace: () => { },
+      trackRequest: () => { },
+      flush: () => { },
     },
   }),
 }));
@@ -46,7 +46,7 @@ describe("[HttpTrigger] accessorsGetAll Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
+      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
       spyOn(connection, "setupSQLConnection").and.throwError(
         "Error establishing connection with the datasource."
       );
@@ -66,8 +66,8 @@ describe("[HttpTrigger] accessorsGetAll Suite", () => {
         oid: "test_accessor_id",
       });
       spyOn(persistence, "findUserOrganisationUnitUsers").and.returnValue([
-        { id: '0', name: ':accessor_1'},
-        { id: '1', name: ':qaccessor_1'},
+        { id: '0', name: ':accessor_1' },
+        { id: '1', name: ':qaccessor_1' },
       ]);
 
       const { res } = await mockedRequestFactory({
@@ -91,14 +91,30 @@ describe("[HttpTrigger] accessorsGetAll Suite", () => {
         oid: "test_accessor_id",
       });
       spyOn(persistence, "findUserOrganisationUnitUsers").and.returnValue([
-        { id: '0', name: ':accessor_1'},
-        { id: '1', name: ':qaccessor_1'},
+        { id: '0', name: ':accessor_1' },
+        { id: '1', name: ':qaccessor_1' },
       ]);
 
       const { res } = await mockedRequestFactory({
         headers: { authorization: ":access_token" },
       });
       expect(res.status).toBe(403);
+    });
+
+    it("Should handle error persistence return error", async () => {
+      spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
+      spyOn(authentication, "decodeToken").and.returnValue({
+        oid: ":accessor_id",
+      });
+      spyOn(persistence, "findUserOrganisationUnitUsers").and.throwError(
+        "Error."
+      );
+
+      const { res } = await mockedRequestFactory({
+        headers: { authorization: ":access_token" },
+      });
+      expect(res.status).toBe(500);
     });
 
   });
