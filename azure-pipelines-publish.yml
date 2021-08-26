@@ -1,13 +1,3 @@
-resources:
- containers:
-   - container: mssql
-     image: mcr.microsoft.com/mssql/server:2017-latest-ubuntu
-     ports:
-     - 1433:1433
-     env:
-      SA_PASSWORD: P@ssw0rd
-      ACCEPT_EULA: Y
-
 trigger:
 - develop
 - master
@@ -16,35 +6,9 @@ pr: none
 name: InnovationServiceAPI_$(SourceBranchName)_1.0.0_$(Date:yyyyMMdd)_$(Rev:.r)
 
 pool:
-  vmImage: 'ubuntu-latest'
-
-
-services:
-  mssql: mssql
-
-variables:
-  DB_TESTS_HOST: 'localhost'
-  DB_TESTS_USER: 'test_usr'
-  DB_TESTS_PWD: 'SuperSecret52!!'
-  DB_TESTS_NAME: 'tests'
+  vmImage: windows-latest
 
 steps:
-- task: PowerShell@2
-  displayName: 'Wait for MSSQL Start'
-  inputs:
-    targetType: 'inline'
-    script: |
-      # Write your PowerShell commands here.
-      start-sleep -s 10
-
-- script: |
-    sqlcmd -S localhost -U sa -P P@ssw0rd -p -Q "CREATE DATABASE tests;"
-    sqlcmd -S localhost -U sa -P P@ssw0rd -p -Q "USE tests; CREATE LOGIN test_usr WITH PASSWORD='SuperSecret52!!';"
-    sqlcmd -S localhost -U sa -P P@ssw0rd -p -Q "USE tests; CREATE USER test_usr from LOGIN test_usr;"
-    sqlcmd -S localhost -U sa -P P@ssw0rd -p -Q "USE tests; EXEC sp_addrolemember 'db_owner', 'test_usr';"
-    sqlcmd -S localhost -U test_usr -P SuperSecret52!! -p -Q "SELECT @@VERSION;"
-  displayName: 'Setup SQL Container'
-
 - task: NodeTool@0
   inputs:
     versionSpec: '12.x'
@@ -54,15 +18,9 @@ steps:
   inputs:
     command: 'install'
     verbose: true
+    customRegistry: 'useFeed'
+    customFeed: '7f3e8d94-c48d-41cc-b5aa-0aee0596a809/2ad29166-69b2-465e-b7d8-6b9d66443d60'
   displayName: 'Install dependencies'
-
-- script: |
-    npm run migrations:run
-  displayName: 'Run Migrations against the Container'
-
-- script: |
-    npm test
-  displayName: 'Run Tests'
 
 - script: |
     npm run build
