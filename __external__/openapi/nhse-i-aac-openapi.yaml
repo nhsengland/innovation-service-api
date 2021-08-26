@@ -949,6 +949,43 @@ paths:
         "403":
           description: "Forbidden"
 
+  "/innovators/{userId}/innovations/{innovationId}/archive":
+    patch:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "ArchiveInnovation"
+      description: "Archivs an Innovation associated with the Innovator"
+      operationId: "innovators-archive-innovation"
+      security:
+        - OpenId:
+            - innovators_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "204":
+          description: "No Content"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
   "/innovators/{userId}/innovations/{innovationId}/section-summary":
     get:
       tags:

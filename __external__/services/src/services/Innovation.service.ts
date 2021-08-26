@@ -655,6 +655,79 @@ export class InnovationService extends BaseService<Innovation> {
     };
   }
 
+  async archiveInnovation(
+    requestUser: RequestUser,
+    id: string,
+    reason: string
+  ) {
+    if (!id || !requestUser || !reason || !checkIfValidUUID(id)) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+
+    const filterOptions = {
+      relations: ["organisationShares", "innovationSupports"],
+      where: { owner: requestUser.id },
+    };
+
+    const innovation = await this.findInnovation(
+      requestUser,
+      id,
+      filterOptions
+    );
+    if (!innovation) {
+      throw new InnovationNotFoundError("Innovation not found for the user.");
+    }
+
+    const supports = innovation.innovationSupports;
+
+    return await this.connection.transaction(async (transactionManager) => {
+      // Update all supports and DECLINE all open actions
+      for (let orgSupIdx = 0; orgSupIdx < supports.length; orgSupIdx++) {
+        const innovationSupport = supports[orgSupIdx];
+        innovationSupport.organisationUnitUsers = [];
+
+        const innovationActions = await innovationSupport.actions;
+        const actions = innovationActions.filter(
+          (ia: InnovationAction) =>
+            ia.status === InnovationActionStatus.REQUESTED ||
+            ia.status === InnovationActionStatus.STARTED ||
+            ia.status === InnovationActionStatus.IN_REVIEW
+        );
+
+        for (let actionIdx = 0; actionIdx < actions.length; actionIdx++) {
+          await transactionManager.update(
+            InnovationAction,
+            { id: actions[actionIdx].id },
+            {
+              status: InnovationActionStatus.DECLINED,
+              updatedBy: requestUser.id,
+            }
+          );
+        }
+
+        innovationSupport.status = InnovationSupportStatus.UNASSIGNED;
+        innovationSupport.updatedBy = requestUser.id;
+        innovationSupport.deletedAt = new Date();
+
+        await transactionManager.save(InnovationSupport, innovationSupport);
+      }
+
+      // Update innovation
+      innovation.status = InnovationStatus.ARCHIVED;
+      innovation.updatedBy = requestUser.id;
+      innovation.organisationShares = [];
+      innovation.archiveReason = reason;
+      innovation.deletedAt = new Date();
+
+      await transactionManager.save(Innovation, innovation);
+
+      return {
+        id: innovation.id,
+        status: InnovationStatus.ARCHIVED,
+      };
+    });
+  }
+
   async getOrganisationShares(requestUser: RequestUser, innovationId: string) {
     if (!innovationId || !requestUser || !checkIfValidUUID(innovationId)) {
       throw new InvalidParamsError(

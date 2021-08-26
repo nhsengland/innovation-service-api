@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { AccessorOrganisationRole, InnovationSectionCatalogue } from "@services/index";
+import { AccessorOrganisationRole } from "@services/index";
 import {
   createHttpTrigger,
   runStubFunctionFromBindings
@@ -34,7 +34,7 @@ const dummy = {
   services: {
     OrganisationService: {
       findUserOrganisations: () => [
-        { role: AccessorOrganisationRole.QUALIFYING_ACCESSOR, organisation: { id: ':orgId' }},
+        { role: AccessorOrganisationRole.QUALIFYING_ACCESSOR, organisation: { id: ':orgId' } },
       ],
     },
   },
@@ -115,6 +115,22 @@ describe("[HttpTrigger] accessorsCreateInnovationComment Suite", () => {
         headers: { authorization: ":access_token" },
       });
       expect(res.status).toBe(403);
+    });
+
+    it("Should handle error persistence return error", async () => {
+      spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
+      spyOn(authentication, "decodeToken").and.returnValue({
+        oid: dummy.accessorId,
+      });
+      spyOn(persistence, "createInnovationComment").and.throwError(
+        "Error."
+      );
+
+      const { res } = await mockedRequestFactory({
+        headers: { authorization: ":access_token" },
+      });
+      expect(res.status).toBe(500);
     });
   });
 });

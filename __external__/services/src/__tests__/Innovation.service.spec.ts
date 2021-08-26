@@ -806,4 +806,50 @@ describe("Innovator Service Suite", () => {
     expect(search).toBeDefined();
     expect(search[0].status).toEqual(InnovationSupportStatus.UNASSIGNED);
   });
+
+  it("should archive the innovation by innovator Id and innovation Id", async () => {
+    const innovationObj = fixtures.generateInnovation({
+      owner: { id: innovatorRequestUser.id },
+      surveyId: "abc",
+    });
+    const innovation = await fixtures.saveInnovation(innovationObj);
+
+    const result = await innovationService.archiveInnovation(
+      innovatorRequestUser,
+      innovation.id,
+      ":reason"
+    );
+
+    expect(result).toBeDefined();
+    expect(result.id).toBe(innovation.id);
+    expect(result.status).toBe(InnovationStatus.ARCHIVED);
+  });
+
+  it("should throw an error when archiveInnovation() without id", async () => {
+    let err;
+    try {
+      await innovationService.archiveInnovation(undefined, "id", "");
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw an error when archiveInnovation() with innovation not found", async () => {
+    let err;
+    try {
+      await innovationService.archiveInnovation(
+        innovatorRequestUser,
+        "62e5c505-afe4-47be-9b46-0f0b79dca954",
+        "reason"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationNotFoundError);
+  });
 });
