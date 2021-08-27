@@ -1,5 +1,4 @@
 /* eslint-disable */
-import { UserType } from "@services/index";
 import {
   createHttpTrigger,
   runStubFunctionFromBindings
@@ -29,6 +28,16 @@ jest.mock("../../utils/logging/insights", () => ({
   }),
 }));
 
+const dummy = {
+  services: {
+    InnovationTransferService: {
+      checkOne: () => ({
+        id: ':id',
+      }),
+    },
+  },
+};
+
 describe("[HttpTrigger] innovatorsCheckInnovationTransfer Suite", () => {
   describe("Function Handler", () => {
     afterEach(() => {
@@ -51,7 +60,7 @@ describe("[HttpTrigger] innovatorsCheckInnovationTransfer Suite", () => {
 
     it("Should return 200 when check Innovation Transfer", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
       spyOn(persistence, "checkInnovationTransferById").and.returnValue(
         {
           userExists: true
@@ -60,6 +69,17 @@ describe("[HttpTrigger] innovatorsCheckInnovationTransfer Suite", () => {
 
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(200);
+    });
+
+    it("Should handle error persistence return error", async () => {
+      spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
+      spyOn(persistence, "checkInnovationTransferById").and.throwError(
+        "Error."
+      );
+
+      const { res } = await mockedRequestFactory({});
+      expect(res.status).toBe(500);
     });
   });
 });
