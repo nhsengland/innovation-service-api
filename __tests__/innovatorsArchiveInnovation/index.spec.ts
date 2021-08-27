@@ -1,11 +1,10 @@
 /* eslint-disable */
-import { AccessorOrganisationRole, InnovatorOrganisationRole, UserType } from "@services/index";
+import { UserType } from "@services/index";
 import {
-  createHttpTrigger,
-  runStubFunctionFromBindings
+  createHttpTrigger, runStubFunctionFromBindings
 } from "stub-azure-function-context";
-import accessorsGetInnovationSupportLogs from "../../accessorsGetInnovationSupportLogs";
-import * as persistence from "../../accessorsGetInnovationSupportLogs/persistence";
+import innovatorsArchiveInnovation from "../../innovatorsArchiveInnovation";
+import * as persistence from "../../innovatorsArchiveInnovation/persistence";
 import * as authentication from "../../utils/authentication";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
@@ -33,20 +32,13 @@ const dummy = {
   services: {
     UserService: {
       getUser: () => ({
-        type: UserType.ACCESSOR,
+        type: UserType.INNOVATOR,
       }),
     },
-    OrganisationService: {
-      findUserOrganisations: () => [
-        { role: AccessorOrganisationRole.QUALIFYING_ACCESSOR, organisation: { id: ':orgId' } },
-      ],
-    },
   },
-  innovationId: "test_innovation_id",
-  accessorId: "test_accessor_id"
 };
 
-describe("[HttpTrigger] accessorsGetInnovationSupportLogs Suite", () => {
+describe("[HttpTrigger] innovatorsArchiveInnovation Suite", () => {
   describe("Function Handler", () => {
     afterEach(() => {
       jest.resetAllMocks();
@@ -66,39 +58,33 @@ describe("[HttpTrigger] accessorsGetInnovationSupportLogs Suite", () => {
       );
     });
 
-    it("Should return 200 when get Innovation Support", async () => {
+    it("Should return 200 when Innovation sections are archiveted", async () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
       spyOn(authentication, "decodeToken").and.returnValue({
-        oid: dummy.accessorId,
+        oid: "test_innovator_id",
       });
-      spyOn(persistence, "findAllInnovationSupportLogs").and.returnValue([
-        {
-          id: ':id'
-        }
-      ]);
+      spyOn(persistence, "archiveInnovation").and.returnValue([{}]);
 
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(200);
     });
 
-    it("Should return 403 when innovator has an invalid role", async () => {
+    it("Should return 403 when innovator has an invalid user type", async () => {
       const services = {
-        OrganisationService: {
-          findUserOrganisations: () => [
-            { role: InnovatorOrganisationRole.INNOVATOR_OWNER },
-          ],
+        UserService: {
+          getUser: () => ({
+            type: UserType.ACCESSOR,
+          }),
         },
       };
 
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(services);
       spyOn(authentication, "decodeToken").and.returnValue({
-        oid: dummy.accessorId,
+        oid: "test_innovator_id",
       });
-      spyOn(persistence, "findAllInnovationSupportLogs").and.returnValue([
-        { id: "innovation_id" },
-      ]);
+      spyOn(persistence, "archiveInnovation").and.returnValue([{}]);
 
       const { res } = await mockedRequestFactory({
         headers: { authorization: ":access_token" },
@@ -112,9 +98,7 @@ describe("[HttpTrigger] accessorsGetInnovationSupportLogs Suite", () => {
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: "test",
       });
-      spyOn(persistence, "findAllInnovationSupportLogs").and.returnValue([
-        { id: "innovation_id" },
-      ]);
+      spyOn(persistence, "archiveInnovation").and.returnValue([{}]);
 
       const { res } = await mockedRequestFactory({
         headers: { authorization: ":access_token" },
@@ -126,9 +110,9 @@ describe("[HttpTrigger] accessorsGetInnovationSupportLogs Suite", () => {
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
       spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
       spyOn(authentication, "decodeToken").and.returnValue({
-        oid: dummy.accessorId,
+        oid: "test_innovator_id",
       });
-      spyOn(persistence, "findAllInnovationSupportLogs").and.throwError(
+      spyOn(persistence, "archiveInnovation").and.throwError(
         "Error."
       );
 
@@ -142,21 +126,23 @@ describe("[HttpTrigger] accessorsGetInnovationSupportLogs Suite", () => {
 
 async function mockedRequestFactory(data?: any) {
   return runStubFunctionFromBindings(
-    accessorsGetInnovationSupportLogs,
+    innovatorsArchiveInnovation,
     [
       {
         type: "httpTrigger",
         name: "req",
         direction: "in",
         data: createHttpTrigger(
-          "GET",
-          "http://nhse-i-aac/api/accessors/{userId}/innovations/{innovationId}/support-logs",
+          "PATCH",
+          "http://nhse-i-aac/api/innovators/{userId}/innovations/{innovationId}/archive",
           { ...data.headers }, // headers
           {
-            userId: dummy.accessorId,
-            innovationId: dummy.innovationId
-          },
-          null, // payload/body
+            userId: "test_innovator_id",
+            innovationId: "test_innovation_id",
+          }, // ?
+          {
+            reason: ":reason"
+          }, // payload/body
           null // querystring
         ),
       },

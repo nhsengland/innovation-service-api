@@ -1,18 +1,17 @@
-/* eslint-disable */ 
-import * as persistence from "../../assessmentsGetInnovation/persistence";
+/* eslint-disable */
+import { UserType } from "@services/index";
+import {
+  createHttpTrigger, runStubFunctionFromBindings
+} from "stub-azure-function-context";
 import assessmentsGetInnovation from "../../assessmentsGetInnovation";
+import * as persistence from "../../assessmentsGetInnovation/persistence";
 import * as authentication from "../../utils/authentication";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
 
-import {
-  runStubFunctionFromBindings,
-  createHttpTrigger,
-} from "stub-azure-function-context";
-import { UserType } from "@services/index";
 
 jest.mock("../../utils/logging/insights", () => ({
-  start: () => {},
+  start: () => { },
   getInstance: () => ({
     startOperation: () => ({
       operation: {
@@ -23,9 +22,9 @@ jest.mock("../../utils/logging/insights", () => ({
       return func;
     },
     defaultClient: {
-      trackTrace: () => {},
-      trackRequest: () => {},
-      flush: () => {},
+      trackTrace: () => { },
+      trackRequest: () => { },
+      flush: () => { },
     },
   }),
 }));
@@ -126,6 +125,22 @@ describe("[HttpTrigger] assessmentsGetInnovation Suite", () => {
       });
 
       expect(res.status).toBe(403);
+    });
+
+    it("Should handle error persistence return error", async () => {
+      spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
+      spyOn(authentication, "decodeToken").and.returnValue({
+        oid: "test_assessment_oid",
+      });
+      spyOn(persistence, "getAssessmentInnovationSummary").and.throwError(
+        "Error."
+      );
+
+      const { res } = await mockedRequestFactory({
+        headers: { authorization: ":access_token" },
+      });
+      expect(res.status).toBe(500);
     });
   });
 });

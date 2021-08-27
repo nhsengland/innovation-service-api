@@ -1,19 +1,18 @@
-/* eslint-disable */ 
+/* eslint-disable */
+import { AccessorOrganisationRole, InnovationStatus } from "@services/index";
+import {
+  createHttpTrigger, runStubFunctionFromBindings
+} from "stub-azure-function-context";
+import accessorsGetAllInnovations from "../../accessorsGetAllInnovations";
 import * as persistence from "../../accessorsGetAllInnovations/persistence";
 import * as validation from "../../accessorsGetAllInnovations/validation";
-import accessorsGetAllInnovations from "../../accessorsGetAllInnovations";
 import * as authentication from "../../utils/authentication";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
 
-import {
-  runStubFunctionFromBindings,
-  createHttpTrigger,
-} from "stub-azure-function-context";
-import { AccessorOrganisationRole, InnovationStatus } from "@services/index";
 
 jest.mock("../../utils/logging/insights", () => ({
-  start: () => {},
+  start: () => { },
   getInstance: () => ({
     startOperation: () => ({
       operation: {
@@ -24,9 +23,9 @@ jest.mock("../../utils/logging/insights", () => ({
       return func;
     },
     defaultClient: {
-      trackTrace: () => {},
-      trackRequest: () => {},
-      flush: () => {},
+      trackTrace: () => { },
+      trackRequest: () => { },
+      flush: () => { },
     },
   }),
 }));
@@ -48,7 +47,7 @@ describe("[HttpTrigger] accessorsGetAllInnovations Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
+      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
       spyOn(connection, "setupSQLConnection").and.throwError(
         "Error establishing connection with the datasource."
       );
@@ -134,6 +133,22 @@ describe("[HttpTrigger] accessorsGetAllInnovations Suite", () => {
       });
       expect(res.status).toBe(403);
     });
+
+    it("Should handle error persistence return error", async () => {
+      spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
+      spyOn(authentication, "decodeToken").and.returnValue({
+        oid: "test_accessor_id",
+      });
+      spyOn(persistence, "findAllInnovationsByAccessor").and.throwError(
+        "Error."
+      );
+
+      const { res } = await mockedRequestFactory({
+        headers: { authorization: ":access_token" },
+      });
+      expect(res.status).toBe(500);
+    });
   });
 });
 
@@ -151,12 +166,12 @@ async function mockedRequestFactory(data?: any) {
           { ...data.headers }, // headers
           { userId: "test_accessor_id" }, // ?
           {}, // payload/body
-          { 
-            take: 10, 
-            skip: 0, 
-            supportStatus: 'ENGAGING', 
+          {
+            take: 10,
+            skip: 0,
+            supportStatus: 'ENGAGING',
             assignedToMe: 'true',
-            order: '{"name": "asc"}' 
+            order: '{"name": "asc"}'
           } // querystring
         ),
       },

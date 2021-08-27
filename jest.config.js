@@ -37,6 +37,9 @@ module.exports = {
     ".connection.ts",
     "jest.setup.ts",
     "__external__/domain/jest",
+    "__external__/domain/tools/bases/*",
+    "__external__/domain/tools/connections/*",
+    "__external__/services/src/index.ts"
   ],
   coverageDirectory: "./coverage",
   coverageThreshold: {

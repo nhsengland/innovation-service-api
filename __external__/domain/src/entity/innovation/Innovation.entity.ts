@@ -253,6 +253,9 @@ export class Innovation extends Base {
   })
   otherEnvironmentalBenefit: string;
 
+  @Column({ name: "archive_reason", type: "nvarchar", nullable: true })
+  archiveReason: string;
+
   // relationships
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: "owner_id" })
