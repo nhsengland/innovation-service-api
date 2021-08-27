@@ -9,6 +9,7 @@ import {
   InnovationSectionStatus,
   NotificationAudience,
   NotificationContextType,
+  UserType,
 } from "@domain/index";
 import * as sectionBodySchema from "@services/config/innovation-section-body.config.json";
 import * as sectionResponseSchema from "@services/config/innovation-section-response.config.json";
@@ -197,14 +198,26 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
 
     const sections = await innovation.sections;
     const section = sections.find((sec) => sec.section === sectionKey);
+    const sectionMetadata = this.getInnovationSectionMetadata(
+      sectionKey,
+      section
+    );
+    let data = {};
 
-    return {
-      section: this.getInnovationSectionMetadata(sectionKey, section),
-      data: await this.getInnovationSectionData(
+    if (
+      requestUser.type !== UserType.ACCESSOR ||
+      sectionMetadata.status === InnovationSectionStatus.SUBMITTED
+    ) {
+      data = await this.getInnovationSectionData(
         innovation,
         section,
         sectionFields
-      ),
+      );
+    }
+
+    return {
+      section: sectionMetadata,
+      data,
     };
   }
 
