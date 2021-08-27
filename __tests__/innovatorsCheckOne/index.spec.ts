@@ -50,7 +50,7 @@ describe("[HttpTrigger] innovatorsCheckOne Suite", () => {
     it("Should return 200 when Innovator is found", async () => {
       spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
       spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue({});
       spyOn(persistence, "checkUserPendingTransfers").and.returnValue([
         { innovator: "" },
       ]);
