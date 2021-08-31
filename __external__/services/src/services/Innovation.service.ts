@@ -52,7 +52,6 @@ import {
   InnovatorInnovationSummary,
 } from "../models/InnovationSummaryResult";
 import { BaseService } from "./Base.service";
-import { InnovationSectionService } from "./InnovationSection.service";
 import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
 import { UserService } from "./User.service";
