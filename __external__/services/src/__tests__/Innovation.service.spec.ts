@@ -25,6 +25,7 @@ import * as engines from "@engines/index";
 import {
   InnovationNotFoundError,
   InvalidParamsError,
+  InvalidSectionStateError,
   InvalidUserRoleError,
 } from "@services/errors";
 import { InnovationListModel } from "@services/models/InnovationListModel";
@@ -176,6 +177,7 @@ describe("Innovator Service Suite", () => {
 
     spyOn(NotificationService.prototype, "create").and.throwError("error");
     spyOn(NotificationService.prototype, "sendEmail").and.throwError("error");
+    spyOn(innovationService, "hasIncompleteSections").and.returnValue(false);
 
     const spy = spyOn(LoggerService.prototype, "error");
 
@@ -602,6 +604,7 @@ describe("Innovator Service Suite", () => {
     });
     const innovation = await fixtures.saveInnovation(innovationObj);
 
+    spyOn(innovationService, "hasIncompleteSections").and.returnValue(false);
     await innovationService.submitInnovation(
       innovatorRequestUser,
       innovation.id
@@ -618,6 +621,7 @@ describe("Innovator Service Suite", () => {
 
   it("should throw an error when submitInnovation() without id", async () => {
     let err;
+    spyOn(innovationService, "hasIncompleteSections").and.returnValue(false);
     try {
       await innovationService.submitInnovation(undefined, "id");
     } catch (error) {
@@ -629,6 +633,7 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should throw an error when submitInnovation() with innovation not found", async () => {
+    spyOn(innovationService, "hasIncompleteSections").and.returnValue(false);
     let err;
     try {
       await innovationService.submitInnovation(
@@ -641,6 +646,28 @@ describe("Innovator Service Suite", () => {
 
     expect(err).toBeDefined();
     expect(err).toBeInstanceOf(InnovationNotFoundError);
+  });
+
+  it("should throw an error when submitInnovation() with incomplete sections", async () => {
+    spyOn(innovationService, "hasIncompleteSections").and.returnValue(true);
+    const innovationObj = fixtures.generateInnovation({
+      owner: { id: innovatorRequestUser.id },
+      surveyId: "abc",
+    });
+    const innovation = await fixtures.saveInnovation(innovationObj);
+
+    let err;
+    try {
+      await innovationService.submitInnovation(
+        innovatorRequestUser,
+        innovation.id
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidSectionStateError);
   });
 
   it("should not list ASSESSMENT innovations with status CREATED", async () => {

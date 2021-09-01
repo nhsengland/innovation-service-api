@@ -3,6 +3,9 @@ import {
   Innovation,
   InnovationAction,
   InnovationActionStatus,
+  InnovationSection,
+  InnovationSectionCatalogue,
+  InnovationSectionStatus,
   InnovationStatus,
   InnovationSupport,
   InnovationSupportStatus,
@@ -15,6 +18,7 @@ import {
 import {
   InnovationNotFoundError,
   InvalidParamsError,
+  InvalidSectionStateError,
   InvalidUserRoleError,
   MissingUserOrganisationError,
 } from "@services/errors";
@@ -27,6 +31,7 @@ import {
   InnovationListModel,
   InnovationViewModel,
 } from "@services/models/InnovationListModel";
+import { InnovationSectionModel } from "@services/models/InnovationSectionModel";
 import { ProfileModel } from "@services/models/ProfileModel";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
 import { RequestUser } from "@services/models/RequestUser";
@@ -57,6 +62,7 @@ export class InnovationService extends BaseService<Innovation> {
   private readonly supportRepo: Repository<InnovationSupport>;
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
+
   constructor(connectionName?: string) {
     super(Innovation, connectionName);
     this.connection = getConnection(connectionName);
@@ -605,6 +611,13 @@ export class InnovationService extends BaseService<Innovation> {
     };
   }
 
+  async hasIncompleteSections(sections) {
+    const innovationSections = this.getInnovationSectionsMetadata(sections);
+    return innovationSections.some(
+      (x) => x.status !== InnovationSectionStatus.SUBMITTED
+    );
+  }
+
   async submitInnovation(requestUser: RequestUser, id: string) {
     if (!id || !requestUser || !checkIfValidUUID(id)) {
       throw new InvalidParamsError(
@@ -624,6 +637,15 @@ export class InnovationService extends BaseService<Innovation> {
     );
     if (!innovation) {
       throw new InnovationNotFoundError("Innovation not found for the user.");
+    }
+
+    const sections = await innovation.sections;
+    const canSubmit = !(await this.hasIncompleteSections(sections));
+
+    if (!canSubmit) {
+      throw new InvalidSectionStateError(
+        "Cannot submit the innovation for assessment with incomplete sections."
+      );
     }
 
     await this.repository.update(innovation.id, {
@@ -1030,5 +1052,47 @@ export class InnovationService extends BaseService<Innovation> {
       }
     */
     return supportMap;
+  }
+
+  private getInnovationSectionsMetadata(
+    sections: InnovationSection[]
+  ): InnovationSectionModel[] {
+    const innovationSections: InnovationSectionModel[] = [];
+
+    for (const key in InnovationSectionCatalogue) {
+      const section = sections.find((sec) => sec.section === key);
+      innovationSections.push(this.getInnovationSectionMetadata(key, section));
+    }
+
+    return innovationSections;
+  }
+
+  private getInnovationSectionMetadata(
+    key: string,
+    section?: InnovationSection
+  ): InnovationSectionModel {
+    let result: InnovationSectionModel;
+
+    if (section) {
+      result = {
+        id: section.id,
+        section: section.section,
+        status: section.status,
+        updatedAt: section.updatedAt,
+        submittedAt: section.submittedAt,
+        actionStatus: null,
+      };
+    } else {
+      result = {
+        id: null,
+        section: InnovationSectionCatalogue[key],
+        status: InnovationSectionStatus.NOT_STARTED,
+        updatedAt: null,
+        submittedAt: null,
+        actionStatus: null,
+      };
+    }
+
+    return result;
   }
 }

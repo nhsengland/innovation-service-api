@@ -109,3 +109,10 @@ export class InvalidAPIKey extends Error {
     this.name = "InvalidAPIKey";
   }
 }
+
+export class InvalidSectionStateError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InvalidSectionStateError";
+  }
+}
