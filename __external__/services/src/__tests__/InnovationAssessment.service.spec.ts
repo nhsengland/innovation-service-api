@@ -95,6 +95,7 @@ describe("Innovation Assessment Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(OrganisationUnit).execute();
     await query.from(OrganisationUser).execute();
     await query.from(Organisation).execute();
     await query.from(Innovation).execute();
