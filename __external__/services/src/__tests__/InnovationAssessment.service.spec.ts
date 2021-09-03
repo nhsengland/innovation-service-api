@@ -8,6 +8,7 @@ import {
   NotificationUser,
   Organisation,
   OrganisationType,
+  OrganisationUnit,
   OrganisationUser,
   User,
 } from "@domain/index";
@@ -29,14 +30,17 @@ const dummy = {
 
 describe("Innovation Assessment Suite", () => {
   let assessmentService: InnovationAssessmentService;
+  let notificationService: NotificationService;
   let innovation: Innovation;
 
   let assessmentRequestUser: RequestUser;
   let innovatorRequestUser: RequestUser;
   let qAccessorRequestUser: RequestUser;
 
+  let fakeOrganisationUnit: OrganisationUnit;
+
   beforeAll(async () => {
-    // await setupTestsConnection();
+    //await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -45,12 +49,22 @@ describe("Innovation Assessment Suite", () => {
       process.env.DB_TESTS_NAME
     );
 
+    notificationService = new NotificationService(process.env.DB_TESTS_NAME);
+
     const innovatorUser = await fixtures.createInnovatorUser();
     const assessmentUser = await fixtures.createAssessmentUser();
     const qualAccessorUser = await fixtures.createAccessorUser();
 
     const accessorOrganisation = await fixtures.createOrganisation(
       OrganisationType.ACCESSOR
+    );
+
+    const fakeAccessorOrganisation = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
+    );
+
+    fakeOrganisationUnit = await fixtures.createOrganisationUnit(
+      fakeAccessorOrganisation
     );
 
     const organisationQAccessorUser = await fixtures.addUserToOrganisation(
@@ -64,6 +78,7 @@ describe("Innovation Assessment Suite", () => {
       surveyId: "abc",
       organisationShares: [{ id: accessorOrganisation.id }],
     });
+
     const innovations = await fixtures.saveInnovations(innovationObj);
     innovation = innovations[0];
 
@@ -80,12 +95,13 @@ describe("Innovation Assessment Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(OrganisationUnit).execute();
     await query.from(OrganisationUser).execute();
     await query.from(Organisation).execute();
     await query.from(Innovation).execute();
     await query.from(User).execute();
 
-    // closeTestsConnection();
+    //closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -323,5 +339,39 @@ describe("Innovation Assessment Suite", () => {
 
     expect(item).toBeDefined();
     expect(item.description).toEqual(dummy.assessment.description);
+  });
+
+  it("should update an assessment with submission and create notifications", async () => {
+    const assessmentObj = {
+      ...dummy.assessment,
+      innovation: innovation.id,
+      assignTo: assessmentRequestUser.id,
+    };
+
+    const assessment = await assessmentService.create(
+      assessmentRequestUser,
+      innovation.id,
+      assessmentObj
+    );
+
+    const updAssessment = {
+      maturityLevel: MaturityLevelCatalogue.ADVANCED,
+      isSubmission: true,
+      test: "test",
+      organisationUnits: [fakeOrganisationUnit.id],
+    };
+
+    spyOn(notificationService, "sendEmail");
+
+    const spy = spyOn(notificationService, "create");
+
+    const item = await assessmentService.update(
+      assessmentRequestUser,
+      assessment.id,
+      innovation.id,
+      updAssessment
+    );
+
+    expect(item).toBeDefined();
   });
 });

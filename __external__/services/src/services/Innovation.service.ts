@@ -750,6 +750,42 @@ export class InnovationService extends BaseService<Innovation> {
     });
   }
 
+  async getOrganisationUnitShares(
+    requestUser: RequestUser,
+    innovationId: string
+  ) {
+    if (!innovationId || !requestUser || !checkIfValidUUID(innovationId)) {
+      throw new InvalidParamsError(
+        "Invalid parameters. You must define the innovationId and the request user."
+      );
+    }
+
+    const filterOptions = {
+      relations: ["organisationShares", "organisationShares.organisationUnits"],
+    };
+
+    const innovation = await this.findInnovation(
+      requestUser,
+      innovationId,
+      filterOptions
+    );
+
+    if (!innovation) {
+      throw new InnovationNotFoundError("Innovation not found for the user.");
+    }
+
+    const organisationShares = innovation.organisationShares;
+    const resolvedUnits = [];
+    for (const org of organisationShares) {
+      const units = await org.organisationUnits;
+      resolvedUnits.push(units);
+    }
+
+    const unitShares = resolvedUnits.flatMap((r) => r.map((u) => u.id));
+
+    return unitShares;
+  }
+
   async getOrganisationShares(requestUser: RequestUser, innovationId: string) {
     if (!innovationId || !requestUser || !checkIfValidUUID(innovationId)) {
       throw new InvalidParamsError(
