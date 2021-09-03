@@ -198,7 +198,7 @@ export class InnovationAssessmentService {
       );
     }
 
-    let suggestedOrganisationUnits: OrganisationUnit[];
+    let suggestedOrganisationUnits;
 
     const result = await this.connection.transaction(
       async (transactionManager) => {
