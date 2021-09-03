@@ -179,9 +179,20 @@ export class InnovationAssessmentService {
       throw new ResourceNotFoundError("Assessment not found!");
     }
 
+    // Current organisation Units suggested on the assessment (most of the times will be none)
     const currentUnits = assessmentDb.organisationUnits?.map((u) => u.id) || [];
-    let organisationSuggestionsDiff;
+
+    // Obtains organisation's units that the innovator agreed to share his innovation with
+    const innovationOrganisationUnitShares = await this.innovationService.getOrganisationUnitShares(
+      requestUser,
+      innovationId
+    );
+
+    let organisationSuggestionsDiff = [];
+
     if (assessment.organisationUnits) {
+      // gets the difference between the currentUnits on the assessment and the units being suggested by this assessment update
+      // most of the times it will be a 100% diff.
       organisationSuggestionsDiff = assessment.organisationUnits.filter(
         (ou) => !currentUnits.includes(ou)
       );
@@ -235,12 +246,16 @@ export class InnovationAssessmentService {
       }
 
       try {
+        // maps the units object to only the unit id
         const units = suggestedOrganisationUnits.map((u) => u.id);
+
+        // gets the qualifying accessors from the organisation units
         const qualifyingAccessors = await this.organisationService.findQualifyingAccessorsFromUnits(
           units,
           innovationId
         );
 
+        // sends an email notification to those Qualifying Accessors
         await this.notificationService.sendEmail(
           requestUser,
           EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED,
@@ -254,23 +269,32 @@ export class InnovationAssessmentService {
           error
         );
       }
-    }
 
-    if (organisationSuggestionsDiff && organisationSuggestionsDiff.length > 0) {
-      try {
-        await this.notificationService.create(
-          requestUser,
-          NotificationAudience.INNOVATORS,
-          innovationId,
-          NotificationContextType.DATA_SHARING,
-          innovationId,
-          `Innovation with id ${innovationId} has received Data sharing suggestions from the needs assessment team`
-        );
-      } catch (error) {
-        this.logService.error(
-          `An error has occured while creating a notification of type ${NotificationContextType.DATA_SHARING} from ${requestUser.id}`,
-          error
-        );
+      // removes the units that the Innovator agreed to share his innovation with from the suggestions
+      organisationSuggestionsDiff = organisationSuggestionsDiff.filter(
+        (ou) => !innovationOrganisationUnitShares.includes(ou)
+      );
+
+      // if there are still any suggestions unmatched with the innovation data sharing, then create a notification for the innovator.
+      if (
+        organisationSuggestionsDiff &&
+        organisationSuggestionsDiff.length > 0
+      ) {
+        try {
+          await this.notificationService.create(
+            requestUser,
+            NotificationAudience.INNOVATORS,
+            innovationId,
+            NotificationContextType.DATA_SHARING,
+            innovationId,
+            `Innovation with id ${innovationId} has received Data sharing suggestions from the needs assessment team`
+          );
+        } catch (error) {
+          this.logService.error(
+            `An error has occured while creating a notification of type ${NotificationContextType.DATA_SHARING} from ${requestUser.id}`,
+            error
+          );
+        }
       }
     }
 

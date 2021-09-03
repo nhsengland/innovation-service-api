@@ -52,7 +52,7 @@ describe("Innovator Service Suite", () => {
   let assessmentRequestUser: RequestUser;
 
   beforeAll(async () => {
-    // await setupTestsConnection();
+    //await setupTestsConnection();
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
     });
@@ -145,7 +145,7 @@ describe("Innovator Service Suite", () => {
     await query.from(OrganisationUser).execute();
     await query.from(Organisation).execute();
     await query.from(User).execute();
-    // closeTestsConnection();
+    //closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -878,5 +878,28 @@ describe("Innovator Service Suite", () => {
 
     expect(err).toBeDefined();
     expect(err).toBeInstanceOf(InnovationNotFoundError);
+  });
+
+  it("should find the innovation organisation Unit shares", async () => {
+    const fakeInnovation = await fixtures.saveInnovation(
+      fixtures.generateInnovation({
+        owner: { id: innovatorRequestUser.id },
+        status: InnovationStatus.IN_PROGRESS,
+        organisationShares: [{ id: accessorOrganisation.id }],
+      })
+    );
+
+    const requestUser: RequestUser = {
+      id: ":requestUser",
+      type: UserType.ASSESSMENT,
+    };
+
+    const result = await innovationService.getOrganisationUnitShares(
+      requestUser,
+      fakeInnovation.id
+    );
+
+    expect(result).toBeDefined();
+    expect(result.length).toBeGreaterThan(0);
   });
 });
