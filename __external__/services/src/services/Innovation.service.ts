@@ -136,6 +136,17 @@ export class InnovationService extends BaseService<Innovation> {
     return super.find(innovationId, filterOptions);
   }
 
+  async findInnovationSections(
+    innovationId: string
+  ): Promise<InnovationSection[]> {
+    Innovation;
+    const innovation = await super.find(innovationId, {
+      relations: ["sections"],
+    });
+
+    return await innovation.sections;
+  }
+
   async findAllByAccessorAndSupportStatus(
     requestUser: RequestUser,
     supportStatus: InnovationSupportStatus,
@@ -639,7 +650,8 @@ export class InnovationService extends BaseService<Innovation> {
       throw new InnovationNotFoundError("Innovation not found for the user.");
     }
 
-    const sections = await innovation.sections;
+    const sections = await this.findInnovationSections(innovation.id);
+
     const canSubmit = !(await this.hasIncompleteSections(sections));
 
     if (!canSubmit) {
