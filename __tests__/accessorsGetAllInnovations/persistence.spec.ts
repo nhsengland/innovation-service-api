@@ -36,6 +36,7 @@ describe("[accessorsGetAllInnovations] Persistence suite", () => {
         ctx as CustomContext,
         "ENGAGING",
         true,
+        false,
         0,
         10
       );

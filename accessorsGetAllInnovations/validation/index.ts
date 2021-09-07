@@ -5,6 +5,7 @@ const querySchema = Joi.object({
   skip: Joi.number().required(),
   supportStatus: Joi.string().required(),
   assignedToMe: Joi.boolean().optional(),
+  suggestedOnly: Joi.boolean().optional(),
 }).unknown(true);
 
 export const ValidateQueryParams = (data: object): any => {
