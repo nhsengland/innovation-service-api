@@ -4,6 +4,7 @@ export const findAllInnovationsByAccessor = async (
   ctx: CustomContext,
   supportStatus: string,
   assignedToMe: boolean,
+  suggestedOnly: boolean,
   skip: number,
   take: number,
   order?: { [key: string]: string }
@@ -12,6 +13,7 @@ export const findAllInnovationsByAccessor = async (
     ctx.auth.requestUser,
     supportStatus as InnovationSupportStatus,
     assignedToMe,
+    suggestedOnly,
     skip,
     take,
     order
