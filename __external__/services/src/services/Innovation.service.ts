@@ -202,14 +202,7 @@ export class InnovationService extends BaseService<Innovation> {
         filterOptions.where += ` and NOT EXISTS(SELECT 1 FROM innovation_support tmp WHERE tmp.innovation_id = Innovation.id and deleted_at is null and tmp.organisation_unit_id = '${organisationUnit.id}')`;
 
         if (suggestedOnly) {
-          filterOptions.where += `
-            and EXISTS (
-              SELECT 1 FROM innovation_assessment A
-              INNER JOIN innovation_assessment_organisation_unit B
-              ON A.ID = B.innovation_assessment_id
-              WHERE B.organisation_unit_id = '${organisationUnit.id}'
-            )
-          `;
+          filterOptions.where += ` and EXISTS (SELECT 1 FROM innovation_assessment A INNER JOIN innovation_assessment_organisation_unit B ON A.ID = B.innovation_assessment_id WHERE B.organisation_unit_id = '${organisationUnit.id}' AND A.innovation_id = Innovation.id)`;
         }
       } else {
         filterOptions.relations = [
