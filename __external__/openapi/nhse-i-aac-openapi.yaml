@@ -77,6 +77,35 @@ paths:
           description: "Not Found"
         "401":
           description: "Unauthorized"
+  "/accessors/{userId}/innovations/advanced":
+    get:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "GetInnovationsAdvanced"
+      description: "Gets an Accessor's Innovations with advanced filters"
+      operationId: "accessors-get-all-innovations-advanced"
+      security:
+        - OpenId:
+            - accessors_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/accessor-get-innovations-200"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
 
   "/accessors/{userId}/innovations/{innovationId}":
     get:
@@ -821,7 +850,7 @@ paths:
           description: "Not Found"
         "401":
           description: "Unauthorized"
-          
+
   "/innovators/check":
     get:
       tags:
@@ -2424,6 +2453,8 @@ components:
       $ref: "./schemas/accessor-base-schema.yaml"
     accessor-get-innovations:
       $ref: "./schemas/accessor-get-innovations.yaml"
+    accessor-get-innovations-advanced:
+      $ref: "./schemas/accessor-get-innovations-advanced.yaml"
     innovator-schema:
       $ref: "./schemas/innovator-base-schema.yaml"
     innovation-schema:
@@ -2490,6 +2521,8 @@ components:
   responses:
     accessor-get-innovations-200:
       $ref: "./responses/accessor-get-innovations-200.yaml"
+    accessor-get-innovations-advanced-200:
+      $ref: "./responses/accessor-get-innovations-200-advanced.yaml"
     accessor-get-innovation-assessment-200:
       $ref: "./responses/accessor-get-innovation-assessment-200.yaml"
     innovator-create-201:
