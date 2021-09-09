@@ -36,6 +36,7 @@ import { ProfileModel } from "@services/models/ProfileModel";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { SimpleResult } from "@services/models/SimpleResult";
+import { request } from "http";
 import {
   Connection,
   FindManyOptions,
@@ -55,6 +56,8 @@ import { BaseService } from "./Base.service";
 import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
 import { UserService } from "./User.service";
+
+import * as constants from "../../../../utils/constants";
 
 export class InnovationService extends BaseService<Innovation> {
   private readonly connection: Connection;
@@ -209,13 +212,16 @@ export class InnovationService extends BaseService<Innovation> {
           "organisationShares",
           ...filterOptions.relations,
         ];
-
         filterOptions.where += ` and Innovation__innovationSupports.status = '${supportStatus}'`;
         filterOptions.where += ` and Innovation__innovationSupports.organisation_unit_id = '${organisationUnit.id}'`;
       }
     } else {
       filterOptions.where = `Innovation__innovationSupports.organisation_unit_id = '${organisationUnit.id}'`;
       filterOptions.where += ` and Innovation.status = '${InnovationStatus.IN_PROGRESS}'`;
+
+      // TODO: ACCESSORS CAN ONLY SEE [COMPLETE AND ENGAGING]
+      // RIGHT NOW THIS IS ONLY ENFORCED ON THE CLIENT.
+      // THIS SHOULD FILTER OUT SUPPORT STATUSES DIFFERENT FROM COMPLETE OR ENGAGING.
       filterOptions.where += ` and Innovation__innovationSupports.status = '${supportStatus}'`;
     }
 
@@ -326,6 +332,233 @@ export class InnovationService extends BaseService<Innovation> {
     };
 
     return result;
+  }
+
+  async findAllAdvanced(
+    requestUser: RequestUser,
+    name: string,
+    assignedToMe: boolean,
+    suggestedOnly: boolean,
+    categories: string[],
+    locations: string[],
+    organisations: string[],
+    supportStatuses: string[],
+    skip: number,
+    take: number,
+    order?: { [key: string]: string }
+  ): Promise<{
+    data: [
+      {
+        id: string;
+        name: string;
+        submittedAt: string;
+        mainCategory: string;
+        otherMainCategoryDescription: string;
+        countryName: string;
+        postcode: string;
+        supportStatus: string;
+      }
+    ];
+    count: number;
+  }> {
+    if (!requestUser) {
+      throw new InvalidParamsError(
+        "Invalid userId. You must define the accessor id."
+      );
+    }
+
+    if (!requestUser.organisationUser) {
+      throw new MissingUserOrganisationError(
+        "Invalid user. User has no organisations."
+      );
+    }
+    const organisationUser = requestUser.organisationUser;
+
+    if (!hasAccessorRole(organisationUser.role)) {
+      throw new InvalidUserRoleError("Invalid user. User has an invalid role.");
+    }
+
+    const organisationUnit = requestUser.organisationUnitUser.organisationUnit;
+
+    const query = this.repository
+      .createQueryBuilder("innovations")
+      .distinct()
+      .select("innovations.id", "id")
+      .addSelect("innovations.name", "name")
+      .addSelect("innovations.submitted_at", "submittedAt")
+      .addSelect("innovations.main_category", "mainCategory")
+      .addSelect(
+        "innovations.other_main_category_description",
+        "otherMainCategoryDescription"
+      )
+      .addSelect("innovations.country_name", "countryName")
+      .addSelect("innovations.postcode", "postcode")
+      .addSelect("support.status", "supportStatus")
+      .addSelect("innovations.created_at", "createdAt")
+      // may not have any sharing preferences
+      .innerJoin(
+        "innovation_share",
+        "share",
+        "innovations.id = share.innovation_id"
+      )
+      // may not have any assessment
+      // DOUBLE CHECK THIS. DOES IT NEED TO BE AN ASSESSMENT?
+      .innerJoin(
+        "innovation_assessment",
+        "assessment",
+        "innovations.id = assessment.innovation_id"
+      )
+      // may not have any support
+      .leftJoin(
+        "innovation_support",
+        "support",
+        "innovations.id = support.innovation_id"
+      )
+      // may not have assigned users
+      .leftJoin(
+        "innovation_support_user",
+        "support_user",
+        "support.id = support_user.innovation_support_id"
+      )
+      .leftJoin(
+        "organisation_unit",
+        "orgSupportUnit",
+        `support.organisation_unit_id = orgSupportUnit.id and support.status = '${InnovationSupportStatus.ENGAGING}'`
+      )
+      .where("innovations.status in (:...status)", {
+        status: [InnovationStatus.IN_PROGRESS, InnovationStatus.COMPLETE],
+      });
+
+    // Pre conditions for the main set
+
+    /**
+     * RULES:
+     * IF YOU ARE A QUALIFYING ACCESSOR, YOU CAN SEE ALL STATUSES
+     * IF YOU ARE AN ACCESSOR, YOU CAN ONLY SEE INNOVATIONS THAT YOUR UNIT CURRENTLY SUPPORTS AND WITH
+     * THE FOLLOWING STATUSES: [ENGAGING, COMPLETE]
+     *
+     * THIS IF BLOCK NEEDS TO ACCOUNTS FOR ALL OF THE ABOVE RULES.
+     */
+
+    if (
+      organisationUser.role === AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    ) {
+      // when the request user is a QA, we want innovations submited for assessment (status IN_PROGRESS)
+      // and that have the QA organisation on the sharing preferences
+      query.andWhere("share.organisation_id = :organisationId", {
+        organisationId: organisationUser.organisation.id,
+      });
+
+      if (supportStatuses && supportStatuses.length > 0) {
+        if (supportStatuses.includes(InnovationSupportStatus.UNASSIGNED)) {
+          query.andWhere(
+            "(support.status in (:...supportStatuses) OR support.status IS NULL)",
+            { supportStatuses }
+          );
+        } else {
+          query.andWhere("support.status in (:...supportStatuses)", {
+            supportStatuses,
+          });
+        }
+      }
+    }
+
+    if (organisationUser.role === AccessorOrganisationRole.ACCESSOR) {
+      // When the request user is a regular Accessor
+      // we want innovations that have the Accessor's unit on the support table
+
+      query.andWhere("support.status in (:...status)", {
+        status: [
+          InnovationSupportStatus.ENGAGING,
+          InnovationSupportStatus.COMPLETE,
+        ],
+      });
+
+      query.andWhere("support.organisation_unit_id = :unitId ", {
+        unitId: organisationUnit.id,
+      });
+
+      if (supportStatuses && supportStatuses.length > 0) {
+        query.andWhere("support.status in (:...supportStatuses)", {
+          supportStatuses,
+        });
+      }
+    }
+
+    // Filters
+
+    // Name
+    if (name && name.trim().length > 0) {
+      query.andWhere("innovations.name like :name", {
+        name: `%${name.trim().toLocaleLowerCase()}%`,
+      });
+    }
+    // Main Categories
+    if (categories && categories.length > 0) {
+      query.andWhere("innovations.main_category in (:...categories)", {
+        categories,
+      });
+    }
+
+    // Locations
+    if (locations && locations.length > 0) {
+      locations = locations.map((l) => l.toLocaleLowerCase());
+
+      if (!locations.includes("based outside uk")) {
+        query.andWhere("innovations.country_name in (:...locations)", {
+          locations,
+        });
+      } else {
+        // matches every location that is not in part of the UK except the ones included in the locations list.
+        const excluded = constants.locations.filter(
+          (a) => !locations.includes(a)
+        );
+        query.andWhere(
+          "innovations.country_name in (:...locations) and innovations.country_name NOT in (:...excluded)",
+          { locations, excluded }
+        );
+      }
+    }
+
+    // Engaging organisations
+    if (organisations && organisations.length > 0) {
+      // MUST GRAB THE UNIT ID'S OF THE ORGS
+      // OR CHANGE THIS QUERY TO JOIN WITH THE ORGANISATION TABLE
+      query.andWhere(" orgSupportUnit.organisation_id in (:...organisations)", {
+        organisations,
+      });
+    }
+
+    // Assigned To Me
+    if (assignedToMe) {
+      query.andWhere("support_user = :userId", { userId: requestUser.id });
+    }
+
+    if (order) {
+      for (const key of Object.keys(order)) {
+        query.addOrderBy(key, order[key] as "ASC" | "DESC");
+      }
+    } else {
+      query.addOrderBy("innovations.created_at", "DESC");
+    }
+
+    const result = await query.execute();
+
+    const data = result.map((r) => ({
+      id: r.id,
+      name: r.name,
+      submittedAt: r.submittedAt,
+      mainCategory: r.mainCategory,
+      otherMainCategoryDescription: r.otherMainCategoryDescription,
+      countryName: r.countryName,
+      postcode: r.postcode,
+      supportStatus: r.supportStatus,
+    }));
+
+    return {
+      data,
+      count: data.length as number,
+    };
   }
 
   async findAllByInnovator(
