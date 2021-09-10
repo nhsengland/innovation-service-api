@@ -510,13 +510,28 @@ export class InnovationService extends BaseService<Innovation> {
         });
       } else {
         // matches every location that is not in part of the UK except the ones included in the locations list.
+        locations = locations.filter((o) => o !== "based outside uk");
+
         const excluded = constants.locations.filter(
           (a) => !locations.includes(a)
         );
-        query.andWhere(
-          "innovations.country_name in (:...locations) and innovations.country_name NOT in (:...excluded)",
-          { locations, excluded }
-        );
+
+        // this works because excluded and contants.locations are isolated.
+        // We could use a element comparison algorithm but this provides better time complexity.
+        // if excluded is [A,B,C] and the constants.location is [A,B,C] (independent of order)
+        // then this condition is true.
+        // on the other hand, if excluded is [A,C] then it is not matched.
+        if (excluded.length === constants.locations.length) {
+          query.andWhere("innovations.country_name NOT in (:...excluded)", {
+            locations,
+            excluded,
+          });
+        } else {
+          query.andWhere(
+            "innovations.country_name in (:...locations) OR innovations.country_name NOT in (:...excluded)",
+            { locations, excluded }
+          );
+        }
       }
     }
 
@@ -541,6 +556,9 @@ export class InnovationService extends BaseService<Innovation> {
     } else {
       query.addOrderBy("innovations.created_at", "DESC");
     }
+
+    query.skip(skip);
+    query.take(take);
 
     const result = await query.execute();
 
