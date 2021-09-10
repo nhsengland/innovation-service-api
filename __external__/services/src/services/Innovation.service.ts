@@ -542,6 +542,9 @@ export class InnovationService extends BaseService<Innovation> {
       query.addOrderBy("innovations.created_at", "DESC");
     }
 
+    query.skip(skip);
+    query.take(take);
+
     const result = await query.execute();
 
     const data = result.map((r) => ({
