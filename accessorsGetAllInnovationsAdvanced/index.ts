@@ -32,11 +32,15 @@ class AccessorsGetAllInnovationsAdvanced {
     auth: any
   ): Promise<void> {
     const query: any = req.query;
-    const supportStatuses = query.supportStatuses?.split(",") || [];
-    const categories = query.categories?.split(",") || [];
-    const organisations = query.organisations?.split(",") || [];
-    const locations = query.locations?.split(",") || [];
-    const name = query.name;
+    const supportStatuses =
+      query.status?.split(",").filter((s) => s !== "") || [];
+    const categories = query.cat?.split(",").filter((c) => c !== "") || [];
+    const organisations = query.org?.split(",").filter((o) => o !== "") || [];
+    const locations = query.loc?.split(",").filter((l) => l !== "") || [];
+    const name =
+      query.name && query.name !== "" && query.name.length > 0
+        ? query.name
+        : undefined;
 
     const assignedToMe = query.assignedToMe
       ? query.assignedToMe.toLocaleLowerCase() === "true"
