@@ -408,6 +408,13 @@ export class InnovationService extends BaseService<Innovation> {
         "assessment",
         "innovations.id = assessment.innovation_id"
       )
+      // NOT SURE IF AN ASSESSMENT CAN EXIST WITHOUT AT LEAST ONE ORG WHEN ITS COMPLETED
+      // MAKES SENSE THAT IT CAN EXIST, BECAUSE THE ASSESSMENT CAN BE NEGATIVE.
+      .leftJoin(
+        "innovation_assessment_organisation_unit",
+        "assessment_organisation",
+        "assessment.id = assessment_organisation.innovation_assessment_id"
+      )
       // may not have any support
       .leftJoin(
         "innovation_support",
@@ -546,7 +553,15 @@ export class InnovationService extends BaseService<Innovation> {
 
     // Assigned To Me
     if (assignedToMe) {
-      query.andWhere("support_user = :userId", { userId: requestUser.id });
+      query.andWhere("support_user.organisation_unit_user_id = :userId", {
+        userId: requestUser.organisationUnitUser.id,
+      });
+    }
+
+    if (suggestedOnly) {
+      query.andWhere("assessment_organisation.organisation_unit_id = :unitId", {
+        unitId: requestUser.organisationUnitUser.organisationUnit.id,
+      });
     }
 
     if (order) {
