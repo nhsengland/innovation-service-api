@@ -3,8 +3,11 @@ import {
   Innovation,
   InnovationAction,
   InnovationSectionCatalogue,
+  InnovationStatus,
   InnovationSupport,
   InnovationSupportStatus,
+  InnovatorOrganisationRole,
+  MaturityLevelCatalogue,
   Organisation,
   OrganisationType,
   OrganisationUnit,
@@ -21,6 +24,7 @@ import { InnovationAssessmentService } from "@services/services/InnovationAssess
 import { InnovationSectionService } from "@services/services/InnovationSection.service";
 import { InnovationSupportService } from "@services/services/InnovationSupport.service";
 import { InnovatorService } from "@services/services/Innovator.service";
+import { NotificationService } from "@services/services/Notification.service";
 import { OrganisationService } from "@services/services/Organisation.service";
 import { UserService } from "@services/services/User.service";
 import * as faker from "faker";
@@ -414,5 +418,228 @@ export const getRequestUser = (
     type: user.type,
     organisationUser,
     organisationUnitUser,
+  };
+};
+
+export const generateInnovatorWithOrganisation = async (): Promise<{
+  user: User;
+  organisation: Organisation;
+}> => {
+  const innovatorUser = await createInnovatorUser();
+  const innovatorOrganisation = await createOrganisation(
+    OrganisationType.INNOVATOR
+  );
+  await addUserToOrganisation(
+    innovatorUser,
+    innovatorOrganisation,
+    InnovatorOrganisationRole.INNOVATOR_OWNER
+  );
+
+  return {
+    user: innovatorUser,
+    organisation: innovatorOrganisation,
+  };
+};
+
+export const generateAccessorWithOrganisation = async (
+  userRole: AccessorOrganisationRole,
+  organisation?: Organisation
+): Promise<{
+  user: User;
+  organisation: Organisation;
+  organisationUser: OrganisationUser;
+  organisationUnitUser: OrganisationUnitUser;
+}> => {
+  const user = await createAccessorUser();
+  let accessorOrganisation;
+
+  if (organisation) {
+    accessorOrganisation = organisation;
+  } else {
+    accessorOrganisation = await createOrganisation(OrganisationType.ACCESSOR);
+  }
+
+  const organisationUser = await addUserToOrganisation(
+    user,
+    accessorOrganisation,
+    userRole
+  );
+
+  const organisationUnit = await createOrganisationUnit(accessorOrganisation);
+  const organisationUnitUser = await addOrganisationUserToOrganisationUnit(
+    organisationUser,
+    organisationUnit
+  );
+
+  return {
+    user,
+    organisation: accessorOrganisation,
+    organisationUser: organisationUser,
+    organisationUnitUser: organisationUnitUser,
+  };
+};
+
+export const setupCompleteInnovation = async (
+  withSupport = false,
+  innovationPartial?: any
+): Promise<{
+  innovation: Innovation;
+  accessorOrganisation: Organisation;
+  users: {
+    qualifyingAccessor: RequestUser;
+    accessor: RequestUser;
+    innovator: RequestUser;
+    assessmentUser: RequestUser;
+  };
+  supports: InnovationSupport[];
+}> => {
+  const assessmentService = new InnovationAssessmentService(
+    process.env.DB_TESTS_NAME
+  );
+  const supportService = new InnovationSupportService(
+    process.env.DB_TESTS_NAME
+  );
+
+  const innovatorFixture = await generateInnovatorWithOrganisation();
+  const qAccessorFixture = await generateAccessorWithOrganisation(
+    AccessorOrganisationRole.QUALIFYING_ACCESSOR
+  );
+  const assessmentUser = await createAssessmentUser();
+  const accessorOrganisation = qAccessorFixture.organisation;
+
+  const accessorFixture = await generateAccessorWithOrganisation(
+    AccessorOrganisationRole.ACCESSOR,
+    accessorOrganisation
+  );
+
+  const accessor2 = await generateAccessorWithOrganisation(
+    AccessorOrganisationRole.ACCESSOR,
+    accessorOrganisation
+  );
+  const accessor2RequestUser = await getRequestUser(
+    accessor2.user,
+    accessor2.organisationUser,
+    accessor2.organisationUnitUser
+  );
+
+  const accessor3 = await generateAccessorWithOrganisation(
+    AccessorOrganisationRole.ACCESSOR,
+    accessorOrganisation
+  );
+  const accessor3RequestUser = await getRequestUser(
+    accessor3.user,
+    accessor3.organisationUser,
+    accessor3.organisationUnitUser
+  );
+
+  const innovatorRequestUser = getRequestUser(innovatorFixture.user);
+  const qAccessorRequestUser = getRequestUser(
+    qAccessorFixture.user,
+    qAccessorFixture.organisationUser,
+    qAccessorFixture.organisationUnitUser
+  );
+  const accessorRequestUser = getRequestUser(
+    accessorFixture.user,
+    accessorFixture.organisationUser,
+    accessorFixture.organisationUnitUser
+  );
+
+  const assessmentRequestUser = getRequestUser(assessmentUser);
+
+  const innovation = generateInnovation({
+    ...innovationPartial,
+    owner: { id: innovatorRequestUser.id },
+    organisationShares: [{ id: accessorOrganisation.id }],
+    status: InnovationStatus.IN_PROGRESS,
+  });
+
+  await saveInnovations(innovation);
+
+  const assessmentMock = {
+    assessment: {
+      description: "Assessment Desc",
+    },
+  };
+
+  const assessmentObj = {
+    ...assessmentMock.assessment,
+    innovation: innovation.id,
+    assignTo: assessmentRequestUser.id,
+  };
+
+  const assessment = await assessmentService.create(
+    assessmentRequestUser,
+    innovation.id,
+    assessmentObj
+  );
+
+  const updAssessment = {
+    maturityLevel: MaturityLevelCatalogue.ADVANCED,
+    isSubmission: true,
+    test: "test",
+    organisationUnits: [
+      qAccessorRequestUser.organisationUnitUser.organisationUnit.id,
+    ],
+  };
+
+  await assessmentService.update(
+    assessmentRequestUser,
+    assessment.id,
+    innovation.id,
+    updAssessment
+  );
+
+  let supports;
+
+  if (withSupport) {
+    const supportObj1 = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [accessorRequestUser.organisationUnitUser.id],
+      comment: "test comment",
+    };
+
+    const support1 = await supportService.create(
+      qAccessorRequestUser,
+      innovation.id,
+      supportObj1
+    );
+
+    const supportObj2 = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [accessor2RequestUser.organisationUnitUser.id],
+      comment: "another test comment",
+    };
+
+    const support2 = await supportService.create(
+      qAccessorRequestUser,
+      innovation.id,
+      supportObj2
+    );
+
+    // const supportObj3 = {
+    //   status: InnovationSupportStatus.NOT_YET,
+    //   accessors: [accessor3RequestUser.organisationUnitUser.id],
+    //   comment: "another test comment",
+    // }
+
+    // const support3 = await supportService.create(
+    //   qAccessorRequestUser,
+    //   innovation.id,
+    //   supportObj3
+    // );
+
+    // supports = [support1, support2, support3];
+  }
+
+  return {
+    innovation: innovation,
+    accessorOrganisation: accessorOrganisation,
+    users: {
+      qualifyingAccessor: qAccessorRequestUser,
+      accessor: accessorRequestUser,
+      innovator: innovatorRequestUser,
+      assessmentUser: assessmentRequestUser,
+    },
+    supports: supports,
   };
 };
