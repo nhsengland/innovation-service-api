@@ -28,6 +28,7 @@ import {
   InvalidParamsError,
   InvalidSectionStateError,
   InvalidUserRoleError,
+  InvalidUserTypeError,
 } from "@services/errors";
 import { InnovationListModel } from "@services/models/InnovationListModel";
 import { RequestUser } from "@services/models/RequestUser";
@@ -57,7 +58,7 @@ describe("Innovator Service Suite", () => {
   let assessmentRequestUser: RequestUser;
 
   beforeAll(async () => {
-    //await setupTestsConnection();
+    // await setupTestsConnection();
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
     });
@@ -155,7 +156,7 @@ describe("Innovator Service Suite", () => {
     await query.from(OrganisationUser).execute();
     await query.from(Organisation).execute();
     await query.from(User).execute();
-    //closeTestsConnection();
+    // closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -1008,5 +1009,53 @@ describe("Innovator Service Suite", () => {
 
     expect(result).toBeDefined();
     expect(result.length).toBeGreaterThan(0);
+  });
+
+  it("should throw an error when createInnovation() with invalid params", async () => {
+    let err;
+    try {
+      await innovationService.createInnovation(undefined, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw an error when createInnovation() with invalid user type", async () => {
+    let err;
+    try {
+      await innovationService.createInnovation(
+        { id: ":id", type: UserType.ACCESSOR },
+        {
+          name: ":innovation_name",
+          description: ":innovation_desc",
+          countryName: "England",
+          organisationShares: [],
+        }
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidUserTypeError);
+  });
+
+  it("should create a new innovation", async () => {
+    const result = await innovationService.createInnovation(
+      innovatorRequestUser,
+      {
+        name: ":innovation_name",
+        description: ":innovation_desc",
+        countryName: "England",
+        organisationShares: [accessorOrganisation.id],
+      }
+    );
+
+    expect(result).toBeDefined();
+    expect(result.name).toBe(":innovation_name");
+    expect(result.status).toBe(InnovationStatus.CREATED);
   });
 });
