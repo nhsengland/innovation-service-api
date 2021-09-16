@@ -1,19 +1,26 @@
-import { InnovationSupportStatus } from "@domain/index";
 import { CustomContext } from "../../utils/types";
 export const findAllInnovationsByAccessor = async (
   ctx: CustomContext,
-  supportStatus: string,
+  name: string,
   assignedToMe: boolean,
   suggestedOnly: boolean,
+  supportStatuses: string[],
+  categories: string[],
+  locations: string[],
+  organisations: string[],
   skip: number,
   take: number,
   order?: { [key: string]: string }
 ) => {
-  const result = await ctx.services.InnovationService.findAllByAccessorAndSupportStatus(
+  const result = await ctx.services.InnovationService.findAllAdvanced(
     ctx.auth.requestUser,
-    supportStatus as InnovationSupportStatus,
+    name,
     assignedToMe,
     suggestedOnly,
+    categories,
+    locations,
+    organisations,
+    supportStatuses,
     skip,
     take,
     order

@@ -1,24 +1,25 @@
-import * as persistence from "../../accessorsGetAllInnovations/persistence";
 import { InnovationService } from "@services/index";
-import * as typeorm from "typeorm";
-import { CustomContext } from "../../utils/types";
 import * as dotenv from "dotenv";
 import * as path from "path";
-describe("[accessorsGetAllInnovations] Persistence suite", () => {
+import * as typeorm from "typeorm";
+import * as persistence from "../../innovatorsCreateInnovation/persistence";
+import { CustomContext } from "../../utils/types";
+
+describe("[innovatorsCreateInnovation] Persistence suite", () => {
   beforeAll(() => {
     dotenv.config({
       path: path.resolve(__dirname, "../.environment"),
     });
   });
-  describe("findAllInnovationsByAccessor", () => {
-    it("should assess if an Accessor exists", async () => {
+  describe("createInnovation", () => {
+    it("should create an innovation", async () => {
       // Arrange
       spyOn(typeorm, "getRepository");
       spyOn(typeorm, "getConnection");
       const spy = spyOn(
         InnovationService.prototype,
-        "findAllByAccessorAndSupportStatus"
-      ).and.returnValue([{ id: "innovationA" }, { id: "innovationB" }]);
+        "createInnovation"
+      ).and.returnValue([{ id: "" }]);
 
       const ctx = {
         services: {
@@ -27,18 +28,17 @@ describe("[accessorsGetAllInnovations] Persistence suite", () => {
         auth: {
           requestUser: {
             id: ":userId",
-            type: "ACCESSOR",
+            type: "INNOVATOR",
           },
         },
       };
       // Act
-      await persistence.findAllInnovationsByAccessor(
+      await persistence.createInnovation(
         ctx as CustomContext,
-        "ENGAGING",
-        true,
-        false,
-        0,
-        10
+        ":innovation_name",
+        ":innovation_desc",
+        "England",
+        []
       );
 
       expect(spy).toHaveBeenCalled();

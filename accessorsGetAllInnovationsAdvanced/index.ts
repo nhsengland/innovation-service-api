@@ -12,7 +12,7 @@ import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
 
-class AccessorsGetAllInnovations {
+class AccessorsGetAllInnovationsAdvanced {
   @AppInsights()
   @SQLConnector()
   @Validator(
@@ -32,7 +32,16 @@ class AccessorsGetAllInnovations {
     auth: any
   ): Promise<void> {
     const query: any = req.query;
-    const supportStatus = query.supportStatus;
+    const supportStatuses =
+      query.status?.split(",").filter((s) => s !== "") || [];
+    const categories = query.cat?.split(",").filter((c) => c !== "") || [];
+    const organisations = query.org?.split(",").filter((o) => o !== "") || [];
+    const locations = query.loc?.split(",").filter((l) => l !== "") || [];
+    const name =
+      query.name && query.name !== "" && query.name.length > 0
+        ? query.name
+        : undefined;
+
     const assignedToMe = query.assignedToMe
       ? query.assignedToMe.toLocaleLowerCase() === "true"
       : false;
@@ -49,12 +58,17 @@ class AccessorsGetAllInnovations {
     }
 
     let result;
+
     try {
       result = await persistence.findAllInnovationsByAccessor(
         context,
-        supportStatus,
+        name,
         assignedToMe,
         suggestedOnly,
+        supportStatuses,
+        categories,
+        locations,
+        organisations,
         skip,
         take,
         order
@@ -70,4 +84,4 @@ class AccessorsGetAllInnovations {
   }
 }
 
-export default AccessorsGetAllInnovations.httpTrigger;
+export default AccessorsGetAllInnovationsAdvanced.httpTrigger;

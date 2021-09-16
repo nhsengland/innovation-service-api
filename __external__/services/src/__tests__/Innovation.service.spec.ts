@@ -11,6 +11,7 @@ import {
   InnovationSupportLog,
   InnovationSupportStatus,
   InnovatorOrganisationRole,
+  MaturityLevelCatalogue,
   Notification,
   NotificationUser,
   Organisation,
@@ -27,9 +28,11 @@ import {
   InvalidParamsError,
   InvalidSectionStateError,
   InvalidUserRoleError,
+  InvalidUserTypeError,
 } from "@services/errors";
 import { InnovationListModel } from "@services/models/InnovationListModel";
 import { RequestUser } from "@services/models/RequestUser";
+import { InnovationAssessmentService } from "@services/services/InnovationAssessment.service";
 import { LoggerService } from "@services/services/Logger.service";
 import { NotificationService } from "@services/services/Notification.service";
 import { UserService } from "@services/services/User.service";
@@ -43,6 +46,9 @@ import * as fixtures from "../__fixtures__";
 
 describe("Innovator Service Suite", () => {
   let innovationService: InnovationService;
+  let assessmentService: InnovationAssessmentService;
+  let notificationService: NotificationService;
+
   let userService: UserService;
   let accessorOrganisation: Organisation;
 
@@ -52,12 +58,17 @@ describe("Innovator Service Suite", () => {
   let assessmentRequestUser: RequestUser;
 
   beforeAll(async () => {
-    //await setupTestsConnection();
+    // await setupTestsConnection();
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
     });
 
     innovationService = new InnovationService(process.env.DB_TESTS_NAME);
+    assessmentService = new InnovationAssessmentService(
+      process.env.DB_TESTS_NAME
+    );
+    notificationService = new NotificationService(process.env.DB_TESTS_NAME);
+
     userService = new UserService(process.env.DB_TESTS_NAME);
 
     const innovatorUser = await fixtures.createInnovatorUser();
@@ -145,7 +156,7 @@ describe("Innovator Service Suite", () => {
     await query.from(OrganisationUser).execute();
     await query.from(Organisation).execute();
     await query.from(User).execute();
-    //closeTestsConnection();
+    // closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -255,6 +266,97 @@ describe("Innovator Service Suite", () => {
       qAccessorRequestUser,
       InnovationSupportStatus.UNASSIGNED,
       false,
+      false,
+      0,
+      10
+    );
+
+    expect(result.data.length).toEqual(1);
+    expect(result.count).toEqual(1);
+  });
+
+  it("should find NO innovations by q. accessor when findAllByAccessorAndSupportStatus() with status UNASSIGNED and Suggested to my organisation unit true", async () => {
+    const innovationA = fixtures.generateInnovation({
+      owner: { id: innovatorRequestUser.id },
+      organisationShares: [{ id: accessorOrganisation.id }],
+      status: InnovationStatus.IN_PROGRESS,
+    });
+
+    const innovationB = fixtures.generateInnovation({
+      owner: { id: innovatorRequestUser.id },
+    });
+
+    await fixtures.saveInnovations(innovationA, innovationB);
+
+    const result = await innovationService.findAllByAccessorAndSupportStatus(
+      qAccessorRequestUser,
+      InnovationSupportStatus.UNASSIGNED,
+      false,
+      true,
+      0,
+      10
+    );
+
+    expect(result.data.length).toEqual(0);
+    expect(result.count).toEqual(0);
+  });
+
+  it("should find ALL innovations by q. accessor when findAllByAccessorAndSupportStatus() with status UNASSIGNED and Suggested to my organisation unit true", async () => {
+    const innovationA = fixtures.generateInnovation({
+      owner: { id: innovatorRequestUser.id },
+      organisationShares: [{ id: accessorOrganisation.id }],
+      status: InnovationStatus.IN_PROGRESS,
+    });
+
+    const innovationB = fixtures.generateInnovation({
+      owner: { id: innovatorRequestUser.id },
+    });
+
+    await fixtures.saveInnovations(innovationA, innovationB);
+
+    const dummy = {
+      assessment: {
+        description: "Assessment Desc",
+      },
+    };
+
+    const assessmentObj = {
+      ...dummy.assessment,
+      innovation: innovationA.id,
+      assignTo: assessmentRequestUser.id,
+    };
+
+    const assessment = await assessmentService.create(
+      assessmentRequestUser,
+      innovationA.id,
+      assessmentObj
+    );
+
+    const updAssessment = {
+      maturityLevel: MaturityLevelCatalogue.ADVANCED,
+      isSubmission: true,
+      test: "test",
+      organisationUnits: [
+        qAccessorRequestUser.organisationUnitUser.organisationUnit.id,
+      ],
+    };
+
+    spyOn(notificationService, "sendEmail");
+
+    spyOn(notificationService, "create");
+
+    await assessmentService.update(
+      assessmentRequestUser,
+      assessment.id,
+      innovationA.id,
+      updAssessment
+    );
+
+    const result = await innovationService.findAllByAccessorAndSupportStatus(
+      qAccessorRequestUser,
+      InnovationSupportStatus.UNASSIGNED,
+      false,
+      true,
       0,
       10
     );
@@ -294,6 +396,7 @@ describe("Innovator Service Suite", () => {
       qAccessorRequestUser,
       InnovationSupportStatus.ENGAGING,
       true,
+      false,
       0,
       10
     );
@@ -332,6 +435,7 @@ describe("Innovator Service Suite", () => {
     const result = await innovationService.findAllByAccessorAndSupportStatus(
       accessorRequestUser,
       InnovationSupportStatus.ENGAGING,
+      false,
       false,
       0,
       10
@@ -372,6 +476,7 @@ describe("Innovator Service Suite", () => {
       accessorRequestUser,
       InnovationSupportStatus.ENGAGING,
       true,
+      false,
       0,
       10
     );
@@ -385,6 +490,7 @@ describe("Innovator Service Suite", () => {
     try {
       await innovationService.findAllByAccessorAndSupportStatus(
         undefined,
+        null,
         null,
         null,
         null,
@@ -406,6 +512,7 @@ describe("Innovator Service Suite", () => {
           id: ":user_id",
           type: UserType.ACCESSOR,
         },
+        null,
         null,
         null,
         null,
@@ -436,6 +543,7 @@ describe("Innovator Service Suite", () => {
           },
         },
         InnovationSupportStatus.ENGAGING,
+        false,
         false,
         0,
         10
@@ -901,5 +1009,53 @@ describe("Innovator Service Suite", () => {
 
     expect(result).toBeDefined();
     expect(result.length).toBeGreaterThan(0);
+  });
+
+  it("should throw an error when createInnovation() with invalid params", async () => {
+    let err;
+    try {
+      await innovationService.createInnovation(undefined, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw an error when createInnovation() with invalid user type", async () => {
+    let err;
+    try {
+      await innovationService.createInnovation(
+        { id: ":id", type: UserType.ACCESSOR },
+        {
+          name: ":innovation_name",
+          description: ":innovation_desc",
+          countryName: "England",
+          organisationShares: [],
+        }
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidUserTypeError);
+  });
+
+  it("should create a new innovation", async () => {
+    const result = await innovationService.createInnovation(
+      innovatorRequestUser,
+      {
+        name: ":innovation_name",
+        description: ":innovation_desc",
+        countryName: "England",
+        organisationShares: [accessorOrganisation.id],
+      }
+    );
+
+    expect(result).toBeDefined();
+    expect(result.name).toBe(":innovation_name");
+    expect(result.status).toBe(InnovationStatus.CREATED);
   });
 });

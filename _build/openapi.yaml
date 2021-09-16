@@ -73,6 +73,35 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
+  '/accessors/{userId}/innovations/advanced':
+    get:
+      tags:
+        - Accessor
+        - Innovation
+        - GetInnovationsAdvanced
+      description: Gets an Accessor's Innovations with advanced filters
+      operationId: accessors-get-all-innovations-advanced
+      security:
+        - OpenId:
+            - accessors_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          $ref: '#/components/responses/accessor-get-innovations-200'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
   '/accessors/{userId}/innovations/{innovationId}':
     get:
       tags:
@@ -855,6 +884,34 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
+    post:
+      tags:
+        - Innovator
+        - Innovation
+        - CreateInnovation
+      description: Creates an Innovation
+      operationId: innovators-create-innovation
+      security:
+        - OpenId:
+            - innovations_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
   '/innovators/{userId}/innovations/{innovationId}':
     get:
       tags:
@@ -2401,6 +2458,22 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/innovation-schema'
+    accessor-get-innovations-advanced:
+      type: object
+      properties:
+        links:
+          type: object
+          properties:
+            self:
+              type: string
+            next:
+              type: string
+            last:
+              type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/innovation-schema'
     innovator-schema:
       type: object
       properties:
@@ -3003,6 +3076,62 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/accessor-get-innovations'
+          example: |-
+            {
+              "links": {
+                "self": "/accessor/5b1e3375-6149-4ff1-be76-bce72e4236c0/innovations",
+                "next": null,
+                "prev": null
+              },
+              "data": [
+                {
+                  "links": {
+                    "self": "/accessor/5b1e3375-6149-4ff1-be76-bce72e4236c0/innovations/054d5b4f-b67b-4545-949d-ec4b83d15990"
+                    "next": null,
+                    "prev": null
+                  },
+                  "data": {
+                    "type": "innovation",
+                    "id": "054d5b4f-b67b-4545-949d-ec4b83d15990",
+                    "attributes": {
+                      "name": "Innovation #1",
+                      "status": "WAITING_NEEDS_ASSESSMENT",
+                      "createdAt": "1615390632",
+                      "updatedAt": "1615390632"
+                    }
+                  }
+                },
+                {
+                  "links": {
+                    "self": "/accessor/5b1e3375-6149-4ff1-be76-bce72e4236c0/innovations/054d5b4f-b67b-4545-949d-ec4b83d1abcd"
+                    "next": null,
+                    "prev": null
+                  },
+                  "data": {
+                    "type": "innovation",
+                    "id": "054d5b4f-b67b-4545-949d-ec4b83d1abcd",
+                    "attributes": {
+                      "name": "Innovation #2",
+                      "status": "WAITING_NEEDS_ASSESSMENT",
+                      "createdAt": "1615390632",
+                      "updatedAt": "1615390632"
+                    }
+                  }
+                }
+              ]
+            }
+    accessor-get-innovations-advanced-200:
+      description: OK
+      headers:
+        X-Request-ID:
+          description: |
+            Correlation Header of the request
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/accessor-get-innovations-advanced'
           example: |-
             {
               "links": {
