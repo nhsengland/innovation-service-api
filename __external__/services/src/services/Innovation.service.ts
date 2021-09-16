@@ -990,7 +990,7 @@ export class InnovationService extends BaseService<Innovation> {
     id: string,
     reason: string
   ) {
-    if (!id || !requestUser || !reason || !checkIfValidUUID(id)) {
+    if (!id || !requestUser || !checkIfValidUUID(id)) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
