@@ -35,7 +35,7 @@ class AccessorsGetAllInnovationsAdvanced {
     const supportStatuses =
       query.status?.split(",").filter((s) => s !== "") || [];
     const categories = query.cat?.split(",").filter((c) => c !== "") || [];
-    const organisations = query.org?.split(",").filter((o) => o !== "") || [];
+    const organisations = query.orgs?.split(",").filter((o) => o !== "") || [];
     const locations = query.loc?.split(",").filter((l) => l !== "") || [];
     const name =
       query.name && query.name !== "" && query.name.length > 0
