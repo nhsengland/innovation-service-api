@@ -17,7 +17,7 @@ describe("[accessorsGetInnovation] Persistence suite", () => {
       spyOn(typeorm, "getConnection");
       const spy = spyOn(
         InnovationSectionService.prototype,
-        "findAllInnovationSections"
+        "findAllInnovationSectionsMetadata"
       ).and.returnValue({ id: "innovationA" });
       const ctx = {
         services: {
@@ -31,7 +31,7 @@ describe("[accessorsGetInnovation] Persistence suite", () => {
         },
       };
       // Act
-      await persistence.findAllInnovationSections(
+      await persistence.findAllInnovationSectionsMetadata(
         ctx as CustomContext,
         "test_innovation_id"
       );

@@ -1,18 +1,17 @@
-/* eslint-disable */ 
-import * as persistence from "../../accessorsGetInnovationComments/persistence";
+/* eslint-disable */
+import { AccessorOrganisationRole } from "@services/index";
+import {
+  createHttpTrigger, runStubFunctionFromBindings
+} from "stub-azure-function-context";
 import accessorsGetInnovationComments from "../../accessorsGetInnovationComments";
-import * as connection from "../../utils/connection";
+import * as persistence from "../../accessorsGetInnovationComments/persistence";
 import * as authentication from "../../utils/authentication";
+import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
 
-import {
-  runStubFunctionFromBindings,
-  createHttpTrigger,
-} from "stub-azure-function-context";
-import { AccessorOrganisationRole } from "@services/index";
 
 jest.mock("../../utils/logging/insights", () => ({
-  start: () => {},
+  start: () => { },
   getInstance: () => ({
     startOperation: () => ({
       operation: {
@@ -23,9 +22,9 @@ jest.mock("../../utils/logging/insights", () => ({
       return func;
     },
     defaultClient: {
-      trackTrace: () => {},
-      trackRequest: () => {},
-      flush: () => {},
+      trackTrace: () => { },
+      trackRequest: () => { },
+      flush: () => { },
     },
   }),
 }));
@@ -47,7 +46,7 @@ describe("[HttpTrigger] accessorsGetInnovationComments Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
+      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
       spyOn(connection, "setupSQLConnection").and.throwError(
         "Error establishing connection with the datasource."
       );
@@ -111,6 +110,22 @@ describe("[HttpTrigger] accessorsGetInnovationComments Suite", () => {
       });
       expect(res.status).toBe(403);
     });
+
+    it("Should handle error persistence return error", async () => {
+      spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
+      spyOn(authentication, "decodeToken").and.returnValue({
+        oid: ":accessor_id",
+      });
+      spyOn(persistence, "findInnovationComments").and.throwError(
+        "Error."
+      );
+
+      const { res } = await mockedRequestFactory({
+        headers: { authorization: ":access_token" },
+      });
+      expect(res.status).toBe(500);
+    });
   });
 });
 
@@ -132,7 +147,7 @@ async function mockedRequestFactory(data?: any) {
           }, // pathparams
           {}, // payload/body
           {
-            order: '{"createdAt": "asc"}' 
+            order: '{"createdAt": "asc"}'
           } // querystring
         ),
       },

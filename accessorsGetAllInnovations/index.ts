@@ -36,6 +36,10 @@ class AccessorsGetAllInnovations {
     const assignedToMe = query.assignedToMe
       ? query.assignedToMe.toLocaleLowerCase() === "true"
       : false;
+    const suggestedOnly = query.suggestedOnly
+      ? query.suggestedOnly.toLocaleLowerCase() === "true"
+      : false;
+
     const skip = parseInt(query.skip);
     const take = parseInt(query.take);
 
@@ -50,6 +54,7 @@ class AccessorsGetAllInnovations {
         context,
         supportStatus,
         assignedToMe,
+        suggestedOnly,
         skip,
         take,
         order

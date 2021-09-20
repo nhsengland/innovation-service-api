@@ -64,7 +64,7 @@ export class Innovation extends Base {
   })
   status: InnovationStatus;
 
-  @Column({ name: "survey_id", unique: true })
+  @Column({ name: "survey_id", unique: true, nullable: true })
   surveyId: string;
 
   @Column({ name: "description", nullable: true })
@@ -252,6 +252,9 @@ export class Innovation extends Base {
     nullable: true,
   })
   otherEnvironmentalBenefit: string;
+
+  @Column({ name: "archive_reason", type: "nvarchar", nullable: true })
+  archiveReason: string;
 
   // relationships
   @ManyToOne(() => User, { nullable: false })

@@ -69,7 +69,7 @@ describe("[HttpTrigger] innovatorsGetInnovation Suite", () => {
       });
       spyOn(
         persistence,
-        "findAllInnovationSections"
+        "findAllInnovationSectionsMetadata"
       ).and.returnValue([{ innovation: "test_innovator_id" }]);
 
       const { res } = await mockedRequestFactory({});
@@ -90,7 +90,7 @@ describe("[HttpTrigger] innovatorsGetInnovation Suite", () => {
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: dummy.innovatorId,
       });
-      spyOn(persistence, "findAllInnovationSections").and.returnValue([
+      spyOn(persistence, "findAllInnovationSectionsMetadata").and.returnValue([
         { id: dummy.innovationId },
       ]);
 
@@ -108,13 +108,29 @@ describe("[HttpTrigger] innovatorsGetInnovation Suite", () => {
       });
       spyOn(
         persistence,
-        "findAllInnovationSections"
+        "findAllInnovationSectionsMetadata"
       ).and.returnValue([{ id: "innovation_id" }]);
 
       const { res } = await mockedRequestFactory({
         headers: { authorization: ":access_token" },
       });
       expect(res.status).toBe(403);
+    });
+
+    it("Should handle error persistence return error", async () => {
+      spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
+      spyOn(authentication, "decodeToken").and.returnValue({
+        oid: dummy.innovatorId,
+      });
+      spyOn(persistence, "findAllInnovationSectionsMetadata").and.throwError(
+        "Error."
+      );
+
+      const { res } = await mockedRequestFactory({
+        headers: { authorization: ":access_token" },
+      });
+      expect(res.status).toBe(500);
     });
   });
 });

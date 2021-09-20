@@ -77,6 +77,35 @@ paths:
           description: "Not Found"
         "401":
           description: "Unauthorized"
+  "/accessors/{userId}/innovations/advanced":
+    get:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "GetInnovationsAdvanced"
+      description: "Gets an Accessor's Innovations with advanced filters"
+      operationId: "accessors-get-all-innovations-advanced"
+      security:
+        - OpenId:
+            - accessors_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/accessor-get-innovations-200"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
 
   "/accessors/{userId}/innovations/{innovationId}":
     get:
@@ -821,7 +850,7 @@ paths:
           description: "Not Found"
         "401":
           description: "Unauthorized"
-          
+
   "/innovators/check":
     get:
       tags:
@@ -876,6 +905,34 @@ paths:
           description: "Not Found"
         "401":
           description: "Unauthorized"
+    post:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "CreateInnovation"
+      description: "Creates an Innovation"
+      operationId: "innovators-create-innovation"
+      security:
+        - OpenId:
+            - innovations_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "201":
+          description: "Created"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
 
   "/innovators/{userId}/innovations/{innovationId}":
     get:
@@ -920,6 +977,43 @@ paths:
         - "SubmitInnovation"
       description: "Submits an Innovation associated with the Innovator"
       operationId: "innovators-submit-innovation"
+      security:
+        - OpenId:
+            - innovators_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "204":
+          description: "No Content"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/innovators/{userId}/innovations/{innovationId}/archive":
+    patch:
+      tags:
+        - "Innovator"
+        - "Innovation"
+        - "ArchiveInnovation"
+      description: "Archivs an Innovation associated with the Innovator"
+      operationId: "innovators-archive-innovation"
       security:
         - OpenId:
             - innovators_write
@@ -2387,6 +2481,8 @@ components:
       $ref: "./schemas/accessor-base-schema.yaml"
     accessor-get-innovations:
       $ref: "./schemas/accessor-get-innovations.yaml"
+    accessor-get-innovations-advanced:
+      $ref: "./schemas/accessor-get-innovations-advanced.yaml"
     innovator-schema:
       $ref: "./schemas/innovator-base-schema.yaml"
     innovation-schema:
@@ -2453,6 +2549,8 @@ components:
   responses:
     accessor-get-innovations-200:
       $ref: "./responses/accessor-get-innovations-200.yaml"
+    accessor-get-innovations-advanced-200:
+      $ref: "./responses/accessor-get-innovations-200-advanced.yaml"
     accessor-get-innovation-assessment-200:
       $ref: "./responses/accessor-get-innovation-assessment-200.yaml"
     innovator-create-201:

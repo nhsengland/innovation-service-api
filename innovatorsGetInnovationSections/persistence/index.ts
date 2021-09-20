@@ -13,3 +13,15 @@ export const findInnovationSectionByInnovator = async (
 
   return result;
 };
+
+export const findAllInnovationSectionsByInnovator = async (
+  ctx: CustomContext,
+  innovationId: string
+) => {
+  const result = await ctx.services.InnovationSectionService.findAllSections(
+    ctx.auth.requestUser,
+    innovationId
+  );
+
+  return result;
+};

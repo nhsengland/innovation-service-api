@@ -113,6 +113,22 @@ describe("[HttpTrigger] assessmentsGetInnovation Suite", () => {
       });
       expect(res.status).toBe(403);
     });
+
+    it("Should handle error persistence return error", async () => {
+      spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
+      spyOn(authentication, "decodeToken").and.returnValue({
+        oid: "test_assessment_id",
+      });
+      spyOn(persistence, "findAllInnovationSectionsByAssessment").and.throwError(
+        "Error."
+      );
+
+      const { res } = await mockedRequestFactory({
+        headers: { authorization: ":access_token" },
+      });
+      expect(res.status).toBe(500);
+    });
   });
 });
 

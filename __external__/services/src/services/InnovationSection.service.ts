@@ -9,6 +9,7 @@ import {
   InnovationSectionStatus,
   NotificationAudience,
   NotificationContextType,
+  UserType,
 } from "@domain/index";
 import * as sectionBodySchema from "@services/config/innovation-section-body.config.json";
 import * as sectionResponseSchema from "@services/config/innovation-section-response.config.json";
@@ -45,7 +46,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     this.logService = new LoggerService();
   }
 
-  async findAllInnovationSections(
+  async findAllInnovationSectionsMetadata(
     requestUser: RequestUser,
     innovationId: string
   ) {
@@ -71,7 +72,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     }
 
     const sections = await innovation.sections;
-    const innovationSections = this.getInnovationSections(sections);
+    const innovationSections = this.getInnovationSectionsMetadata(sections);
 
     const result: InnovationSectionResult = {
       id: innovation.id,
@@ -107,7 +108,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     }
 
     const sections = await innovation.sections;
-    const innovationSections = this.getInnovationSections(sections);
+    const innovationSections = this.getInnovationSectionsMetadata(sections);
 
     const result: InnovationSectionResult = {
       id: innovation.id,
@@ -119,22 +120,63 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     return result;
   }
 
+  async findAllSections(requestUser: RequestUser, innovationId: string) {
+    // VALIDATIONS
+    if (!innovationId || !requestUser || !checkIfValidUUID(innovationId)) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+
+    const filterOptions: FindOneOptions = {
+      relations: ["sections", "sections.files", "owner"],
+    };
+    const innovation = await this.innovationService.findInnovation(
+      requestUser,
+      innovationId,
+      filterOptions
+    );
+
+    if (!innovation) {
+      throw new InnovationNotFoundError(
+        "Invalid parameters. Innovation not found."
+      );
+    }
+
+    const sections = await innovation.sections;
+    const innovationSections: any[] = [];
+
+    for (const key in InnovationSectionCatalogue) {
+      const section = sections.find((sec) => sec.section === key);
+
+      const sectionFields = sectionResponseSchema[key];
+      innovationSections.push({
+        section: this.getInnovationSectionMetadata(key, section),
+        data: await this.getInnovationSectionData(
+          innovation,
+          section,
+          sectionFields
+        ),
+      });
+    }
+
+    return innovationSections;
+  }
+
   async findSection(
     requestUser: RequestUser,
     innovationId: string,
-    section: string
+    sectionKey: string
   ) {
     // VALIDATIONS
     if (
       !innovationId ||
-      !section ||
+      !sectionKey ||
       !requestUser ||
       !checkIfValidUUID(innovationId)
     ) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
-    const sectionFields = sectionResponseSchema[section];
+    const sectionFields = sectionResponseSchema[sectionKey];
     if (!sectionFields) {
       throw new SectionNotFoundError("Invalid parameters. Section not found.");
     }
@@ -155,62 +197,26 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     }
 
     const sections = await innovation.sections;
-    const sec = sections.find((sec) => sec.section === section);
+    const section = sections.find((sec) => sec.section === sectionKey);
+    const sectionMetadata = this.getInnovationSectionMetadata(
+      sectionKey,
+      section
+    );
+    let data = {};
 
-    // GET INNOVATION FIELDS
-    const data = {
-      ...this.getInnovationFilteredObject(
+    if (
+      requestUser.type !== UserType.ACCESSOR ||
+      sectionMetadata.status === InnovationSectionStatus.SUBMITTED
+    ) {
+      data = await this.getInnovationSectionData(
         innovation,
-        sectionFields.innovationFields
-      ),
-    };
-
-    if (sectionFields.files && sec) {
-      const files = sec.files?.map((obj: InnovationFile) => ({
-        id: obj.id,
-        displayFileName: obj.displayFileName,
-        url: this.fileService.getDownloadUrl(obj.id, obj.displayFileName),
-      }));
-
-      data["files"] = files;
-    }
-
-    // GET SPECIFIC TYPES & DEPENDENCIES
-    if (sectionFields.innovationTypes) {
-      for (let i = 0; i < sectionFields.innovationTypes.length; i++) {
-        const type = sectionFields.innovationTypes[i];
-
-        data[type] = await this.getParentTypeArray(innovation, type);
-      }
-    }
-
-    if (sectionFields.innovationDependencies) {
-      for (let i = 0; i < sectionFields.innovationDependencies.length; i++) {
-        const dependency = sectionFields.innovationDependencies[i];
-
-        data[dependency.type] = await this.getInnovationFilteredDependencyArray(
-          innovation,
-          dependency
-        );
-
-        if (dependency.files) {
-          data[dependency.type].forEach(
-            (dep: any) =>
-              (dep.files = dep.files?.map((obj: InnovationFile) => ({
-                id: obj.id,
-                displayFileName: obj.displayFileName,
-                url: this.fileService.getDownloadUrl(
-                  obj.id,
-                  obj.displayFileName
-                ),
-              })))
-          );
-        }
-      }
+        section,
+        sectionFields
+      );
     }
 
     return {
-      section: this.getInnovationSection(section, sec),
+      section: sectionMetadata,
       data,
     };
   }
@@ -458,20 +464,80 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     return this.create(innovationSection);
   }
 
-  private getInnovationSections(
+  private async getInnovationSectionData(
+    innovation: Innovation,
+    section: InnovationSection,
+    sectionFields: any
+  ) {
+    // GET INNOVATION FIELDS
+    const data = {
+      ...this.getInnovationFilteredObject(
+        innovation,
+        sectionFields.innovationFields
+      ),
+    };
+
+    if (sectionFields.files && section) {
+      const files = section.files?.map((obj: InnovationFile) => ({
+        id: obj.id,
+        displayFileName: obj.displayFileName,
+        url: this.fileService.getDownloadUrl(obj.id, obj.displayFileName),
+      }));
+
+      data["files"] = files;
+    }
+
+    // GET SPECIFIC TYPES & DEPENDENCIES
+    if (sectionFields.innovationTypes) {
+      for (let i = 0; i < sectionFields.innovationTypes.length; i++) {
+        const type = sectionFields.innovationTypes[i];
+
+        data[type] = await this.getParentTypeArray(innovation, type);
+      }
+    }
+
+    if (sectionFields.innovationDependencies) {
+      for (let i = 0; i < sectionFields.innovationDependencies.length; i++) {
+        const dependency = sectionFields.innovationDependencies[i];
+
+        data[dependency.type] = await this.getInnovationFilteredDependencyArray(
+          innovation,
+          dependency
+        );
+
+        if (dependency.files) {
+          data[dependency.type].forEach(
+            (dep: any) =>
+              (dep.files = dep.files?.map((obj: InnovationFile) => ({
+                id: obj.id,
+                displayFileName: obj.displayFileName,
+                url: this.fileService.getDownloadUrl(
+                  obj.id,
+                  obj.displayFileName
+                ),
+              })))
+          );
+        }
+      }
+    }
+
+    return data;
+  }
+
+  private getInnovationSectionsMetadata(
     sections: InnovationSection[]
   ): InnovationSectionModel[] {
     const innovationSections: InnovationSectionModel[] = [];
 
     for (const key in InnovationSectionCatalogue) {
       const section = sections.find((sec) => sec.section === key);
-      innovationSections.push(this.getInnovationSection(key, section));
+      innovationSections.push(this.getInnovationSectionMetadata(key, section));
     }
 
     return innovationSections;
   }
 
-  private getInnovationSection(
+  private getInnovationSectionMetadata(
     key: string,
     section?: InnovationSection
   ): InnovationSectionModel {
