@@ -428,7 +428,6 @@ describe("User Service Suite", () => {
   it("should throw an error if authentication with graph api returns a null access token", async () => {
     const innovatorUser = await fixtures.createInnovatorUser();
     // Arrange
-    // spyOn(helpers, "authenticateWitGraphAPI").and.returnValue("Test Complete");
     spyOn(helpers, "getUserFromB2C").and.returnValue({
       displayName: "Accessor A",
       identities: [
@@ -459,7 +458,6 @@ describe("User Service Suite", () => {
 
   it("should throw an error if user does not exist on B2C", async () => {
     // Arrange
-    // spyOn(helpers, "authenticateWitGraphAPI").and.returnValue("access_token");
     spyOn(helpers, "getUserFromB2C").and.throwError("User Not found");
     const fakeRequestUser = {
       requestUser: {
@@ -481,7 +479,6 @@ describe("User Service Suite", () => {
 
   it("It should delete a User and archive innovations", async () => {
     // Arrange
-    // spyOn(helpers, "authenticateWitGraphAPI").and.returnValue("access_token");
     spyOn(helpers, "getUserFromB2C").and.returnValue({
       displayName: "Accessor A",
       identities: [
@@ -514,7 +511,6 @@ describe("User Service Suite", () => {
 
   it("It should not delete a User and archive innovations", async () => {
     // Arrange
-    // spyOn(helpers, "authenticateWitGraphAPI").and.returnValue("access_token");
     spyOn(helpers, "getUserFromB2C").and.returnValue({
       displayName: "Accessor A",
       identities: [
