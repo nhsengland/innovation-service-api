@@ -167,6 +167,23 @@ export async function saveB2CUser(
   }
 }
 
+//
+export async function deleteB2CAccount(oid: string) {
+  const accessToken = await authenticateWitGraphAPI();
+
+  try {
+    const config = {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    };
+
+    await axios.delete(`https://graph.microsoft.com/v1.0/users/${oid}`, config);
+  } catch (error) {
+    throw error;
+  }
+}
+
+//
+
 export function getMergedArray(arrayA: any[], arrayB: any[]) {
   const arr = arrayA.concat(arrayB);
 
