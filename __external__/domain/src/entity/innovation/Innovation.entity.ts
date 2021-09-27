@@ -64,7 +64,7 @@ export class Innovation extends Base {
   })
   status: InnovationStatus;
 
-  @Column({ name: "survey_id", unique: true })
+  @Column({ name: "survey_id", unique: true, nullable: true })
   surveyId: string;
 
   @Column({ name: "description", nullable: true })

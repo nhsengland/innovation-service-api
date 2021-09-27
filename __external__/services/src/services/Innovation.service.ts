@@ -20,6 +20,7 @@ import {
   InvalidParamsError,
   InvalidSectionStateError,
   InvalidUserRoleError,
+  InvalidUserTypeError,
   MissingUserOrganisationError,
 } from "@services/errors";
 import {
@@ -36,7 +37,6 @@ import { ProfileModel } from "@services/models/ProfileModel";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { SimpleResult } from "@services/models/SimpleResult";
-import { request } from "http";
 import {
   Connection,
   EntityManager,
@@ -59,6 +59,7 @@ import { NotificationService } from "./Notification.service";
 import { UserService } from "./User.service";
 
 import * as constants from "../../../../utils/constants";
+import { InnovationCreationModel } from "@services/models/InnovationCreationModel";
 
 export class InnovationService extends BaseService<Innovation> {
   private readonly connection: Connection;
@@ -75,6 +76,30 @@ export class InnovationService extends BaseService<Innovation> {
     this.notificationService = new NotificationService(connectionName);
     this.supportRepo = getRepository(InnovationSupport, connectionName);
     this.logService = new LoggerService();
+  }
+
+  async createInnovation(
+    requestUser: RequestUser,
+    innovation: InnovationCreationModel
+  ) {
+    if (!requestUser || !innovation) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+
+    if (requestUser.type !== UserType.INNOVATOR) {
+      throw new InvalidUserTypeError("Invalid user type.");
+    }
+
+    const _innovation = Innovation.new({
+      ...innovation,
+      owner: { id: requestUser.id },
+      createdBy: requestUser.id,
+      updatedBy: requestUser.id,
+      status: InnovationStatus.CREATED,
+      organisationShares: innovation.organisationShares.map((id) => ({ id })),
+    });
+
+    return await this.repository.save(_innovation);
   }
 
   async findInnovation(
