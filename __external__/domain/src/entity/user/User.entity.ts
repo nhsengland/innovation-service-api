@@ -17,6 +17,9 @@ export class User extends Base {
   })
   type: UserType;
 
+  @Column({ name: "delete_reason", type: "nvarchar", nullable: true })
+  deleteReason: string;
+
   //relationships
   @OneToMany(() => OrganisationUser, (record) => record.user, {
     lazy: true,

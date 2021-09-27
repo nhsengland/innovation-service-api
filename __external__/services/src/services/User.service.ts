@@ -32,6 +32,7 @@ import {
 import {
   authenticateWitGraphAPI,
   createB2CUser,
+  deleteB2CAccount,
   getUserFromB2C,
   getUserFromB2CByEmail,
   getUsersFromB2C,
@@ -74,6 +75,28 @@ export class UserService {
       accessToken = await authenticateWitGraphAPI();
     }
     await saveB2CUser(accessToken, oid, payload);
+
+    return true;
+  }
+
+  async deleteAccount(requestUser: RequestUser): Promise<boolean> {
+    const graphAccessToken = await authenticateWitGraphAPI();
+
+    if (!graphAccessToken) {
+      throw new Error("Invalid Credentials");
+    }
+
+    const user = await getUserFromB2C(requestUser.id, graphAccessToken);
+
+    if (!user) {
+      throw new Error("Invalid user id.");
+    }
+
+    try {
+      await deleteB2CAccount(requestUser.id);
+    } catch {
+      throw new Error("Error updating user.");
+    }
 
     return true;
   }

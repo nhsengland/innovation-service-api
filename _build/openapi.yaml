@@ -1018,6 +1018,35 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
+  '/innovators/{userId}/delete':
+    patch:
+      tags:
+        - Innovator_Account_Delete
+      description: Deletes an Innovator Account
+      operationId: innovators-delete-account
+      security:
+        - OpenId:
+            - innovators_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
   '/innovators/{userId}/innovations/{innovationId}/section-summary':
     get:
       tags:
