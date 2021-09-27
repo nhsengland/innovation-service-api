@@ -102,36 +102,6 @@ export class InnovatorService extends BaseService<User> {
     return result;
   }
 
-  async delete(requestUser: RequestUser, reason?: string) {
-    const innovations = await this.innovationService.findAllByInnovator(
-      requestUser
-    );
-
-    return await this.connection.transaction(async (transactionManager) => {
-      try {
-        for (const innovation of innovations) {
-          await this.innovationService.archiveInnovation(
-            requestUser,
-            innovation.id,
-            reason,
-            transactionManager
-          );
-        }
-        await this.userService.deleteAccount(requestUser);
-        await transactionManager.update(
-          User,
-          { id: requestUser.id },
-          {
-            deletedAt: new Date(),
-            deleteReason: reason,
-          }
-        );
-      } catch (error) {
-        throw error;
-      }
-    });
-  }
-
   async createFirstTimeSignInTransfer(
     innovator: User,
     organisation: Organisation,
@@ -192,5 +162,35 @@ export class InnovatorService extends BaseService<User> {
     );
 
     return result;
+  }
+
+  async delete(requestUser: RequestUser, reason?: string) {
+    const innovations = await this.innovationService.findAllByInnovator(
+      requestUser
+    );
+
+    return await this.connection.transaction(async (transactionManager) => {
+      try {
+        for (const innovation of innovations) {
+          await this.innovationService.archiveInnovation(
+            requestUser,
+            innovation.id,
+            reason,
+            transactionManager
+          );
+        }
+        await this.userService.deleteAccount(requestUser);
+        await transactionManager.update(
+          User,
+          { id: requestUser.id },
+          {
+            deletedAt: new Date(),
+            deleteReason: reason,
+          }
+        );
+      } catch (error) {
+        throw error;
+      }
+    });
   }
 }

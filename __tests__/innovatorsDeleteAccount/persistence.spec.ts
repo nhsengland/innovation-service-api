@@ -16,7 +16,7 @@ describe("[innovatorsDeleteAccount] Persistence suite", () => {
     });
   });
   describe("innovatorsDeleteAccount", () => {
-    it("should update user ", async () => {
+    it("should delete user ", async () => {
       // Arrange
       spyOn(typeorm, "getRepository");
       spyOn(typeorm, "getConnection");
