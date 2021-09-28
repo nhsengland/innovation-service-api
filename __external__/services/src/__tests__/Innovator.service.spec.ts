@@ -1,19 +1,33 @@
 import {
   Innovation,
+  InnovationStatus,
   Organisation,
   OrganisationUser,
   User,
+  UserType,
 } from "@domain/index";
 import { getConnection } from "typeorm";
 import { v4 as uuid } from "uuid";
 import { InnovatorService } from "../services/Innovator.service";
 import * as dotenv from "dotenv";
 import * as path from "path";
+import * as fixtures from "../__fixtures__";
+import { UserService } from "@services/services/User.service";
+import { InnovationService } from "@services/services/Innovation.service";
+import * as helpers from "../../src/helpers/index";
+import { closeTestsConnection, setupTestsConnection } from "..";
 describe("Innovator Service Suite", () => {
-  beforeAll(() => {
+  let userService: UserService;
+  let innovationService: InnovationService;
+
+  beforeAll(async () => {
+    //  await setupTestsConnection();
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
     });
+
+    userService = new UserService(process.env.DB_TESTS_NAME);
+    innovationService = new InnovationService(process.env.DB_TESTS_NAME);
   });
   afterEach(async () => {
     const query = getConnection(process.env.DB_TESTS_NAME)
@@ -23,6 +37,15 @@ describe("Innovator Service Suite", () => {
     await query.from(Organisation).execute();
     await query.from(Innovation).execute();
     await query.from(User).execute();
+    // await closeTestsConnection();
+  });
+
+  afterAll(async () => {
+    const query = getConnection(process.env.DB_TESTS_NAME)
+      .createQueryBuilder()
+      .delete();
+    await query.from(Innovation).execute();
+    // await closeTestsConnection();
   });
 
   it("should instantiate the innovator service", async () => {
@@ -182,5 +205,36 @@ describe("Innovator Service Suite", () => {
     const result = await innovatorService.find(null);
 
     expect(result).toBeUndefined();
+  });
+
+  it("should archive the innovation by innovator Id and innovation Id and delete user", async () => {
+    const innovatorUser = await fixtures.createInnovatorUser();
+    const fakeRequestUser = {
+      requestUser: {
+        id: innovatorUser.id,
+        type: UserType.INNOVATOR,
+      },
+    };
+    const innovationObj = fixtures.generateInnovation({
+      owner: { id: fakeRequestUser.requestUser.id },
+      surveyId: "abc",
+    });
+    const innovation = await fixtures.saveInnovation(innovationObj);
+    const connection = innovationService.getConnection();
+    let result;
+    spyOn(innovationService, "findAllByInnovator").and.returnValues(true);
+    spyOn(userService, "deleteAccount").and.returnValues(
+      fakeRequestUser.requestUser
+    );
+    return await connection.transaction(async (transactionManager) => {
+      result = await innovationService.archiveInnovation(
+        fakeRequestUser.requestUser,
+        innovation.id,
+        ":reason",
+        transactionManager
+      );
+      expect(result).toBeDefined();
+      expect(result.status).toBe(InnovationStatus.ARCHIVED);
+    });
   });
 });

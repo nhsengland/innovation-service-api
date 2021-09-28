@@ -424,4 +424,121 @@ describe("User Service Suite", () => {
     expect(result).toBeDefined();
     expect(result.id).toEqual(dummy.requestUser.id);
   });
+
+  it("should throw an error if authentication with graph api returns a null access token", async () => {
+    const innovatorUser = await fixtures.createInnovatorUser();
+    // Arrange
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      displayName: "Accessor A",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "test_user@example.com",
+        },
+      ],
+      mobilePhone: "+351960000000",
+    });
+    spyOn(helpers, "deleteB2CAccount");
+    const fakeRequestUser = {
+      requestUser: {
+        id: innovatorUser.id,
+        type: UserType.INNOVATOR,
+      },
+    };
+    // Act
+    let err;
+    try {
+      await userService.deleteAccount(fakeRequestUser.requestUser);
+    } catch (error) {
+      err = error;
+    }
+    // Assert
+    expect(err).not.toBeDefined();
+  });
+
+  it("should throw an error if user does not exist on B2C", async () => {
+    // Arrange
+    spyOn(helpers, "getUserFromB2C").and.throwError("User Not found");
+    const fakeRequestUser = {
+      requestUser: {
+        id: ":userId",
+        type: UserType.INNOVATOR,
+      },
+    };
+    // Act
+    let err;
+    try {
+      await userService.deleteAccount(fakeRequestUser.requestUser);
+    } catch (error) {
+      err = error;
+    }
+    // Assert
+    expect(err).toBeDefined();
+    expect(err.message.toLocaleLowerCase()).toBe("user not found");
+  });
+
+  it("It should delete a User and archive innovations", async () => {
+    // Arrange
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      displayName: "Accessor A",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "test_user@example.com",
+        },
+      ],
+      mobilePhone: "+351960000000",
+    });
+    spyOn(helpers, "deleteB2CAccount");
+    const fakeRequestUser = {
+      requestUser: {
+        id: ":userId",
+        type: UserType.INNOVATOR,
+      },
+    };
+    // Act
+    let err;
+    let actual;
+    try {
+      actual = await userService.deleteAccount(fakeRequestUser.requestUser);
+    } catch (error) {
+      err = error;
+    }
+    // Assert
+    expect(err).not.toBeDefined();
+    expect(actual).toBe(true);
+  });
+
+  it("It should not delete a User and archive innovations", async () => {
+    // Arrange
+    spyOn(helpers, "getUserFromB2C").and.returnValue({
+      displayName: "Accessor A",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "test_user@example.com",
+        },
+      ],
+      mobilePhone: "+351960000000",
+    });
+    spyOn(helpers, "deleteB2CAccount").and.throwError("delete user failed");
+    const fakeRequestUser = {
+      requestUser: {
+        id: ":userId",
+        type: UserType.INNOVATOR,
+      },
+    };
+    // Act
+    let err;
+    let actual;
+    try {
+      actual = await userService.deleteAccount(fakeRequestUser.requestUser);
+    } catch (error) {
+      err = error;
+    }
+    // Assert
+    expect(err).toBeDefined();
+    expect(err.message.toLocaleLowerCase()).toBe("error updating user.");
+    expect(actual).toBeUndefined();
+  });
 });
