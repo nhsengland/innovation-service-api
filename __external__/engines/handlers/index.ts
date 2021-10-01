@@ -255,6 +255,33 @@ export const innovatorsTransferOwnershipConfirmation = async (
   return result;
 };
 
+export const accessorsInnovationArchivalUpdate = async (
+  requestUser: RequestUser,
+  params: {
+    innovationId: string;
+    contextId: string;
+    emailProps?: EmailProps;
+  },
+  targetUsers?: string[],
+  connectionName?: string
+): Promise<EmailResponse[]> => {
+  const emailService = new EmailService(connectionName);
+
+  const recipients = targetUsers;
+
+  const props = {
+    ...params.emailProps,
+  };
+
+  const result = await emailService.sendMany(
+    recipients,
+    EmailNotificationTemplate.ACCESSORS_INNOVATION_ARCHIVAL_UPDATE,
+    props
+  );
+
+  return result;
+};
+
 const parseUrl = (params, templateCode): string => {
   const baseUrl = process.env.CLIENT_WEB_BASE_URL;
   const template = getTemplates().find((t) => t.code === templateCode);
