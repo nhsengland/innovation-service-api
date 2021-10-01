@@ -29,4 +29,8 @@ export const emailEngines = () => [
     key: EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_CONFIRMATION,
     handler: handlers.innovatorsTransferOwnershipConfirmation,
   },
+  {
+    key: EmailNotificationTemplate.ACCESSORS_INNOVATION_ARCHIVAL_UPDATE,
+    handler: handlers.accessorsInnovationArchivalUpdate,
+  },
 ];
