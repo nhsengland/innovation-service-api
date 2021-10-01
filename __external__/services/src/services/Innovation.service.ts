@@ -1004,7 +1004,9 @@ export class InnovationService extends BaseService<Innovation> {
           userIdx < organisationUnitUsers.length;
           userIdx++
         ) {
-          supportUsers.push(organisationUnitUsers[userIdx].id);
+          supportUsers.push(
+            organisationUnitUsers[userIdx].organisationUser.user.id
+          );
         }
       }
 
@@ -1072,6 +1074,8 @@ export class InnovationService extends BaseService<Innovation> {
         "organisationShares",
         "innovationSupports",
         "innovationSupports.organisationUnitUsers",
+        "innovationSupports.organisationUnitUsers.organisationUser",
+        "innovationSupports.organisationUnitUsers.organisationUser.user",
       ],
       where: { owner: requestUser.id },
     };
