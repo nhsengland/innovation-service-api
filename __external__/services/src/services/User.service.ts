@@ -241,9 +241,12 @@ export class UserService {
 
     const accessToken = await authenticateWitGraphAPI();
     const currentProfile = await this.getProfile(requestUser.id, accessToken);
-    if (user.displayName != currentProfile.displayName) {
+    if (
+      user.displayName !== currentProfile.displayName ||
+      user.mobilePhone !== currentProfile.phone
+    ) {
       await this.updateB2CUser(
-        { displayName: user.displayName },
+        { displayName: user.displayName, mobilePhone: user.mobilePhone },
         requestUser.id,
         accessToken
       );
