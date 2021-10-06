@@ -105,4 +105,12 @@ export const getTemplates = (): EmailTemplate[] => [
       new_innovator_email: "",
     },
   },
+  {
+    id: "fa1bda41-8022-42cb-b66a-2db6de23c07d",
+    code: "ACCESSORS_INNOVATION_ARCHIVAL_UPDATE",
+    props: {
+      display_name: "",
+      innovation_name: "",
+    },
+  },
 ];

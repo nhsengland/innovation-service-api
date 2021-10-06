@@ -60,6 +60,7 @@ import { UserService } from "./User.service";
 
 import * as constants from "../../../../utils/constants";
 import { InnovationCreationModel } from "@services/models/InnovationCreationModel";
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 
 export class InnovationService extends BaseService<Innovation> {
   private readonly connection: Connection;
@@ -994,7 +995,21 @@ export class InnovationService extends BaseService<Innovation> {
     supports: any[]
   ) {
     // Update all supports and DECLINE all open actions
+    const supportUsers = [];
     for (let orgSupIdx = 0; orgSupIdx < supports.length; orgSupIdx++) {
+      const organisationUnitUsers = supports[orgSupIdx].organisationUnitUsers;
+      if (organisationUnitUsers && organisationUnitUsers.length > 0) {
+        for (
+          let userIdx = 0;
+          userIdx < organisationUnitUsers.length;
+          userIdx++
+        ) {
+          supportUsers.push(
+            organisationUnitUsers[userIdx].organisationUser.user.id
+          );
+        }
+      }
+
       const innovationSupport = supports[orgSupIdx];
       innovationSupport.organisationUnitUsers = [];
       const innovationActions = await innovationSupport.actions;
@@ -1026,6 +1041,20 @@ export class InnovationService extends BaseService<Innovation> {
     innovation.archiveReason = reason;
     innovation.deletedAt = new Date();
     await transactionManager.save(Innovation, innovation);
+
+    if (supportUsers && supportUsers.length > 0) {
+      await this.notificationService.sendEmail(
+        requestUser,
+        EmailNotificationTemplate.ACCESSORS_INNOVATION_ARCHIVAL_UPDATE,
+        innovation.id,
+        innovation.id,
+        supportUsers,
+        {
+          innovation_name: innovation.name,
+        }
+      );
+    }
+
     return {
       id: innovation.id,
       status: InnovationStatus.ARCHIVED,
@@ -1041,7 +1070,13 @@ export class InnovationService extends BaseService<Innovation> {
       throw new InvalidParamsError("Invalid parameters.");
     }
     const filterOptions = {
-      relations: ["organisationShares", "innovationSupports"],
+      relations: [
+        "organisationShares",
+        "innovationSupports",
+        "innovationSupports.organisationUnitUsers",
+        "innovationSupports.organisationUnitUsers.organisationUser",
+        "innovationSupports.organisationUnitUsers.organisationUser.user",
+      ],
       where: { owner: requestUser.id },
     };
     const innovation = await this.findInnovation(
