@@ -34,7 +34,7 @@ export const createFirstTimeSignInTransfer = async (
 
 export const updateB2CUser = async (ctx: CustomContext, data: any) => {
   try {
-    await ctx.services.UserService.updateB2CUser({ ...data.user }, data.oid);
+    await ctx.services.UserService.updateB2CUser({ displayName: data.user, mobilePhone: data.mobilePhone }, data.oid);
   } catch (error) {
     throw error;
   }

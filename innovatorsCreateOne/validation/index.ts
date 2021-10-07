@@ -22,6 +22,7 @@ const payloadSchema = Joi.object({
   }).optional(),
   user: Joi.object({
     displayName: Joi.string().required(),
+    mobilePhone: Joi.number().optional(),
   }),
 }).required();
 
