@@ -111,7 +111,6 @@ class InnovatorsCreateOne {
     try {
       await persistence.updateB2CUser(context, {
         user: payload.user,
-        mobilePhone:payload.mobilePhone,
         oid,
       });
       context.log.info("Updated User display name");
