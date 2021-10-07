@@ -13,7 +13,7 @@
     "jsonwebtoken": "^8.5.1",
     "jwt-decode": "^3.1.2",
     "memory-cache": "^0.2.0",
-    "mongoose": "^5.12.0",
+    "mongoose": "^6.0.9",
     "mssql": "^6.3.1",
     "notifications-node-client": "^5.1.0",
     "tslib": "^1.9.3",
