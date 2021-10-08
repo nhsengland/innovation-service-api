@@ -116,6 +116,7 @@ export class UserService {
       (identity) => identity.signInType === "emailAddress"
     ).issuerAssignedId;
 
+    const passwordRestOn=user[`extension_${process.env.AD_EXTENSION_ID}_passwordResetOn`]
     const profile: ProfileModel = {
       id,
       displayName: user.displayName,
@@ -123,6 +124,7 @@ export class UserService {
       organisations: [],
       email,
       phone: user.mobilePhone,
+      passwordRestOn: passwordRestOn
     };
 
     try {
