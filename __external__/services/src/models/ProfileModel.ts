@@ -8,5 +8,5 @@ export interface ProfileModel {
   organisations: OrganisationUserModel[];
   email?: string;
   phone?: string;
-  passwordRestOn?:string;
+  passwordResetOn?:string;
 }
