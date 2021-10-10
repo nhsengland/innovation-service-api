@@ -452,6 +452,45 @@ export class NotificationService {
     return result;
   }
 
+  async updateNotificationPreference(
+    requestUser: RequestUser,
+    id: NotificationContextType,
+    isSubscribed: boolean
+  ) {
+    if (!requestUser || !id) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+
+    const user_id = requestUser.id;
+
+    const query = this.notificationPreferenceRepo
+      .createQueryBuilder("n_pref")
+      .select("users.id", "user_id")
+      .innerJoin(User, "users", "n_pref.user_id = users.id")
+      .where(
+        "n_pref.notification_id = :notificationId and users.id = :userId",
+        { notificationId: id, userId: user_id }
+      );
+
+    let userNotificationPreference = await query.getOne();
+
+    if (userNotificationPreference) {
+      userNotificationPreference.isSubscribed = isSubscribed;
+    } else {
+      userNotificationPreference = NotificationPreference.new({
+        notification_id: id,
+        isSubscribed: isSubscribed,
+        user: { id: user_id },
+      });
+    }
+
+    const result = await this.notificationPreferenceRepo.save(
+      userNotificationPreference
+    );
+
+    return result;
+  }
+
   private convertArrayToObject = (array, key) => {
     const initialValue = {};
     return array.reduce((obj, item) => {
