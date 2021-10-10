@@ -53,6 +53,7 @@ export {
   Comment,
   Notification,
   NotificationUser,
+  NotificationPreference,
   User,
   YesOrNoCatalogue,
   CarePathwayCatalogue,

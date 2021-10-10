@@ -1,3 +1,4 @@
+import { NotificationPreference } from "@domain/entity/user/NotificationPreference.entity";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   AccessorOrganisationRole,
@@ -34,9 +35,15 @@ export type NotificationDismissResult = {
   error?: any;
 };
 
+export type NotificationType = {
+  id: string;
+  isSubscribed: boolean;
+};
+
 export class NotificationService {
   private readonly notificationRepo: Repository<Notification>;
   private readonly notificationUserRepo: Repository<NotificationUser>;
+  private readonly notificationPreferenceRepo: Repository<NotificationPreference>;
   private readonly innovationSupportRepo: Repository<InnovationSupport>;
   private readonly innovationRepo: Repository<Innovation>;
   private readonly assessmentRepo: Repository<InnovationAssessment>;
@@ -50,6 +57,10 @@ export class NotificationService {
     this.connection = getConnection(connectionName);
     this.notificationRepo = getRepository(Notification, connectionName);
     this.notificationUserRepo = getRepository(NotificationUser, connectionName);
+    this.notificationPreferenceRepo = getRepository(
+      NotificationPreference,
+      connectionName
+    );
     this.innovationSupportRepo = getRepository(
       InnovationSupport,
       connectionName
@@ -404,6 +415,41 @@ export class NotificationService {
       ...n,
       isRead: n.readAt ? true : false,
     }));
+  }
+
+  async getEmailNotificationTypes(
+    requestUser: RequestUser
+  ): Promise<NotificationType[]> {
+    let result: NotificationType[] = [];
+
+    if (requestUser.type === UserType.ACCESSOR) {
+      result = [
+        { id: NotificationContextType.ACTION, isSubscribed: true },
+        { id: NotificationContextType.SUPPORT, isSubscribed: true },
+      ];
+    } else if (requestUser.type === UserType.INNOVATOR) {
+      result = [
+        { id: NotificationContextType.ACTION, isSubscribed: true },
+        { id: NotificationContextType.SUPPORT, isSubscribed: true },
+      ];
+    }
+
+    const query = this.notificationPreferenceRepo
+      .createQueryBuilder("n_pref")
+      .where("n_pref.user_id = :userId", { userId: requestUser.id });
+
+    const notificationTypes = await query.getMany();
+
+    result.forEach((r) => {
+      const userPreference = notificationTypes.find(
+        (n) => n.notification_id === r.id
+      );
+      if (userPreference) {
+        r.isSubscribed = userPreference.isSubscribed;
+      }
+    });
+
+    return result;
   }
 
   private convertArrayToObject = (array, key) => {
