@@ -353,7 +353,7 @@ const filterRecipientsByPreference = async (
       where: `notification_id = '${notificationType}' and user_id = '${recipient}'`,
     });
 
-    if (userPreference?.isSubscribed) {
+    if (!userPreference || userPreference?.isSubscribed) {
       filteredRecipients.push(recipient);
     }
   }
