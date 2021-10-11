@@ -1,15 +1,13 @@
-import { NotificationContextType } from "@domain/index";
+import { PreferenceUpdateModel } from "@services/models/PreferenceUpdateModel";
 import { CustomContext } from "../../utils/types";
 
 export const updateNotificationPreference = async (
   ctx: CustomContext,
-  notificationId: string,
-  isSubscribed: boolean
+  preferences: PreferenceUpdateModel[]
 ) => {
   const result = await ctx.services.NotificationService.updateNotificationPreference(
     ctx.auth.requestUser,
-    notificationId as NotificationContextType,
-    isSubscribed
+    preferences
   );
 
   return result;

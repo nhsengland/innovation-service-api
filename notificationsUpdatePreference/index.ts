@@ -22,15 +22,13 @@ class NotificationsUpdatePreferences {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const id = req.body.notificationType;
-    const isSubscribed = req.body.isSubscribed;
+    const preferences = req.body;
 
     let result;
     try {
       result = await persistence.updateNotificationPreference(
         context,
-        id,
-        isSubscribed
+        preferences
       );
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });

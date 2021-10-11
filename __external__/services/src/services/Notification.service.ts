@@ -17,6 +17,8 @@ import {
 import { emailEngines } from "@engines/index";
 import { InvalidParamsError } from "@services/errors";
 import { checkIfValidUUID } from "@services/helpers";
+import { PreferenceUpdateModel } from "@services/models/PreferenceUpdateModel";
+import { PreferenceUpdateResult } from "@services/models/PreferenceUpdateResult"
 import { RequestUser } from "@services/models/RequestUser";
 import {
   Connection,
@@ -454,11 +456,45 @@ export class NotificationService {
 
   async updateNotificationPreference(
     requestUser: RequestUser,
-    id: NotificationContextType,
-    isSubscribed: boolean
-  ) {
-    if (!requestUser || !id) {
+    preferences: PreferenceUpdateModel[]
+  ): Promise<PreferenceUpdateResult[]> {
+
+    if (!requestUser || !preferences || preferences.length === 0) {
       throw new InvalidParamsError("Invalid parameters.");
+    }
+
+    const results: PreferenceUpdateResult[] = [];
+
+    for (let i = 0; i < preferences.length; i++) {
+      const preference = preferences[i];
+      let result: PreferenceUpdateResult;
+
+      try {
+        result = await this.updatePreference(requestUser, preferences[i], );
+      } catch (err) {
+        result = {
+          id: preference.notificationType,
+          status: "ERROR",
+          error: {
+            code: err.constructor.name,
+            message: err.message,
+          },
+        };
+      }
+
+      results.push(result);
+    }
+
+    return results;
+  }
+
+  private async updatePreference(
+    requestUser: RequestUser,
+    preferenceModel: PreferenceUpdateModel
+  ): Promise<PreferenceUpdateResult> {
+
+    if (!requestUser || !preferenceModel) {
+      throw new InvalidParamsError("Invalid params.");
     }
 
     const user_id = requestUser.id;
@@ -469,17 +505,17 @@ export class NotificationService {
       .innerJoin(User, "users", "n_pref.user_id = users.id")
       .where(
         "n_pref.notification_id = :notificationId and users.id = :userId",
-        { notificationId: id, userId: user_id }
+        { notificationId: preferenceModel.notificationType, userId: user_id }
       );
 
     let userNotificationPreference = await query.getOne();
 
     if (userNotificationPreference) {
-      userNotificationPreference.isSubscribed = isSubscribed;
+      userNotificationPreference.isSubscribed = preferenceModel.isSubscribed;
     } else {
       userNotificationPreference = NotificationPreference.new({
-        notification_id: id,
-        isSubscribed: isSubscribed,
+        notification_id: preferenceModel.notificationType,
+        isSubscribed: preferenceModel.isSubscribed,
         user: { id: user_id },
       });
     }
@@ -488,7 +524,10 @@ export class NotificationService {
       userNotificationPreference
     );
 
-    return result;
+    return {
+      id: result.notification_id,
+      status: "OK",
+    };
   }
 
   private convertArrayToObject = (array, key) => {
