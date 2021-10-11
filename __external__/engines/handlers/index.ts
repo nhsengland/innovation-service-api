@@ -42,7 +42,11 @@ export const accessorsActionToReviewHandler = async (
     EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW
   );
 
-  let recipients = await getRecipients(params.innovationId, connectionName);
+  const recipients = await getRecipients(params.innovationId, connectionName);
+  const filteredRecipients = await filterRecipientsByPreference(
+    NotificationContextType.SUPPORT,
+    recipients
+  );
 
   const props = {
     innovator_name,
@@ -50,12 +54,8 @@ export const accessorsActionToReviewHandler = async (
     action_url,
   };
 
-  recipients = recipients.filter(async (r) => {
-    (await getUserPreference(NotificationContextType.ACTION, r)) === true;
-  });
-
   const result = await emailService.sendMany(
-    recipients,
+    filteredRecipients,
     EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
     props
   );
@@ -88,12 +88,13 @@ export const accessorsAssignedToInnovationHandler = async (
   let recipients = targetUsers;
   recipients = recipients.filter((r) => r !== requestUser.id);
 
-  recipients = recipients.filter(async (r) => {
-    (await getUserPreference(NotificationContextType.SUPPORT, r)) === true;
-  });
+  const filteredRecipients = await filterRecipientsByPreference(
+    NotificationContextType.SUPPORT,
+    recipients
+  );
 
   const result = await emailService.sendMany(
-    recipients,
+    filteredRecipients,
     EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
     props
   );
@@ -333,18 +334,29 @@ const getRecipients = async (innovationId: string, connectionName?: string) => {
   return recipients;
 };
 
-const getUserPreference = async (
+const filterRecipientsByPreference = async (
   notificationType: string,
-  userId: string,
+  recipients: string[],
   connectionName?: string
-): Promise<boolean> => {
+) => {
   const notificationPreferenceRepo = getRepository(
     NotificationPreference,
     connectionName
   );
-  const userPreference = await notificationPreferenceRepo.findOne({
-    where: `notification_id = '${notificationType}' and user_id = '${userId}'`,
-  });
 
-  return userPreference.isSubscribed;
+  const filteredRecipients = [];
+
+  for (let idx = 0; idx < recipients.length; idx++) {
+    const recipient = recipients[idx];
+
+    const userPreference = await notificationPreferenceRepo.findOne({
+      where: `notification_id = '${notificationType}' and user_id = '${recipient}'`,
+    });
+
+    if (userPreference?.isSubscribed) {
+      filteredRecipients.push(recipient);
+    }
+  }
+
+  return filteredRecipients;
 };
