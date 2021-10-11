@@ -18,7 +18,7 @@ import { emailEngines } from "@engines/index";
 import { InvalidParamsError } from "@services/errors";
 import { checkIfValidUUID } from "@services/helpers";
 import { PreferenceUpdateModel } from "@services/models/PreferenceUpdateModel";
-import { PreferenceUpdateResult } from "@services/models/PreferenceUpdateResult"
+import { PreferenceUpdateResult } from "@services/models/PreferenceUpdateResult";
 import { RequestUser } from "@services/models/RequestUser";
 import {
   Connection,
@@ -419,31 +419,25 @@ export class NotificationService {
     }));
   }
 
-  async getEmailNotificationTypes(
+  async getEmailNotificationPreferences(
     requestUser: RequestUser
   ): Promise<NotificationType[]> {
-    let result: NotificationType[] = [];
+    const result = [
+      { id: NotificationContextType.ACTION, isSubscribed: true },
+      { id: NotificationContextType.SUPPORT, isSubscribed: true },
+    ];
 
-    if (requestUser.type === UserType.ACCESSOR) {
-      result = [
-        { id: NotificationContextType.ACTION, isSubscribed: true },
-        { id: NotificationContextType.SUPPORT, isSubscribed: true },
-      ];
-    } else if (requestUser.type === UserType.INNOVATOR) {
-      result = [
-        { id: NotificationContextType.ACTION, isSubscribed: true },
-        { id: NotificationContextType.SUPPORT, isSubscribed: true },
-      ];
-    }
+    // if the user type has a specific notification
+    // then extend the result array with those rules
 
     const query = this.notificationPreferenceRepo
       .createQueryBuilder("n_pref")
       .where("n_pref.user_id = :userId", { userId: requestUser.id });
 
-    const notificationTypes = await query.getMany();
+    const notificationPreferences = await query.getMany();
 
     result.forEach((r) => {
-      const userPreference = notificationTypes.find(
+      const userPreference = notificationPreferences.find(
         (n) => n.notification_id === r.id
       );
       if (userPreference) {
@@ -454,11 +448,10 @@ export class NotificationService {
     return result;
   }
 
-  async updateNotificationPreference(
+  async updateEmailNotificationPreferences(
     requestUser: RequestUser,
     preferences: PreferenceUpdateModel[]
   ): Promise<PreferenceUpdateResult[]> {
-
     if (!requestUser || !preferences || preferences.length === 0) {
       throw new InvalidParamsError("Invalid parameters.");
     }
@@ -470,7 +463,7 @@ export class NotificationService {
       let result: PreferenceUpdateResult;
 
       try {
-        result = await this.updatePreference(requestUser, preferences[i], );
+        result = await this.updatePreference(requestUser, preferences[i]);
       } catch (err) {
         result = {
           id: preference.notificationType,
@@ -492,7 +485,6 @@ export class NotificationService {
     requestUser: RequestUser,
     preferenceModel: PreferenceUpdateModel
   ): Promise<PreferenceUpdateResult> {
-
     if (!requestUser || !preferenceModel) {
       throw new InvalidParamsError("Invalid params.");
     }

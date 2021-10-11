@@ -3,6 +3,8 @@ import {
   Innovation,
   InnovationSupport,
   InnovationSupportStatus,
+  NotificationContextType,
+  NotificationPreference,
 } from "@domain/index";
 import * as helpers from "@helpers/index";
 import { EmailTemplateNotFound, InvalidParamsError } from "@services/errors";
@@ -40,12 +42,17 @@ export const accessorsActionToReviewHandler = async (
     EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW
   );
 
-  const recipients = await getRecipients(params.innovationId, connectionName);
+  let recipients = await getRecipients(params.innovationId, connectionName);
+
   const props = {
     innovator_name,
     innovation_name,
     action_url,
   };
+
+  recipients = recipients.filter(async (r) => {
+    (await getUserPreference(NotificationContextType.ACTION, r)) === true;
+  });
 
   const result = await emailService.sendMany(
     recipients,
@@ -80,6 +87,10 @@ export const accessorsAssignedToInnovationHandler = async (
 
   let recipients = targetUsers;
   recipients = recipients.filter((r) => r !== requestUser.id);
+
+  recipients = recipients.filter(async (r) => {
+    (await getUserPreference(NotificationContextType.SUPPORT, r)) === true;
+  });
 
   const result = await emailService.sendMany(
     recipients,
@@ -320,4 +331,20 @@ const getRecipients = async (innovationId: string, connectionName?: string) => {
   );
 
   return recipients;
+};
+
+const getUserPreference = async (
+  notificationType: string,
+  userId: string,
+  connectionName?: string
+): Promise<boolean> => {
+  const notificationPreferenceRepo = getRepository(
+    NotificationPreference,
+    connectionName
+  );
+  const userPreference = await notificationPreferenceRepo.findOne({
+    where: `notification_id = '${notificationType}' and user_id = '${userId}'`,
+  });
+
+  return userPreference.isSubscribed;
 };

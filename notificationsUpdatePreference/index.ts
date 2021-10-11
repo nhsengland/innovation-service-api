@@ -26,7 +26,7 @@ class NotificationsUpdatePreferences {
 
     let result;
     try {
-      result = await persistence.updateNotificationPreference(
+      result = await persistence.updateEmailNotificationPreferences(
         context,
         preferences
       );

@@ -10,7 +10,7 @@ import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 
-class NotificationsGetEmailNotificationTypes {
+class NotificationsGetEmailNotificationPreferences {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder()
@@ -21,7 +21,7 @@ class NotificationsGetEmailNotificationTypes {
   ): Promise<void> {
     let result: any;
     try {
-      result = await persistence.getEmailNotificationTypes(context);
+      result = await persistence.getEmailNotificationPreferences(context);
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
@@ -32,4 +32,4 @@ class NotificationsGetEmailNotificationTypes {
   }
 }
 
-export default NotificationsGetEmailNotificationTypes.httpTrigger;
+export default NotificationsGetEmailNotificationPreferences.httpTrigger;
