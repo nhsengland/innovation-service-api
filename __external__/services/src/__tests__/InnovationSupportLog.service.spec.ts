@@ -94,8 +94,8 @@ describe("Innovation Support Suite", () => {
     const innovations = await fixtures.saveInnovations(innovationObj);
     innovation = innovations[0];
 
-    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
-    spyOn(helpers, "getUserFromB2C").and.returnValue({
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Q Accessor A",
       identities: [
         {
@@ -233,7 +233,7 @@ describe("Innovation Support Suite", () => {
   });
 
   it("should find all support logs by innovation", async () => {
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       {
         id: accessorUser.id,
         displayName: ":ACCESSOR",
@@ -277,7 +277,7 @@ describe("Innovation Support Suite", () => {
   });
 
   it("should find all support logs by innovation and type", async () => {
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       {
         id: accessorUser.id,
         displayName: ":ACCESSOR",

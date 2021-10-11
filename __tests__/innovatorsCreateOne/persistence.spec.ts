@@ -28,12 +28,12 @@ describe("[innovatorsCreateOne] Persistence suite", () => {
         organisation,
       };
 
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
+      const spy = jest.spyOn(
         InnovatorService.prototype,
         "createFirstTimeSignIn"
-      ).and.returnValue(result);
+      ).mockResolvedValue(result as any);
 
       const ctx = {
         services: {
@@ -61,9 +61,9 @@ describe("[innovatorsCreateOne] Persistence suite", () => {
   describe("updateDisplayName", () => {
     it("should update an Innovator displayName", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(UserService.prototype, "updateB2CUser").and.returnValue(
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
+      const spy = jest.spyOn(UserService.prototype, "updateB2CUser").mockResolvedValue(
         null
       );
 

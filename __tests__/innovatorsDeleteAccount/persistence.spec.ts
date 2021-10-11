@@ -18,11 +18,11 @@ describe("[innovatorsDeleteAccount] Persistence suite", () => {
   describe("innovatorsDeleteAccount", () => {
     it("should delete user ", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(InnovatorService.prototype, "delete").and.returnValue([
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
+      const spy = jest.spyOn(InnovatorService.prototype, "delete").mockResolvedValue([
         {},
-      ]);
+      ] as any);
 
       const ctx = {
         services: {

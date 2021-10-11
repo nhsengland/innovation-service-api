@@ -13,12 +13,12 @@ describe("[innovatorsCheckOne] Persistence suite", () => {
   describe("checkInnovationTransfer", () => {
     it("should check an innovator transfers", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
+      const spy = jest.spyOn(
         InnovationTransferService.prototype,
         "checkUserPendingTransfers"
-      ).and.returnValue([{ hasInvites: true, userExists: true }]);
+      ).mockResolvedValue([{ hasInvites: true, userExists: true }] as any);
 
       const ctx = {
         services: {

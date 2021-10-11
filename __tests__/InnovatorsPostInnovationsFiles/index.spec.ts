@@ -48,8 +48,8 @@ describe("[HttpTrigger] innovatorsPostInnovationsFiles Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({ oid: dummy.innovatorId });
-      spyOn(connection, "setupSQLConnection").and.throwError(
+      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({ oid: dummy.innovatorId });
+      jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
 
@@ -70,14 +70,14 @@ describe("[HttpTrigger] innovatorsPostInnovationsFiles Suite", () => {
         },
       };
 
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(services);
-      spyOn(authentication, "decodeToken").and.returnValue({
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(services as any);
+      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
         oid: dummy.innovatorId,
       });
-      spyOn(persistence, "getUploadUrl").and.returnValue([
+      jest.spyOn(persistence, "getUploadUrl").mockResolvedValue([
         { id: "file_id" },
-      ]);
+      ] as any);
 
       const { res } = await mockedRequestFactory({
         headers: { authorization: ":access_token" },
@@ -86,15 +86,15 @@ describe("[HttpTrigger] innovatorsPostInnovationsFiles Suite", () => {
     });
 
     it("Should return 201 when Innovation file metadata is created is found", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
-      spyOn(Validation, "ValidateHeaders").and.returnValue({});
-      spyOn(authentication, "decodeToken").and.returnValue({
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
+      jest.spyOn(Validation, "ValidateHeaders").mockResolvedValue({} as any);
+      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
         oid: dummy.innovatorId,
       });
-      spyOn(persistence, "getUploadUrl").and.returnValue([
+      jest.spyOn(persistence, "getUploadUrl").mockResolvedValue([
         { id: ":id", url: ":url" },
-      ]);
+      ] as any);
 
       const { res } = await mockedRequestFactory({
         headers: { authorization: ":auth_token" },
@@ -103,12 +103,12 @@ describe("[HttpTrigger] innovatorsPostInnovationsFiles Suite", () => {
     });
 
     it("Should handle error persistence return error", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
-      spyOn(authentication, "decodeToken").and.returnValue({
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
+      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
         oid: dummy.innovatorId,
       });
-      spyOn(persistence, "getUploadUrl").and.throwError(
+      jest.spyOn(persistence, "getUploadUrl").mockRejectedValue(
         "Error."
       );
 

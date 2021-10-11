@@ -34,8 +34,8 @@ describe("[HttpTrigger] innovatorsCheckOne Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
-      spyOn(connection, "setupSQLConnection").and.throwError(
+      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({ oid: ':oid' });
+      jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
 
@@ -48,12 +48,12 @@ describe("[HttpTrigger] innovatorsCheckOne Suite", () => {
     });
 
     it("Should return 200 when Innovator is found", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue({});
-      spyOn(persistence, "checkUserPendingTransfers").and.returnValue([
+      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({ oid: ':oid' });
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue({} as any);
+      jest.spyOn(persistence, "checkUserPendingTransfers").mockResolvedValue([
         { innovator: "" },
-      ]);
+      ] as any);
 
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(200);

@@ -14,12 +14,12 @@ describe("[notificationsGetUnreadGroupedByStatus] Persistence suite", () => {
   describe("getAllUnreadNotificationsCounts", () => {
     it("should find all notifications grouped by support status", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
+      const spy = jest.spyOn(
         NotificationService.prototype,
         "getNotificationsGroupedBySupportStatus"
-      ).and.returnValue({
+      ).mockResolvedValue({
         INNOVATION: 1,
         ACTION: 1,
         DATA_SHARING: 1,
@@ -49,12 +49,12 @@ describe("[notificationsGetUnreadGroupedByStatus] Persistence suite", () => {
 
     it("should find all notifications grouped by support status", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
+      const spy = jest.spyOn(
         NotificationService.prototype,
         "getNotificationsGroupedByInnovationStatus"
-      ).and.returnValue({
+      ).mockResolvedValue({
         UNASSIGNED: 1,
         IN_PROGRESS: 2,
       });

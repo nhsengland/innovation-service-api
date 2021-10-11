@@ -45,8 +45,8 @@ describe("[HttpTrigger] organisationsGetAll Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
-      spyOn(connection, "setupSQLConnection").and.throwError(
+      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({ oid: ':oid' });
+      jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
 
@@ -59,24 +59,24 @@ describe("[HttpTrigger] organisationsGetAll Suite", () => {
     });
 
     it("Should return 200 when Organisations is found", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
+      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({ oid: ':oid' });
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
 
-      spyOn(persistence, "findAll").and.returnValue([
+      jest.spyOn(persistence, "findAll").mockResolvedValue([
         { id: ":organisation_id", organisationUnits: [{ id: ":unit_id" }] },
-      ]);
+      ] as any);
 
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(200);
     });
 
     it("Should return 500 when an uncontrolled error occurs", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
+      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({ oid: ':oid' });
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
 
-      spyOn(persistence, "findAll").and.throwError(
+      jest.spyOn(persistence, "findAll").mockRejectedValue(
         "Error"
       );
 

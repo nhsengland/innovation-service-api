@@ -49,8 +49,8 @@ describe("[HttpTrigger] innovatorsCreateInnovationEvidence Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
-      spyOn(connection, "setupSQLConnection").and.throwError(
+      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({ oid: ':oid' });
+      jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
 
@@ -63,13 +63,13 @@ describe("[HttpTrigger] innovatorsCreateInnovationEvidence Suite", () => {
     });
 
     it("Should return 201 when Innovation Evidence is created", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
-      spyOn(validation, "ValidatePayload").and.returnValue({});
-      spyOn(authentication, "decodeToken").and.returnValue({
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
+      jest.spyOn(validation, "ValidatePayload").mockResolvedValue({} as any);
+      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
         oid: dummy.innovatorId,
       });
-      spyOn(persistence, "createInnovationEvidence").and.returnValue([
+      jest.spyOn(persistence, "createInnovationEvidence").mockResolvedValue([
         { id: "evidence_id" },
       ]);
 
@@ -86,13 +86,13 @@ describe("[HttpTrigger] innovatorsCreateInnovationEvidence Suite", () => {
         },
       };
 
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(services);
-      spyOn(validation, "ValidatePayload").and.returnValue({});
-      spyOn(authentication, "decodeToken").and.returnValue({
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(services as any);
+      jest.spyOn(validation, "ValidatePayload").mockResolvedValue({} as any);
+      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
         oid: dummy.innovatorId,
       });
-      spyOn(persistence, "createInnovationEvidence").and.returnValue([
+      jest.spyOn(persistence, "createInnovationEvidence").mockResolvedValue([
         { id: "evidence_id" },
       ]);
 
@@ -103,13 +103,13 @@ describe("[HttpTrigger] innovatorsCreateInnovationEvidence Suite", () => {
     });
 
     it("Should throw error when oid is different from innovatorId", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
-      spyOn(validation, "ValidatePayload").and.returnValue({});
-      spyOn(authentication, "decodeToken").and.returnValue({
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
+      jest.spyOn(validation, "ValidatePayload").mockResolvedValue({} as any);
+      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
         oid: "other",
       });
-      spyOn(persistence, "createInnovationEvidence").and.returnValue([
+      jest.spyOn(persistence, "createInnovationEvidence").mockResolvedValue([
         { id: "evidence_id" },
       ]);
 

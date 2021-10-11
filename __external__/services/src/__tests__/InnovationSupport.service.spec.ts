@@ -88,8 +88,8 @@ describe("Innovation Support Suite", () => {
     const innovations = await fixtures.saveInnovations(innovationObj);
     innovation = innovations[0];
 
-    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
-    spyOn(helpers, "getUserFromB2C").and.returnValue({
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Q Accessor A",
       identities: [
         {
@@ -111,26 +111,26 @@ describe("Innovation Support Suite", () => {
       organisationUnitAccessorUser
     );
 
-    spyOn(engines, "emailEngines").and.returnValue([
-      {
-        key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
-        handler: async function () {
-          return [];
-        },
-      },
-      {
-        key: EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
-        handler: async function () {
-          return [];
-        },
-      },
-      {
-        key: EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
-        handler: async function () {
-          return [];
-        },
-      },
-    ]);
+    // jest.spyOn(engines, "emailEngines").mockResolvedValue([
+    //   {
+    //     key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
+    //     handler: async function () {
+    //       return [];
+    //     },
+    //   },
+    //   {
+    //     key: EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
+    //     handler: async function () {
+    //       return [];
+    //     },
+    //   },
+    //   {
+    //     key: EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
+    //     handler: async function () {
+    //       return [];
+    //     },
+    //   },
+    // ]);
   });
 
   afterAll(async () => {
@@ -186,10 +186,10 @@ describe("Innovation Support Suite", () => {
       comment: "test comment",
     };
 
-    spyOn(NotificationService.prototype, "create").and.throwError("error");
-    spyOn(NotificationService.prototype, "sendEmail").and.throwError("error");
+    jest.spyOn(NotificationService.prototype, "create").mockRejectedValue("error");
+    jest.spyOn(NotificationService.prototype, "sendEmail").mockRejectedValue("error");
 
-    const spy = spyOn(LoggerService.prototype, "error");
+    const spy = jest.spyOn(LoggerService.prototype, "error");
 
     const item = await supportService.create(
       qAccessorRequestUser,
@@ -231,7 +231,7 @@ describe("Innovation Support Suite", () => {
   });
 
   it("should find an support by innovator", async () => {
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
       { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
     ]);
@@ -259,7 +259,7 @@ describe("Innovation Support Suite", () => {
   });
 
   it("should find an support by q. accessor", async () => {
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
       { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
     ]);
@@ -287,7 +287,7 @@ describe("Innovation Support Suite", () => {
   });
 
   it("should find an support by accessor", async () => {
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
       { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
     ]);
@@ -360,7 +360,7 @@ describe("Innovation Support Suite", () => {
   });
 
   it("should update an support status to add one accessor", async () => {
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
       { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
     ]);

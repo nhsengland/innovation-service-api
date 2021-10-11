@@ -13,11 +13,11 @@ describe("[adminsCreateUsers] Persistence suite", () => {
   describe("adminsCreateUsers", () => {
     it("should create users", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(UserService.prototype, "createUsers").and.returnValue([
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
+      const spy = jest.spyOn(UserService.prototype, "createUsers").mockResolvedValue([
         { id: "" },
-      ]);
+      ] as any);
 
       const ctx = {
         services: {

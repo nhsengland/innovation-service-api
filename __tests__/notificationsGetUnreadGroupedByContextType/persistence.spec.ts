@@ -13,12 +13,13 @@ describe("[notificationsGetUnreadGroupedByContext] Persistence suite", () => {
   describe("getAllUnreadNotificationsCounts", () => {
     it("should find all notifications grouped by context", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(
+
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
+      const spy = jest.spyOn(
         NotificationService.prototype,
         "getAllUnreadNotificationsCounts"
-      ).and.returnValue({
+      ).mockResolvedValue({
         INNOVATION: 1,
         ACTION: 1,
         DATA_SHARING: 1,

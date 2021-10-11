@@ -47,9 +47,9 @@ describe("[HttpTrigger] innovatorsGetInnovation Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
-      spyOn(connection, "setupSQLConnection").and.throwError(
+      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({ oid: ':oid' });
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
+      jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
 
@@ -62,15 +62,15 @@ describe("[HttpTrigger] innovatorsGetInnovation Suite", () => {
     });
 
     it("Should return 200 when Innovations and sections are found", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
-      spyOn(authentication, "decodeToken").and.returnValue({
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
+      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
         oid: "test_innovator_id",
       });
-      spyOn(
+      jest.spyOn(
         persistence,
         "findAllInnovationSectionsMetadata"
-      ).and.returnValue([{ innovation: "test_innovator_id" }]);
+      ).mockResolvedValue([{ innovation: "test_innovator_id" }] as any);
 
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(200);
@@ -85,14 +85,14 @@ describe("[HttpTrigger] innovatorsGetInnovation Suite", () => {
         },
       };
 
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(services);
-      spyOn(authentication, "decodeToken").and.returnValue({
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(services as any);
+      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
         oid: dummy.innovatorId,
       });
-      spyOn(persistence, "findAllInnovationSectionsMetadata").and.returnValue([
+      jest.spyOn(persistence, "findAllInnovationSectionsMetadata").mockResolvedValue([
         { id: dummy.innovationId },
-      ]);
+      ] as any);
 
       const { res } = await mockedRequestFactory({
         headers: { authorization: ":access_token" },
@@ -101,15 +101,15 @@ describe("[HttpTrigger] innovatorsGetInnovation Suite", () => {
     });
 
     it("Should throw error when oid is different from innovatorId", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
-      spyOn(authentication, "decodeToken").and.returnValue({
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
+      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
         oid: "test",
       });
-      spyOn(
+      jest.spyOn(
         persistence,
         "findAllInnovationSectionsMetadata"
-      ).and.returnValue([{ id: "innovation_id" }]);
+      ).mockResolvedValue([{ id: "innovation_id" }] as any);
 
       const { res } = await mockedRequestFactory({
         headers: { authorization: ":access_token" },
@@ -118,12 +118,12 @@ describe("[HttpTrigger] innovatorsGetInnovation Suite", () => {
     });
 
     it("Should handle error persistence return error", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
-      spyOn(authentication, "decodeToken").and.returnValue({
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
+      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
         oid: dummy.innovatorId,
       });
-      spyOn(persistence, "findAllInnovationSectionsMetadata").and.throwError(
+      jest.spyOn(persistence, "findAllInnovationSectionsMetadata").mockRejectedValue(
         "Error."
       );
 

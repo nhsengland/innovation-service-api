@@ -16,12 +16,12 @@ describe("[innovatorsUpdateInnovationEvidence] Persistence suite", () => {
   describe("updateInnovationEvidence", () => {
     it("should update an innovation evidence", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
+      const spy = jest.spyOn(
         InnovationEvidenceService.prototype,
         "update"
-      ).and.returnValue([{ id: "" }]);
+      ).mockResolvedValue([{ id: "" }] as any);
 
       const ctx = {
         services: {

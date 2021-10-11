@@ -69,8 +69,8 @@ describe("Advanced filter suite", () => {
   });
 
   it("Should find records when user is of type Accessor and all matching arguments", async () => {
-    spyOn(notificationService, "sendEmail");
-    spyOn(notificationService, "create");
+    jest.spyOn(notificationService, "sendEmail");
+    jest.spyOn(notificationService, "create");
 
     const innovation = {
       countryName: "England",
@@ -97,8 +97,8 @@ describe("Advanced filter suite", () => {
   });
 
   it("Should not find records with inexistent category", async () => {
-    spyOn(notificationService, "sendEmail");
-    spyOn(notificationService, "create");
+    jest.spyOn(notificationService, "sendEmail");
+    jest.spyOn(notificationService, "create");
 
     const innovation = {
       countryName: "Portugal",
@@ -125,8 +125,8 @@ describe("Advanced filter suite", () => {
   });
 
   it("Should find records with other locations (based outside uk)", async () => {
-    spyOn(notificationService, "sendEmail");
-    spyOn(notificationService, "create");
+    jest.spyOn(notificationService, "sendEmail");
+    jest.spyOn(notificationService, "create");
 
     const innovation = {
       countryName: "Portugal",
@@ -153,8 +153,8 @@ describe("Advanced filter suite", () => {
   });
 
   it("Should find records with other locations (based outside uk) or England", async () => {
-    spyOn(notificationService, "sendEmail");
-    spyOn(notificationService, "create");
+    jest.spyOn(notificationService, "sendEmail");
+    jest.spyOn(notificationService, "create");
 
     const innovation = {
       countryName: "Portugal",
@@ -181,8 +181,8 @@ describe("Advanced filter suite", () => {
   });
 
   it("Should throw error when request user does not have an org", async () => {
-    spyOn(notificationService, "sendEmail");
-    spyOn(notificationService, "create");
+    jest.spyOn(notificationService, "sendEmail");
+    jest.spyOn(notificationService, "create");
 
     const innovation = {
       countryName: "England",
@@ -217,8 +217,8 @@ describe("Advanced filter suite", () => {
   });
 
   it("Should throw error when request user does not have an accessor role", async () => {
-    spyOn(notificationService, "sendEmail");
-    spyOn(notificationService, "create");
+    jest.spyOn(notificationService, "sendEmail");
+    jest.spyOn(notificationService, "create");
 
     const innovation = {
       countryName: "England",

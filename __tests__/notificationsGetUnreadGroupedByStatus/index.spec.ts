@@ -45,8 +45,8 @@ describe("[HttpTrigger] notificationsGetUnreadGroupedByStatus Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
-      spyOn(connection, "setupSQLConnection").and.throwError(
+      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({oid: ':oid'});
+      jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
 
@@ -60,24 +60,24 @@ describe("[HttpTrigger] notificationsGetUnreadGroupedByStatus Suite", () => {
 
     it("Should return 422 when scope querystring is missing", async () => {
 
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
+      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({oid: ':oid'});
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
 
 
-      spyOn(persistence, "getNotificationsGroupedByStatus").and.returnValue({});
+      jest.spyOn(persistence, "getNotificationsGroupedByStatus").mockResolvedValue({} as any);
 
       const { res } = await mockedRequestFactory({ });
       expect(res.status).toBe(422);
     });
     it("Should return 200 and notifications object with SUPPORT_STATUS scope", async () => {
 
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
+      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({oid: ':oid'});
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
 
 
-      spyOn(persistence, "getNotificationsGroupedByStatus").and.returnValue({ ENGAGING: 1, COMPLETE: 1});
+      jest.spyOn(persistence, "getNotificationsGroupedByStatus").mockResolvedValue({ ENGAGING: 1, COMPLETE: 1});
 
       const { res } = await mockedRequestFactory({query: {scope: 'SUPPORT_STATUS' } });
       expect(res.status).toBe(200);
@@ -86,12 +86,12 @@ describe("[HttpTrigger] notificationsGetUnreadGroupedByStatus Suite", () => {
 
     it("Should return 200 and notifications object with INNOVATION_STATUS scope", async () => {
 
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
+      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({oid: ':oid'});
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
 
 
-      spyOn(persistence, "getNotificationsGroupedByStatus").and.returnValue({ UNASSIGNED: 1, IN_PROGRESS: 1, NEED_ASSESSMENT: 5});
+      jest.spyOn(persistence, "getNotificationsGroupedByStatus").mockResolvedValue({ UNASSIGNED: 1, IN_PROGRESS: 1, NEED_ASSESSMENT: 5});
 
       const { res } = await mockedRequestFactory({query: {scope: 'INNOVATION_STATUS' } });
       expect(res.status).toBe(200);
@@ -100,12 +100,12 @@ describe("[HttpTrigger] notificationsGetUnreadGroupedByStatus Suite", () => {
 
     it("Should return 422 when scope is not SUPPORT_STATUS or INNOVATION_STATUS", async () => {
 
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
+      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({oid: ':oid'});
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
 
 
-      spyOn(persistence, "getNotificationsGroupedByStatus").and.returnValue({ });
+      jest.spyOn(persistence, "getNotificationsGroupedByStatus").mockResolvedValue({ });
 
       const { res } = await mockedRequestFactory({query: {scope: 'some_random_scope' } });
       expect(res.status).toBe(422);

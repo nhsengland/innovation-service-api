@@ -41,8 +41,8 @@ describe("[HttpTrigger] adminsCreateUsers Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, "decodeToken").and.returnValue({ oid: ":oid" });
-      spyOn(connection, "setupSQLConnection").and.throwError(
+      jest.spyOn(authentication, "decodeToken").mockResolvedValue({ oid: ":oid" });
+      jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
 
@@ -55,14 +55,14 @@ describe("[HttpTrigger] adminsCreateUsers Suite", () => {
     });
 
     it("Should return 200 when runs without Internal Server Errors", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
-      spyOn(validation, "ValidatePayload").and.returnValue({});
-      spyOn(authentication, "decodeToken").and.returnValue({
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(null);
+      jest.spyOn(validation, "ValidatePayload").mockResolvedValue({} as any);
+      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
         oid: dummy.adminUser,
       });
 
-      spyOn(persistence, "createUsers").and.returnValue({ userId: ":userId" });
+      jest.spyOn(persistence, "createUsers").mockResolvedValue({ userId: ":userId" } as any);
       const OLD_ENV = process.env;
       process.env.ADMIN_OID = dummy.adminUser;
 
@@ -75,10 +75,10 @@ describe("[HttpTrigger] adminsCreateUsers Suite", () => {
     });
 
     it("Should return 403 when user is not of type ADMIN", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
-      spyOn(validation, "ValidatePayload").and.returnValue({});
-      spyOn(authentication, "decodeToken").and.returnValue({
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(null);
+      jest.spyOn(validation, "ValidatePayload").mockResolvedValue({} as any);
+      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
         oid: dummy.adminUser,
       });
 

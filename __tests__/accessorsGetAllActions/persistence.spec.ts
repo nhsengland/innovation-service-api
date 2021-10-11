@@ -13,12 +13,12 @@ describe("[accessorsGetAllActions] Persistence suite", () => {
   describe("findAllActions", () => {
     it("should assess all innovation actions", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
+      const spy = jest.spyOn(
         InnovationActionService.prototype,
         "findAllByAccessor"
-      ).and.returnValue({ count: 1, data: [{ id: ":id" }] });
+      ).mockResolvedValue({ count: 1, data: [{ id: ":id" }] } as any);
 
       const ctx = {
         services: {

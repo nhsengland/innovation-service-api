@@ -13,12 +13,12 @@ describe("[accessorsGetInnovationEvidence] Persistence suite", () => {
   describe("getInnovationEvidence", () => {
     it("should get an accessors evidence", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
+      const spy = jest.spyOn(
         InnovationEvidenceService.prototype,
         "find"
-      ).and.returnValue([{ id: "" }]);
+      ).mockResolvedValue([{ id: "" }] as any);
 
       const ctx = {
         services: {
@@ -41,12 +41,12 @@ describe("[accessorsGetInnovationEvidence] Persistence suite", () => {
     });
     it("should get an accessors innovation", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
+      const spy = jest.spyOn(
         InnovationService.prototype,
         "findInnovation"
-      ).and.returnValue([{ id: "" }]);
+      ).mockResolvedValue([{ id: "" }] as any);
 
       const ctx = {
         services: {

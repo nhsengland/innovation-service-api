@@ -50,13 +50,10 @@ const dummy = {
 
 describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
   describe("Function Handler", () => {
-    afterEach(() => {
-      jest.resetAllMocks();
-    });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
-      spyOn(connection, "setupSQLConnection").and.throwError(
+      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({ oid: ':oid' });
+      jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
 
@@ -69,32 +66,33 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
     });
 
     it("fails on missing payload", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
-      spyOn(mongoose, "connect").and.returnValue(null);
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
+      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({ oid: ':oid' });
+      jest.spyOn(mongoose, "connect").mockResolvedValue(null);
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(null);
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(422);
     });
 
     it("fails on missing authorization header", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
-      spyOn(mongoose, "connect").and.returnValue(null);
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
-      spyOn(Validation, "ValidatePayload").and.returnValue({});
+      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({ oid: ':oid' });
+      jest.spyOn(mongoose, "connect").mockResolvedValue(null);
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(null);
+      jest.spyOn(Validation, "ValidatePayload").mockResolvedValue({} as any);
 
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(422);
     });
 
     it("Successfuly validates payload and headers", async () => {
-      spyOn(mongoose, "connect").and.returnValue(null);
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
-      spyOn(persistence, "createFirstTimeSignIn").and.returnValue({});
-      spyOn(persistence, "updateB2CUser").and.returnValue({});
-      spyOn(persistence, "getSurvey").and.returnValue({ answers: new Map() });
+      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({ oid: ':oid' });
+      jest.spyOn(mongoose, "connect").mockResolvedValue(null);
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(null);
+      jest.spyOn(persistence, "createFirstTimeSignIn").mockResolvedValue({} as any);
+      jest.spyOn(persistence, "updateB2CUser").mockResolvedValue({} as any);
+      jest.spyOn(persistence, "getSurvey").mockResolvedValue({ answers: new Map() });
       const data = {
         payload: dummy.validPayload,
         headers: {
@@ -107,13 +105,14 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
     });
 
     it("Should return status 400 when surveyId is not present in the JWT", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
-      spyOn(mongoose, "connect").and.returnValue(null);
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
-      spyOn(persistence, "createFirstTimeSignIn").and.returnValue({});
-      spyOn(persistence, "updateB2CUser").and.throwError(null);
-      spyOn(persistence, "getSurvey").and.returnValue({ answers: new Map() });
+      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({ oid: ':oid' });
+      jest.spyOn(mongoose, "connect").mockResolvedValue(null);
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(null);
+      jest.spyOn(persistence, "createFirstTimeSignIn").mockResolvedValue({} as any);
+      jest.spyOn(persistence, "updateB2CUser").mockRejectedValue(null);
+      jest.spyOn(persistence, "getSurvey").mockResolvedValue({ answers: new Map() });
+
 
       const data = {
         payload: dummy.validPayload,
@@ -127,12 +126,13 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
     });
 
     it("Should return status 500 when updateDisplayName fails", async () => {
-      spyOn(mongoose, "connect").and.returnValue(null);
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
-      spyOn(persistence, "createFirstTimeSignIn").and.returnValue({});
-      spyOn(persistence, "updateB2CUser").and.throwError(null);
-      spyOn(persistence, "getSurvey").and.returnValue({ answers: new Map() });
+      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({ oid: ':oid' });
+      jest.spyOn(mongoose, "connect").mockResolvedValue(null);
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(null);
+      jest.spyOn(persistence, "createFirstTimeSignIn").mockResolvedValue({} as any);
+      jest.spyOn(persistence, "updateB2CUser").mockRejectedValue(null);
+      jest.spyOn(persistence, "getSurvey").mockResolvedValue({ answers: new Map() });
 
       const data = {
         payload: dummy.validPayload,
@@ -146,12 +146,13 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
     });
 
     it("Should return status 500 when createInnovator fails", async () => {
-      spyOn(mongoose, "connect").and.returnValue(null);
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
-      spyOn(persistence, "createFirstTimeSignIn").and.throwError(null);
-      spyOn(persistence, "updateB2CUser").and.returnValue(null);
-      spyOn(persistence, "getSurvey").and.returnValue({ answers: new Map() });
+      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({ oid: ':oid' });
+      jest.spyOn(mongoose, "connect").mockResolvedValue(null);
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(null);
+      jest.spyOn(persistence, "createFirstTimeSignIn").mockRejectedValue(null);
+      jest.spyOn(persistence, "updateB2CUser").mockResolvedValue(null);
+      jest.spyOn(persistence, "getSurvey").mockResolvedValue({ answers: new Map() });
 
       const data = {
         payload: dummy.validPayload,

@@ -114,8 +114,8 @@ describe("Innovation Action Suite", () => {
       {}
     );
 
-    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
-    spyOn(helpers, "getUserFromB2C").and.returnValue({
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Q Accessor A",
       identities: [
         {
@@ -124,31 +124,31 @@ describe("Innovation Action Suite", () => {
         },
       ],
     });
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: accessorUser.id, displayName: ":ACCESSOR" },
       { id: qualAccessorUser.id, displayName: ":QUALIFYING_ACCESSOR" },
     ]);
 
-    spyOn(engines, "emailEngines").and.returnValue([
-      {
-        key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
-        handler: async function () {
-          return [];
-        },
-      },
-      {
-        key: EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
-        handler: async function () {
-          return [];
-        },
-      },
-      {
-        key: EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
-        handler: async function () {
-          return [];
-        },
-      },
-    ]);
+    // jest.spyOn(engines, "emailEngines").mockResolvedValue([
+    //   {
+    //     key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
+    //     handler: async function () {
+    //       return [];
+    //     },
+    //   },
+    //   {
+    //     key: EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
+    //     handler: async function () {
+    //       return [];
+    //     },
+    //   },
+    //   {
+    //     key: EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
+    //     handler: async function () {
+    //       return [];
+    //     },
+    //   },
+    // ]);
   });
 
   afterAll(async () => {
@@ -401,6 +401,7 @@ describe("Innovation Action Suite", () => {
   });
 
   it("should find one innovation action if Innovator by ID", async () => {
+
     const action = await actionService.create(
       qAccessorRequestUser,
       innovation.id,
@@ -409,7 +410,6 @@ describe("Innovation Action Suite", () => {
         section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
       }
     );
-
     const item = await actionService.find(
       innovatorRequestUser,
       action.id,
@@ -418,6 +418,7 @@ describe("Innovation Action Suite", () => {
 
     expect(item).toBeDefined();
     expect(item.id).toEqual(action.id);
+
   });
 
   it("should find one innovation action if Accessor in a support unit by ID", async () => {

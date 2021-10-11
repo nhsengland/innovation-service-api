@@ -54,7 +54,7 @@ describe("Notification Service Suite", () => {
     notificationService = new NotificationService(process.env.DB_TESTS_NAME);
     supportService = new InnovationSupportService(process.env.DB_TESTS_NAME);
 
-    spyOn(insights, "getInstance").and.returnValue({
+    jest.spyOn(insights, "getInstance").mockResolvedValue({
       default: {
         trackTrace: () => {
           return;
@@ -62,26 +62,26 @@ describe("Notification Service Suite", () => {
       },
     });
 
-    spyOn(engines, "emailEngines").and.returnValue([
-      {
-        key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
-        handler: async function () {
-          return [];
-        },
-      },
-      {
-        key: EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
-        handler: async function () {
-          return [];
-        },
-      },
-      {
-        key: EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
-        handler: async function () {
-          return [];
-        },
-      },
-    ]);
+    // jest.spyOn(engines, "emailEngines").mockResolvedValue([
+    //   {
+    //     key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
+    //     handler: async function () {
+    //       return [];
+    //     },
+    //   },
+    //   {
+    //     key: EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
+    //     handler: async function () {
+    //       return [];
+    //     },
+    //   },
+    //   {
+    //     key: EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
+    //     handler: async function () {
+    //       return [];
+    //     },
+    //   },
+    // ]);
   });
 
   afterAll(async () => {
@@ -981,7 +981,7 @@ describe("Notification Service Suite", () => {
   });
 
   it("should get aggregated unread Innovations count", async () => {
-    spyOn(helpers, "getUserFromB2C").and.returnValue({
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       id: ":accessor_user_id_1",
       displayName: "Accessor 1",
       identities: [

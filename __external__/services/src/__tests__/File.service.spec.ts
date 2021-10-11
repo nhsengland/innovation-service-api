@@ -62,9 +62,9 @@ describe("File Service Suite", () => {
 
     const innovationFile = await fileService.create(innovationFileObj);
 
-    spyOn(storage_blob.BlobClient.prototype, "deleteIfExists").and.returnValue({
+    jest.spyOn(storage_blob.BlobClient.prototype, "deleteIfExists").mockResolvedValue({
       succeeded: true,
-    });
+    } as any);
 
     const result = await fileService.deleteFile(innovationFile);
 

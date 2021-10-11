@@ -1,6 +1,6 @@
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import * as handlers from "./handlers";
-export const emailEngines = () => [
+export const emailEngines = (): any[] => [
   {
     key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
     handler: handlers.accessorsActionToReviewHandler,

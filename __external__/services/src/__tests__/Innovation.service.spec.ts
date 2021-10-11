@@ -124,26 +124,26 @@ describe("Innovator Service Suite", () => {
       organisationUnitAccessorUser
     );
 
-    spyOn(engines, "emailEngines").and.returnValue([
-      {
-        key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
-        handler: async function () {
-          return [];
-        },
-      },
-      {
-        key: EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
-        handler: async function () {
-          return [];
-        },
-      },
-      {
-        key: EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
-        handler: async function () {
-          return [];
-        },
-      },
-    ]);
+    // jest.spyOn(engines, "emailEngines").mockResolvedValue([
+    //   {
+    //     key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
+    //     handler: async function () {
+    //       return [];
+    //     },
+    //   },
+    //   {
+    //     key: EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
+    //     handler: async function () {
+    //       return [];
+    //     },
+    //   },
+    //   {
+    //     key: EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
+    //     handler: async function () {
+    //       return [];
+    //     },
+    //   },
+    // ]);
   });
 
   afterAll(async () => {
@@ -186,11 +186,11 @@ describe("Innovator Service Suite", () => {
     });
     const innovation = await fixtures.saveInnovation(innovationObj);
 
-    spyOn(NotificationService.prototype, "create").and.throwError("error");
-    spyOn(NotificationService.prototype, "sendEmail").and.throwError("error");
-    spyOn(innovationService, "hasIncompleteSections").and.returnValue(false);
+    jest.spyOn(NotificationService.prototype, "create").mockRejectedValue("error");
+    jest.spyOn(NotificationService.prototype, "sendEmail").mockRejectedValue("error");
+    jest.spyOn(innovationService, "hasIncompleteSections").mockResolvedValue(false);
 
-    const spy = spyOn(LoggerService.prototype, "error");
+    const spy = jest.spyOn(LoggerService.prototype, "error");
 
     const actual = await innovationService.submitInnovation(
       innovatorRequestUser,
@@ -341,9 +341,9 @@ describe("Innovator Service Suite", () => {
       ],
     };
 
-    spyOn(notificationService, "sendEmail");
+    jest.spyOn(notificationService, "sendEmail");
 
-    spyOn(notificationService, "create");
+    jest.spyOn(notificationService, "create");
 
     await assessmentService.update(
       assessmentRequestUser,
@@ -366,11 +366,11 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should find all innovations by q. accessor when findAllByAccessorAndSupportStatus() with status ENGAGING and assignedToMe", async () => {
-    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
-    spyOn(helpers, "getUserFromB2C").and.returnValue({
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Q Accessor A",
     });
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
       { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
     ]);
@@ -406,11 +406,11 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should find all innovations by accessor when findAllByAccessorAndSupportStatus() without assignedToMe", async () => {
-    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
-    spyOn(helpers, "getUserFromB2C").and.returnValue({
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Q Accessor A",
     });
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
       { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
     ]);
@@ -446,11 +446,11 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should find all innovations by accessor when findAllByAccessorAndSupportStatus() with assignedToMe", async () => {
-    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
-    spyOn(helpers, "getUserFromB2C").and.returnValue({
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Q Accessor A",
     });
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
       { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
     ]);
@@ -604,8 +604,8 @@ describe("Innovator Service Suite", () => {
       })
     );
 
-    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
-    spyOn(helpers, "getUserFromB2C").and.returnValue({
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: ":display_name",
       identities: [
         {
@@ -615,10 +615,10 @@ describe("Innovator Service Suite", () => {
       ],
       mobilePhone: "+351960000000",
     });
-    spyOn(userService, "getProfile").and.returnValue({
+    jest.spyOn(userService, "getProfile").mockResolvedValue({
       id: fakeInnovations[0].id,
       displayName: ":displayName",
-    });
+    } as any);
 
     const result = await innovationService.getAccessorInnovationSummary(
       qAccessorRequestUser,
@@ -636,8 +636,8 @@ describe("Innovator Service Suite", () => {
       })
     );
 
-    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
-    spyOn(helpers, "getUserFromB2C").and.returnValue({
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: ":display_name",
       identities: [
         {
@@ -648,7 +648,7 @@ describe("Innovator Service Suite", () => {
       mobilePhone: "+351960000000",
     });
 
-    spyOn(userService, "getProfile").and.returnValue({
+    jest.spyOn(userService, "getProfile").mockResolvedValue({
       id: fakeInnovations[0].id,
       displayName: ":displayName",
       type: null,
@@ -661,7 +661,7 @@ describe("Innovator Service Suite", () => {
       ],
       email: "test_user@example.com",
       phone: "+351960000000",
-    });
+    } as any);
 
     const result = await innovationService.getAssessmentInnovationSummary(
       assessmentRequestUser,
@@ -678,8 +678,8 @@ describe("Innovator Service Suite", () => {
       })
     );
 
-    spyOn(helpers, "authenticateWitGraphAPI").and.stub();
-    spyOn(helpers, "getUsersFromB2C").and.returnValues(
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue(
       innovations.map((inno) => ({
         id: inno.assessments.map((a) => a.assignTo).join(),
         displayName: "assessement_user_name",
@@ -712,7 +712,7 @@ describe("Innovator Service Suite", () => {
     });
     const innovation = await fixtures.saveInnovation(innovationObj);
 
-    spyOn(innovationService, "hasIncompleteSections").and.returnValue(false);
+    jest.spyOn(innovationService, "hasIncompleteSections").mockResolvedValue(false);
     await innovationService.submitInnovation(
       innovatorRequestUser,
       innovation.id
@@ -729,7 +729,7 @@ describe("Innovator Service Suite", () => {
 
   it("should throw an error when submitInnovation() without id", async () => {
     let err;
-    spyOn(innovationService, "hasIncompleteSections").and.returnValue(false);
+    jest.spyOn(innovationService, "hasIncompleteSections").mockResolvedValue(false);
     try {
       await innovationService.submitInnovation(undefined, "id");
     } catch (error) {
@@ -741,7 +741,7 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should throw an error when submitInnovation() with innovation not found", async () => {
-    spyOn(innovationService, "hasIncompleteSections").and.returnValue(false);
+    jest.spyOn(innovationService, "hasIncompleteSections").mockResolvedValue(false);
     let err;
     try {
       await innovationService.submitInnovation(
@@ -757,7 +757,7 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should throw an error when submitInnovation() with incomplete sections", async () => {
-    spyOn(innovationService, "hasIncompleteSections").and.returnValue(true);
+    jest.spyOn(innovationService, "hasIncompleteSections").mockResolvedValue(true as any);
     const innovationObj = fixtures.generateInnovation({
       owner: { id: innovatorRequestUser.id },
       surveyId: "abc",
@@ -785,8 +785,8 @@ describe("Innovator Service Suite", () => {
       fixtures.generateInnovation({ owner: innovator })
     );
 
-    spyOn(helpers, "authenticateWitGraphAPI").and.stub();
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([]);
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([]);
 
     let result: InnovationListModel;
     try {
@@ -813,8 +813,8 @@ describe("Innovator Service Suite", () => {
       fixtures.generateInnovation({ owner: innovator })
     );
 
-    spyOn(helpers, "authenticateWitGraphAPI").and.stub();
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([]);
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([]);
 
     let result: InnovationListModel;
     try {
@@ -896,7 +896,7 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should update the innovation organisation shares", async () => {
-    spyOn(helpers, "getUsersFromB2C").and.returnValue([
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       {
         id: ":accessor_user_id_1",
         displayName: "Accessor 1",

@@ -71,7 +71,7 @@ describe("Innovation Section Service Suite", () => {
   let innovatorRequestUser: RequestUser;
 
   beforeAll(async () => {
-    // await setupTestsConnection();
+     //await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -85,26 +85,6 @@ describe("Innovation Section Service Suite", () => {
 
     innovatorRequestUser = fixtures.getRequestUser(innovatorUser);
 
-    spyOn(engines, "emailEngines").and.returnValue([
-      {
-        key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
-        handler: async function () {
-          return [];
-        },
-      },
-      {
-        key: EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
-        handler: async function () {
-          return [];
-        },
-      },
-      {
-        key: EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
-        handler: async function () {
-          return [];
-        },
-      },
-    ]);
   });
 
   afterAll(async () => {
@@ -113,7 +93,7 @@ describe("Innovation Section Service Suite", () => {
       .delete();
 
     await query.from(User).execute();
-    // closeTestsConnection();
+     //closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -709,7 +689,8 @@ describe("Innovation Section Service Suite", () => {
   });
 
   it("should submmit sections with correct properties with actions", async () => {
-    spyOn(helpers, "getUserFromB2C").and.returnValue({
+    jest.spyOn(helpers, "authenticateWitGraphAPI").getMockImplementation();
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Q Accessor A",
       identities: [
         {
@@ -807,7 +788,8 @@ describe("Innovation Section Service Suite", () => {
   });
 
   it("should submmit sections with correct properties with actions even when notifications fail", async () => {
-    spyOn(helpers, "getUserFromB2C").and.returnValue({
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Q Accessor A",
       identities: [
         {
@@ -817,9 +799,10 @@ describe("Innovation Section Service Suite", () => {
       ],
     });
 
-    spyOn(NotificationService.prototype, "create").and.throwError("error");
+    jest.spyOn(NotificationService.prototype, "create").mockRejectedValue("error in notification create");
+    jest.spyOn(NotificationService.prototype, "sendEmail").mockImplementation();
 
-    const spy = spyOn(LoggerService.prototype, "error");
+    const spy = jest.spyOn(LoggerService.prototype, "error");
 
     const sectionObj = InnovationSection.new({
       section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,

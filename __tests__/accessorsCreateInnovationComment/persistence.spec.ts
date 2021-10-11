@@ -13,11 +13,11 @@ describe("[accessorsCreateInnovationComment] Persistence suite", () => {
   describe("createInnovationComment", () => {
     it("should create an innovation comment", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(CommentService.prototype, "create").and.returnValue([
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
+      const spy = jest.spyOn(CommentService.prototype, "create").mockResolvedValue([
         { id: "" },
-      ]);
+      ] as any);
 
       const ctx = {
         services: {

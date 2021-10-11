@@ -48,8 +48,8 @@ describe("[HttpTrigger] assessmentsCreateInnovationAssessment Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, "decodeToken").and.returnValue({ oid: ":oid" });
-      spyOn(connection, "setupSQLConnection").and.throwError(
+      jest.spyOn(authentication, "decodeToken").mockResolvedValue({ oid: ":oid" });
+      jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
 
@@ -62,13 +62,13 @@ describe("[HttpTrigger] assessmentsCreateInnovationAssessment Suite", () => {
     });
 
     it("Should return 201 when Innovation Assessment is created", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
-      spyOn(authentication, "decodeToken").and.returnValue({
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
+      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
         oid: dummy.assessmentUserId,
       });
 
-      spyOn(persistence, "createInnovationAssessment").and.returnValue({ id: "assessment_id" });
+      jest.spyOn(persistence, "createInnovationAssessment").mockResolvedValue({ id: "assessment_id" } as any);
 
       const { res } = await mockedRequestFactory({
         headers: { authorization: ":access_token" },
@@ -78,7 +78,7 @@ describe("[HttpTrigger] assessmentsCreateInnovationAssessment Suite", () => {
     });
 
     it("Should return 403 when user is not of type ASSESSMENT", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       const modifiedServices = {
         ...dummy.services,
         UserService: {
@@ -87,10 +87,10 @@ describe("[HttpTrigger] assessmentsCreateInnovationAssessment Suite", () => {
           }),
         },
       };
-      spyOn(service_loader, "loadAllServices").and.returnValue(
-        modifiedServices
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(
+        modifiedServices as any
       );
-      spyOn(authentication, "decodeToken").and.returnValue({
+      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
         oid: dummy.assessmentUserId,
       });
 
@@ -102,9 +102,9 @@ describe("[HttpTrigger] assessmentsCreateInnovationAssessment Suite", () => {
     });
 
     it("Should throw error when oid is different from userId", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
-      spyOn(authentication, "decodeToken").and.returnValue({
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
+      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
         oid: "test",
       });
 
@@ -115,12 +115,12 @@ describe("[HttpTrigger] assessmentsCreateInnovationAssessment Suite", () => {
     });
 
     it("Should handle error persistence return error", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
-      spyOn(authentication, "decodeToken").and.returnValue({
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
+      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
         oid: dummy.assessmentUserId,
       });
-      spyOn(persistence, "createInnovationAssessment").and.throwError(
+      jest.spyOn(persistence, "createInnovationAssessment").mockRejectedValue(
         "Error."
       );
 

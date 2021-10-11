@@ -13,11 +13,11 @@ describe("[adminsUpdateUsers] Persistence suite", () => {
   describe("adminsUpdateUsers", () => {
     it("should update users", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(UserService.prototype, "updateUsers").and.returnValue([
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
+      const spy = jest.spyOn(UserService.prototype, "updateUsers").mockResolvedValue([
         { id: "" },
-      ]);
+      ] as any);
 
       const ctx = {
         services: {
