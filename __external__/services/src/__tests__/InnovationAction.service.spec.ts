@@ -599,4 +599,76 @@ describe("Innovation Action Suite", () => {
     expect(item).toBeDefined();
     expect(item.count).toEqual(1);
   });
+
+  it("should find all actions if Accessor and status is REQUESTED", async () => {
+    const action = await actionService.create(
+      qAccessorRequestUser,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+      }
+    );
+    await actionService.updateByAccessor(
+      qAccessorRequestUser,
+      action.id,
+      innovation.id,
+      {
+        status: InnovationActionStatus.REQUESTED,
+      }
+    );
+
+    await actionService.create(qAccessorRequestUser, innovation.id, {
+      description: "missing good descriptions",
+      section: InnovationSectionCatalogue.MARKET_RESEARCH,
+    });
+
+    const item = await actionService.findAllByAccessorAdvanced(
+      accessorRequestUser,
+      ["REQUESTED"],
+      ["MARKET_RESEARCH"],
+      "",
+      0,
+      10
+    );
+
+    expect(item).toBeDefined();
+    expect(item.count).toEqual(1);
+  });
+
+  it("should find all actions if Qual. Accesso and status is REQUESTED", async () => {
+    const action = await actionService.create(
+      qAccessorRequestUser,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+      }
+    );
+    await actionService.updateByAccessor(
+      qAccessorRequestUser,
+      action.id,
+      innovation.id,
+      {
+        status: InnovationActionStatus.REQUESTED,
+      }
+    );
+
+    await actionService.create(qAccessorRequestUser, innovation.id, {
+      description: "missing good descriptions",
+      section: InnovationSectionCatalogue.MARKET_RESEARCH,
+    });
+
+    const item = await actionService.findAllByAccessorAdvanced(
+      accessorRequestUser,
+      ["REQUESTED"],
+      ["MARKET_RESEARCH"],
+      "",
+      0,
+      10
+    );
+
+    expect(item).toBeDefined();
+    expect(item.count).toEqual(1);
+  });
 });
