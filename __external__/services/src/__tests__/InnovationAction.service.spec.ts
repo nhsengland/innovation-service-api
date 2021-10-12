@@ -600,13 +600,13 @@ describe("Innovation Action Suite", () => {
     expect(item.count).toEqual(1);
   });
 
-  it("should find all actions if Accessor and status is REQUESTED", async () => {
+  it("should find all actions if Accessor and status is COMPLETED", async () => {
     const action = await actionService.create(
       qAccessorRequestUser,
       innovation.id,
       {
         description: "missing good descriptions",
-        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+        section: InnovationSectionCatalogue.MARKET_RESEARCH,
       }
     );
     await actionService.updateByAccessor(
@@ -614,18 +614,12 @@ describe("Innovation Action Suite", () => {
       action.id,
       innovation.id,
       {
-        status: InnovationActionStatus.REQUESTED,
+        status: InnovationActionStatus.COMPLETED,
       }
     );
-
-    await actionService.create(qAccessorRequestUser, innovation.id, {
-      description: "missing good descriptions",
-      section: InnovationSectionCatalogue.MARKET_RESEARCH,
-    });
-
     const item = await actionService.findAllByAccessorAdvanced(
       accessorRequestUser,
-      ["REQUESTED"],
+      ["COMPLETED"],
       ["MARKET_RESEARCH"],
       "",
       0,
@@ -636,7 +630,7 @@ describe("Innovation Action Suite", () => {
     expect(item.count).toEqual(1);
   });
 
-  it("should find all actions if Qual. Accesso and status is REQUESTED", async () => {
+  it("should find all actions if Qual. Accesso and status is IN_REVIEW", async () => {
     const action = await actionService.create(
       qAccessorRequestUser,
       innovation.id,
@@ -645,24 +639,21 @@ describe("Innovation Action Suite", () => {
         section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
       }
     );
+    const actionUpdObj = {
+      status: InnovationActionStatus.IN_REVIEW,
+      comment: "new comment",
+    };
     await actionService.updateByAccessor(
       qAccessorRequestUser,
       action.id,
       innovation.id,
-      {
-        status: InnovationActionStatus.REQUESTED,
-      }
+      actionUpdObj
     );
-
-    await actionService.create(qAccessorRequestUser, innovation.id, {
-      description: "missing good descriptions",
-      section: InnovationSectionCatalogue.MARKET_RESEARCH,
-    });
 
     const item = await actionService.findAllByAccessorAdvanced(
       accessorRequestUser,
-      ["REQUESTED"],
-      ["MARKET_RESEARCH"],
+      ["IN_REVIEW"],
+      ["INNOVATION_DESCRIPTION"],
       "",
       0,
       10

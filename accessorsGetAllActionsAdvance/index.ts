@@ -27,10 +27,10 @@ class AccessorsGetAllActionsAdvance {
     req: HttpRequest
   ): Promise<void> {
     const query: any = req.query;
-    const innovationstatus =
-      query.innovationstatus?.split(",").filter((o) => o !== "") || [];
-    const innovationsection =
-      query.innovationsection?.split(",").filter((l) => l !== "") || [];
+    const innovationStatus =
+      query.innovationStatus?.split(",").filter((o) => o !== "") || [];
+    const innovationSection =
+      query.innovationSection?.split(",").filter((l) => l !== "") || [];
     const name =
       query.name && query.name !== "" && query.name.length > 0
         ? query.name
@@ -46,8 +46,8 @@ class AccessorsGetAllActionsAdvance {
     try {
       result = await persistence.findAllByAccessorAdavance(
         context,
-        innovationstatus,
-        innovationsection,
+        innovationStatus,
+        innovationSection,
         name,
         skip,
         take,

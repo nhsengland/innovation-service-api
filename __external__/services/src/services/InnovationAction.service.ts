@@ -583,7 +583,6 @@ export class InnovationActionService {
       throw new InvalidUserRoleError("Invalid user. User has an invalid role.");
     }
 
-
     const query = this.actionRepo
       .createQueryBuilder("innovationAction")
       .innerJoinAndSelect(
@@ -616,32 +615,24 @@ export class InnovationActionService {
           organisationUnitId: organisationUnit.id,
         });
     }
-
     // handle the filters
-
     if (innovationStatus && innovationStatus.length > 0) {
-
       query.andWhere("innovationAction.status IN (:...statuses)", {
         statuses: innovationStatus
       });
     }
 
     if (innovationSection && innovationSection.length > 0) {
-
       query.andWhere("innovationSection.section IN (:...sections)", {
         sections: innovationSection
       });
-
     }
-
-    if (name && name.length > 0) {
-      query.andWhere("innovationSection.innovation LIKE :name", { name: `%${name.trim().toLocaleLowerCase()}%` });
+    
+    if (name && name.trim().length > 0) {
+      query.andWhere("innovationSection.innovation like :name", {
+        name: `%${name.trim().toLocaleLowerCase()}%`,
+      });
     }
-
-
-
-
-
     // pagination
     query.take(take)
     query.skip(skip);
@@ -660,7 +651,6 @@ export class InnovationActionService {
     } else {
       query.orderBy("innovationAction.createdAt", "DESC");
     }
-
 
     const [innovationActions, count] = await query.getManyAndCount();
 
@@ -687,7 +677,7 @@ export class InnovationActionService {
         notifications: {
           count: unread?.length || 0,
         },
-        open: [InnovationActionStatus.COMPLETED, InnovationActionStatus.DECLINED].includes(ia.status) ? false : true,
+        isOpen: [InnovationActionStatus.COMPLETED, InnovationActionStatus.DECLINED].includes(ia.status),
       };
     });
 

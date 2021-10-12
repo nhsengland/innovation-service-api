@@ -2,8 +2,8 @@ import { CustomContext } from "../../utils/types";
 
 export const findAllByAccessorAdavance = async (
   ctx: CustomContext,   
-  innovationstatus: string[],
-  innovationsection: string[],
+  innovationStatus: string[],
+  innovationSection: string[],
   name: string,
   skip: number,
   take: number,
@@ -11,8 +11,8 @@ export const findAllByAccessorAdavance = async (
 ) => {
   const result = await ctx.services.InnovationActionService.findAllByAccessorAdvanced(
     ctx.auth.requestUser,
-    innovationstatus,
-    innovationsection,
+    innovationStatus,
+    innovationSection,
     name,
     skip,
     take,   
