@@ -1,0 +1,13 @@
+description: Notifications Update Preferences Payload
+required: true
+content:
+  application/json:
+    schema:
+      type: array
+      items:
+        type: object
+        properties:
+          notificationType:
+            type: string
+          isSubscribed:
+            type: string

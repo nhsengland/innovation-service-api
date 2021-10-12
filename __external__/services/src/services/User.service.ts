@@ -123,7 +123,8 @@ export class UserService {
       organisations: [],
       email,
       phone: user.mobilePhone,
-      passwordResetOn: user[`extension_${process.env.AD_EXTENSION_ID}_passwordResetOn`]
+      passwordResetOn:
+        user[`extension_${process.env.AD_EXTENSION_ID}_passwordResetOn`],
     };
 
     try {
