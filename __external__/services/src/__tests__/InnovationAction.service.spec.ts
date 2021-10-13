@@ -599,4 +599,67 @@ describe("Innovation Action Suite", () => {
     expect(item).toBeDefined();
     expect(item.count).toEqual(1);
   });
+
+  it("should find all actions if Accessor and status is COMPLETED", async () => {
+    const action = await actionService.create(
+      qAccessorRequestUser,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.MARKET_RESEARCH,
+      }
+    );
+    await actionService.updateByAccessor(
+      qAccessorRequestUser,
+      action.id,
+      innovation.id,
+      {
+        status: InnovationActionStatus.COMPLETED,
+      }
+    );
+    const item = await actionService.findAllByAccessorAdvanced(
+      accessorRequestUser,
+      ["COMPLETED"],
+      ["MARKET_RESEARCH"],
+      "",
+      0,
+      10
+    );
+
+    expect(item).toBeDefined();
+    expect(item.count).toEqual(1);
+  });
+
+  it("should find all actions if Qual. Accesso and status is IN_REVIEW", async () => {
+    const action = await actionService.create(
+      qAccessorRequestUser,
+      innovation.id,
+      {
+        description: "missing good descriptions",
+        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+      }
+    );
+    const actionUpdObj = {
+      status: InnovationActionStatus.IN_REVIEW,
+      comment: "new comment",
+    };
+    await actionService.updateByAccessor(
+      qAccessorRequestUser,
+      action.id,
+      innovation.id,
+      actionUpdObj
+    );
+
+    const item = await actionService.findAllByAccessorAdvanced(
+      accessorRequestUser,
+      ["IN_REVIEW"],
+      ["INNOVATION_DESCRIPTION"],
+      "",
+      0,
+      10
+    );
+
+    expect(item).toBeDefined();
+    expect(item.count).toEqual(1);
+  });
 });
