@@ -124,6 +124,27 @@ describe("Innovator Service Suite", () => {
       organisationUnitAccessorUser
     );
 
+    jest.spyOn(engines, "emailEngines").mockReturnValue([
+      {
+        key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
+        handler: async function () {
+          return [];
+        },
+      },
+      {
+        key: EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
+        handler: async function () {
+          return [];
+        },
+      },
+      {
+        key: EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
+        handler: async function () {
+          return [];
+        },
+      },
+    ]);
+
   });
 
   afterAll(async () => {
