@@ -13,7 +13,8 @@ describe("[accessorsGetInnovationEvidence] Persistence suite", () => {
   describe("getInnovationEvidence", () => {
     it("should get an accessors evidence", async () => {
       // Arrange
-      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+       jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
       const spy = jest.spyOn(
         InnovationEvidenceService.prototype,
@@ -41,7 +42,8 @@ describe("[accessorsGetInnovationEvidence] Persistence suite", () => {
     });
     it("should get an accessors innovation", async () => {
       // Arrange
-      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+       jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
       const spy = jest.spyOn(
         InnovationService.prototype,

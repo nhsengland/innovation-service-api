@@ -45,7 +45,7 @@ describe("[HttpTrigger] accessorsGetInnovation Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({ oid: ':oid' });
+      jest.spyOn(authentication, 'decodeToken').mockReturnValue({ oid: ':oid' });
       jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
@@ -61,13 +61,13 @@ describe("[HttpTrigger] accessorsGetInnovation Suite", () => {
     it("Should return 200 when Innovations and sections are found", async () => {
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
-      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
+      jest.spyOn(authentication, "decodeToken").mockReturnValue({
         oid: "test_accessor_id",
       });
       jest.spyOn(
         persistence,
         "findAllInnovationSectionsMetadata"
-      ).mockResolvedValue([{ innovation: "test_accessor_id" }]);
+      ).mockResolvedValue([{ innovation: "test_accessor_id" }] as any);
 
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(200);
@@ -76,13 +76,13 @@ describe("[HttpTrigger] accessorsGetInnovation Suite", () => {
     it("Should throw error when oid is different from accessorId", async () => {
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
-      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
+      jest.spyOn(authentication, "decodeToken").mockReturnValue({
         oid: "test",
       });
       jest.spyOn(
         persistence,
         "findAllInnovationSectionsMetadata"
-      ).mockResolvedValue([{ id: "innovation_id" }]);
+      ).mockResolvedValue([{ id: "innovation_id" }] as any);
 
       const { res } = await mockedRequestFactory({
         headers: { authorization: ":access_token" },
@@ -93,7 +93,7 @@ describe("[HttpTrigger] accessorsGetInnovation Suite", () => {
     it("Should handle error persistence return error", async () => {
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
-      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
+      jest.spyOn(authentication, "decodeToken").mockReturnValue({
         oid: "test_accessor_id",
       });
       jest.spyOn(persistence, "findAllInnovationSectionsMetadata").mockRejectedValue(

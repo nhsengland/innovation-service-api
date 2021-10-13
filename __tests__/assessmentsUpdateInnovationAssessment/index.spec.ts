@@ -48,7 +48,7 @@ describe("[HttpTrigger] assessmentsUpdateInnovationAssessment Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      jest.spyOn(authentication, "decodeToken").mockResolvedValue({ oid: ":oid" });
+      jest.spyOn(authentication, "decodeToken").mockReturnValue({ oid: ":oid" });
       jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
@@ -64,7 +64,7 @@ describe("[HttpTrigger] assessmentsUpdateInnovationAssessment Suite", () => {
     it("Should return 200 when Innovation Assessment is updated", async () => {
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
-      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
+      jest.spyOn(authentication, "decodeToken").mockReturnValue({
         oid: dummy.assessmentUserId,
       });
 
@@ -90,7 +90,7 @@ describe("[HttpTrigger] assessmentsUpdateInnovationAssessment Suite", () => {
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(
         modifiedServices as any
       );
-      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
+      jest.spyOn(authentication, "decodeToken").mockReturnValue({
         oid: dummy.assessmentUserId,
       });
 
@@ -104,7 +104,7 @@ describe("[HttpTrigger] assessmentsUpdateInnovationAssessment Suite", () => {
     it("Should throw error when oid is different from userId", async () => {
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
-      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
+      jest.spyOn(authentication, "decodeToken").mockReturnValue({
         oid: "test",
       });
 
@@ -117,7 +117,7 @@ describe("[HttpTrigger] assessmentsUpdateInnovationAssessment Suite", () => {
     it("Should handle error persistence return error", async () => {
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
-      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
+      jest.spyOn(authentication, "decodeToken").mockReturnValue({
         oid: dummy.assessmentUserId,
       });
       jest.spyOn(persistence, "updateInnovationAssessment").mockRejectedValue(

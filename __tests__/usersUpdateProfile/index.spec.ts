@@ -71,8 +71,8 @@ describe("[HttpTrigger] usersUpdateProfile Test Suite", () => {
 
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(services as any);
-      jest.spyOn(validation, "ValidatePayload").mockResolvedValue({} as any);
-      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
+      jest.spyOn(validation, "ValidatePayload").mockReturnValue({} as any);
+      jest.spyOn(authentication, "decodeToken").mockReturnValue({
         oid: "test_innovator_id",
       });
       jest.spyOn(persistence, "updateProfile").mockResolvedValue([
@@ -88,7 +88,7 @@ describe("[HttpTrigger] usersUpdateProfile Test Suite", () => {
     it("Should return 200 when User Profile is found", async () => {
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
-      jest.spyOn(validation, "ValidatePayload").mockResolvedValue({} as any);
+      jest.spyOn(validation, "ValidatePayload").mockReturnValue({} as any);
       jest.spyOn(persistence, "updateProfile").mockResolvedValue({ id: ":user_oid" });
 
       jest.spyOn(decodejwt, "decodeToken").mockResolvedValue({
@@ -104,7 +104,7 @@ describe("[HttpTrigger] usersUpdateProfile Test Suite", () => {
     it("Should return 500 when User Update fails", async () => {
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
-      jest.spyOn(validation, "ValidatePayload").mockResolvedValue({} as any);
+      jest.spyOn(validation, "ValidatePayload").mockReturnValue({} as any);
       jest.spyOn(persistence, "updateProfile").mockRejectedValue("");
 
       jest.spyOn(decodejwt, "decodeToken").mockResolvedValue({

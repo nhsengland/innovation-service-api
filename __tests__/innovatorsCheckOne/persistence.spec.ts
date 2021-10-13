@@ -14,6 +14,7 @@ describe("[innovatorsCheckOne] Persistence suite", () => {
     it("should check an innovator transfers", async () => {
       // Arrange
       jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
       const spy = jest.spyOn(
         InnovationTransferService.prototype,

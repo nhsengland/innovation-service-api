@@ -41,7 +41,7 @@ describe("[HttpTrigger] adminsCreateUsers Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      jest.spyOn(authentication, "decodeToken").mockResolvedValue({ oid: ":oid" });
+      jest.spyOn(authentication, "decodeToken").mockReturnValue({ oid: ":oid" });
       jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
@@ -57,8 +57,8 @@ describe("[HttpTrigger] adminsCreateUsers Suite", () => {
     it("Should return 200 when runs without Internal Server Errors", async () => {
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(null);
-      jest.spyOn(validation, "ValidatePayload").mockResolvedValue({} as any);
-      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
+      jest.spyOn(validation, "ValidatePayload").mockReturnValue({} as any);
+      jest.spyOn(authentication, "decodeToken").mockReturnValue({
         oid: dummy.adminUser,
       });
 
@@ -77,8 +77,8 @@ describe("[HttpTrigger] adminsCreateUsers Suite", () => {
     it("Should return 403 when user is not of type ADMIN", async () => {
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(null);
-      jest.spyOn(validation, "ValidatePayload").mockResolvedValue({} as any);
-      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
+      jest.spyOn(validation, "ValidatePayload").mockReturnValue({} as any);
+      jest.spyOn(authentication, "decodeToken").mockReturnValue({
         oid: dummy.adminUser,
       });
 

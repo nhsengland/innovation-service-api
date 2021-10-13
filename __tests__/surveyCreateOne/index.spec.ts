@@ -5,7 +5,7 @@ import {
 } from "stub-azure-function-context";
 import surveyCreateOne from "../../surveyCreateOne/index";
 import * as persistence from "../../surveyCreateOne/persistence";
-import * as Validation from "../../surveyCreateOne/validation";
+import * as validation from "../../surveyCreateOne/validation";
 
 jest.mock("../../utils/logging/insights", () => ({
   start: () => { },
@@ -55,9 +55,9 @@ describe("[HttpTrigger] SurveyCreateOne Suite", () => {
 
     it("succeeds on persisting document", async () => {
       jest.spyOn(mongoose, "connect").mockResolvedValue(null);
-      jest.spyOn(Validation, "ValidatePayload").mockResolvedValue({ error: null });
-      jest.spyOn(persistence, "GetId").mockResolvedValue("aaaa-bbb-ccc" as any);
-      const spy = jest.spyOn(persistence, "Save");
+      jest.spyOn(validation, "ValidatePayload").mockReturnValue({ error: null });
+      jest.spyOn(persistence, "GetId").mockReturnValue("aaaa-bbb-ccc" as any);
+      const spy = jest.spyOn(persistence, "Save").mockImplementation();
 
       await mockedRequestFactory();
       expect(spy).toHaveBeenCalled();
@@ -65,7 +65,7 @@ describe("[HttpTrigger] SurveyCreateOne Suite", () => {
 
     it("fails on persisting document", async () => {
       jest.spyOn(mongoose, "connect").mockResolvedValue(null);
-      jest.spyOn(Validation, "ValidatePayload").mockResolvedValue({ error: null });
+      jest.spyOn(validation, "ValidatePayload").mockReturnValue({ error: null });
       jest.spyOn(persistence, "Save").mockRejectedValue(null);
 
       const { res } = await mockedRequestFactory();

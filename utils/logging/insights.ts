@@ -12,5 +12,5 @@ export type CustomProperties = {
   properties: Object;
 };
 
-export const getInstance: any = () => appInsights;
+export const getInstance = () => appInsights;
 export const getInstanceAndDefault = () => appInsights.defaultClient;

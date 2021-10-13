@@ -163,7 +163,7 @@ describe("Innovation Evidence Suite", () => {
 
     jest.spyOn(storage_blob.BlobClient.prototype, "deleteIfExists").mockResolvedValue({
       succeeded: true,
-    });
+    } as any);
 
     await evidenceService.update(
       innovatorRequestUser,

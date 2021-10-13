@@ -50,7 +50,7 @@ describe("[HttpTrigger] innovatorsCreateInnovationTransfer Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({ oid: ':oid' });
+      jest.spyOn(authentication, 'decodeToken').mockReturnValue({ oid: ':oid' });
       jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
@@ -66,8 +66,8 @@ describe("[HttpTrigger] innovatorsCreateInnovationTransfer Suite", () => {
     it("Should return 201 when Innovation Transfer is created", async () => {
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
-      jest.spyOn(validation, "ValidatePayload").mockResolvedValue({} as any);
-      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
+      jest.spyOn(validation, "ValidatePayload").mockReturnValue({} as any);
+      jest.spyOn(authentication, "decodeToken").mockReturnValue({
         oid: dummy.innovatorId,
       });
       jest.spyOn(persistence, "createInnovationTransfer").mockResolvedValue([
@@ -89,8 +89,8 @@ describe("[HttpTrigger] innovatorsCreateInnovationTransfer Suite", () => {
 
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(services as any);
-      jest.spyOn(validation, "ValidatePayload").mockResolvedValue({} as any);
-      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
+      jest.spyOn(validation, "ValidatePayload").mockReturnValue({} as any);
+      jest.spyOn(authentication, "decodeToken").mockReturnValue({
         oid: dummy.innovatorId,
       });
       jest.spyOn(persistence, "createInnovationTransfer").mockResolvedValue([
@@ -106,7 +106,7 @@ describe("[HttpTrigger] innovatorsCreateInnovationTransfer Suite", () => {
     it("Should handle error persistence return error", async () => {
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
-      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
+      jest.spyOn(authentication, "decodeToken").mockReturnValue({
         oid: dummy.innovatorId,
       });
       jest.spyOn(persistence, "createInnovationTransfer").mockRejectedValue(

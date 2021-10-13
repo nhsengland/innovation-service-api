@@ -45,7 +45,7 @@ describe("[HttpTrigger] innovatorsCheckInnovationTransfer Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({ oid: ':oid' });
+      jest.spyOn(authentication, 'decodeToken').mockReturnValue({ oid: ':oid' });
       jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );

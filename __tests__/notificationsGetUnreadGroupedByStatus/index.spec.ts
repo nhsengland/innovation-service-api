@@ -45,7 +45,7 @@ describe("[HttpTrigger] notificationsGetUnreadGroupedByStatus Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({oid: ':oid'});
+      jest.spyOn(authentication, 'decodeToken').mockReturnValue({oid: ':oid'});
       jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
@@ -60,7 +60,7 @@ describe("[HttpTrigger] notificationsGetUnreadGroupedByStatus Suite", () => {
 
     it("Should return 422 when scope querystring is missing", async () => {
 
-      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({oid: ':oid'});
+      jest.spyOn(authentication, 'decodeToken').mockReturnValue({oid: ':oid'});
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
 
@@ -72,7 +72,7 @@ describe("[HttpTrigger] notificationsGetUnreadGroupedByStatus Suite", () => {
     });
     it("Should return 200 and notifications object with SUPPORT_STATUS scope", async () => {
 
-      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({oid: ':oid'});
+      jest.spyOn(authentication, 'decodeToken').mockReturnValue({oid: ':oid'});
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
 
@@ -86,7 +86,7 @@ describe("[HttpTrigger] notificationsGetUnreadGroupedByStatus Suite", () => {
 
     it("Should return 200 and notifications object with INNOVATION_STATUS scope", async () => {
 
-      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({oid: ':oid'});
+      jest.spyOn(authentication, 'decodeToken').mockReturnValue({oid: ':oid'});
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
 
@@ -100,7 +100,7 @@ describe("[HttpTrigger] notificationsGetUnreadGroupedByStatus Suite", () => {
 
     it("Should return 422 when scope is not SUPPORT_STATUS or INNOVATION_STATUS", async () => {
 
-      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({oid: ':oid'});
+      jest.spyOn(authentication, 'decodeToken').mockReturnValue({oid: ':oid'});
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
 

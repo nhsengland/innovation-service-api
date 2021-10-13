@@ -13,7 +13,7 @@ describe("[surveyCreateOne] Persistence suite", () => {
   describe("Save", () => {
     it("should call save", async () => {
       const input = { prop: 1 };
-      const spy = jest.spyOn(Survey.prototype, "save");
+      const spy = jest.spyOn(Survey.prototype, "save").mockImplementation();
 
       await persistence.Save(input);
 
@@ -24,7 +24,7 @@ describe("[surveyCreateOne] Persistence suite", () => {
   describe("GetId", () => {
     it("should return an id", async () => {
       const survey = new Survey();
-      jest.spyOn(Survey.prototype, "get").mockResolvedValue("aaabbbcccddd");
+      jest.spyOn(Survey.prototype, "get").mockReturnValue("aaabbbcccddd");
       const result = persistence.GetId(survey);
 
       expect(result).toBe("aaabbbcccddd");

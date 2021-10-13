@@ -46,7 +46,7 @@ describe("[HttpTrigger] accessorsGetInnovationComments Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({ oid: ':oid' });
+      jest.spyOn(authentication, 'decodeToken').mockReturnValue({ oid: ':oid' });
       jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
@@ -62,7 +62,7 @@ describe("[HttpTrigger] accessorsGetInnovationComments Suite", () => {
     it("Should return 200 when Innovation Comments is found", async () => {
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
-      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
+      jest.spyOn(authentication, "decodeToken").mockReturnValue({
         oid: ":accessor_id",
       });
       jest.spyOn(persistence, "findInnovationComments").mockResolvedValue([
@@ -82,7 +82,7 @@ describe("[HttpTrigger] accessorsGetInnovationComments Suite", () => {
 
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(services as any);
-      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
+      jest.spyOn(authentication, "decodeToken").mockReturnValue({
         oid: "test_accessor_id",
       });
       jest.spyOn(persistence, "findInnovationComments").mockResolvedValue([
@@ -98,7 +98,7 @@ describe("[HttpTrigger] accessorsGetInnovationComments Suite", () => {
     it("Should throw error when oid is different from accessorId", async () => {
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
-      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
+      jest.spyOn(authentication, "decodeToken").mockReturnValue({
         oid: "test",
       });
       jest.spyOn(persistence, "findInnovationComments").mockResolvedValue([
@@ -114,7 +114,7 @@ describe("[HttpTrigger] accessorsGetInnovationComments Suite", () => {
     it("Should handle error persistence return error", async () => {
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
-      jest.spyOn(authentication, "decodeToken").mockResolvedValue({
+      jest.spyOn(authentication, "decodeToken").mockReturnValue({
         oid: ":accessor_id",
       });
       jest.spyOn(persistence, "findInnovationComments").mockRejectedValue(

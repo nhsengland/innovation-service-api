@@ -17,6 +17,7 @@ describe("[assessmentsGetInnovationSection] Persistence suite", () => {
     it("should assess if an innovation section exists", async () => {
       // Arrange
       jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
       const spy = jest.spyOn(
         InnovationSectionService.prototype,

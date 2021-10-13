@@ -13,7 +13,8 @@ describe("[accessorsCreateInnovationSupport] Persistence suite", () => {
   describe("createInnovationSupport", () => {
     it("should create an innovation support", async () => {
       // Arrange
-      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+       jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
       const spy = jest.spyOn(
         InnovationSupportService.prototype,

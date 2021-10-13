@@ -29,6 +29,7 @@ describe("[innovatorsCreateOne] Persistence suite", () => {
       };
 
       jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
       const spy = jest.spyOn(
         InnovatorService.prototype,
@@ -62,6 +63,7 @@ describe("[innovatorsCreateOne] Persistence suite", () => {
     it("should update an Innovator displayName", async () => {
       // Arrange
       jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
       const spy = jest.spyOn(UserService.prototype, "updateB2CUser").mockResolvedValue(
         null
