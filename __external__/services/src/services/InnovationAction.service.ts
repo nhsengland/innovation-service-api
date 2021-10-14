@@ -204,7 +204,7 @@ export class InnovationActionService {
     if (
       !innovationAction ||
       innovationAction.innovationSupport.organisationUnit.id !==
-      organisationUnit.id
+        organisationUnit.id
     ) {
       throw new InvalidDataError("Invalid action data.");
     }
@@ -618,23 +618,23 @@ export class InnovationActionService {
     // handle the filters
     if (innovationStatus && innovationStatus.length > 0) {
       query.andWhere("innovationAction.status IN (:...statuses)", {
-        statuses: innovationStatus
+        statuses: innovationStatus,
       });
     }
 
     if (innovationSection && innovationSection.length > 0) {
       query.andWhere("innovationSection.section IN (:...sections)", {
-        sections: innovationSection
+        sections: innovationSection,
       });
     }
-    
+
     if (name && name.trim().length > 0) {
       query.andWhere("innovationSection.innovation like :name", {
         name: `%${name.trim().toLocaleLowerCase()}%`,
       });
     }
     // pagination
-    query.take(take)
+    query.take(take);
     query.skip(skip);
 
     if (order) {
@@ -677,7 +677,10 @@ export class InnovationActionService {
         notifications: {
           count: unread?.length || 0,
         },
-        isOpen: [InnovationActionStatus.COMPLETED, InnovationActionStatus.DECLINED].includes(ia.status),
+        isOpen: [
+          InnovationActionStatus.COMPLETED,
+          InnovationActionStatus.DECLINED,
+        ].includes(ia.status),
       };
     });
 
