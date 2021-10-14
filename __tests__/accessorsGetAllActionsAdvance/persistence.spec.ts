@@ -32,7 +32,7 @@ describe("[accessorsGetAllActionsAdvance] Persistence suite", () => {
         },
       };
       // Act
-      await persistence.findAllByAccessorAdavance(
+      await persistence.findAllByAccessorAdvanced(
         ctx as CustomContext,
         [],
         [],

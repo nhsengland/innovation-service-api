@@ -64,7 +64,7 @@ describe("[HttpTrigger] accessorsGetAllActionsAdvance Suite", () => {
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: ":accessor_id",
       });
-      spyOn(persistence, "findAllByAccessorAdavance").and.returnValue([
+      spyOn(persistence, "findAllByAccessorAdvanced").and.returnValue([
         { id: ":action_id" },
       ]);
 
@@ -84,7 +84,7 @@ describe("[HttpTrigger] accessorsGetAllActionsAdvance Suite", () => {
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: "test_accessor_id",
       });
-      spyOn(persistence, "findAllByAccessorAdavance").and.returnValue([
+      spyOn(persistence, "findAllByAccessorAdvanced").and.returnValue([
         { id: ":action_id" },
       ]);
 
@@ -100,7 +100,7 @@ describe("[HttpTrigger] accessorsGetAllActionsAdvance Suite", () => {
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: "test",
       });
-      spyOn(persistence, "findAllByAccessorAdavance").and.returnValue([
+      spyOn(persistence, "findAllByAccessorAdvanced").and.returnValue([
         { id: ":action_id" },
       ]);
 
@@ -116,7 +116,7 @@ describe("[HttpTrigger] accessorsGetAllActionsAdvance Suite", () => {
       spyOn(authentication, "decodeToken").and.returnValue({
         oid: ":accessor_id",
       });
-      spyOn(persistence, "findAllByAccessorAdavance").and.throwError(
+      spyOn(persistence, "findAllByAccessorAdvanced").and.throwError(
         "Error."
       );
 
