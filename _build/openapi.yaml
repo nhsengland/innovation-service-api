@@ -2505,13 +2505,12 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-
   /email-notifications:
     get:
       tags:
         - EmailNotifications
         - GetPreferences
-      description: 'Get email notification preferences'
+      description: Get email notification preferences
       operationId: notifications-get-preferences
       security:
         - OpenId:
@@ -2525,17 +2524,17 @@ paths:
       responses:
         '200':
           description: OK
-        '404':
-          description: Not Found
         '401':
           description: Unauthorized
         '403':
           description: Forbidden
+        '404':
+          description: Not Found
     put:
       tags:
         - EmailNotifications
         - UpdatePreferences
-      description: 'Update email notification preferences'
+      description: Update email notification preferences
       operationId: notifications-update-preferences
       security:
         - OpenId:
@@ -2547,17 +2546,16 @@ paths:
             type: string
           required: true
       requestBody:
-        $ref: "#/components/requestBodies/notifications-update-preferences-payload"
+        $ref: '#/components/requestBodies/notifications-update-preferences-payload'
       responses:
         '200':
           description: OK
-        '404':
-          description: Not Found
         '401':
           description: Unauthorized
         '403':
           description: Forbidden
-
+        '404':
+          description: Not Found
 components:
   schemas:
     accessor-schema:
@@ -3202,7 +3200,7 @@ components:
               isSubmission:
                 type: boolean
     notifications-update-preferences-payload:
-      description: Notifications Update Email Preferences
+      description: Notifications Update Preferences Payload
       required: true
       content:
         application/json:
@@ -3214,7 +3212,7 @@ components:
                 notificationType:
                   type: string
                 isSubscribed:
-                  type: boolean
+                  type: string
   responses:
     accessor-get-innovations-200:
       description: OK

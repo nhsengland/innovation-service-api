@@ -629,7 +629,7 @@ export class InnovationActionService {
     }
 
     if (name && name.trim().length > 0) {
-      query.andWhere("innovationSection.innovation like :name", {
+      query.andWhere("innovation.name like :name", {
         name: `%${name.trim().toLocaleLowerCase()}%`,
       });
     }

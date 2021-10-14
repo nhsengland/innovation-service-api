@@ -44,7 +44,7 @@ class AccessorsGetAllActionsAdvance {
 
     let result;
     try {
-      result = await persistence.findAllByAccessorAdavance(
+      result = await persistence.findAllByAccessorAdvanced(
         context,
         innovationStatus,
         innovationSection,

@@ -1,7 +1,7 @@
 import { CustomContext } from "../../utils/types";
 
-export const findAllByAccessorAdavance = async (
-  ctx: CustomContext,   
+export const findAllByAccessorAdvanced = async (
+  ctx: CustomContext,
   innovationStatus: string[],
   innovationSection: string[],
   name: string,
@@ -15,9 +15,8 @@ export const findAllByAccessorAdavance = async (
     innovationSection,
     name,
     skip,
-    take,   
+    take,
     order
   );
-
   return result;
 };
