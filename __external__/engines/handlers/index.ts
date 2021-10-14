@@ -44,7 +44,7 @@ export const accessorsActionToReviewHandler = async (
 
   const recipients = await getRecipients(params.innovationId, connectionName);
   const filteredRecipients = await filterRecipientsByPreference(
-    NotificationContextType.SUPPORT,
+    NotificationContextType.ACTION,
     recipients
   );
 
@@ -133,8 +133,13 @@ export const innovatorActionRequested = async (
 
   const recipients = [innovation.owner.id];
 
+  const filteredRecipients = await filterRecipientsByPreference(
+    NotificationContextType.ACTION,
+    recipients
+  );
+
   const result = await emailService.sendMany(
-    recipients,
+    filteredRecipients,
     EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
     props
   );

@@ -24,6 +24,7 @@ import {
   OrganisationUser,
   User,
   UserType,
+  NotificationPreference,
 } from "@domain/index";
 import * as engines from "@engines/index";
 import { InvalidParamsError } from "@services/errors";
@@ -106,6 +107,7 @@ describe("Notification Service Suite", () => {
     await query.from(NotificationUser).execute();
     await query.from(Notification).execute();
     await query.from(Innovation).execute();
+    await query.from(NotificationPreference).execute();
     await query.from(User).execute();
   });
 
@@ -1149,5 +1151,59 @@ describe("Notification Service Suite", () => {
 
     expect(error).toBeDefined();
     expect(error).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should get email notification preferences", async () => {
+    const innovator = await fixtures.createInnovatorUser();
+
+    const requestUser: RequestUser = {
+      id: innovator.id,
+      type: UserType.INNOVATOR,
+    };
+
+    await notificationService.updateEmailNotificationPreferences(requestUser, [
+      {
+        notificationType: NotificationContextType.ACTION,
+        isSubscribed: false,
+      },
+    ]);
+
+    const notificationPreferences = await notificationService.getEmailNotificationPreferences(
+      requestUser
+    );
+
+    expect(notificationPreferences).toBeDefined();
+    expect(notificationPreferences[0].id).toBeDefined();
+    expect(notificationPreferences[0].isSubscribed).toBeDefined();
+  });
+
+  it("should update email notification preferences", async () => {
+    const innovator = await fixtures.createInnovatorUser();
+
+    const requestUser: RequestUser = {
+      id: innovator.id,
+      type: UserType.INNOVATOR,
+    };
+
+    await notificationService.updateEmailNotificationPreferences(requestUser, [
+      {
+        notificationType: NotificationContextType.ACTION,
+        isSubscribed: false,
+      },
+    ]);
+
+    const updateResult = await notificationService.updateEmailNotificationPreferences(
+      requestUser,
+      [
+        {
+          notificationType: NotificationContextType.ACTION,
+          isSubscribed: true,
+        },
+      ]
+    );
+
+    expect(updateResult).toBeDefined();
+    expect(updateResult[0].id).toBeDefined();
+    expect(updateResult[0].status).toBeDefined();
   });
 });

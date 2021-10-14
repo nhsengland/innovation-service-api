@@ -1,4 +1,3 @@
-import { NotificationPreference } from "@domain/entity/user/NotificationPreference.entity";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   AccessorOrganisationRole,
@@ -13,6 +12,7 @@ import {
   OrganisationUser,
   User,
   UserType,
+  NotificationPreference,
 } from "@domain/index";
 import { emailEngines } from "@engines/index";
 import { InvalidParamsError } from "@services/errors";
