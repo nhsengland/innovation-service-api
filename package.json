@@ -34,6 +34,7 @@
     "start": "func start",
     "test:ci": "test -- --ci --reporters=jest-junit --reporters=default --coverage --coverageReporters=cobertura",
     "test": "jest --runInBand --coverage --silent --forceExit",
+    "test:debug": "jest --runInBand --forceExit",
     "lint": "eslint */**/*.{ts,tsx}",
     "lint:fix": "eslint */**/*.{ts,tsx} --fix",
     "commit": "git-cz",
