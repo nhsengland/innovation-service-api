@@ -114,7 +114,9 @@ describe("Innovation Action Suite", () => {
       {}
     );
 
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Q Accessor A",
       identities: [
@@ -401,7 +403,6 @@ describe("Innovation Action Suite", () => {
   });
 
   it("should find one innovation action if Innovator by ID", async () => {
-
     const action = await actionService.create(
       qAccessorRequestUser,
       innovation.id,
@@ -418,7 +419,6 @@ describe("Innovation Action Suite", () => {
 
     expect(item).toBeDefined();
     expect(item.id).toEqual(action.id);
-
   });
 
   it("should find one innovation action if Accessor in a support unit by ID", async () => {

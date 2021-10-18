@@ -14,12 +14,14 @@ describe("[innovatorsGetInnovationAction] Persistence suite", () => {
     it("should assess if an innovation action exists", async () => {
       // Arrange
       jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
-      const spy = jest.spyOn(
-        InnovationActionService.prototype,
-        "find"
-      ).mockResolvedValue([{ id: ":action_id" }] as any);
+      jest.spyOn(typeorm, "getConnection").mockImplementation(
+        (connectionName: string) =>
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          ({ close: () => {} } as typeorm.Connection)
+      );
+      const spy = jest
+        .spyOn(InnovationActionService.prototype, "find")
+        .mockResolvedValue([{ id: ":action_id" }] as any);
 
       const ctx = {
         services: {

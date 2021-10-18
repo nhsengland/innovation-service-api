@@ -88,7 +88,9 @@ describe("Innovation Support Suite", () => {
     const innovations = await fixtures.saveInnovations(innovationObj);
     innovation = innovations[0];
 
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Q Accessor A",
       identities: [
@@ -186,8 +188,12 @@ describe("Innovation Support Suite", () => {
       comment: "test comment",
     };
 
-    jest.spyOn(NotificationService.prototype, "create").mockRejectedValue("error");
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockRejectedValue("error");
+    jest
+      .spyOn(NotificationService.prototype, "create")
+      .mockRejectedValue("error");
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockRejectedValue("error");
 
     const spy = jest.spyOn(LoggerService.prototype, "error");
 

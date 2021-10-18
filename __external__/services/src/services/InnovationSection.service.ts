@@ -448,7 +448,6 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
             error
           );
         }
-
       }
     }
 

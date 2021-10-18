@@ -14,19 +14,24 @@ describe("[notificationsGetUnreadGroupedByStatus] Persistence suite", () => {
   describe("getAllUnreadNotificationsCounts", () => {
     it("should find all notifications grouped by support status", async () => {
       // Arrange
-       jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
-      const spy = jest.spyOn(
-        NotificationService.prototype,
-        "getNotificationsGroupedBySupportStatus"
-      ).mockResolvedValue({
-        INNOVATION: 1,
-        ACTION: 1,
-        DATA_SHARING: 1,
-        SUPPORT: 2,
-        COMMENT: 4,
-      });
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation(
+        (connectionName: string) =>
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          ({ close: () => {} } as typeorm.Connection)
+      );
+      const spy = jest
+        .spyOn(
+          NotificationService.prototype,
+          "getNotificationsGroupedBySupportStatus"
+        )
+        .mockResolvedValue({
+          INNOVATION: 1,
+          ACTION: 1,
+          DATA_SHARING: 1,
+          SUPPORT: 2,
+          COMMENT: 4,
+        });
 
       const ctx = {
         auth: {
@@ -50,16 +55,21 @@ describe("[notificationsGetUnreadGroupedByStatus] Persistence suite", () => {
 
     it("should find all notifications grouped by support status", async () => {
       // Arrange
-       jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      jest.spyOn(typeorm, "getConnection").mockImplementation((connectionName: string) => ({ close: () => { } }) as typeorm.Connection );
-      const spy = jest.spyOn(
-        NotificationService.prototype,
-        "getNotificationsGroupedByInnovationStatus"
-      ).mockResolvedValue({
-        UNASSIGNED: 1,
-        IN_PROGRESS: 2,
-      });
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation(
+        (connectionName: string) =>
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          ({ close: () => {} } as typeorm.Connection)
+      );
+      const spy = jest
+        .spyOn(
+          NotificationService.prototype,
+          "getNotificationsGroupedByInnovationStatus"
+        )
+        .mockResolvedValue({
+          UNASSIGNED: 1,
+          IN_PROGRESS: 2,
+        });
 
       const ctx = {
         auth: {

@@ -3,9 +3,14 @@ import { RequestUser } from "@services/models/RequestUser";
 import { EmailResponse } from "@services/services/Email.service";
 import * as handlers from "./handlers";
 
-type HandlerFunc = (requestUser: RequestUser, params: {[key:string]: any}, targetUsers?: string[], connectionName?: string) => Promise<EmailResponse[]>;
+type HandlerFunc = (
+  requestUser: RequestUser,
+  params: { [key: string]: any },
+  targetUsers?: string[],
+  connectionName?: string
+) => Promise<EmailResponse[]>;
 
-export const emailEngines = () : {key: string, handler: HandlerFunc}[] => [
+export const emailEngines = (): { key: string; handler: HandlerFunc }[] => [
   {
     key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
     handler: handlers.accessorsActionToReviewHandler,

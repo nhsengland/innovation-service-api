@@ -76,7 +76,9 @@ describe("Innovation Transfer Suite", () => {
   });
 
   it("should create a innovation transfer for an existing user", async () => {
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue({
       id: newInnovatorRequestUser.id,
       displayName: ":userName",
@@ -90,7 +92,9 @@ describe("Innovation Transfer Suite", () => {
         },
       ],
     });
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue({} as any);
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockResolvedValue({} as any);
 
     const item = await transferService.create(
       innovatorRequestUser,
@@ -103,7 +107,9 @@ describe("Innovation Transfer Suite", () => {
   });
 
   it("should create a innovation transfer for a new user", async () => {
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue(undefined);
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: ":userName",
@@ -114,7 +120,9 @@ describe("Innovation Transfer Suite", () => {
         },
       ],
     });
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue({} as any);
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockResolvedValue({} as any);
 
     const item = await transferService.create(
       innovatorRequestUser,
@@ -167,7 +175,9 @@ describe("Innovation Transfer Suite", () => {
   });
 
   it("should throw when create and transfer already exists for the innovation", async () => {
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue(undefined);
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: ":userName",
@@ -178,7 +188,9 @@ describe("Innovation Transfer Suite", () => {
         },
       ],
     });
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue({} as any);
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockResolvedValue({} as any);
 
     await transferService.create(
       innovatorRequestUser,
@@ -202,12 +214,16 @@ describe("Innovation Transfer Suite", () => {
   });
 
   it("should throw when create for the innovation owner", async () => {
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue({
       id: innovatorRequestUser.id,
       displayName: ":userName",
     });
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue({} as any);
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockResolvedValue({} as any);
 
     let err;
     try {
@@ -225,7 +241,9 @@ describe("Innovation Transfer Suite", () => {
   });
 
   it("should update a innovation transfer to CANCELED by the innovation owner", async () => {
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue({
       id: newInnovatorRequestUser.id,
       displayName: ":userName",
@@ -239,7 +257,9 @@ describe("Innovation Transfer Suite", () => {
         },
       ],
     });
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue({} as any);
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockResolvedValue({} as any);
 
     const item = await transferService.create(
       innovatorRequestUser,
@@ -258,7 +278,9 @@ describe("Innovation Transfer Suite", () => {
   });
 
   it("should update a innovation transfer to DECLINED by the new innovation owner", async () => {
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue({
       id: newInnovatorRequestUser.id,
       displayName: ":userName",
@@ -272,7 +294,9 @@ describe("Innovation Transfer Suite", () => {
         },
       ],
     });
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue({} as any);
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockResolvedValue({} as any);
 
     const item = await transferService.create(
       innovatorRequestUser,
@@ -291,7 +315,9 @@ describe("Innovation Transfer Suite", () => {
   });
 
   it("should update a innovation transfer to CONFIRMED by the new innovation owner", async () => {
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue({
       id: newInnovatorRequestUser.id,
       displayName: ":userName",
@@ -305,7 +331,9 @@ describe("Innovation Transfer Suite", () => {
         },
       ],
     });
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue({} as any);
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockResolvedValue({} as any);
 
     const innovationObj = fixtures.generateInnovation({
       owner: { id: innovatorRequestUser.id },
@@ -359,7 +387,9 @@ describe("Innovation Transfer Suite", () => {
   });
 
   it("should throw when update status with transfer in invalid status invalid params", async () => {
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue({
       id: newInnovatorRequestUser.id,
       displayName: ":userName",
@@ -373,7 +403,9 @@ describe("Innovation Transfer Suite", () => {
         },
       ],
     });
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue({} as any);
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockResolvedValue({} as any);
 
     const item = await transferService.create(
       innovatorRequestUser,
@@ -397,7 +429,9 @@ describe("Innovation Transfer Suite", () => {
   });
 
   it("should find one innovation transfer by ID for the owner", async () => {
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue(undefined);
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       id: innovatorRequestUser.id,
@@ -409,7 +443,9 @@ describe("Innovation Transfer Suite", () => {
       innovation.id,
       dummy.newEmail
     );
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue({} as any);
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockResolvedValue({} as any);
 
     const result = await transferService.findOne(innovatorRequestUser, item.id);
 
@@ -418,13 +454,17 @@ describe("Innovation Transfer Suite", () => {
   });
 
   it("should find one innovation transfer by ID for the new owner", async () => {
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue(undefined);
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       id: innovatorRequestUser.id,
       displayName: ":innovatorName",
     });
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue({} as any);
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockResolvedValue({} as any);
 
     const item = await transferService.create(
       innovatorRequestUser,
@@ -466,7 +506,9 @@ describe("Innovation Transfer Suite", () => {
   });
 
   it("should find all innovation transfers by owner", async () => {
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue(undefined);
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: ":userName",
@@ -477,7 +519,9 @@ describe("Innovation Transfer Suite", () => {
         },
       ],
     });
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue({} as any);
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockResolvedValue({} as any);
 
     const item = await transferService.create(
       innovatorRequestUser,
@@ -493,7 +537,9 @@ describe("Innovation Transfer Suite", () => {
   });
 
   it("should find all innovation transfers by new owner", async () => {
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue(undefined);
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: ":userName",
@@ -504,7 +550,9 @@ describe("Innovation Transfer Suite", () => {
         },
       ],
     });
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue({} as any);
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockResolvedValue({} as any);
 
     const item = await transferService.create(
       innovatorRequestUser,
@@ -532,7 +580,9 @@ describe("Innovation Transfer Suite", () => {
   });
 
   it("should check one innovation transfer and return true if user exists", async () => {
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue({
       id: newInnovatorRequestUser.id,
       displayName: ":userName",
@@ -546,7 +596,9 @@ describe("Innovation Transfer Suite", () => {
         },
       ],
     });
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue({} as any);
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockResolvedValue({} as any);
 
     const item = await transferService.create(
       innovatorRequestUser,
@@ -561,7 +613,9 @@ describe("Innovation Transfer Suite", () => {
   });
 
   it("should check one innovation transfer and return false if user not exists", async () => {
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue(undefined);
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: ":userName",
@@ -572,7 +626,9 @@ describe("Innovation Transfer Suite", () => {
         },
       ],
     });
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue({} as any);
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockResolvedValue({} as any);
 
     const item = await transferService.create(
       innovatorRequestUser,
@@ -611,7 +667,9 @@ describe("Innovation Transfer Suite", () => {
   });
 
   it("should checkUserPendingTransfers and return true if user exists and has invitations", async () => {
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue({
       id: newInnovatorRequestUser.id,
       displayName: ":userName",
@@ -625,7 +683,9 @@ describe("Innovation Transfer Suite", () => {
         },
       ],
     });
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue({} as any);
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockResolvedValue({} as any);
 
     await transferService.create(
       innovatorRequestUser,

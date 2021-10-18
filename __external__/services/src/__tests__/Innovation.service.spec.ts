@@ -144,11 +144,9 @@ describe("Innovator Service Suite", () => {
         },
       },
     ]);
-
   });
 
   afterAll(async () => {
-
     const query = getConnection(process.env.DB_TESTS_NAME)
       .createQueryBuilder()
       .delete();
@@ -188,9 +186,15 @@ describe("Innovator Service Suite", () => {
     });
     const innovation = await fixtures.saveInnovation(innovationObj);
 
-    jest.spyOn(NotificationService.prototype, "create").mockRejectedValue("error");
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockRejectedValue("error");
-    jest.spyOn(innovationService, "hasIncompleteSections").mockResolvedValue(false);
+    jest
+      .spyOn(NotificationService.prototype, "create")
+      .mockRejectedValue("error");
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockRejectedValue("error");
+    jest
+      .spyOn(innovationService, "hasIncompleteSections")
+      .mockResolvedValue(false);
 
     const spy = jest.spyOn(LoggerService.prototype, "error");
 
@@ -368,7 +372,9 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should find all innovations by q. accessor when findAllByAccessorAndSupportStatus() with status ENGAGING and assignedToMe", async () => {
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Q Accessor A",
     });
@@ -408,7 +414,9 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should find all innovations by accessor when findAllByAccessorAndSupportStatus() without assignedToMe", async () => {
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Q Accessor A",
     });
@@ -448,7 +456,9 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should find all innovations by accessor when findAllByAccessorAndSupportStatus() with assignedToMe", async () => {
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Q Accessor A",
     });
@@ -606,7 +616,9 @@ describe("Innovator Service Suite", () => {
       })
     );
 
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: ":display_name",
       identities: [
@@ -638,7 +650,9 @@ describe("Innovator Service Suite", () => {
       })
     );
 
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: ":display_name",
       identities: [
@@ -714,7 +728,9 @@ describe("Innovator Service Suite", () => {
     });
     const innovation = await fixtures.saveInnovation(innovationObj);
 
-    jest.spyOn(innovationService, "hasIncompleteSections").mockResolvedValue(false);
+    jest
+      .spyOn(innovationService, "hasIncompleteSections")
+      .mockResolvedValue(false);
     await innovationService.submitInnovation(
       innovatorRequestUser,
       innovation.id
@@ -731,7 +747,9 @@ describe("Innovator Service Suite", () => {
 
   it("should throw an error when submitInnovation() without id", async () => {
     let err;
-    jest.spyOn(innovationService, "hasIncompleteSections").mockResolvedValue(false);
+    jest
+      .spyOn(innovationService, "hasIncompleteSections")
+      .mockResolvedValue(false);
     try {
       await innovationService.submitInnovation(undefined, "id");
     } catch (error) {
@@ -743,7 +761,9 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should throw an error when submitInnovation() with innovation not found", async () => {
-    jest.spyOn(innovationService, "hasIncompleteSections").mockResolvedValue(false);
+    jest
+      .spyOn(innovationService, "hasIncompleteSections")
+      .mockResolvedValue(false);
     let err;
     try {
       await innovationService.submitInnovation(
@@ -759,7 +779,9 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should throw an error when submitInnovation() with incomplete sections", async () => {
-    jest.spyOn(innovationService, "hasIncompleteSections").mockResolvedValue(true as any);
+    jest
+      .spyOn(innovationService, "hasIncompleteSections")
+      .mockResolvedValue(true as any);
     const innovationObj = fixtures.generateInnovation({
       owner: { id: innovatorRequestUser.id },
       surveyId: "abc",

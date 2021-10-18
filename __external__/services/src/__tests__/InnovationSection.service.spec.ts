@@ -71,7 +71,7 @@ describe("Innovation Section Service Suite", () => {
   let innovatorRequestUser: RequestUser;
 
   beforeAll(async () => {
-     //await setupTestsConnection();
+    //await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -105,7 +105,6 @@ describe("Innovation Section Service Suite", () => {
         },
       },
     ]);
-
   });
 
   afterAll(async () => {
@@ -114,7 +113,7 @@ describe("Innovation Section Service Suite", () => {
       .delete();
 
     await query.from(User).execute();
-     //closeTestsConnection();
+    //closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -820,7 +819,9 @@ describe("Innovation Section Service Suite", () => {
       ],
     });
 
-    jest.spyOn(NotificationService.prototype, "create").mockRejectedValue("error in notification create");
+    jest
+      .spyOn(NotificationService.prototype, "create")
+      .mockRejectedValue("error in notification create");
     jest.spyOn(NotificationService.prototype, "sendEmail").mockImplementation();
 
     const spy = jest.spyOn(LoggerService.prototype, "error");

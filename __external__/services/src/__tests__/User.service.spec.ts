@@ -42,7 +42,7 @@ describe("User Service Suite", () => {
   let organisationUnit: OrganisationUnit;
 
   beforeAll(async () => {
-     //await setupTestsConnection();
+    //await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -54,7 +54,9 @@ describe("User Service Suite", () => {
     organisation = await fixtures.createOrganisation(OrganisationType.ACCESSOR);
     organisationUnit = await fixtures.createOrganisationUnit(organisation);
 
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue({
       id: ":userOid",
       displayName: ":userName",
@@ -88,7 +90,9 @@ describe("User Service Suite", () => {
 
   it("should update a user profile", async () => {
     // Arrange
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue("access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue("access_token");
     jest.spyOn(helpers, "saveB2CUser").mockImplementation();
 
     let err;
@@ -103,7 +107,9 @@ describe("User Service Suite", () => {
 
   it("should retrieve a user profile with organisation roles", async () => {
     // Arrange
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue("access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue("access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Accessor A",
       identities: [
@@ -114,22 +120,21 @@ describe("User Service Suite", () => {
       ],
       mobilePhone: "+351960000000",
     });
-    jest.spyOn(
-      getRepository(User, process.env.DB_TESTS_NAME),
-      "findOne"
-    ).mockResolvedValue({
-      type: UserType.ACCESSOR,
-      role: AccessorOrganisationRole.ACCESSOR,
-      userOrganisations: [
-        {
-          organisation: {
-            id: ":organisationId",
-            name: ":organisationName",
-            isShadow: false,
+    jest
+      .spyOn(getRepository(User, process.env.DB_TESTS_NAME), "findOne")
+      .mockResolvedValue({
+        type: UserType.ACCESSOR,
+        role: AccessorOrganisationRole.ACCESSOR,
+        userOrganisations: [
+          {
+            organisation: {
+              id: ":organisationId",
+              name: ":organisationName",
+              isShadow: false,
+            },
           },
-        },
-      ],
-    } as any);
+        ],
+      } as any);
 
     let actual: ProfileModel;
     let err;
@@ -173,7 +178,9 @@ describe("User Service Suite", () => {
   });
 
   it("should retrieve a user B2C profile information", async () => {
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue("access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue("access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Accessor A",
       identities: [
@@ -184,10 +191,9 @@ describe("User Service Suite", () => {
       ],
       mobilePhone: "+351960000000",
     });
-    jest.spyOn(
-      getRepository(User, process.env.DB_TESTS_NAME),
-      "findOne"
-    ).mockResolvedValue(undefined);
+    jest
+      .spyOn(getRepository(User, process.env.DB_TESTS_NAME), "findOne")
+      .mockResolvedValue(undefined);
 
     let actual: ProfileModel;
     let err;
@@ -382,7 +388,9 @@ describe("User Service Suite", () => {
 
   it("should update an user profile", async () => {
     // arranje
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(userService, "updateB2CUser").mockImplementation();
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Accessor A",
@@ -405,7 +413,9 @@ describe("User Service Suite", () => {
 
   it("should update an user profile with organisations", async () => {
     // arranje
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(userService, "updateB2CUser").mockImplementation();
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Accessor A",
@@ -433,7 +443,9 @@ describe("User Service Suite", () => {
   it("should throw an error if authentication with graph api returns a null access token", async () => {
     const innovatorUser = await fixtures.createInnovatorUser();
     // Arrange
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Accessor A",
       identities: [
@@ -464,8 +476,12 @@ describe("User Service Suite", () => {
 
   it("should throw an error if user does not exist on B2C", async () => {
     // Arrange
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
-    jest.spyOn(helpers, "getUserFromB2C").mockRejectedValue(new Error("User Not found"));
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "getUserFromB2C")
+      .mockRejectedValue(new Error("User Not found"));
     const fakeRequestUser = {
       requestUser: {
         id: ":userId",
@@ -486,7 +502,9 @@ describe("User Service Suite", () => {
 
   it("It should delete a User and archive innovations", async () => {
     // Arrange
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue("access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue("access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Accessor A",
       identities: [
@@ -519,7 +537,9 @@ describe("User Service Suite", () => {
 
   it("It should not delete a User and archive innovations", async () => {
     // Arrange
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Accessor A",
       identities: [
@@ -530,7 +550,9 @@ describe("User Service Suite", () => {
       ],
       mobilePhone: "+351960000000",
     });
-    jest.spyOn(helpers, "deleteB2CAccount").mockRejectedValue("delete user failed");
+    jest
+      .spyOn(helpers, "deleteB2CAccount")
+      .mockRejectedValue("delete user failed");
     const fakeRequestUser = {
       requestUser: {
         id: ":userId",

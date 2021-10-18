@@ -45,9 +45,9 @@ describe("[HttpTrigger] notificationsUpdatePreferences Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
-      spyOn(connection, "setupSQLConnection").and.throwError(
-        "Error establishing connection with the datasource."
+      jest.spyOn(authentication, 'decodeToken').mockResolvedValue({oid: ':oid'});
+      jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
+        new Error("Error establishing connection with the datasource.")
       );
 
       const { res } = await mockedRequestFactory({});
@@ -60,11 +60,11 @@ describe("[HttpTrigger] notificationsUpdatePreferences Suite", () => {
 
     it("Should return 200 and update user notification preferences", async () => {
 
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
+      jest.spyOn(authentication, 'decodeToken').mockReturnValue({oid: ':oid'});
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
 
-      spyOn(persistence, "updateEmailNotificationPreferences").and.returnValue([
+      jest.spyOn(persistence, "updateEmailNotificationPreferences").mockResolvedValue([
           { id: "NotificationType" , status: "OK"}
         ]);
 

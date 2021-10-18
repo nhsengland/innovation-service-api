@@ -983,7 +983,9 @@ describe("Notification Service Suite", () => {
   });
 
   it("should get aggregated unread Innovations count", async () => {
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockResolvedValue(":access_token");
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       id: ":accessor_user_id_1",
       displayName: "Accessor 1",
