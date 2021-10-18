@@ -9,14 +9,19 @@ import {
   User,
   UserType,
 } from "@domain/index";
+import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection } from "typeorm";
 import { TransactionResult } from "../models/InnovatorTransactionResult";
 import { BaseService } from "./Base.service";
+import { InnovationService } from "./Innovation.service";
 import { InnovationTransferService } from "./InnovationTransfer.service";
+import { UserService } from "./User.service";
 
 export class InnovatorService extends BaseService<User> {
   private readonly connection: Connection;
   private readonly innovationTransferService: InnovationTransferService;
+  private readonly innovationService: InnovationService;
+  private readonly userService: UserService;
 
   constructor(connectionName?: string) {
     super(User, connectionName);
@@ -24,6 +29,8 @@ export class InnovatorService extends BaseService<User> {
     this.innovationTransferService = new InnovationTransferService(
       connectionName
     );
+    this.innovationService = new InnovationService(connectionName);
+    this.userService = new UserService(connectionName);
   }
 
   async create(user: User): Promise<User> {
@@ -155,5 +162,35 @@ export class InnovatorService extends BaseService<User> {
     );
 
     return result;
+  }
+
+  async delete(requestUser: RequestUser, reason?: string) {
+    const innovations = await this.innovationService.findAllByInnovator(
+      requestUser
+    );
+
+    return await this.connection.transaction(async (transactionManager) => {
+      try {
+        for (const innovation of innovations) {
+          await this.innovationService.archiveInnovation(
+            requestUser,
+            innovation.id,
+            reason,
+            transactionManager
+          );
+        }
+        await this.userService.deleteAccount(requestUser);
+        await transactionManager.update(
+          User,
+          { id: requestUser.id },
+          {
+            deletedAt: new Date(),
+            deleteReason: reason,
+          }
+        );
+      } catch (error) {
+        throw error;
+      }
+    });
   }
 }

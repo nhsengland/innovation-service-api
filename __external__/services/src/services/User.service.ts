@@ -32,6 +32,7 @@ import {
 import {
   authenticateWitGraphAPI,
   createB2CUser,
+  deleteB2CAccount,
   getUserFromB2C,
   getUserFromB2CByEmail,
   getUsersFromB2C,
@@ -78,6 +79,28 @@ export class UserService {
     return true;
   }
 
+  async deleteAccount(requestUser: RequestUser): Promise<boolean> {
+    const graphAccessToken = await authenticateWitGraphAPI();
+
+    if (!graphAccessToken) {
+      throw new Error("Invalid Credentials");
+    }
+
+    const user = await getUserFromB2C(requestUser.id, graphAccessToken);
+
+    if (!user) {
+      throw new Error("Invalid user id.");
+    }
+
+    try {
+      await deleteB2CAccount(requestUser.id);
+    } catch {
+      throw new Error("Error updating user.");
+    }
+
+    return true;
+  }
+
   async getProfile(id: string, accessToken?: string): Promise<ProfileModel> {
     if (!accessToken) {
       accessToken = await authenticateWitGraphAPI();
@@ -100,6 +123,8 @@ export class UserService {
       organisations: [],
       email,
       phone: user.mobilePhone,
+      passwordResetOn:
+        user[`extension_${process.env.AD_EXTENSION_ID}_passwordResetOn`],
     };
 
     try {
@@ -218,9 +243,12 @@ export class UserService {
 
     const accessToken = await authenticateWitGraphAPI();
     const currentProfile = await this.getProfile(requestUser.id, accessToken);
-    if (user.displayName != currentProfile.displayName) {
+    if (
+      user.displayName !== currentProfile.displayName ||
+      user.mobilePhone !== currentProfile.phone
+    ) {
       await this.updateB2CUser(
-        { displayName: user.displayName },
+        { displayName: user.displayName, mobilePhone: user.mobilePhone },
         requestUser.id,
         accessToken
       );

@@ -39,6 +39,7 @@ import { RequestUser } from "@services/models/RequestUser";
 import { SimpleResult } from "@services/models/SimpleResult";
 import {
   Connection,
+  EntityManager,
   FindManyOptions,
   FindOneOptions,
   getConnection,
@@ -59,6 +60,7 @@ import { UserService } from "./User.service";
 
 import * as constants from "../../../../utils/constants";
 import { InnovationCreationModel } from "@services/models/InnovationCreationModel";
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 
 export class InnovationService extends BaseService<Innovation> {
   private readonly connection: Connection;
@@ -985,20 +987,98 @@ export class InnovationService extends BaseService<Innovation> {
     };
   }
 
+  private async archiveInnovationTransaction(
+    transactionManager: EntityManager,
+    requestUser: RequestUser,
+    innovation: Innovation,
+    reason: string,
+    supports: any[]
+  ) {
+    // Update all supports and DECLINE all open actions
+    const supportUsers = [];
+    for (let orgSupIdx = 0; orgSupIdx < supports.length; orgSupIdx++) {
+      const organisationUnitUsers = supports[orgSupIdx].organisationUnitUsers;
+      if (organisationUnitUsers && organisationUnitUsers.length > 0) {
+        for (
+          let userIdx = 0;
+          userIdx < organisationUnitUsers.length;
+          userIdx++
+        ) {
+          supportUsers.push(
+            organisationUnitUsers[userIdx].organisationUser.user.id
+          );
+        }
+      }
+
+      const innovationSupport = supports[orgSupIdx];
+      innovationSupport.organisationUnitUsers = [];
+      const innovationActions = await innovationSupport.actions;
+      const actions = innovationActions.filter(
+        (ia: InnovationAction) =>
+          ia.status === InnovationActionStatus.REQUESTED ||
+          ia.status === InnovationActionStatus.STARTED ||
+          ia.status === InnovationActionStatus.IN_REVIEW
+      );
+      for (let actionIdx = 0; actionIdx < actions.length; actionIdx++) {
+        await transactionManager.update(
+          InnovationAction,
+          { id: actions[actionIdx].id },
+          {
+            status: InnovationActionStatus.DECLINED,
+            updatedBy: requestUser.id,
+          }
+        );
+      }
+      innovationSupport.status = InnovationSupportStatus.UNASSIGNED;
+      innovationSupport.updatedBy = requestUser.id;
+      innovationSupport.deletedAt = new Date();
+      await transactionManager.save(InnovationSupport, innovationSupport);
+    }
+    // Update innovation
+    innovation.status = InnovationStatus.ARCHIVED;
+    innovation.updatedBy = requestUser.id;
+    innovation.organisationShares = [];
+    innovation.archiveReason = reason;
+    innovation.deletedAt = new Date();
+    await transactionManager.save(Innovation, innovation);
+
+    if (supportUsers && supportUsers.length > 0) {
+      await this.notificationService.sendEmail(
+        requestUser,
+        EmailNotificationTemplate.ACCESSORS_INNOVATION_ARCHIVAL_UPDATE,
+        innovation.id,
+        innovation.id,
+        supportUsers,
+        {
+          innovation_name: innovation.name,
+        }
+      );
+    }
+
+    return {
+      id: innovation.id,
+      status: InnovationStatus.ARCHIVED,
+    };
+  }
   async archiveInnovation(
     requestUser: RequestUser,
     id: string,
-    reason: string
+    reason: string,
+    transactionManager?: EntityManager
   ) {
     if (!id || !requestUser || !checkIfValidUUID(id)) {
       throw new InvalidParamsError("Invalid parameters.");
     }
-
     const filterOptions = {
-      relations: ["organisationShares", "innovationSupports"],
+      relations: [
+        "organisationShares",
+        "innovationSupports",
+        "innovationSupports.organisationUnitUsers",
+        "innovationSupports.organisationUnitUsers.organisationUser",
+        "innovationSupports.organisationUnitUsers.organisationUser.user",
+      ],
       where: { owner: requestUser.id },
     };
-
     const innovation = await this.findInnovation(
       requestUser,
       id,
@@ -1007,55 +1087,26 @@ export class InnovationService extends BaseService<Innovation> {
     if (!innovation) {
       throw new InnovationNotFoundError("Innovation not found for the user.");
     }
-
     const supports = innovation.innovationSupports;
-
-    return await this.connection.transaction(async (transactionManager) => {
-      // Update all supports and DECLINE all open actions
-      for (let orgSupIdx = 0; orgSupIdx < supports.length; orgSupIdx++) {
-        const innovationSupport = supports[orgSupIdx];
-        innovationSupport.organisationUnitUsers = [];
-
-        const innovationActions = await innovationSupport.actions;
-        const actions = innovationActions.filter(
-          (ia: InnovationAction) =>
-            ia.status === InnovationActionStatus.REQUESTED ||
-            ia.status === InnovationActionStatus.STARTED ||
-            ia.status === InnovationActionStatus.IN_REVIEW
+    if (transactionManager) {
+      return await this.archiveInnovationTransaction(
+        transactionManager,
+        requestUser,
+        innovation,
+        reason,
+        supports
+      );
+    } else {
+      return await this.connection.transaction(async (transactionManager) => {
+        return this.archiveInnovationTransaction(
+          transactionManager,
+          requestUser,
+          innovation,
+          reason,
+          supports
         );
-
-        for (let actionIdx = 0; actionIdx < actions.length; actionIdx++) {
-          await transactionManager.update(
-            InnovationAction,
-            { id: actions[actionIdx].id },
-            {
-              status: InnovationActionStatus.DECLINED,
-              updatedBy: requestUser.id,
-            }
-          );
-        }
-
-        innovationSupport.status = InnovationSupportStatus.UNASSIGNED;
-        innovationSupport.updatedBy = requestUser.id;
-        innovationSupport.deletedAt = new Date();
-
-        await transactionManager.save(InnovationSupport, innovationSupport);
-      }
-
-      // Update innovation
-      innovation.status = InnovationStatus.ARCHIVED;
-      innovation.updatedBy = requestUser.id;
-      innovation.organisationShares = [];
-      innovation.archiveReason = reason;
-      innovation.deletedAt = new Date();
-
-      await transactionManager.save(Innovation, innovation);
-
-      return {
-        id: innovation.id,
-        status: InnovationStatus.ARCHIVED,
-      };
-    });
+      });
+    }
   }
 
   async getOrganisationUnitShares(
@@ -1438,5 +1489,9 @@ export class InnovationService extends BaseService<Innovation> {
     }
 
     return result;
+  }
+
+  public getConnection() {
+    return this.connection;
   }
 }
