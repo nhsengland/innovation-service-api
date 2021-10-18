@@ -28,6 +28,7 @@ import {
   Comment,
   Notification,
   NotificationUser,
+  NotificationPreference,
   User,
 } from "@domain/index";
 
@@ -61,5 +62,6 @@ export const entities = [
   Comment,
   Notification,
   NotificationUser,
+  NotificationPreference,
   User,
 ];

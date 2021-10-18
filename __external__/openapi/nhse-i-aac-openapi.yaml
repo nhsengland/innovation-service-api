@@ -478,6 +478,38 @@ paths:
         "403":
           description: "Forbidden"
 
+  "/accessors/{userId}/actions/advance":
+    get:
+      tags:
+        - "Accessor"
+        - "Innovation"
+        - "GetInnovationActions"
+      description: "Get All Innovation Actions Advance Filter"
+      operationId: "accessors-get-all-actions-advance"
+      security:
+        - OpenId:
+            - innovation_details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"       
+
   "/accessors/{userId}/innovations/{innovationId}/actions":
     get:
       tags:
@@ -2530,6 +2562,58 @@ paths:
         "401":
           description: "Unauthorized"
 
+  "/email-notifications":
+    get:
+      tags:
+        - "EmailNotifications"
+        - "GetPreferences"
+      description: "Get email notification preferences"
+      operationId: "notifications-get-preferences"
+      security:
+        - OpenId:
+            - notifications_preferences
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+    put:
+      tags:
+        - "EmailNotifications"
+        - "UpdatePreferences"
+      description: "Update email notification preferences"
+      operationId: "notifications-update-preferences"
+      security:
+        - OpenId:
+            - users_write
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/notifications-update-preferences-payload"
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
 components:
   schemas:
     accessor-schema:
@@ -2600,6 +2684,8 @@ components:
       $ref: "./schemas/assessments-create-assessment-payload.yaml"
     assessments-update-assessment-payload:
       $ref: "./schemas/assessments-update-assessment-payload.yaml"
+    notifications-update-preferences-payload:
+      $ref: "./schemas/notifications-update-preferences-payload.yaml"
 
   responses:
     accessor-get-innovations-200:

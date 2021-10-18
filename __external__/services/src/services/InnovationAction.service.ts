@@ -557,4 +557,136 @@ export class InnovationActionService {
       ];
     }
   }
+
+  async findAllByAccessorAdvanced(
+    requestUser: RequestUser,
+    innovationStatus: string[],
+    innovationSection: string[],
+    name: string,
+    skip: number,
+    take: number,
+    order?: { [key: string]: "ASC" | "DESC" }
+  ) {
+    if (!requestUser) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+
+    if (!requestUser.organisationUser) {
+      throw new MissingUserOrganisationError(
+        "Invalid user. User has no organisations."
+      );
+    }
+
+    const organisationUser = requestUser.organisationUser;
+
+    if (!hasAccessorRole(organisationUser.role)) {
+      throw new InvalidUserRoleError("Invalid user. User has an invalid role.");
+    }
+
+    const query = this.actionRepo
+      .createQueryBuilder("innovationAction")
+      .innerJoinAndSelect(
+        "innovationAction.innovationSection",
+        "innovationSection"
+      )
+      .innerJoinAndSelect("innovationSection.innovation", "innovation");
+
+    if (
+      organisationUser.role === AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    ) {
+      query
+        .innerJoinAndSelect(
+          "innovation.organisationShares",
+          "organisationShares"
+        )
+        .andWhere("organisation_id = :organisationId", {
+          organisationId: organisationUser.organisation.id,
+        });
+    } else {
+      const organisationUnit =
+        requestUser.organisationUnitUser.organisationUnit;
+
+      query
+        .innerJoinAndSelect(
+          "innovation.innovationSupports",
+          "innovationSupports"
+        )
+        .andWhere("organisation_unit_id = :organisationUnitId", {
+          organisationUnitId: organisationUnit.id,
+        });
+    }
+    // handle the filters
+    if (innovationStatus && innovationStatus.length > 0) {
+      query.andWhere("innovationAction.status IN (:...statuses)", {
+        statuses: innovationStatus,
+      });
+    }
+
+    if (innovationSection && innovationSection.length > 0) {
+      query.andWhere("innovationSection.section IN (:...sections)", {
+        sections: innovationSection,
+      });
+    }
+
+    if (name && name.trim().length > 0) {
+      query.andWhere("innovation.name like :name", {
+        name: `%${name.trim().toLocaleLowerCase()}%`,
+      });
+    }
+    // pagination
+    query.take(take);
+    query.skip(skip);
+
+    if (order) {
+      order["displayId"] &&
+        query.orderBy("innovationAction.displayId", order["displayId"]);
+      order["section"] &&
+        query.orderBy("innovationSection.section", order["section"]);
+      order["innovationName"] &&
+        query.orderBy("innovation.name", order["innovationName"]);
+      order["createdAt"] &&
+        query.orderBy("innovationAction.createdAt", order["createdAt"]);
+      order["status"] &&
+        query.orderBy("innovationAction.status", order["status"]);
+    } else {
+      query.orderBy("innovationAction.createdAt", "DESC");
+    }
+
+    const [innovationActions, count] = await query.getManyAndCount();
+
+    const notifications = await this.notificationService.getUnreadNotifications(
+      requestUser,
+      null,
+      NotificationContextType.ACTION
+    );
+
+    const actions = innovationActions?.map((ia: InnovationAction) => {
+      const unread = notifications.filter((n) => n.contextId === ia.id);
+
+      return {
+        id: ia.id,
+        displayId: ia.displayId,
+        innovation: {
+          id: ia.innovationSection.innovation.id,
+          name: ia.innovationSection.innovation.name,
+        },
+        status: ia.status,
+        section: ia.innovationSection.section,
+        createdAt: ia.createdAt,
+        updatedAt: ia.updatedAt,
+        notifications: {
+          count: unread?.length || 0,
+        },
+        isOpen: [
+          InnovationActionStatus.COMPLETED,
+          InnovationActionStatus.DECLINED,
+        ].includes(ia.status),
+      };
+    });
+
+    return {
+      data: actions,
+      count: count,
+    };
+  }
 }

@@ -3,6 +3,8 @@ import {
   Innovation,
   InnovationSupport,
   InnovationSupportStatus,
+  NotificationContextType,
+  NotificationPreference,
 } from "@domain/index";
 import * as helpers from "@helpers/index";
 import { EmailTemplateNotFound, InvalidParamsError } from "@services/errors";
@@ -41,6 +43,11 @@ export const accessorsActionToReviewHandler = async (
   );
 
   const recipients = await getRecipients(params.innovationId, connectionName);
+  const filteredRecipients = await filterRecipientsByPreference(
+    NotificationContextType.ACTION,
+    recipients
+  );
+
   const props = {
     innovator_name,
     innovation_name,
@@ -48,7 +55,7 @@ export const accessorsActionToReviewHandler = async (
   };
 
   const result = await emailService.sendMany(
-    recipients,
+    filteredRecipients,
     EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
     props
   );
@@ -81,8 +88,13 @@ export const accessorsAssignedToInnovationHandler = async (
   let recipients = targetUsers;
   recipients = recipients.filter((r) => r !== requestUser.id);
 
+  const filteredRecipients = await filterRecipientsByPreference(
+    NotificationContextType.SUPPORT,
+    recipients
+  );
+
   const result = await emailService.sendMany(
-    recipients,
+    filteredRecipients,
     EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
     props
   );
@@ -121,8 +133,13 @@ export const innovatorActionRequested = async (
 
   const recipients = [innovation.owner.id];
 
+  const filteredRecipients = await filterRecipientsByPreference(
+    NotificationContextType.ACTION,
+    recipients
+  );
+
   const result = await emailService.sendMany(
-    recipients,
+    filteredRecipients,
     EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
     props
   );
@@ -320,4 +337,31 @@ const getRecipients = async (innovationId: string, connectionName?: string) => {
   );
 
   return recipients;
+};
+
+const filterRecipientsByPreference = async (
+  notificationType: string,
+  recipients: string[],
+  connectionName?: string
+) => {
+  const notificationPreferenceRepo = getRepository(
+    NotificationPreference,
+    connectionName
+  );
+
+  const filteredRecipients = [];
+
+  for (let idx = 0; idx < recipients.length; idx++) {
+    const recipient = recipients[idx];
+
+    const userPreference = await notificationPreferenceRepo.findOne({
+      where: `notification_id = '${notificationType}' and user_id = '${recipient}'`,
+    });
+
+    if (!userPreference || userPreference?.isSubscribed) {
+      filteredRecipients.push(recipient);
+    }
+  }
+
+  return filteredRecipients;
 };
