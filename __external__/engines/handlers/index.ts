@@ -24,6 +24,7 @@ export const accessorsActionToReviewHandler = async (
     contextId: string;
     emailProps?: EmailProps;
   },
+  template: EmailNotificationTemplate,
   targetUsers?: string[],
   connectionName?: string
 ): Promise<EmailResponse[]> => {
@@ -37,10 +38,7 @@ export const accessorsActionToReviewHandler = async (
   const innovator_name = b2cUser.displayName;
 
   const innovation_name = innovation.name;
-  const action_url = parseUrl(
-    params,
-    EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW
-  );
+  const action_url = parseUrl(params, template);
 
   const recipients = await getRecipients(params.innovationId, connectionName);
   const filteredRecipients = await filterRecipientsByPreference(
@@ -70,16 +68,14 @@ export const accessorsAssignedToInnovationHandler = async (
     contextId: string;
     emailProps?: EmailProps;
   },
+  template: EmailNotificationTemplate,
   targetUsers?: string[],
   connectionName?: string
 ): Promise<EmailResponse[]> => {
   const emailService = new EmailService(connectionName);
   const b2cUser = await helpers.getUserFromB2C(requestUser.id);
   const qa_name = b2cUser.displayName;
-  const innovation_url = parseUrl(
-    params,
-    EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION
-  );
+  const innovation_url = parseUrl(params, template);
   const props = {
     qa_name,
     innovation_url,
@@ -109,6 +105,7 @@ export const innovatorActionRequested = async (
     contextId: string;
     emailProps?: EmailProps;
   },
+  template: EmailNotificationTemplate,
   targetUsers?: string[],
   connectionName?: string
 ): Promise<EmailResponse[]> => {
@@ -121,10 +118,7 @@ export const innovatorActionRequested = async (
 
   const accessor_name = b2cUser.displayName;
   const unit_name = requestUser.organisationUnitUser.organisationUnit.name;
-  const action_url = parseUrl(
-    params,
-    EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST
-  );
+  const action_url = parseUrl(params, template);
   const props = {
     accessor_name,
     unit_name,
@@ -154,14 +148,12 @@ export const qaOrganisationSuggestedForSupport = async (
     contextId: string;
     emailProps?: EmailProps;
   },
+  template: EmailNotificationTemplate,
   targetUsers?: string[],
   connectionName?: string
 ): Promise<EmailResponse[]> => {
   const emailService = new EmailService(connectionName);
-  const innovation_url = parseUrl(
-    params,
-    EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED
-  );
+  const innovation_url = parseUrl(params, template);
   const props = {
     innovation_url,
   };
@@ -185,15 +177,13 @@ export const innovatorsTransferOwnershipNewUser = async (
     contextId: string;
     emailProps?: EmailProps;
   },
+  template: EmailNotificationTemplate,
   targetUsers?: string[],
   connectionName?: string
 ): Promise<EmailResponse[]> => {
   const emailService = new EmailService(connectionName);
 
-  const transfer_url = parseUrl(
-    params,
-    EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_NEW_USER
-  );
+  const transfer_url = parseUrl(params, template);
 
   const props = {
     ...params.emailProps,
@@ -220,15 +210,13 @@ export const innovatorsTransferOwnershipExistingUser = async (
     contextId: string;
     emailProps?: EmailProps;
   },
+  template: EmailNotificationTemplate,
   targetUsers?: string[],
   connectionName?: string
 ): Promise<EmailResponse[]> => {
   const emailService = new EmailService(connectionName);
 
-  const transfer_url = parseUrl(
-    params,
-    EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_EXISTING_USER
-  );
+  const transfer_url = parseUrl(params, template);
 
   const props = {
     ...params.emailProps,
@@ -255,6 +243,7 @@ export const innovatorsTransferOwnershipConfirmation = async (
     contextId: string;
     emailProps?: EmailProps;
   },
+  template,
   targetUsers?: string[],
   connectionName?: string
 ): Promise<EmailResponse[]> => {
@@ -265,7 +254,7 @@ export const innovatorsTransferOwnershipConfirmation = async (
     {
       email: recipient,
     },
-    EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_CONFIRMATION,
+    template,
     params.emailProps
   );
 
@@ -279,6 +268,7 @@ export const accessorsInnovationArchivalUpdate = async (
     contextId: string;
     emailProps?: EmailProps;
   },
+  template: EmailNotificationTemplate,
   targetUsers?: string[],
   connectionName?: string
 ): Promise<EmailResponse[]> => {
@@ -290,11 +280,67 @@ export const accessorsInnovationArchivalUpdate = async (
     ...params.emailProps,
   };
 
-  const result = await emailService.sendMany(
-    recipients,
-    EmailNotificationTemplate.ACCESSORS_INNOVATION_ARCHIVAL_UPDATE,
-    props
+  const result = await emailService.sendMany(recipients, template, props);
+
+  return result;
+};
+
+export const innovatorsAccountCreatedHandler = async (
+  requestUser: RequestUser,
+  params: {
+    contextId: string;
+    emailProps?: EmailProps;
+  },
+  template: EmailNotificationTemplate,
+  targetUsers?: string[],
+  connectionName?: string
+): Promise<EmailResponse[]> => {
+  const result = await baseEmailExecutor(
+    targetUsers,
+    params,
+    connectionName,
+    template
   );
+
+  return result;
+};
+
+export const innovatorsInnovationRecordSubmitedHandler = async (
+  requestUser: RequestUser,
+  params: {
+    innovationId: string;
+    contextId: string;
+    emailProps?: EmailProps;
+  },
+  template: EmailNotificationTemplate,
+  targetUsers?: string[],
+  connectionName?: string
+): Promise<EmailResponse[]> => {
+  const result = await baseEmailExecutor(
+    targetUsers,
+    params,
+    connectionName,
+    template
+  );
+
+  return result;
+};
+
+const baseEmailExecutor = async (
+  targetUsers,
+  params,
+  connectionName,
+  template
+) => {
+  const recipients = targetUsers;
+
+  const props = {
+    ...params.emailProps,
+  };
+
+  const emailService = new EmailService(connectionName);
+
+  const result = await emailService.sendMany(recipients, template, props);
 
   return result;
 };

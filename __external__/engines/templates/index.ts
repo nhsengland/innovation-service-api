@@ -113,4 +113,47 @@ export const getTemplates = (): EmailTemplate[] => [
       innovation_name: "",
     },
   },
+  {
+    id: "62486954-b235-4aa6-8b8d-960191fc6e69",
+    code: "INNOVATORS_ACCOUNT_CREATED",
+    props: {
+      innovation_service_url: "",
+    },
+  },
+  {
+    id: "f34dd5fd-815b-4cc5-841d-46623ee85ad6",
+    code: "INNOVATORS_NEEDS_ASSESSMENT_SUBMITED",
+    props: {
+      display_name: "",
+      innovation_name: "",
+    },
+  },
+  {
+    id: "20555202-3ee0-4d98-8434-fb86b6f59e26",
+    code: "ASSESSMENT_USERS_INNOVATION_SUBMITED",
+    props: {
+      display_name: "",
+      innovation_name: "",
+      innovation_url: "",
+    },
+  },
+  {
+    id: "fc3a50df-ee25-46e4-a51d-33e98406b124",
+    code: "INNOVATORS_COMMENT_RECEIVED",
+    props: {
+      display_name: "",
+      accessor_name: "",
+      unit_name: "",
+      comment_url: "",
+    },
+  },
+  {
+    id: "cb032a3a-ff63-4794-97fe-c951a54c31dc",
+    code: "INNOVATORS_NEEDS_ASSESSMENT_COMPLETED",
+    props: {
+      display_name: "",
+      innovation_name: "",
+      needs_assessment_url: "",
+    },
+  },
 ];

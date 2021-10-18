@@ -981,6 +981,24 @@ export class InnovationService extends BaseService<Innovation> {
       );
     }
 
+    try {
+      await this.notificationService.sendEmail(
+        requestUser,
+        EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_SUBMITED,
+        innovation.id,
+        innovation.id,
+        [requestUser.id],
+        {
+          innovation_name: innovation.name,
+        }
+      );
+    } catch (error) {
+      this.logService.error(
+        `An error has occured while sending an email with the template ${EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_SUBMITED}.`,
+        error
+      );
+    }
+
     return {
       id: innovation.id,
       status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,

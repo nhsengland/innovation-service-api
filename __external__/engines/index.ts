@@ -6,6 +6,7 @@ import * as handlers from "./handlers";
 type HandlerFunc = (
   requestUser: RequestUser,
   params: { [key: string]: any },
+  template: EmailNotificationTemplate,
   targetUsers?: string[],
   connectionName?: string
 ) => Promise<EmailResponse[]>;
@@ -42,5 +43,13 @@ export const emailEngines = (): { key: string; handler: HandlerFunc }[] => [
   {
     key: EmailNotificationTemplate.ACCESSORS_INNOVATION_ARCHIVAL_UPDATE,
     handler: handlers.accessorsInnovationArchivalUpdate,
+  },
+  {
+    key: EmailNotificationTemplate.INNOVATORS_ACCOUNT_CREATED,
+    handler: handlers.innovatorsAccountCreatedHandler,
+  },
+  {
+    key: EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_SUBMITED,
+    handler: handlers.innovatorsInnovationRecordSubmitedHandler,
   },
 ];
