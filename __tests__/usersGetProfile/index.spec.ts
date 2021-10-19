@@ -1,4 +1,4 @@
-/* eslint-disable */ 
+/* eslint-disable */
 import * as persistence from "../../usersGetProfile/persistence";
 import * as usersGetProfile from "../../usersGetProfile";
 import * as connection from "../../utils/connection";
@@ -38,8 +38,8 @@ describe("[HttpTrigger] usersGetProfile Test Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(decodejwt, 'decodeToken').and.returnValue({oid: ':oid'});
-      spyOn(connection, "setupSQLConnection").and.throwError(
+      jest.spyOn(decodejwt, 'decodeToken').mockResolvedValue({oid: ':oid'});
+      jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
 
@@ -52,10 +52,10 @@ describe("[HttpTrigger] usersGetProfile Test Suite", () => {
     });
 
     it("fails on missing authorization header", async () => {
-      spyOn(decodejwt, 'decodeToken').and.returnValue({oid: ':oid'});
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
-      spyOn(validation, "ValidateHeaders").and.returnValue({
+      jest.spyOn(decodejwt, 'decodeToken').mockResolvedValue({oid: ':oid'});
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(null);
+      jest.spyOn(validation, "ValidateHeaders").mockResolvedValue({
         error: "missing authorization header",
       });
       const { res } = await mockedRequestFactory({});
@@ -63,10 +63,10 @@ describe("[HttpTrigger] usersGetProfile Test Suite", () => {
     });
 
     it("Should return 200 when User Profile is found", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
-      spyOn(validation, "ValidateHeaders").and.returnValue({});
-      spyOn(persistence, "getProfile").and.returnValue([
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(null);
+      jest.spyOn(validation, "ValidateHeaders").mockResolvedValue({} as any);
+      jest.spyOn(persistence, "getProfile").mockResolvedValue([
         {
           id: ":user_oid",
           displayName: ":test_user",
@@ -79,9 +79,9 @@ describe("[HttpTrigger] usersGetProfile Test Suite", () => {
             },
           ],
         },
-      ]);
+      ] as any);
 
-      spyOn(decodejwt, "decodeToken").and.returnValue({
+      jest.spyOn(decodejwt, "decodeToken").mockResolvedValue({
         oid: ":user_oid",
       });
 
@@ -92,12 +92,12 @@ describe("[HttpTrigger] usersGetProfile Test Suite", () => {
     });
 
     it("Should return 404 when User Profile is not found", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
-      spyOn(validation, "ValidateHeaders").and.returnValue({});
-      spyOn(persistence, "getProfile").and.returnValue(null);
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(null);
+      jest.spyOn(validation, "ValidateHeaders").mockResolvedValue({} as any);
+      jest.spyOn(persistence, "getProfile").mockResolvedValue(null);
 
-      spyOn(decodejwt, "decodeToken").and.returnValue({
+      jest.spyOn(decodejwt, "decodeToken").mockResolvedValue({
         oid: ":user_oid",
       });
 
@@ -108,12 +108,12 @@ describe("[HttpTrigger] usersGetProfile Test Suite", () => {
     });
 
     it("Should return 500 when User Profile fetch fails", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
-      spyOn(validation, "ValidateHeaders").and.returnValue({});
-      spyOn(persistence, "getProfile").and.throwError("");
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(null);
+      jest.spyOn(validation, "ValidateHeaders").mockResolvedValue({} as any);
+      jest.spyOn(persistence, "getProfile").mockRejectedValue("");
 
-      spyOn(decodejwt, "decodeToken").and.returnValue({
+      jest.spyOn(decodejwt, "decodeToken").mockResolvedValue({
         oid: ":user_oid",
       });
 

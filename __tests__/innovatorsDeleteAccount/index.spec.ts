@@ -48,8 +48,8 @@ describe("[HttpTrigger] innovatorsDeleteAccount Test Suite", () => {
       jest.resetAllMocks();
     });
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
-      spyOn(connection, "setupSQLConnection").and.throwError(
+      jest.spyOn(authentication, 'decodeToken').mockReturnValue({ oid: ':oid' });
+      jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
 
@@ -60,14 +60,14 @@ describe("[HttpTrigger] innovatorsDeleteAccount Test Suite", () => {
         "Error establishing connection with the datasource."
       );
     });
-  
+
       it("Should handle error persistence return error", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
-      spyOn(authentication, "decodeToken").and.returnValue({
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
+      jest.spyOn(authentication, "decodeToken").mockReturnValue({
         oid: "test_accessor_id",
       });
-      spyOn(persistence, "deleteAccount").and.throwError(
+      jest.spyOn(persistence, "deleteAccount").mockRejectedValue(
         "Error."
       );
 
@@ -78,12 +78,12 @@ describe("[HttpTrigger] innovatorsDeleteAccount Test Suite", () => {
     });
 
     it("Should return 204 when delete account return no error ", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
-      spyOn(authentication, "decodeToken").and.returnValue({
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
+      jest.spyOn(authentication, "decodeToken").mockReturnValue({
         oid: "test_innovator_id",
       });
-      spyOn(persistence, "deleteAccount").and.returnValue([{}]);
+      jest.spyOn(persistence, "deleteAccount").mockResolvedValue([{}] as any);
 
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(204);
@@ -106,7 +106,7 @@ async function mockedRequestFactory(data?: any) {
           "http://nhse-i-aac/api/innovators/{userId}/delete",
           { ...data.headers }, // headers
           {},
-          { 
+          {
             reason :":reason"
           }, // payload/body
           {} // querystring

@@ -45,8 +45,8 @@ describe("[HttpTrigger] notificationsGetUnreadGroupedByContext Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
-      spyOn(connection, "setupSQLConnection").and.throwError(
+      jest.spyOn(authentication, 'decodeToken').mockReturnValue({oid: ':oid'});
+      jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
 
@@ -60,12 +60,12 @@ describe("[HttpTrigger] notificationsGetUnreadGroupedByContext Suite", () => {
 
     it("Should return 200 and notifications object", async () => {
 
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
+      jest.spyOn(authentication, 'decodeToken').mockReturnValue({oid: ':oid'});
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
 
 
-      spyOn(persistence, "getAllUnreadNotificationsCounts").and.returnValue({ INNOVATION: 1, ACTION: 1, DATA_SHARING: 1, SUPPORT: 2, COMMENT: 4});
+      jest.spyOn(persistence, "getAllUnreadNotificationsCounts").mockResolvedValue({ INNOVATION: 1, ACTION: 1, DATA_SHARING: 1, SUPPORT: 2, COMMENT: 4});
 
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(200);
@@ -73,11 +73,11 @@ describe("[HttpTrigger] notificationsGetUnreadGroupedByContext Suite", () => {
     });
 
     it("Should return 200 and an empty object when no unread notifications exist", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
+      jest.spyOn(authentication, 'decodeToken').mockReturnValue({oid: ':oid'});
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
 
-      spyOn(persistence, "getAllUnreadNotificationsCounts").and.returnValue({ });
+      jest.spyOn(persistence, "getAllUnreadNotificationsCounts").mockResolvedValue({ });
 
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(200);

@@ -16,12 +16,16 @@ describe("[accessorsGetInnovationSection] Persistence suite", () => {
   describe("findInnovationSectionByAccessor", () => {
     it("should assess if an innovation section exists", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(
-        InnovationSectionService.prototype,
-        "findSection"
-      ).and.returnValue([{ section: "SECTION", data: {} }]);
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation(
+        (connectionName: string) =>
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          ({ close: () => {} } as typeorm.Connection)
+      );
+
+      const spy = jest
+        .spyOn(InnovationSectionService.prototype as any, "findSection")
+        .mockResolvedValue([{ section: "SECTION", data: {} }]);
 
       const ctx = {
         services: {

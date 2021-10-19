@@ -55,15 +55,15 @@ describe("Notification Service Suite", () => {
     notificationService = new NotificationService(process.env.DB_TESTS_NAME);
     supportService = new InnovationSupportService(process.env.DB_TESTS_NAME);
 
-    spyOn(insights, "getInstance").and.returnValue({
+    jest.spyOn(insights, "getInstance").mockReturnValue({
       default: {
         trackTrace: () => {
           return;
         },
       },
-    });
+    } as any);
 
-    spyOn(engines, "emailEngines").and.returnValue([
+    jest.spyOn(engines, "emailEngines").mockReturnValue([
       {
         key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
         handler: async function () {
@@ -983,7 +983,10 @@ describe("Notification Service Suite", () => {
   });
 
   it("should get aggregated unread Innovations count", async () => {
-    spyOn(helpers, "getUserFromB2C").and.returnValue({
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       id: ":accessor_user_id_1",
       displayName: "Accessor 1",
       identities: [

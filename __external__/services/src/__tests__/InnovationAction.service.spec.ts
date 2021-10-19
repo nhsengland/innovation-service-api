@@ -114,8 +114,10 @@ describe("Innovation Action Suite", () => {
       {}
     );
 
-    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
-    spyOn(helpers, "getUserFromB2C").and.returnValue({
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Q Accessor A",
       identities: [
         {
@@ -124,12 +126,12 @@ describe("Innovation Action Suite", () => {
         },
       ],
     });
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: accessorUser.id, displayName: ":ACCESSOR" },
       { id: qualAccessorUser.id, displayName: ":QUALIFYING_ACCESSOR" },
     ]);
 
-    spyOn(engines, "emailEngines").and.returnValue([
+    jest.spyOn(engines, "emailEngines").mockReturnValue([
       {
         key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
         handler: async function () {
@@ -409,7 +411,6 @@ describe("Innovation Action Suite", () => {
         section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
       }
     );
-
     const item = await actionService.find(
       innovatorRequestUser,
       action.id,

@@ -435,12 +435,19 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
       }
 
       if (element.status === InnovationActionStatus.IN_REVIEW) {
-        await this.notificationService.sendEmail(
-          requestUser,
-          EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
-          innovationId,
-          element.id
-        );
+        try {
+          await this.notificationService.sendEmail(
+            requestUser,
+            EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
+            innovationId,
+            element.id
+          );
+        } catch (error) {
+          this.logService.error(
+            `An error has occured while creating an email notification of type ${NotificationContextType.ACTION} from ${requestUser.id}`,
+            error
+          );
+        }
       }
     }
 

@@ -161,9 +161,11 @@ describe("Innovation Evidence Suite", () => {
     );
     evidence.files = [file.id];
 
-    spyOn(storage_blob.BlobClient.prototype, "deleteIfExists").and.returnValue({
-      succeeded: true,
-    });
+    jest
+      .spyOn(storage_blob.BlobClient.prototype, "deleteIfExists")
+      .mockResolvedValue({
+        succeeded: true,
+      } as any);
 
     await evidenceService.update(
       innovatorRequestUser,

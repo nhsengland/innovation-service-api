@@ -66,8 +66,10 @@ describe("Comment Service Suite", () => {
       })
     );
 
-    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
-    spyOn(helpers, "getUserFromB2C").and.returnValue({
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Q Accessor A",
     });
 
@@ -175,7 +177,7 @@ describe("Comment Service Suite", () => {
   });
 
   it("should find all comments by an Innovation", async () => {
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: innovatorRequestUser.id, displayName: ":INNOVATOR" },
       { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
     ]);
@@ -195,7 +197,7 @@ describe("Comment Service Suite", () => {
   });
 
   it("should find all comments by an Accessor", async () => {
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: innovatorRequestUser.id, displayName: ":INNOVATOR" },
       { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
     ]);

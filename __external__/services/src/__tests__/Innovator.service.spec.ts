@@ -222,10 +222,12 @@ describe("Innovator Service Suite", () => {
     const innovation = await fixtures.saveInnovation(innovationObj);
     const connection = innovationService.getConnection();
     let result;
-    spyOn(innovationService, "findAllByInnovator").and.returnValues(true);
-    spyOn(userService, "deleteAccount").and.returnValues(
-      fakeRequestUser.requestUser
-    );
+    jest
+      .spyOn(innovationService, "findAllByInnovator")
+      .mockResolvedValue(true as any);
+    jest
+      .spyOn(userService, "deleteAccount")
+      .mockResolvedValue(fakeRequestUser.requestUser as any);
     return await connection.transaction(async (transactionManager) => {
       result = await innovationService.archiveInnovation(
         fakeRequestUser.requestUser,

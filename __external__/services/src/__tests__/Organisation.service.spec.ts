@@ -217,8 +217,8 @@ describe("Organisation Service Suite", () => {
   });
 
   it("should return organisation unit users by q. accessor units", async () => {
-    spyOn(helpers, "authenticateWitGraphAPI").and.stub();
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: "abc-def-ghi", displayName: ":ACCESSOR" },
       { id: "ttt-aaa-ddd", displayName: ":QUALIFYING_ACCESSOR" },
     ]);
@@ -275,8 +275,8 @@ describe("Organisation Service Suite", () => {
   });
 
   it("should return organisation unit users", async () => {
-    spyOn(helpers, "authenticateWitGraphAPI").and.stub();
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: "abc-def-ghi", displayName: ":ACCESSOR" },
       { id: "ttt-aaa-ddd", displayName: ":QUALIFYING_ACCESSOR" },
     ]);
