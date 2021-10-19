@@ -17,7 +17,7 @@ describe("Logger Service Suite", () => {
 
   it("should log an error with an error object", () => {
     const error = new Error("a test error");
-    const spy = spyOn(loggerService, "error");
+    const spy = jest.spyOn(loggerService, "error");
     const message = "A test error";
     let err;
     try {
@@ -31,7 +31,7 @@ describe("Logger Service Suite", () => {
   });
 
   it("should log a log message", () => {
-    const spy = spyOn(loggerService, "log");
+    const spy = jest.spyOn(loggerService, "log");
     const message = "A test error";
     const params = { some: "additional prop", and: "another prop" };
     let err;

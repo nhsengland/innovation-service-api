@@ -14,12 +14,14 @@ describe("[notificationsGetEmailTypes] Persistence suite", () => {
   describe("getEmailNotificationPreferences", () => {
     it("should find all email notification preferences for a user", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(
-        NotificationService.prototype,
-        "getEmailNotificationPreferences"
-      ).and.returnValue([{ id: "NotificationType", isSubscribed: false }]);
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest
+        .spyOn(typeorm, "getConnection")
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        .mockImplementation(() => ({ close: () => {} } as typeorm.Connection));
+      const spy = jest
+        .spyOn(NotificationService.prototype, "getEmailNotificationPreferences")
+        .mockResolvedValue([{ id: "NotificationType", isSubscribed: false }]);
 
       const ctx = {
         auth: {

@@ -155,8 +155,10 @@ describe("Innovation Assessment Suite", () => {
   });
 
   it("should find an assessment by innovation id", async () => {
-    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
-    spyOn(helpers, "getUsersFromB2C").and.returnValue([
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       {
         id: assessmentRequestUser.id,
         displayName: ":displayName",
@@ -244,10 +246,14 @@ describe("Innovation Assessment Suite", () => {
   });
 
   it("should update an assessment with submission even when notifications fail", async () => {
-    spyOn(NotificationService.prototype, "create").and.throwError("error");
-    spyOn(NotificationService.prototype, "sendEmail").and.throwError("error");
+    jest
+      .spyOn(NotificationService.prototype, "create")
+      .mockRejectedValue("error");
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockRejectedValue("error");
 
-    const spy = spyOn(LoggerService.prototype, "error");
+    const spy = jest.spyOn(LoggerService.prototype, "error");
 
     const assessmentObj = {
       ...dummy.assessment,
@@ -280,8 +286,10 @@ describe("Innovation Assessment Suite", () => {
   });
 
   it("should find an assessment by qualifying accessor", async () => {
-    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
-    spyOn(helpers, "getUsersFromB2C").and.returnValue([
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       {
         id: assessmentRequestUser.id,
         displayName: ":displayName",
@@ -311,8 +319,10 @@ describe("Innovation Assessment Suite", () => {
   });
 
   it("should find an assessment by innovator", async () => {
-    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
-    spyOn(helpers, "getUsersFromB2C").and.returnValue([
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       {
         id: assessmentRequestUser.id,
         displayName: ":displayName",
@@ -361,9 +371,9 @@ describe("Innovation Assessment Suite", () => {
       organisationUnits: [fakeOrganisationUnit.id],
     };
 
-    spyOn(notificationService, "sendEmail");
+    jest.spyOn(notificationService, "sendEmail");
 
-    const spy = spyOn(notificationService, "create");
+    const spy = jest.spyOn(notificationService, "create");
 
     const item = await assessmentService.update(
       assessmentRequestUser,

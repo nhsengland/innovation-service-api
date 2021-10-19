@@ -1,6 +1,16 @@
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import { RequestUser } from "@services/models/RequestUser";
+import { EmailResponse } from "@services/services/Email.service";
 import * as handlers from "./handlers";
-export const emailEngines = () => [
+
+type HandlerFunc = (
+  requestUser: RequestUser,
+  params: { [key: string]: any },
+  targetUsers?: string[],
+  connectionName?: string
+) => Promise<EmailResponse[]>;
+
+export const emailEngines = (): { key: string; handler: HandlerFunc }[] => [
   {
     key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
     handler: handlers.accessorsActionToReviewHandler,

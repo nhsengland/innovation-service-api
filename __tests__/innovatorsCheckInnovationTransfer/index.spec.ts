@@ -45,8 +45,8 @@ describe("[HttpTrigger] innovatorsCheckInnovationTransfer Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({ oid: ':oid' });
-      spyOn(connection, "setupSQLConnection").and.throwError(
+      jest.spyOn(authentication, 'decodeToken').mockReturnValue({ oid: ':oid' });
+      jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
 
@@ -59,9 +59,9 @@ describe("[HttpTrigger] innovatorsCheckInnovationTransfer Suite", () => {
     });
 
     it("Should return 200 when check Innovation Transfer", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
-      spyOn(persistence, "checkInnovationTransferById").and.returnValue(
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
+      jest.spyOn(persistence, "checkInnovationTransferById").mockResolvedValue(
         {
           userExists: true
         },
@@ -72,9 +72,9 @@ describe("[HttpTrigger] innovatorsCheckInnovationTransfer Suite", () => {
     });
 
     it("Should handle error persistence return error", async () => {
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
-      spyOn(persistence, "checkInnovationTransferById").and.throwError(
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
+      jest.spyOn(persistence, "checkInnovationTransferById").mockRejectedValue(
         "Error."
       );
 

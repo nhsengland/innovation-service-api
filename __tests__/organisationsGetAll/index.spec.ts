@@ -1,4 +1,4 @@
-/* eslint-disable */ 
+/* eslint-disable */
 import * as persistence from "../../organisationsGetAll/persistence";
 import organisationsGetAll from "../../organisationsGetAll";
 import * as connection from "../../utils/connection";
@@ -36,8 +36,8 @@ describe("[HttpTrigger] organisationsGetAll Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
-      spyOn(connection, "setupSQLConnection").and.throwError(
+      jest.spyOn(authentication, 'decodeToken').mockReturnValue({oid: ':oid'});
+      jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
 
@@ -50,24 +50,24 @@ describe("[HttpTrigger] organisationsGetAll Suite", () => {
     });
 
     it("Should return 200 when Organisations is found", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
+      jest.spyOn(authentication, 'decodeToken').mockReturnValue({oid: ':oid'});
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(null);
 
-      spyOn(persistence, "findAll").and.returnValue([
+      jest.spyOn(persistence, "findAll").mockResolvedValue([
         { id: "organisation_id" },
-      ]);
+      ] as any);
 
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(200);
     });
 
     it("Should return 404 when not found", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(null);
+      jest.spyOn(authentication, 'decodeToken').mockReturnValue({oid: ':oid'});
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(null);
 
-      spyOn(persistence, "findAll").and.returnValue(undefined);
+      jest.spyOn(persistence, "findAll").mockResolvedValue(undefined);
 
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(404);

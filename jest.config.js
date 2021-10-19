@@ -56,7 +56,7 @@ module.exports = {
     "@engines/(.*)": "<rootDir>/__external__/engines/$1",
     "@helpers/(.*)": "<rootDir>/__external__/services/src/helpers/$1",
   },
-  restoreMocks: true,
-  clearMocks: true,
-  resetMocks: true,
+  //restoreMocks: true,
+  //clearMocks: true,
+  //resetMocks: true,
 }

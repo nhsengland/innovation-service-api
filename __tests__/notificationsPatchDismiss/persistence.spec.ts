@@ -14,12 +14,15 @@ describe("[notificationsGetUnreadGroupedByStatus] Persistence suite", () => {
   describe("dismissNotifications", () => {
     it("should find all notifications grouped by context", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(
-        NotificationService.prototype,
-        "dismiss"
-      ).and.returnValue({});
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation(
+        (connectionName: string) =>
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          ({ close: () => {} } as typeorm.Connection)
+      );
+      const spy = jest
+        .spyOn(NotificationService.prototype, "dismiss")
+        .mockResolvedValue({} as any);
 
       const ctx = {
         auth: {

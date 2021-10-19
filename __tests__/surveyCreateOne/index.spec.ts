@@ -5,7 +5,7 @@ import {
 } from "stub-azure-function-context";
 import surveyCreateOne from "../../surveyCreateOne/index";
 import * as persistence from "../../surveyCreateOne/persistence";
-import * as Validation from "../../surveyCreateOne/validation";
+import * as validation from "../../surveyCreateOne/validation";
 
 jest.mock("../../utils/logging/insights", () => ({
   start: () => { },
@@ -34,7 +34,7 @@ describe("[HttpTrigger] SurveyCreateOne Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(mongoose, "connect").and.throwError(
+      jest.spyOn(mongoose, "connect").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
 
@@ -47,26 +47,26 @@ describe("[HttpTrigger] SurveyCreateOne Suite", () => {
     });
 
     it("fails on missing payload", async () => {
-      spyOn(mongoose, "connect").and.returnValue(null);
+      jest.spyOn(mongoose, "connect").mockResolvedValue(null);
 
       const { res } = await mockedRequestFactory();
       expect(res.status).toBe(422);
     });
 
     it("succeeds on persisting document", async () => {
-      spyOn(mongoose, "connect").and.returnValue(null);
-      spyOn(Validation, "ValidatePayload").and.returnValue({ error: null });
-      spyOn(persistence, "GetId").and.returnValue("aaaa-bbb-ccc");
-      const spy = spyOn(persistence, "Save");
+      jest.spyOn(mongoose, "connect").mockResolvedValue(null);
+      jest.spyOn(validation, "ValidatePayload").mockReturnValue({ error: null });
+      jest.spyOn(persistence, "GetId").mockReturnValue("aaaa-bbb-ccc" as any);
+      const spy = jest.spyOn(persistence, "Save").mockImplementation();
 
       await mockedRequestFactory();
       expect(spy).toHaveBeenCalled();
     });
 
     it("fails on persisting document", async () => {
-      spyOn(mongoose, "connect").and.returnValue(null);
-      spyOn(Validation, "ValidatePayload").and.returnValue({ error: null });
-      spyOn(persistence, "Save").and.throwError(null);
+      jest.spyOn(mongoose, "connect").mockResolvedValue(null);
+      jest.spyOn(validation, "ValidatePayload").mockReturnValue({ error: null });
+      jest.spyOn(persistence, "Save").mockRejectedValue(null);
 
       const { res } = await mockedRequestFactory();
       expect(res.status).toBe(500);

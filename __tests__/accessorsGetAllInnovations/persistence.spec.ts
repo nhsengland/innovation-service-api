@@ -13,12 +13,18 @@ describe("[accessorsGetAllInnovations] Persistence suite", () => {
   describe("findAllInnovationsByAccessor", () => {
     it("should assess if an Accessor exists", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(
-        InnovationService.prototype,
-        "findAllByAccessorAndSupportStatus"
-      ).and.returnValue([{ id: "innovationA" }, { id: "innovationB" }]);
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation(
+        (connectionName: string) =>
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          ({ close: () => {} } as typeorm.Connection)
+      );
+      const spy = jest
+        .spyOn(InnovationService.prototype, "findAllByAccessorAndSupportStatus")
+        .mockResolvedValue([
+          { id: "innovationA" },
+          { id: "innovationB" },
+        ] as any);
 
       const ctx = {
         services: {

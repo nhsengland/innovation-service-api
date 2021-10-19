@@ -45,8 +45,8 @@ describe("[HttpTrigger] notificationPatchDismiss Suite", () => {
     });
 
     it("fails when connection is not established", async () => {
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
-      spyOn(connection, "setupSQLConnection").and.throwError(
+      jest.spyOn(authentication, 'decodeToken').mockReturnValue({oid: ':oid'});
+      jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
         "Error establishing connection with the datasource."
       );
 
@@ -60,12 +60,12 @@ describe("[HttpTrigger] notificationPatchDismiss Suite", () => {
 
     it("Should return 200", async () => {
 
-      spyOn(authentication, 'decodeToken').and.returnValue({oid: ':oid'});
-      spyOn(connection, "setupSQLConnection").and.returnValue(null);
-      spyOn(service_loader, "loadAllServices").and.returnValue(dummy.services);
+      jest.spyOn(authentication, 'decodeToken').mockReturnValue({oid: ':oid'});
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
 
 
-      spyOn(persistence, "patchDismissNotification").and.returnValue({});
+      jest.spyOn(persistence, "patchDismissNotification").mockResolvedValue({} as any);
 
       const { res } = await mockedRequestFactory({body :{
         contextId:':contextId',

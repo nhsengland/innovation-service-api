@@ -32,8 +32,8 @@ describe("Email Service Suite", () => {
   });
 
   it("should send a test email", async () => {
-    spyOn(helpers, "authenticateWitGraphAPI");
-    spyOn(helpers, "getUsersFromB2C").and.returnValue([
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       {
         id: ":accessor_user_id_1",
         displayName: "Accessor 1",
@@ -63,8 +63,8 @@ describe("Email Service Suite", () => {
   });
 
   it("should fail sending email when personalisation has incorrect properties", async () => {
-    spyOn(helpers, "authenticateWitGraphAPI");
-    spyOn(helpers, "getUsersFromB2C").and.returnValue([
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       {
         id: ":accessor_user_id_1",
         displayName: "Accessor 1",
@@ -100,8 +100,8 @@ describe("Email Service Suite", () => {
   });
 
   it("should fail sending email when personalisation has missing properties", async () => {
-    spyOn(helpers, "authenticateWitGraphAPI");
-    spyOn(helpers, "getUsersFromB2C").and.returnValue([
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       {
         id: ":accessor_user_id_1",
         displayName: "Accessor 1",
