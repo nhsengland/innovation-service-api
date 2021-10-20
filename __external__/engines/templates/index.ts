@@ -140,6 +140,13 @@ export const getTemplates = (): EmailTemplate[] => [
   {
     id: "fc3a50df-ee25-46e4-a51d-33e98406b124",
     code: "INNOVATORS_COMMENT_RECEIVED",
+    path: {
+      url: "innovator/innovations/:innovationId/comments/:contextId",
+      params: {
+        innovationId: "",
+        contextId: "",
+      },
+    },
     props: {
       display_name: "",
       accessor_name: "",

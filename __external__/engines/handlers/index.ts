@@ -7,6 +7,7 @@ import {
   NotificationPreference,
 } from "@domain/index";
 import * as helpers from "@helpers/index";
+import { UserService } from "@services/index";
 import { EmailTemplateNotFound, InvalidParamsError } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
 import {
@@ -321,6 +322,42 @@ export const innovatorsInnovationRecordSubmitedHandler = async (
     params,
     connectionName,
     template
+  );
+
+  return result;
+};
+
+export const innovatorsCommentReceivedHandler = async (
+  requestUser: RequestUser,
+  params: {
+    innovationId: string;
+    contextId: string;
+    emailProps?: EmailProps;
+  },
+  template: EmailNotificationTemplate,
+  targetUsers?: string[],
+  connectionName?: string
+): Promise<EmailResponse[]> => {
+  const recipient = targetUsers[0];
+  const emailService = new EmailService(connectionName);
+  const userService = new UserService(connectionName);
+
+  const comment_url = parseUrl(params, template);
+  const profile = await userService.getProfile(recipient);
+  const display_name = profile.displayName;
+
+  const props = {
+    ...params.emailProps,
+    comment_url,
+    display_name,
+  };
+
+  const result = await emailService.sendOne(
+    {
+      email: profile.email,
+    },
+    EmailNotificationTemplate.INNOVATORS_COMMENT_RECEIVED,
+    props
   );
 
   return result;

@@ -52,4 +52,16 @@ export const emailEngines = (): { key: string; handler: HandlerFunc }[] => [
     key: EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_SUBMITED,
     handler: handlers.innovatorsInnovationRecordSubmitedHandler,
   },
+  {
+    key: EmailNotificationTemplate.INNOVATORS_COMMENT_RECEIVED,
+    handler: handlers.innovatorsCommentReceivedHandler,
+  },
+  {
+    key: EmailNotificationTemplate.ASSESSMENT_USERS_INNOVATION_SUBMITED,
+    handler: null,
+  },
+  {
+    key: EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_COMPLETED,
+    handler: null,
+  },
 ];
