@@ -245,6 +245,7 @@ export class InnovationAssessmentService {
         );
       }
 
+      // send email to Qualifying Accessors
       try {
         // maps the units object to only the unit id
         const units = suggestedOrganisationUnits.map((u) => u.id);
@@ -266,6 +267,27 @@ export class InnovationAssessmentService {
       } catch (error) {
         this.logService.error(
           `An error has occured while sending an email of type ${EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED}`,
+          error
+        );
+      }
+
+      // send email to innovator
+      try {
+        const innovation = await this.innovationService.find(innovationId, {
+          relations: ["owner"],
+        });
+
+        // sends an email notification to those Qualifying Accessors
+        await this.notificationService.sendEmail(
+          requestUser,
+          EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_COMPLETED,
+          innovationId,
+          innovationId,
+          [innovation.owner.id]
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while sending an email of type ${EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_COMPLETED}`,
           error
         );
       }

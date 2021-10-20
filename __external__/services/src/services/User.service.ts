@@ -507,4 +507,14 @@ export class UserService {
       status: "OK",
     };
   }
+
+  async getUsersOfType(type: UserType): Promise<User[]> {
+    const users = await this.userRepo.find({
+      where: {
+        type: UserType.ASSESSMENT,
+      },
+    });
+
+    return users;
+  }
 }

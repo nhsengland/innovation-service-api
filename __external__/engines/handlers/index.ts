@@ -5,6 +5,7 @@ import {
   InnovationSupportStatus,
   NotificationContextType,
   NotificationPreference,
+  UserType,
 } from "@domain/index";
 import * as helpers from "@helpers/index";
 import { UserService } from "@services/index";
@@ -358,6 +359,68 @@ export const innovatorsCommentReceivedHandler = async (
     },
     EmailNotificationTemplate.INNOVATORS_COMMENT_RECEIVED,
     props
+  );
+
+  return result;
+};
+
+export const assessmentUsersInnovationRecordSubmitedHandler = async (
+  requestUser: RequestUser,
+  params: {
+    innovationId: string;
+    contextId: string;
+    emailProps?: EmailProps;
+  },
+  template: EmailNotificationTemplate,
+  targetUsers?: string[],
+  connectionName?: string
+): Promise<EmailResponse[]> => {
+  if (!targetUsers || targetUsers.length === 0) {
+    const userService = new UserService(connectionName);
+    const assessmentUsers = await userService.getUsersOfType(
+      UserType.ASSESSMENT
+    );
+
+    targetUsers = assessmentUsers.map((a) => a.id);
+  }
+
+  const innovation_url = parseUrl(params, template);
+  params.emailProps = {
+    ...params.emailProps,
+    innovation_url,
+  };
+
+  const result = await baseEmailExecutor(
+    targetUsers,
+    params,
+    connectionName,
+    template
+  );
+
+  return result;
+};
+
+export const innovatorsAssessmentCompleteHandler = async (
+  requestUser: RequestUser,
+  params: {
+    innovationId: string;
+    contextId: string;
+    emailProps?: EmailProps;
+  },
+  template: EmailNotificationTemplate,
+  targetUsers?: string[],
+  connectionName?: string
+): Promise<EmailResponse[]> => {
+  const needs_assessment_url = parseUrl(params, template);
+  params.emailProps = {
+    ...params.emailProps,
+    needs_assessment_url,
+  };
+  const result = await baseEmailExecutor(
+    targetUsers,
+    params,
+    connectionName,
+    template
   );
 
   return result;
