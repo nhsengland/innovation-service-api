@@ -18,6 +18,7 @@ import {
 } from "@services/services/Email.service";
 import { getRepository } from "typeorm";
 import { getTemplates } from "../templates";
+import { getEmailNotificationPreferences } from "notificationsGetEmailTypes/persistence";
 
 export const accessorsActionToReviewHandler = async (
   requestUser: RequestUser,
@@ -339,7 +340,17 @@ export const innovatorsCommentReceivedHandler = async (
   targetUsers?: string[],
   connectionName?: string
 ): Promise<EmailResponse[]> => {
-  const recipient = targetUsers[0];
+  const recipients = await filterRecipientsByPreference(
+    NotificationContextType.COMMENT,
+    targetUsers,
+    connectionName
+  );
+
+  // exit early if there are no recipients after filtering out preferences.
+  if (recipients.length === 0) return;
+
+  const recipient = recipients[0];
+
   const emailService = new EmailService(connectionName);
   const userService = new UserService(connectionName);
 
