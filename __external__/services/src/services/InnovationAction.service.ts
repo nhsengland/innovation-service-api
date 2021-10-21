@@ -204,7 +204,7 @@ export class InnovationActionService {
     if (
       !innovationAction ||
       innovationAction.innovationSupport.organisationUnit.id !==
-        organisationUnit.id
+      organisationUnit.id
     ) {
       throw new InvalidDataError("Invalid action data.");
     }
@@ -565,6 +565,7 @@ export class InnovationActionService {
     name: string,
     skip: number,
     take: number,
+    isNotDeleted?: boolean,
     order?: { [key: string]: "ASC" | "DESC" }
   ) {
     if (!requestUser) {
@@ -621,7 +622,13 @@ export class InnovationActionService {
         statuses: innovationStatus,
       });
     }
-
+    else {
+      if (isNotDeleted) {
+        query.andWhere("innovationAction.status NOT IN (:...statuses)", {
+          statuses: [InnovationActionStatus.DELETED],
+        });
+      }
+    }
     if (innovationSection && innovationSection.length > 0) {
       query.andWhere("innovationSection.section IN (:...sections)", {
         sections: innovationSection,
