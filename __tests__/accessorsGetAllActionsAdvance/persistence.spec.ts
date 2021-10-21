@@ -40,8 +40,7 @@ describe("[accessorsGetAllActionsAdvance] Persistence suite", () => {
         [],
         "",
         0,
-        10,
-        true
+        10
       );
 
       expect(spy).toHaveBeenCalled();

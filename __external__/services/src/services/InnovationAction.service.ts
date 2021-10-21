@@ -565,7 +565,6 @@ export class InnovationActionService {
     name: string,
     skip: number,
     take: number,
-    isNotDeleted?: boolean,
     order?: { [key: string]: "ASC" | "DESC" }
   ) {
     if (!requestUser) {
@@ -620,15 +619,11 @@ export class InnovationActionService {
     if (innovationStatus && innovationStatus.length > 0) {
       query.andWhere("innovationAction.status IN (:...statuses)", {
         statuses: innovationStatus,
+
       });
     }
-    else {
-      if (isNotDeleted) {
-        query.andWhere("innovationAction.status NOT IN (:...statuses)", {
-          statuses: [InnovationActionStatus.DELETED],
-        });
-      }
-    }
+    query.andWhere("innovationAction.status != :status", { status: InnovationActionStatus.DELETED });
+
     if (innovationSection && innovationSection.length > 0) {
       query.andWhere("innovationSection.section IN (:...sections)", {
         sections: innovationSection,

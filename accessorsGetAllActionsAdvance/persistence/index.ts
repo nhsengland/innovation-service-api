@@ -7,7 +7,6 @@ export const findAllByAccessorAdvanced = async (
   name: string,
   skip: number,
   take: number,
-  isNotDeleted?: boolean,
   order?: { [key: string]: "ASC" | "DESC" }
 ) => {
   const result = await ctx.services.InnovationActionService.findAllByAccessorAdvanced(
@@ -17,7 +16,6 @@ export const findAllByAccessorAdvanced = async (
     name,
     skip,
     take,
-    isNotDeleted,
     order
   );
   return result;

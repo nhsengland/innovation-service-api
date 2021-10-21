@@ -657,8 +657,7 @@ describe("Innovation Action Suite", () => {
       ["INNOVATION_DESCRIPTION"],
       "",
       0,
-      10,
-      true
+      10
     );
 
     expect(item).toBeDefined();

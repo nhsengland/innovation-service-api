@@ -41,10 +41,6 @@ class AccessorsGetAllActionsAdvance {
     if (query.order) {
       order = JSON.parse(query.order);
     }
-    let isNotDeleted;
-    if (query.isNotDeleted) {
-      isNotDeleted = JSON.parse(query.isNotDeleted);
-    }
     let result;
     try {
       result = await persistence.findAllByAccessorAdvanced(
@@ -54,7 +50,6 @@ class AccessorsGetAllActionsAdvance {
         name,
         skip,
         take,
-        isNotDeleted,
         order
       );
     } catch (error) {
