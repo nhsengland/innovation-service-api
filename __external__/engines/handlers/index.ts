@@ -347,28 +347,20 @@ export const innovatorsCommentReceivedHandler = async (
 
   // exit early if there are no recipients after filtering out preferences.
   if (recipients.length === 0) return;
-
-  const recipient = recipients[0];
-
-  const emailService = new EmailService(connectionName);
-  const userService = new UserService(connectionName);
+  //
 
   const comment_url = parseUrl(params, template);
-  const profile = await userService.getProfile(recipient);
-  const display_name = profile.displayName;
 
-  const props = {
+  params.emailProps = {
     ...params.emailProps,
     comment_url,
-    display_name,
   };
 
-  const result = await emailService.sendOne(
-    {
-      email: profile.email,
-    },
-    EmailNotificationTemplate.INNOVATORS_COMMENT_RECEIVED,
-    props
+  const result = await baseEmailExecutor(
+    recipients,
+    params,
+    connectionName,
+    template
   );
 
   return result;
