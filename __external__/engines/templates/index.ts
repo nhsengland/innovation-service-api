@@ -164,7 +164,7 @@ export const getTemplates = (): EmailTemplate[] => [
     id: "cb032a3a-ff63-4794-97fe-c951a54c31dc",
     code: "INNOVATORS_NEEDS_ASSESSMENT_COMPLETED",
     path: {
-      url: "innovator/innovations/:innovationId/assessment/:contextId",
+      url: "innovator/innovations/:innovationId/assessments/:contextId",
       params: {
         contextId: "",
         innovationId: "",

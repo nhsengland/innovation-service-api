@@ -18,7 +18,6 @@ import {
 } from "@services/services/Email.service";
 import { getRepository } from "typeorm";
 import { getTemplates } from "../templates";
-import { getEmailNotificationPreferences } from "notificationsGetEmailTypes/persistence";
 
 export const accessorsActionToReviewHandler = async (
   requestUser: RequestUser,

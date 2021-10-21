@@ -261,7 +261,7 @@ export class InnovationAssessmentService {
           requestUser,
           EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED,
           innovationId,
-          innovationId,
+          assessmentDb.id,
           qualifyingAccessors
         );
       } catch (error) {
@@ -277,13 +277,16 @@ export class InnovationAssessmentService {
           relations: ["owner"],
         });
 
-        // sends an email notification to those Qualifying Accessors
+        // sends an email notification to the innovation owner
         await this.notificationService.sendEmail(
           requestUser,
           EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_COMPLETED,
           innovationId,
-          innovationId,
-          [innovation.owner.id]
+          assessmentDb.id,
+          [innovation.owner.id],
+          {
+            innovation_name: innovation.name,
+          }
         );
       } catch (error) {
         this.logService.error(
