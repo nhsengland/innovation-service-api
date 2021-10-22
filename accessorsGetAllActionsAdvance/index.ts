@@ -41,7 +41,6 @@ class AccessorsGetAllActionsAdvance {
     if (query.order) {
       order = JSON.parse(query.order);
     }
-
     let result;
     try {
       result = await persistence.findAllByAccessorAdvanced(

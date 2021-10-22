@@ -204,7 +204,7 @@ export class InnovationActionService {
     if (
       !innovationAction ||
       innovationAction.innovationSupport.organisationUnit.id !==
-        organisationUnit.id
+      organisationUnit.id
     ) {
       throw new InvalidDataError("Invalid action data.");
     }
@@ -619,8 +619,10 @@ export class InnovationActionService {
     if (innovationStatus && innovationStatus.length > 0) {
       query.andWhere("innovationAction.status IN (:...statuses)", {
         statuses: innovationStatus,
+
       });
     }
+    query.andWhere("innovationAction.status != :status", { status: InnovationActionStatus.DELETED });
 
     if (innovationSection && innovationSection.length > 0) {
       query.andWhere("innovationSection.section IN (:...sections)", {
