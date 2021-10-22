@@ -6,7 +6,7 @@ const querySchema = Joi.object({
   name: Joi.string().allow(null, "").optional(),
   take: Joi.number().required(),
   skip: Joi.number().required(),
-  }).unknown(true);
+}).unknown(true);
 
 export const ValidateQueryParams = (data: object): any => {
   return querySchema.validate(data);
