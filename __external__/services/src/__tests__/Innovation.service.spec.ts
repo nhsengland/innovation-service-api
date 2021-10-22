@@ -646,7 +646,8 @@ describe("Innovator Service Suite", () => {
     const fakeInnovations = await fixtures.saveInnovations(
       fixtures.generateInnovation({
         owner: { id: innovatorRequestUser.id },
-        status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
+        status: InnovationStatus.IN_PROGRESS,
+        organisationShares: [{ id: accessorOrganisation.id }],
       })
     );
 
