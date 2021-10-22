@@ -196,6 +196,8 @@ describe("Innovator Service Suite", () => {
       .spyOn(innovationService, "hasIncompleteSections")
       .mockResolvedValue(false);
 
+    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue();
+
     const spy = jest.spyOn(LoggerService.prototype, "error");
 
     const actual = await innovationService.submitInnovation(
@@ -732,6 +734,9 @@ describe("Innovator Service Suite", () => {
     jest
       .spyOn(innovationService, "hasIncompleteSections")
       .mockResolvedValue(false);
+
+    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue();
+
     await innovationService.submitInnovation(
       innovatorRequestUser,
       innovation.id
@@ -751,6 +756,9 @@ describe("Innovator Service Suite", () => {
     jest
       .spyOn(innovationService, "hasIncompleteSections")
       .mockResolvedValue(false);
+
+    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue();
+
     try {
       await innovationService.submitInnovation(undefined, "id");
     } catch (error) {
@@ -765,6 +773,9 @@ describe("Innovator Service Suite", () => {
     jest
       .spyOn(innovationService, "hasIncompleteSections")
       .mockResolvedValue(false);
+
+    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue();
+
     let err;
     try {
       await innovationService.submitInnovation(
@@ -783,6 +794,8 @@ describe("Innovator Service Suite", () => {
     jest
       .spyOn(innovationService, "hasIncompleteSections")
       .mockResolvedValue(true as any);
+
+    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue();
     const innovationObj = fixtures.generateInnovation({
       owner: { id: innovatorRequestUser.id },
       surveyId: "abc",
