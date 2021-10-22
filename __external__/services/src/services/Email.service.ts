@@ -123,8 +123,7 @@ export class EmailService {
         template.id,
         validProps
       );
-
-      result.push(response.data);
+      if (response) result.push(response);
     }
     // replaces temp token with actual recipient display name
 
@@ -153,23 +152,27 @@ export class EmailService {
     const emailPath = process.env.EMAIL_NOTIFICATION_API_EMAIL_PATH;
     const url = `${baseUrl}${emailPath}`;
 
-    const response = await axios.post(
-      url,
-      {
-        template_id: templateId,
+    try {
+      const response = await axios.post(
+        url,
+        {
+          template_id: templateId,
+          email_address: recipientEmail,
+          ...properties,
+        },
+        postConfig
+      );
+
+      this.loggerService.log(`An email was sent`, 1, {
         email_address: recipientEmail,
-        ...properties,
-      },
-      postConfig
-    );
+        template_id: templateId,
+        response: response.data,
+      });
 
-    this.loggerService.log(`An email was sent`, 1, {
-      email_address: recipientEmail,
-      template_id: templateId,
-      response: response.data,
-    });
-
-    return response.data;
+      return response.data;
+    } catch (error) {
+      this.loggerService.error(`An email has failed to be sent`, error);
+    }
   }
 
   private generateBearerToken(): string {

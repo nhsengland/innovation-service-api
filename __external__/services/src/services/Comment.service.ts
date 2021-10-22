@@ -1,3 +1,4 @@
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   Comment,
   NotificationAudience,
@@ -13,6 +14,7 @@ import {
 import { checkIfValidUUID } from "@services/helpers";
 import { CommentModel } from "@services/models/CommentModel";
 import { RequestUser } from "@services/models/RequestUser";
+
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { InnovationService } from "./Innovation.service";
 import { InnovationSupportService } from "./InnovationSupport.service";
@@ -20,7 +22,6 @@ import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
 import { OrganisationService } from "./Organisation.service";
 import { UserService } from "./User.service";
-
 export class CommentService {
   private readonly connection: Connection;
   private readonly commentRepo: Repository<Comment>;
@@ -125,6 +126,37 @@ export class CommentService {
     } catch (error) {
       this.logService.error(
         `An error has occured while creating a notification of type ${NotificationContextType.COMMENT} from ${requestUser.id}`,
+        error
+      );
+    }
+
+    try {
+      if (requestUser.type !== UserType.INNOVATOR) {
+        const innovation = await this.innovationService.find(innovationId, {
+          relations: ["owner"],
+        });
+
+        const owner = innovation.owner.id;
+        const sender = await this.userService.getProfile(requestUser.id);
+        const senderUnit = await this.organisationService.findOrganisationUnitById(
+          requestUser.organisationUnitUser.organisationUnit.id
+        );
+
+        await this.notificationService.sendEmail(
+          requestUser,
+          EmailNotificationTemplate.INNOVATORS_COMMENT_RECEIVED,
+          innovationId,
+          result.id,
+          [owner],
+          {
+            accessor_name: sender.displayName,
+            unit_name: senderUnit.name,
+          }
+        );
+      }
+    } catch (error) {
+      this.logService.error(
+        `An error has occured while sending an email of type ${EmailNotificationTemplate.INNOVATORS_COMMENT_RECEIVED}`,
         error
       );
     }
