@@ -77,6 +77,7 @@ paths:
           description: "Not Found"
         "401":
           description: "Unauthorized"
+
   "/accessors/{userId}/innovations/advanced":
     get:
       tags:
@@ -409,7 +410,6 @@ paths:
         "403":
           description: "Forbidden"
     
-
   "/assessments/{userId}/innovations/{innovationId}/supports/{supportId}":
     get:
       tags:
@@ -452,7 +452,7 @@ paths:
         "403":
           description: "Forbidden"
     
-"/accessors/{userId}/innovations/{innovationId}/support-logs":
+  "/accessors/{userId}/innovations/{innovationId}/support-logs":
     get:
       tags:
         - "Accessor"
@@ -526,7 +526,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/accessors/{userId}/actions":
+  "/accessors/{userId}/actions":
     get:
       tags:
         - "Accessor"
@@ -558,7 +558,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/accessors/{userId}/actions/advance":
+  "/accessors/{userId}/actions/advance":
     get:
       tags:
         - "Accessor"
@@ -590,7 +590,7 @@ paths:
         "403":
           description: "Forbidden"       
 
-"/accessors/{userId}/innovations/{innovationId}/actions":
+  "/accessors/{userId}/innovations/{innovationId}/actions":
     get:
       tags:
         - "Accessor"
@@ -664,7 +664,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/accessors/{userId}/innovations/{innovationId}/actions/{actionId}":
+  "/accessors/{userId}/innovations/{innovationId}/actions/{actionId}":
     get:
       tags:
         - "Accessor"
@@ -748,7 +748,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/accessors/{userId}/innovations/{innovationId}/evidence/{evidenceId}":
+  "/accessors/{userId}/innovations/{innovationId}/evidence/{evidenceId}":
     get:
       tags:
         - "Accessor"
@@ -790,7 +790,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/accessors/{userId}/innovations/{innovationId}/assessments/{assessmentId}":
+  "/accessors/{userId}/innovations/{innovationId}/assessments/{assessmentId}":
     get:
       tags:
         - "Accessor"
@@ -832,7 +832,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/accessors/{userId}/innovations/{innovationId}/comments":
+  "/accessors/{userId}/innovations/{innovationId}/comments":
     get:
       tags:
         - "Accessor"
@@ -906,7 +906,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/innovators":
+  "/innovators":
     post:
       tags:
         - "Innovator"
@@ -934,7 +934,7 @@ paths:
         "422":
           description: "UnprocessableEntity"
 
-"/innovators/{userId}":
+  "/innovators/{userId}":
     head:
       tags:
         - "Innovator"
@@ -963,7 +963,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-"/innovators/check":
+  "/innovators/check":
     get:
       tags:
         - "Innovator"
@@ -987,7 +987,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-"/innovators/{userId}/innovations":
+  "/innovators/{userId}/innovations":
     get:
       tags:
         - "Innovator"
@@ -1045,7 +1045,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/innovators/{userId}/innovations/{innovationId}":
+  "/innovators/{userId}/innovations/{innovationId}":
     get:
       tags:
         - "Innovator"
@@ -1080,7 +1080,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-"/innovators/{userId}/innovations/{innovationId}/submit":
+  "/innovators/{userId}/innovations/{innovationId}/submit":
     patch:
       tags:
         - "Innovator"
@@ -1117,7 +1117,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/innovators/{userId}/innovations/{innovationId}/archive":
+  "/innovators/{userId}/innovations/{innovationId}/archive":
     patch:
       tags:
         - "Innovator"
@@ -1154,7 +1154,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/innovators/{userId}/delete":
+  "/innovators/{userId}/delete":
     patch:
       tags:
         - "Innovator_Account_Delete"
@@ -1184,7 +1184,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/innovators/{userId}/innovations/{innovationId}/section-summary":
+  "/innovators/{userId}/innovations/{innovationId}/section-summary":
     get:
       tags:
         - "Innovator"
@@ -1219,7 +1219,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-"/innovators/{userId}/innovations/{innovationId}/sections":
+  "/innovators/{userId}/innovations/{innovationId}/sections":
     get:
       tags:
         - "Innovator"
@@ -1293,7 +1293,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/innovators/{userId}/innovations/{innovationId}/sections/submit":
+  "/innovators/{userId}/innovations/{innovationId}/sections/submit":
     patch:
       tags:
         - "Innovator"
@@ -1332,7 +1332,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/innovators/{userId}/innovations/{innovationId}/shares":
+  "/innovators/{userId}/innovations/{innovationId}/shares":
     get:
       tags:
         - "Innovator"
@@ -1406,7 +1406,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/innovators/{userId}/innovations/{innovationId}/evidence":
+  "/innovators/{userId}/innovations/{innovationId}/evidence":
     post:
       tags:
         - "Innovator"
@@ -1445,7 +1445,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/innovators/{userId}/innovations/{innovationId}/evidence/{evidenceId}":
+  "/innovators/{userId}/innovations/{innovationId}/evidence/{evidenceId}":
     get:
       tags:
         - "Innovator"
@@ -1567,7 +1567,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-"/innovators/{userId}/innovations/{innovationId}/actions/{actionId}":
+  "/innovators/{userId}/innovations/{innovationId}/actions/{actionId}":
     get:
       tags:
         - "Innovator"
@@ -1651,7 +1651,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/innovators/{userId}/innovations/{innovationId}/actions":
+  "/innovators/{userId}/innovations/{innovationId}/actions":
     get:
       tags:
         - "Innovator"
@@ -1688,7 +1688,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/innovators/{userId}/innovations/{innovationId}/upload":
+  "/innovators/{userId}/innovations/{innovationId}/upload":
     post:
       tags:
         - "Innovator"
@@ -1735,7 +1735,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-"/innovators/{userId}/innovations/{innovationId}/comments":
+  "/innovators/{userId}/innovations/{innovationId}/comments":
     get:
       tags:
         - "Innovator"
@@ -1809,7 +1809,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/innovators/{userId}/innovations/{innovationId}/supports":
+  "/innovators/{userId}/innovations/{innovationId}/supports":
     get:
       tags:
         - "Innovator"
@@ -1846,7 +1846,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/innovators/{userId}/innovations/{innovationId}/support-logs":
+  "/innovators/{userId}/innovations/{innovationId}/support-logs":
     get:
       tags:
         - "Innovator"
@@ -1883,7 +1883,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/innovators/{userId}/innovations/{innovationId}/suggestions":
+  "/innovators/{userId}/innovations/{innovationId}/suggestions":
     get:
       tags:
         - "Innovator"
@@ -1920,7 +1920,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/innovators/{userId}/innovations/{innovationId}/assessments/{assessmentId}":
+  "/innovators/{userId}/innovations/{innovationId}/assessments/{assessmentId}":
     get:
       tags:
         - "Innovator"
@@ -1962,7 +1962,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/innovators/innovation-transfers":
+  "/innovators/innovation-transfers":
     get:
       tags:
         - "Innovator"
@@ -2014,7 +2014,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/innovators/innovation-transfers/{transferId}":
+  "/innovators/innovation-transfers/{transferId}":
     get:
       tags:
         - "Innovator"
@@ -2076,7 +2076,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/innovators/innovation-transfers/{transferId}/check":
+  "/innovators/innovation-transfers/{transferId}/check":
     get:
       tags:
         - "Innovator"
@@ -2103,7 +2103,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/me":
+  "/me":
     get:
       tags:
         - "Users"
@@ -2151,7 +2151,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/organisations":
+  "/organisations":
     get:
       tags:
         - "Organisation"
@@ -2175,7 +2175,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-"/organisation-units":
+  "/organisation-units":
     get:
       tags:
         - "OrganisationUnit"
@@ -2199,7 +2199,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-"/assessments/{userId}/innovations/{innovationId}":
+  "/assessments/{userId}/innovations/{innovationId}":
     get:
       tags:
         - "assessment"
@@ -2233,7 +2233,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-"/assessments/{userId}/innovations":
+  "/assessments/{userId}/innovations":
     get:
       tags:
         - "assessment"
@@ -2262,7 +2262,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-"/assessments/{userId}/innovations/{innovationId}/assessments":
+  "/assessments/{userId}/innovations/{innovationId}/assessments":
     post:
       tags:
         - "Assessment"
@@ -2301,7 +2301,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/assessments/{userId}/innovations/{innovationId}/assessments/{assessmentId}":
+  "/assessments/{userId}/innovations/{innovationId}/assessments/{assessmentId}":
     get:
       tags:
         - "Assessment"
@@ -2385,7 +2385,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/assessments/{userId}/innovations/{innovationId}/evidence/{evidenceId}":
+  "/assessments/{userId}/innovations/{innovationId}/evidence/{evidenceId}":
     get:
       tags:
         - "Assessment"
@@ -2427,7 +2427,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/assessments/{userId}/innovations/{innovationId}/section-summary":
+  "/assessments/{userId}/innovations/{innovationId}/section-summary":
     get:
       tags:
         - "Assessment"
@@ -2462,7 +2462,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-"/assessments/{userId}/innovations/{innovationId}/sections":
+  "/assessments/{userId}/innovations/{innovationId}/sections":
     get:
       tags:
         - "Assessment"
@@ -2499,7 +2499,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/user-admin/users":
+  "/user-admin/users":
     post:
       tags:
         - "Admin"
@@ -2553,7 +2553,7 @@ paths:
         "403":
           description: "Forbidden"
 
-"/notifications":
+  "/notifications":
     patch:
       tags:
         - "Notifications"
@@ -2589,7 +2589,8 @@ paths:
           description: "Not Found"
         "401":
           description: "Unauthorized"
-"/notifications/context":
+
+  "/notifications/context":
     get:
       tags:
         - "NotificationsGroupedByContext"
@@ -2613,7 +2614,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-"/notifications/status":
+  "/notifications/status":
     get:
       tags:
         - "NotificationsGroupedByStatus"
@@ -2642,7 +2643,7 @@ paths:
         "401":
           description: "Unauthorized"
 
-"/email-notifications":
+  "/email-notifications":
     get:
       tags:
         - "EmailNotifications"
