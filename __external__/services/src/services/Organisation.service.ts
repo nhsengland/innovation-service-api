@@ -225,6 +225,12 @@ export class OrganisationService extends BaseService<Organisation> {
     }, {});
   }
 
+  async findOrganisationUnitById(
+    organisationUnitId: string
+  ): Promise<OrganisationUnit> {
+    return this.orgUnitRepo.findOne(organisationUnitId);
+  }
+
   async addUserToOrganisation(
     user: User,
     organisation: Organisation,

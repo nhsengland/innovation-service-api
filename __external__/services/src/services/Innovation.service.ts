@@ -804,7 +804,14 @@ export class InnovationService extends BaseService<Innovation> {
     }
 
     const innovationFilterOptions: FindOneOptions = {
-      relations: ["owner", "categories", "assessments", "assessments.assignTo"],
+      relations: [
+        "owner",
+        "assessments",
+        "assessments.assignTo",
+        "innovationSupports",
+        "innovationSupports.organisationUnit",
+        "categories",
+      ],
     };
 
     const innovation = await super.find(id, innovationFilterOptions);
@@ -826,6 +833,21 @@ export class InnovationService extends BaseService<Innovation> {
       assessment.assignToName = b2cAssessmentUser.displayName;
     }
 
+    const organisationUnit = requestUser.organisationUnitUser;
+
+    const support = {
+      id: null,
+      status: null,
+    };
+    const innovationSupport: InnovationSupport = innovation?.innovationSupports.find(
+      (is: InnovationSupport) => is.organisationUnit.id === organisationUnit.id
+    );
+
+    if (innovationSupport) {
+      support.id = innovationSupport.id;
+      support.status = innovationSupport.status;
+    }
+
     return {
       summary: {
         id: innovation.id,
@@ -844,6 +866,7 @@ export class InnovationService extends BaseService<Innovation> {
         phone: b2cOwnerUser.phone,
       },
       assessment,
+      support,
     };
   }
 
@@ -977,6 +1000,44 @@ export class InnovationService extends BaseService<Innovation> {
     } catch (error) {
       this.logService.error(
         `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
+        error
+      );
+    }
+
+    // send email to Innovator that submited this innovation
+    try {
+      await this.notificationService.sendEmail(
+        requestUser,
+        EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_SUBMITED,
+        innovation.id,
+        innovation.id,
+        [requestUser.id],
+        {
+          innovation_name: innovation.name,
+        }
+      );
+    } catch (error) {
+      this.logService.error(
+        `An error has occured while sending an email with the template ${EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_SUBMITED}.`,
+        error
+      );
+    }
+
+    // send email to all Needs Assessment users
+    try {
+      await this.notificationService.sendEmail(
+        requestUser,
+        EmailNotificationTemplate.ASSESSMENT_USERS_INNOVATION_SUBMITED,
+        innovation.id,
+        innovation.id,
+        null, // list of recipients determined by the handler
+        {
+          innovation_name: innovation.name,
+        }
+      );
+    } catch (error) {
+      this.logService.error(
+        `An error has occured while sending an email with the template ${EmailNotificationTemplate.ASSESSMENT_USERS_INNOVATION_SUBMITED}.`,
         error
       );
     }

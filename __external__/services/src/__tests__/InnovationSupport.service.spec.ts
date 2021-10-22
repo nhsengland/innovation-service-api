@@ -41,6 +41,7 @@ describe("Innovation Support Suite", () => {
   let innovatorRequestUser: RequestUser;
   let accessorRequestUser: RequestUser;
   let qAccessorRequestUser: RequestUser;
+  let naRequestUser: RequestUser;
 
   beforeAll(async () => {
     // await setupTestsConnection();
@@ -53,6 +54,7 @@ describe("Innovation Support Suite", () => {
     const innovatorUser = await fixtures.createInnovatorUser();
     const qualAccessorUser = await fixtures.createAccessorUser();
     const accessorUser = await fixtures.createAccessorUser();
+    const naUser = await fixtures.createAssessmentUser();
 
     const accessorOrganisation = await fixtures.createOrganisation(
       OrganisationType.ACCESSOR
@@ -112,6 +114,8 @@ describe("Innovation Support Suite", () => {
       organisationAccessorUser,
       organisationUnitAccessorUser
     );
+
+    naRequestUser = fixtures.getRequestUser(naUser);
 
     jest.spyOn(engines, "emailEngines").mockReturnValue([
       {
@@ -261,6 +265,34 @@ describe("Innovation Support Suite", () => {
 
     expect(item).toBeDefined();
     expect(item.status).toEqual(InnovationSupportStatus.ENGAGING);
+    expect(item.accessors.length).toEqual(1);
+  });
+
+  it("should find an support for NeedAssessemnt", async () => {
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
+      { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
+      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
+
+    const supportObj = {
+      status: InnovationSupportStatus.COMPLETE,
+      accessors: [accessorRequestUser.organisationUnitUser.id],
+    };
+
+    const support = await supportService.create(
+      qAccessorRequestUser,
+      innovation.id,
+      supportObj
+    );
+
+    const item = await supportService.find(
+      naRequestUser,
+      support.id,
+      innovation.id
+    );
+
+    expect(item).toBeDefined();
+    expect(item.status).toEqual(InnovationSupportStatus.COMPLETE);
     expect(item.accessors.length).toEqual(1);
   });
 
