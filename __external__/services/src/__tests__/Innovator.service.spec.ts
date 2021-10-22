@@ -16,12 +16,14 @@ import { UserService } from "@services/services/User.service";
 import { InnovationService } from "@services/services/Innovation.service";
 import * as helpers from "../../src/helpers/index";
 import { closeTestsConnection, setupTestsConnection } from "..";
+import { NotificationService } from "@services/services/Notification.service";
+
 describe("Innovator Service Suite", () => {
   let userService: UserService;
   let innovationService: InnovationService;
 
   beforeAll(async () => {
-    //  await setupTestsConnection();
+    //await setupTestsConnection();
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
     });
@@ -45,7 +47,7 @@ describe("Innovator Service Suite", () => {
       .createQueryBuilder()
       .delete();
     await query.from(Innovation).execute();
-    // await closeTestsConnection();
+    await closeTestsConnection();
   });
 
   it("should instantiate the innovator service", async () => {
@@ -146,6 +148,15 @@ describe("Innovator Service Suite", () => {
     innovation.description = "description";
     innovation.countryName = "UK";
 
+    jest.spyOn(UserService.prototype, "getProfile").mockResolvedValue({
+      id: ":id",
+      email: "test@example.com",
+      displayName: ":displayName",
+      type: UserType.INNOVATOR,
+      organisations: [],
+    });
+
+    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue();
     // Act
 
     const result = await innovatorService.createFirstTimeSignIn(

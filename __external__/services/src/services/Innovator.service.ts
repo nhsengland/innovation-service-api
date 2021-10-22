@@ -1,3 +1,4 @@
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   Innovation,
   InnovationStatus,
@@ -15,6 +16,7 @@ import { TransactionResult } from "../models/InnovatorTransactionResult";
 import { BaseService } from "./Base.service";
 import { InnovationService } from "./Innovation.service";
 import { InnovationTransferService } from "./InnovationTransfer.service";
+import { NotificationService } from "./Notification.service";
 import { UserService } from "./User.service";
 
 export class InnovatorService extends BaseService<User> {
@@ -22,6 +24,7 @@ export class InnovatorService extends BaseService<User> {
   private readonly innovationTransferService: InnovationTransferService;
   private readonly innovationService: InnovationService;
   private readonly userService: UserService;
+  private readonly notificationService: NotificationService;
 
   constructor(connectionName?: string) {
     super(User, connectionName);
@@ -31,6 +34,7 @@ export class InnovatorService extends BaseService<User> {
     );
     this.innovationService = new InnovationService(connectionName);
     this.userService = new UserService(connectionName);
+    this.notificationService = new NotificationService(connectionName);
   }
 
   async create(user: User): Promise<User> {
@@ -82,8 +86,6 @@ export class InnovatorService extends BaseService<User> {
 
       await queryRunner.manager.save(organisationUser);
 
-      await queryRunner.commitTransaction();
-
       result = {
         user: {
           id: _innovator.id,
@@ -92,6 +94,9 @@ export class InnovatorService extends BaseService<User> {
         organisation: _organisation,
         innovation: _innovation,
       };
+
+      await this.sendEmail(innovator);
+      await queryRunner.commitTransaction();
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
@@ -100,6 +105,24 @@ export class InnovatorService extends BaseService<User> {
     }
 
     return result;
+  }
+
+  async sendEmail(innovator: User): Promise<void> {
+    const requestUser: RequestUser = {
+      id: innovator.id,
+      type: UserType.INNOVATOR,
+    };
+
+    await this.notificationService.sendEmail(
+      requestUser,
+      EmailNotificationTemplate.INNOVATORS_ACCOUNT_CREATED,
+      null,
+      innovator.id,
+      [innovator.id],
+      {
+        innovation_service_url: process.env.CLIENT_WEB_BASE_URL,
+      }
+    );
   }
 
   async createFirstTimeSignInTransfer(
