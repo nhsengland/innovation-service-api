@@ -804,14 +804,7 @@ export class InnovationService extends BaseService<Innovation> {
     }
 
     const innovationFilterOptions: FindOneOptions = {
-      relations: [
-        "owner",
-        "assessments",
-        "assessments.assignTo",
-        "innovationSupports",
-        "innovationSupports.organisationUnit",
-        "categories",
-      ],
+      relations: ["owner", "categories", "assessments", "assessments.assignTo"],
     };
 
     const innovation = await super.find(id, innovationFilterOptions);
@@ -833,21 +826,6 @@ export class InnovationService extends BaseService<Innovation> {
       assessment.assignToName = b2cAssessmentUser.displayName;
     }
 
-    const organisationUnit = requestUser.organisationUnitUser;
-
-    const support = {
-      id: null,
-      status: null,
-    };
-    const innovationSupport: InnovationSupport = innovation?.innovationSupports.find(
-      (is: InnovationSupport) => is.organisationUnit.id === organisationUnit.id
-    );
-
-    if (innovationSupport) {
-      support.id = innovationSupport.id;
-      support.status = innovationSupport.status;
-    }
-
     return {
       summary: {
         id: innovation.id,
@@ -866,7 +844,6 @@ export class InnovationService extends BaseService<Innovation> {
         phone: b2cOwnerUser.phone,
       },
       assessment,
-      support,
     };
   }
 
