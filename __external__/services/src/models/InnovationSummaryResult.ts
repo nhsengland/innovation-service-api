@@ -63,8 +63,4 @@ export interface AssessmentInnovationSummary {
     id: string;
     assignToName: string;
   };
-  support: {
-    id: string;
-    status: InnovationSupportStatus;
-  };
 }

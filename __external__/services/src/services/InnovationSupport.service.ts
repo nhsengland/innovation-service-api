@@ -192,6 +192,89 @@ export class InnovationSupportService {
     });
   }
 
+  async findAllByInnovationAssessment(
+    requestUser: RequestUser,
+    innovationId: string,
+    full?: boolean
+  ): Promise<InnovationSupportModel[]> {
+    if (!requestUser || !innovationId || !checkIfValidUUID(innovationId)) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+
+    const filterOptions = {
+      relations: [
+        "innovationSupports",
+        "innovationSupports.organisationUnit",
+        "innovationSupports.organisationUnit.organisation",
+        "innovationSupports.organisationUnitUsers",
+        "innovationSupports.organisationUnitUsers.organisationUser",
+        "innovationSupports.organisationUnitUsers.organisationUser.user",
+      ],
+    };
+    const innovation = await this.innovationService.findInnovation(
+      requestUser,
+      innovationId,
+      filterOptions
+    );
+    if (!innovation) {
+      throw new InnovationNotFoundError(
+        "Invalid parameters. Innovation not found."
+      );
+    }
+    const innovationSupports = innovation.innovationSupports;
+    if (!innovationSupports || innovationSupports.length === 0) {
+      return [];
+    }
+
+    let b2cUserNames;
+    if (full) {
+      const userIds = innovationSupports.flatMap((sup: InnovationSupport) => {
+        if (sup.status === InnovationSupportStatus.ENGAGING) {
+          return sup.organisationUnitUsers.map(
+            (ouu: OrganisationUnitUser) => ouu.organisationUser.user.id
+          );
+        } else {
+          return [];
+        }
+      });
+      const b2cUsers = await this.userService.getListOfUsers(userIds);
+      b2cUserNames = b2cUsers.reduce((map, obj) => {
+        map[obj.id] = obj.displayName;
+        return map;
+      }, {});
+    }
+
+    return innovationSupports.map((sup: InnovationSupport) => {
+      const organisationUnit = sup.organisationUnit;
+      const organisation = organisationUnit.organisation;
+
+      const response: InnovationSupportModel = {
+        id: sup.id,
+        status: sup.status,
+        organisationUnit: {
+          id: organisationUnit.id,
+          name: organisationUnit.name,
+          organisation: {
+            id: organisation.id,
+            name: organisation.name,
+            acronym: organisation.acronym,
+          },
+        },
+      };
+
+      if (full && sup.status === InnovationSupportStatus.ENGAGING) {
+        response.accessors = sup.organisationUnitUsers?.map(
+          (organisationUnitUser: OrganisationUnitUser) => ({
+            id: organisationUnitUser.id,
+            name: b2cUserNames[organisationUnitUser.organisationUser.user.id],
+          })
+        );
+      }
+
+      return response;
+    });
+  }
+
   async create(requestUser: RequestUser, innovationId: string, support: any) {
     if (!requestUser || !support) {
       throw new InvalidParamsError("Invalid parameters.");

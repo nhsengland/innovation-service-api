@@ -5,7 +5,7 @@ export const findAllInnovationSupports = async (
   innovationId: string,
   full?: boolean
 ) => {
-  const result = await ctx.services.InnovationSupportService.findAllByInnovation(
+  const result = await ctx.services.InnovationSupportService.findAllByInnovationAssessment(
     ctx.auth.requestUser,
     innovationId,
     full

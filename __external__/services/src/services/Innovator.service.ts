@@ -120,7 +120,7 @@ export class InnovatorService extends BaseService<User> {
       innovator.id,
       [innovator.id],
       {
-        innovation_service_url: process.env.CLIENT_WEB_BASE_URL,
+        innovation_service_url: process.env.LANDING_PAGE_URL,
       }
     );
   }

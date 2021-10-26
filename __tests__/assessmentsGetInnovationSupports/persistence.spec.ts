@@ -21,7 +21,10 @@ describe("[assessmentsGetInnovationSupports] Persistence suite", () => {
           ({ close: () => {} } as typeorm.Connection)
       );
       const spy = jest
-        .spyOn(InnovationSupportService.prototype, "findAllByInnovation")
+        .spyOn(
+          InnovationSupportService.prototype,
+          "findAllByInnovationAssessment"
+        )
         .mockResolvedValue([{ id: "" }] as any);
 
       const ctx = {

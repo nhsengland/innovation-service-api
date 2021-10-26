@@ -268,34 +268,6 @@ describe("Innovation Support Suite", () => {
     expect(item.accessors.length).toEqual(1);
   });
 
-  it("should find an support for NeedAssessemnt", async () => {
-    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
-      { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
-      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
-    ]);
-
-    const supportObj = {
-      status: InnovationSupportStatus.COMPLETE,
-      accessors: [accessorRequestUser.organisationUnitUser.id],
-    };
-
-    const support = await supportService.create(
-      qAccessorRequestUser,
-      innovation.id,
-      supportObj
-    );
-
-    const item = await supportService.find(
-      naRequestUser,
-      support.id,
-      innovation.id
-    );
-
-    expect(item).toBeDefined();
-    expect(item.status).toEqual(InnovationSupportStatus.COMPLETE);
-    expect(item.accessors.length).toEqual(1);
-  });
-
   it("should find an support by q. accessor", async () => {
     jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: accessorRequestUser.id, displayName: ":ACCESSOR" },

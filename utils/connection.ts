@@ -10,7 +10,7 @@ export const setupCosmosDb = async () => {
       process.env.COSMOSDB_ACCOUNT
     }:${escape(process.env.COSMOSDB_KEY)}@${process.env.COSMOSDB_HOST}:${
       process.env.COSMOSDB_PORT
-    }/${process.env.COSMOSDB_DB}?ssl=true`;
+    }/${process.env.COSMOSDB_DB}?ssl=true&retryWrites=false`;
     await mongoose.connect(connectionString, {
       dbName: process.env.COSMOS_DB_NAME,
     });
