@@ -56,7 +56,8 @@ export const getTemplates = (): EmailTemplate[] => [
     id: "078070fd-832a-4df2-8f7b-ad616654cbbd",
     code: "QA_ORGANISATION_SUGGESTED",
     path: {
-      url: "transactional/accessor/innovations/:contextId",
+      url:
+        "transactional/accessor/innovations/:innovationId/assessments/:contextId",
       params: {
         innovationId: "",
         contextId: "",
@@ -149,7 +150,7 @@ export const getTemplates = (): EmailTemplate[] => [
     id: "fc3a50df-ee25-46e4-a51d-33e98406b124",
     code: "INNOVATORS_COMMENT_RECEIVED",
     path: {
-      url: "innovator/innovations/:innovationId/comments",
+      url: "transactional/innovator/innovations/:innovationId/comments",
       params: {
         innovationId: "",
         contextId: "",
