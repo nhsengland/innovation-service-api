@@ -113,10 +113,6 @@ export class InnovatorService extends BaseService<User> {
       type: UserType.INNOVATOR,
     };
 
-    const baseAddressBeforeLogin = process.env.CLIENT_WEB_BASE_URL.replace(
-      "/transactional",
-      ""
-    );
     await this.notificationService.sendEmail(
       requestUser,
       EmailNotificationTemplate.INNOVATORS_ACCOUNT_CREATED,
@@ -124,7 +120,7 @@ export class InnovatorService extends BaseService<User> {
       innovator.id,
       [innovator.id],
       {
-        innovation_service_url: baseAddressBeforeLogin,
+        innovation_service_url: process.env.LANDING_PAGE_URL,
       }
     );
   }
