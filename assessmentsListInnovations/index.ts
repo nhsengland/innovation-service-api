@@ -11,6 +11,8 @@ import {
 import { CustomContext, Severity } from "../utils/types";
 import { UserType } from "@services/index";
 import { ValidateQuery } from "./validation";
+import { orderClauseMappings } from "./mappers";
+import { parse } from "../utils/mapper";
 
 class AssessmentsListInnovations {
   @AppInsights()
@@ -32,6 +34,8 @@ class AssessmentsListInnovations {
       order = JSON.parse(query.order);
     }
 
+    const mappedOrder = parse(order, orderClauseMappings);
+
     let result;
     try {
       result = await persistence.getInnovationList(
@@ -39,7 +43,7 @@ class AssessmentsListInnovations {
         statuses,
         skip,
         take,
-        order
+        mappedOrder
       );
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
