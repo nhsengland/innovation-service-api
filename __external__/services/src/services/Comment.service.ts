@@ -8,6 +8,7 @@ import {
 import {
   InnovationNotFoundError,
   InvalidParamsError,
+  InvalidUserRoleError,
   MissingUserOrganisationError,
   MissingUserOrganisationUnitError,
 } from "@services/errors";
@@ -89,10 +90,13 @@ export class CommentService {
     const result = await this.commentRepo.save(commentObj);
 
     let targetNotificationUsers;
-    // If the comment if made by an accessor, it also has to send a notification for assigned accessors regardless of the unit they belong to.
+    // If the comment if made by an accessor/assessment, it also has to send a notification for assigned accessors regardless of the unit they belong to.
     // The create method already knows it has to create a notification to the owner of the innovation.
     // But we need to pass in the accessors that are assigned to this innovation.
-    if (requestUser.type === UserType.ACCESSOR) {
+    if (
+      requestUser.type === UserType.ACCESSOR ||
+      requestUser.type === UserType.ASSESSMENT
+    ) {
       const supports = await this.innovationSupportService.findAllByInnovation(
         requestUser,
         innovationId
@@ -111,18 +115,40 @@ export class CommentService {
       }
     }
 
+    let notificationAudience;
+
+    switch (requestUser.type) {
+      case UserType.INNOVATOR:
+        notificationAudience = [NotificationAudience.ACCESSORS];
+
+        break;
+      case UserType.ACCESSOR:
+        notificationAudience = [NotificationAudience.INNOVATORS];
+
+        break;
+      case UserType.ASSESSMENT:
+        notificationAudience = [
+          NotificationAudience.INNOVATORS,
+          NotificationAudience.ACCESSORS,
+        ];
+
+        break;
+      default:
+        throw new InvalidUserRoleError("Invalid user role.");
+    }
+
     try {
-      await this.notificationService.create(
-        requestUser,
-        requestUser.type === UserType.INNOVATOR
-          ? NotificationAudience.ACCESSORS
-          : NotificationAudience.INNOVATORS,
-        innovationId,
-        NotificationContextType.COMMENT,
-        result.id,
-        `A ${NotificationContextType.COMMENT} was created by ${requestUser.id}`,
-        targetNotificationUsers || []
-      );
+      notificationAudience.forEach(async (na) => {
+        await this.notificationService.create(
+          requestUser,
+          na,
+          innovationId,
+          NotificationContextType.COMMENT,
+          result.id,
+          `A ${NotificationContextType.COMMENT} was created by ${requestUser.id}`,
+          targetNotificationUsers || []
+        );
+      });
     } catch (error) {
       this.logService.error(
         `An error has occured while creating a notification of type ${NotificationContextType.COMMENT} from ${requestUser.id}`,
