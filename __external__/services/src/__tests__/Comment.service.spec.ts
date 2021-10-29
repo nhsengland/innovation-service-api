@@ -17,6 +17,9 @@ import {
   MissingUserOrganisationError,
 } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
+import { NotificationService } from "@services/services/Notification.service";
+import { OrganisationService } from "@services/services/Organisation.service";
+import { UserService } from "@services/services/User.service";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import { getConnection } from "typeorm";
@@ -33,7 +36,7 @@ describe("Comment Service Suite", () => {
   let qAccessorRequestUser: RequestUser;
 
   beforeAll(async () => {
-    // await setupTestsConnection();
+    //await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -66,10 +69,16 @@ describe("Comment Service Suite", () => {
       })
     );
 
-    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
-    spyOn(helpers, "getUserFromB2C").and.returnValue({
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Q Accessor A",
     });
+
+    // jest
+    //   .spyOn(NotificationService.prototype, "sendEmail")
+    //   .mockResolvedValue([] as any);
 
     innovatorRequestUser = fixtures.getRequestUser(innovatorUser);
     qAccessorRequestUser = fixtures.getRequestUser(
@@ -99,7 +108,7 @@ describe("Comment Service Suite", () => {
     await query.from(Organisation).execute();
     await query.from(User).execute();
 
-    // closeTestsConnection();
+    //closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -165,6 +174,16 @@ describe("Comment Service Suite", () => {
   });
 
   it("should create a comment by accessor", async () => {
+    jest
+      .spyOn(OrganisationService.prototype, "findOrganisationUnitById")
+      .mockResolvedValue({
+        name: "Organisation Unit",
+      } as any);
+
+    jest
+      .spyOn(UserService.prototype, "getProfile")
+      .mockResolvedValue({ displayName: "Accessor Name" } as any);
+
     const comment = await commentService.create(
       qAccessorRequestUser,
       innovation.id,
@@ -175,7 +194,7 @@ describe("Comment Service Suite", () => {
   });
 
   it("should find all comments by an Innovation", async () => {
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: innovatorRequestUser.id, displayName: ":INNOVATOR" },
       { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
     ]);
@@ -195,7 +214,7 @@ describe("Comment Service Suite", () => {
   });
 
   it("should find all comments by an Accessor", async () => {
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: innovatorRequestUser.id, displayName: ":INNOVATOR" },
       { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
     ]);

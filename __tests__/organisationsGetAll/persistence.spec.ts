@@ -13,12 +13,18 @@ describe("[organisationsGetAll] Persistence suite", () => {
   describe("findAll", () => {
     it("should find all organisations with type", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(
-        OrganisationService.prototype,
-        "findAll"
-      ).and.returnValue([{ id: "organisationA" }, { id: "organisationB" }]);
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation(
+        (connectionName: string) =>
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          ({ close: () => {} } as typeorm.Connection)
+      );
+      const spy = jest
+        .spyOn(OrganisationService.prototype, "findAll")
+        .mockResolvedValue([
+          { id: "organisationA" },
+          { id: "organisationB" },
+        ] as any);
 
       const ctx = {
         services: {

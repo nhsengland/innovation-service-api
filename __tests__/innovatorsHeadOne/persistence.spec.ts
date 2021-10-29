@@ -13,11 +13,15 @@ describe("[innovatorsHeadOne] Persistence suite", () => {
   describe("headInnovator", () => {
     it("should assess if an Innovator exists", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(InnovatorService.prototype, "find").and.returnValue([
-        { innovator: "" },
-      ]);
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation(
+        (connectionName: string) =>
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          ({ close: () => {} } as typeorm.Connection)
+      );
+      const spy = jest
+        .spyOn(InnovatorService.prototype, "find")
+        .mockResolvedValue([{ innovator: "" }] as any);
 
       const ctx = {
         services: {

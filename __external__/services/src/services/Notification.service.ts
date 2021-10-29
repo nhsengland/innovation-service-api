@@ -91,6 +91,7 @@ export class NotificationService {
           contextId,
           emailProps,
         },
+        templateCode,
         targetUsers,
         this.connectionName
       );

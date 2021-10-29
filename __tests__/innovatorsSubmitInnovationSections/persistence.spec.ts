@@ -16,12 +16,15 @@ describe("[innovatorsSubmitInnovationSection] Persistence suite", () => {
   describe("submitInnovationSection", () => {
     it("should submit an innovation section", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(
-        InnovationSectionService.prototype,
-        "submitSections"
-      ).and.returnValue([]);
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation(
+        (connectionName: string) =>
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          ({ close: () => {} } as typeorm.Connection)
+      );
+      const spy = jest
+        .spyOn(InnovationSectionService.prototype, "submitSections")
+        .mockResolvedValue([] as any);
 
       const ctx = {
         services: {

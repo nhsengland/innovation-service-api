@@ -1,6 +1,17 @@
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import { RequestUser } from "@services/models/RequestUser";
+import { EmailResponse } from "@services/services/Email.service";
 import * as handlers from "./handlers";
-export const emailEngines = () => [
+
+type HandlerFunc = (
+  requestUser: RequestUser,
+  params: { [key: string]: any },
+  template: EmailNotificationTemplate,
+  targetUsers?: string[],
+  connectionName?: string
+) => Promise<EmailResponse[]>;
+
+export const emailEngines = (): { key: string; handler: HandlerFunc }[] => [
   {
     key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
     handler: handlers.accessorsActionToReviewHandler,
@@ -32,5 +43,25 @@ export const emailEngines = () => [
   {
     key: EmailNotificationTemplate.ACCESSORS_INNOVATION_ARCHIVAL_UPDATE,
     handler: handlers.accessorsInnovationArchivalUpdate,
+  },
+  {
+    key: EmailNotificationTemplate.INNOVATORS_ACCOUNT_CREATED,
+    handler: handlers.innovatorsAccountCreatedHandler,
+  },
+  {
+    key: EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_SUBMITED,
+    handler: handlers.innovatorsInnovationRecordSubmitedHandler,
+  },
+  {
+    key: EmailNotificationTemplate.INNOVATORS_COMMENT_RECEIVED,
+    handler: handlers.innovatorsCommentReceivedHandler,
+  },
+  {
+    key: EmailNotificationTemplate.ASSESSMENT_USERS_INNOVATION_SUBMITED,
+    handler: handlers.assessmentUsersInnovationRecordSubmitedHandler,
+  },
+  {
+    key: EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_COMPLETED,
+    handler: handlers.innovatorsAssessmentCompleteHandler,
   },
 ];

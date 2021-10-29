@@ -1,0 +1,15 @@
+{
+    "bindings": [
+      {
+        "authLevel": "anonymous",
+        "type": "httpTrigger",
+        "direction": "in",
+        "name": "req",
+        "methods": ["get"],
+        "route": "assessments/{userId}/innovations/{innovationId}/support-logs"
+      },
+      { "type": "http", "direction": "out", "name": "res" }
+    ],
+    "scriptFile": "../dist/assessmentsGetInnovationSupportLogs/index.js"
+  }
+  

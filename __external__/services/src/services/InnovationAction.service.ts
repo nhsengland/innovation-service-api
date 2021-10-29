@@ -621,6 +621,9 @@ export class InnovationActionService {
         statuses: innovationStatus,
       });
     }
+    query.andWhere("innovationAction.status != :status", {
+      status: InnovationActionStatus.DELETED,
+    });
 
     if (innovationSection && innovationSection.length > 0) {
       query.andWhere("innovationSection.section IN (:...sections)", {

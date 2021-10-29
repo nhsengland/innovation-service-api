@@ -13,12 +13,15 @@ describe("[accessorsGetInnovationEvidence] Persistence suite", () => {
   describe("getInnovationEvidence", () => {
     it("should get an accessors evidence", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(
-        InnovationEvidenceService.prototype,
-        "find"
-      ).and.returnValue([{ id: "" }]);
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation(
+        (connectionName: string) =>
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          ({ close: () => {} } as typeorm.Connection)
+      );
+      const spy = jest
+        .spyOn(InnovationEvidenceService.prototype, "find")
+        .mockResolvedValue([{ id: "" }] as any);
 
       const ctx = {
         services: {
@@ -41,12 +44,15 @@ describe("[accessorsGetInnovationEvidence] Persistence suite", () => {
     });
     it("should get an accessors innovation", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(
-        InnovationService.prototype,
-        "findInnovation"
-      ).and.returnValue([{ id: "" }]);
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest.spyOn(typeorm, "getConnection").mockImplementation(
+        (connectionName: string) =>
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          ({ close: () => {} } as typeorm.Connection)
+      );
+      const spy = jest
+        .spyOn(InnovationService.prototype, "findInnovation")
+        .mockResolvedValue([{ id: "" }] as any);
 
       const ctx = {
         services: {

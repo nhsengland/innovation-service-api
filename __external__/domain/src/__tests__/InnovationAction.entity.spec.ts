@@ -140,5 +140,161 @@ describe("Innovation Action Test Suite", () => {
         expect.arrayContaining(expectedProps)
       );
     });
+
+    it("should create an Innovation Action with a description of 500 characters", async () => {
+      // Arrange
+      const expectedProps = await getEntityColumnList(InnovationAction);
+
+      const userObj = User.new({
+        id: "oid",
+        name: "userDummy",
+        type: UserType.INNOVATOR,
+      });
+      const user = await userRepo.save(userObj);
+
+      const maxLength = 500;
+      const description = new Array(maxLength + 1).join("R");
+
+      const innovationObj = Innovation.new({
+        name: "Innovation A",
+        description: "Innovation A Description",
+        countryName: "Wales",
+        surveyId: "abc",
+        owner: user,
+        status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
+      });
+
+      const innovation = await innovationRepo.save(innovationObj);
+
+      const innovationSectionObj = InnovationSection.new({
+        innovation,
+        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+        status: InnovationSectionStatus.NOT_STARTED,
+      });
+      const innovationSection = await innovationSectionRepo.save(
+        innovationSectionObj
+      );
+
+      const organisationObj = Organisation.new({
+        name: "AccessorOrg",
+        size: "huge",
+        type: OrganisationType.ACCESSOR,
+      });
+      const organisation = await organisationRepo.save(organisationObj);
+
+      const organisationUnitObj = OrganisationUnit.new({
+        organisation,
+        name: "New Unit",
+      });
+      const organisationUnit = await organisationUnitRepo.save(
+        organisationUnitObj
+      );
+
+      const innovationSupportObj = InnovationSupport.new({
+        organisationUnit,
+        innovation,
+        status: InnovationSupportStatus.UNASSIGNED,
+      });
+      const innovationSupport = await innovationSupportRepo.save(
+        innovationSupportObj
+      );
+
+      const innovationActionObj = InnovationAction.new({
+        description,
+        innovationSection,
+        innovationSupport,
+        status: InnovationActionStatus.REQUESTED,
+        assignTo: user,
+      });
+      const innovationAction = await innovationActionRepo.save(
+        innovationActionObj
+      );
+
+      const actual = await innovationActionRepo.findOne(innovationAction.id, {
+        loadRelationIds: true,
+      });
+
+      // Assert
+      expect(Object.keys(classToPlain(actual))).toEqual(
+        expect.arrayContaining(expectedProps)
+      );
+    });
+
+    it("should throw with a description larger than 500 characters", async () => {
+      // Arrange
+      const expectedProps = await getEntityColumnList(InnovationAction);
+
+      const userObj = User.new({
+        id: "oid",
+        name: "userDummy",
+        type: UserType.INNOVATOR,
+      });
+      const user = await userRepo.save(userObj);
+
+      const maxLength = 500;
+      const description = new Array(maxLength + 2).join("R");
+
+      const innovationObj = Innovation.new({
+        name: "Innovation A",
+        description: "Innovation A Description",
+        countryName: "Wales",
+        surveyId: "abc",
+        owner: user,
+        status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
+      });
+
+      const innovation = await innovationRepo.save(innovationObj);
+
+      const innovationSectionObj = InnovationSection.new({
+        innovation,
+        section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+        status: InnovationSectionStatus.NOT_STARTED,
+      });
+      const innovationSection = await innovationSectionRepo.save(
+        innovationSectionObj
+      );
+
+      const organisationObj = Organisation.new({
+        name: "AccessorOrg",
+        size: "huge",
+        type: OrganisationType.ACCESSOR,
+      });
+      const organisation = await organisationRepo.save(organisationObj);
+
+      const organisationUnitObj = OrganisationUnit.new({
+        organisation,
+        name: "New Unit",
+      });
+      const organisationUnit = await organisationUnitRepo.save(
+        organisationUnitObj
+      );
+
+      const innovationSupportObj = InnovationSupport.new({
+        organisationUnit,
+        innovation,
+        status: InnovationSupportStatus.UNASSIGNED,
+      });
+      const innovationSupport = await innovationSupportRepo.save(
+        innovationSupportObj
+      );
+
+      const innovationActionObj = InnovationAction.new({
+        description,
+        innovationSection,
+        innovationSupport,
+        status: InnovationActionStatus.REQUESTED,
+        assignTo: user,
+      });
+
+      let err;
+      try {
+        await innovationActionRepo.save(innovationActionObj);
+      } catch (error) {
+        err = error;
+      }
+
+      // Assert
+      expect(err).toBeDefined();
+    });
   });
 });

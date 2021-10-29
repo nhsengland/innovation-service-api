@@ -41,6 +41,7 @@ describe("Innovation Support Suite", () => {
   let innovatorRequestUser: RequestUser;
   let accessorRequestUser: RequestUser;
   let qAccessorRequestUser: RequestUser;
+  let naRequestUser: RequestUser;
 
   beforeAll(async () => {
     // await setupTestsConnection();
@@ -53,6 +54,7 @@ describe("Innovation Support Suite", () => {
     const innovatorUser = await fixtures.createInnovatorUser();
     const qualAccessorUser = await fixtures.createAccessorUser();
     const accessorUser = await fixtures.createAccessorUser();
+    const naUser = await fixtures.createAssessmentUser();
 
     const accessorOrganisation = await fixtures.createOrganisation(
       OrganisationType.ACCESSOR
@@ -88,8 +90,10 @@ describe("Innovation Support Suite", () => {
     const innovations = await fixtures.saveInnovations(innovationObj);
     innovation = innovations[0];
 
-    spyOn(helpers, "authenticateWitGraphAPI").and.returnValue(":access_token");
-    spyOn(helpers, "getUserFromB2C").and.returnValue({
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Q Accessor A",
       identities: [
         {
@@ -111,7 +115,9 @@ describe("Innovation Support Suite", () => {
       organisationUnitAccessorUser
     );
 
-    spyOn(engines, "emailEngines").and.returnValue([
+    naRequestUser = fixtures.getRequestUser(naUser);
+
+    jest.spyOn(engines, "emailEngines").mockReturnValue([
       {
         key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
         handler: async function () {
@@ -186,10 +192,14 @@ describe("Innovation Support Suite", () => {
       comment: "test comment",
     };
 
-    spyOn(NotificationService.prototype, "create").and.throwError("error");
-    spyOn(NotificationService.prototype, "sendEmail").and.throwError("error");
+    jest
+      .spyOn(NotificationService.prototype, "create")
+      .mockRejectedValue("error");
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockRejectedValue("error");
 
-    const spy = spyOn(LoggerService.prototype, "error");
+    const spy = jest.spyOn(LoggerService.prototype, "error");
 
     const item = await supportService.create(
       qAccessorRequestUser,
@@ -231,7 +241,7 @@ describe("Innovation Support Suite", () => {
   });
 
   it("should find an support by innovator", async () => {
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
       { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
     ]);
@@ -259,7 +269,7 @@ describe("Innovation Support Suite", () => {
   });
 
   it("should find an support by q. accessor", async () => {
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
       { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
     ]);
@@ -287,7 +297,7 @@ describe("Innovation Support Suite", () => {
   });
 
   it("should find an support by accessor", async () => {
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
       { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
     ]);
@@ -360,7 +370,7 @@ describe("Innovation Support Suite", () => {
   });
 
   it("should update an support status to add one accessor", async () => {
-    spyOn(helpers, "getUsersFromB2C").and.returnValues([
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
       { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
     ]);

@@ -15,12 +15,18 @@ describe("[notificationsUpdatePreference] Persistence suite", () => {
   describe("updateEmailNotificationPreferences", () => {
     it("should update email notification preferences for a user", async () => {
       // Arrange
-      spyOn(typeorm, "getRepository");
-      spyOn(typeorm, "getConnection");
-      const spy = spyOn(
-        NotificationService.prototype,
-        "updateEmailNotificationPreferences"
-      ).and.returnValue([{ id: "NotificationType", status: "OK" }]);
+      jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
+      jest
+        .spyOn(typeorm, "getConnection")
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        .mockImplementation(() => ({ close: () => {} } as typeorm.Connection));
+
+      const spy = jest
+        .spyOn(
+          NotificationService.prototype,
+          "updateEmailNotificationPreferences"
+        )
+        .mockResolvedValue([{ id: "NotificationType", status: "OK" }]);
 
       const ctx = {
         auth: {
