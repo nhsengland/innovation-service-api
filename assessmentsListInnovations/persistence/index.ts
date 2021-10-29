@@ -1,3 +1,4 @@
+import { OrderByClauseType } from "@services/types";
 import { CustomContext } from "../../utils/types";
 
 export const getInnovationList = async (
@@ -5,7 +6,7 @@ export const getInnovationList = async (
   statuses: string[],
   skip: number,
   take: number,
-  order?: { [key: string]: string }
+  order?: OrderByClauseType[]
 ) => {
   const result = await ctx.services.InnovationService.getInnovationListByState(
     ctx.auth.requestUser,

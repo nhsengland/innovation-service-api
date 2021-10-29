@@ -61,6 +61,7 @@ import { UserService } from "./User.service";
 import * as constants from "../../../../utils/constants";
 import { InnovationCreationModel } from "@services/models/InnovationCreationModel";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import { OrderByClauseType } from "@services/types";
 
 export class InnovationService extends BaseService<Innovation> {
   private readonly connection: Connection;
@@ -852,23 +853,30 @@ export class InnovationService extends BaseService<Innovation> {
     statuses: string[],
     skip: number,
     take: number,
-    order?: { [key: string]: string }
+    order: OrderByClauseType[] = []
   ): Promise<InnovationListModel> {
-    const filter: FindManyOptions<Innovation> = {
-      where: { status: In(statuses), deletedAt: IsNull() },
-      relations: [
-        "assessments",
-        "assessments.assignTo",
-        "innovationSupports",
-        "innovationSupports.organisationUnit",
-        "innovationSupports.organisationUnit.organisation",
-      ],
-      skip,
-      take,
-      order: order || { createdAt: "DESC" },
-    };
+    const query = this.repository
+      .createQueryBuilder("innovation")
+      .leftJoinAndSelect("innovation.assessments", "assessment")
+      .leftJoinAndSelect("assessment.assignTo", "assignTo")
+      .leftJoinAndSelect("innovation.innovationSupports", "supports")
+      .leftJoinAndSelect("supports.organisationUnit", "unit")
+      .leftJoinAndSelect("unit.organisation", "organisation");
 
-    const result = await this.repository.findAndCount(filter);
+    query.andWhere(
+      "innovation.status in (:...statuses) and innovation.deleted_at IS NULL",
+      {
+        statuses,
+      }
+    );
+    query.skip(skip);
+    query.take(take);
+
+    for (const orderClause of order) {
+      query.addOrderBy(orderClause.field, orderClause.direction);
+    }
+
+    const result = await query.getManyAndCount();
 
     const deepUsers = result[0]
       .filter(
