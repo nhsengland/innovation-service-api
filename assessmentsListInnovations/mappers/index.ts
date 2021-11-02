@@ -12,7 +12,7 @@ export const orderClauseMappings = {
     updatedAt: "innovation.updatedAt",
   },
   defaults: {
-    field: "updatedAt",
+    field: "innovation.updatedAt",
     direction: "ASC",
   },
 };
