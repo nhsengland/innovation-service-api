@@ -6,7 +6,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["get"],
-      "route": "accessors/{userId}/innovations/{innovationId}/comments"
+      "route": "assessments/{userId}/innovations/{innovationId}/comments"
     },
     { "type": "http", "direction": "out", "name": "res" }
   ],
