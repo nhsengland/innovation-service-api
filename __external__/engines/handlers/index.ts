@@ -447,6 +447,32 @@ const baseEmailExecutor = async (
   return result;
 };
 
+export const innovatorsSupportStatusUpdateHandler = async (
+  requestUser: RequestUser,
+  params: {
+    innovationId: string;
+    contextId: string;
+    emailProps?: EmailProps;
+  },
+  template: EmailNotificationTemplate,
+  targetUsers?: string[],
+  connectionName?: string
+): Promise<EmailResponse[]> => {
+  const support_url = parseUrl(params, template);
+  params.emailProps = {
+    ...params.emailProps,
+    support_url,
+  };
+  const result = await baseEmailExecutor(
+    targetUsers,
+    params,
+    connectionName,
+    template
+  );
+
+  return result;
+};
+
 const parseUrl = (params, templateCode): string => {
   const baseUrl = process.env.CLIENT_WEB_BASE_URL;
   const template = getTemplates().find((t) => t.code === templateCode);

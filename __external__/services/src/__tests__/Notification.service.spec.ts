@@ -29,6 +29,7 @@ import {
 import * as engines from "@engines/index";
 import { InvalidParamsError } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
+import { LoggerService } from "@services/services/Logger.service";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import { getConnection } from "typeorm";
@@ -83,6 +84,8 @@ describe("Notification Service Suite", () => {
         },
       },
     ]);
+
+    jest.spyOn(LoggerService.prototype, "error").mockImplementation();
   });
 
   afterAll(async () => {
