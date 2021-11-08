@@ -43,7 +43,8 @@ class AssessmentsListInnovations {
         statuses,
         skip,
         take,
-        mappedOrder
+        mappedOrder,
+        query.supportFilter
       );
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });

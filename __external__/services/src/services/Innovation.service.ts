@@ -3,6 +3,7 @@ import {
   Innovation,
   InnovationAction,
   InnovationActionStatus,
+  InnovationAssessment,
   InnovationSection,
   InnovationSectionCatalogue,
   InnovationSectionStatus,
@@ -47,6 +48,7 @@ import {
   In,
   IsNull,
   Repository,
+  SelectQueryBuilder,
 } from "typeorm";
 import {
   AccessorInnovationSummary,
@@ -61,7 +63,7 @@ import { UserService } from "./User.service";
 import * as constants from "../../../../utils/constants";
 import { InnovationCreationModel } from "@services/models/InnovationCreationModel";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
-import { OrderByClauseType } from "@services/types";
+import { OrderByClauseType, SupportFilter } from "@services/types";
 
 export class InnovationService extends BaseService<Innovation> {
   private readonly connection: Connection;
@@ -848,12 +850,76 @@ export class InnovationService extends BaseService<Innovation> {
     };
   }
 
+  async getUnassignedInnovationsCount(
+    requestUser: RequestUser,
+    statuses: string[]
+  ) {
+    const query = this.repository.createQueryBuilder("innovation").distinct();
+    if (requestUser.type === UserType.ASSESSMENT) {
+      query.where(
+        "NOT EXISTS (SELECT 1 FROM innovation_support s where s.innovation_id = innovation.id and deleted_at is null)"
+      );
+    }
+    if (
+      requestUser.type === UserType.ACCESSOR &&
+      requestUser.organisationUser.role ===
+        AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    ) {
+      query.where(
+        `NOT EXISTS (SELECT 1 FROM innovation_support s where s.innovation_id = innovation.id and deleted_at is null and s.organisation_unit_id = ${requestUser.organisationUnitUser.organisationUnit.id})`
+      );
+    }
+
+    query.andWhere(
+      "innovation.status in (:...statuses) and innovation.deleted_at IS NULL",
+      {
+        statuses,
+      }
+    );
+
+    const result = await query.getCount();
+
+    return result;
+  }
+
+  private buildSupportFilter(
+    requestUser: RequestUser,
+    filter: SupportFilter,
+    query: SelectQueryBuilder<Innovation>
+  ): SelectQueryBuilder<Innovation> {
+    switch (filter) {
+      case SupportFilter.UNASSIGNED:
+        query.andWhere(
+          "NOT EXISTS (SELECT 1 FROM innovation_support s where s.innovation_id = innovation.id and deleted_at is null)"
+        );
+        break;
+      case SupportFilter.ENGAGING:
+        query.andWhere(
+          `EXISTS (SELECT 1 FROM innovation_support s where s.innovation_id = innovation.id and deleted_at is null and s.status = '${InnovationSupportStatus.ENGAGING}')`
+        );
+        break;
+      case SupportFilter.NOT_ENGAGING:
+        query.andWhere(
+          `EXISTS (SELECT 1 FROM innovation_support s where s.innovation_id = innovation.id and deleted_at is null and s.status NOT IN ('${InnovationSupportStatus.ENGAGING}'))`
+        );
+        query.andWhere(
+          `NOT EXISTS (SELECT 1 FROM innovation_support s where s.innovation_id = innovation.id and deleted_at is null and s.status = '${InnovationSupportStatus.ENGAGING}')`
+        );
+        break;
+      default:
+        break;
+    }
+
+    return query;
+  }
+
   async getInnovationListByState(
     requestUser: RequestUser,
     statuses: string[],
     skip: number,
     take: number,
-    order: OrderByClauseType[] = []
+    order: OrderByClauseType[] = [],
+    supportFilter?: SupportFilter
   ): Promise<InnovationListModel> {
     const query = this.repository
       .createQueryBuilder("innovation")
@@ -863,12 +929,15 @@ export class InnovationService extends BaseService<Innovation> {
       .leftJoinAndSelect("supports.organisationUnit", "unit")
       .leftJoinAndSelect("unit.organisation", "organisation");
 
+    this.buildSupportFilter(requestUser, supportFilter, query);
+
     query.andWhere(
       "innovation.status in (:...statuses) and innovation.deleted_at IS NULL",
       {
         statuses,
       }
     );
+
     query.skip(skip);
     query.take(take);
 

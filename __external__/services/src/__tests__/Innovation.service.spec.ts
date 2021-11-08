@@ -33,9 +33,11 @@ import {
 import { InnovationListModel } from "@services/models/InnovationListModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { InnovationAssessmentService } from "@services/services/InnovationAssessment.service";
+import { InnovationSupportService } from "@services/services/InnovationSupport.service";
 import { LoggerService } from "@services/services/Logger.service";
 import { NotificationService } from "@services/services/Notification.service";
 import { UserService } from "@services/services/User.service";
+import { SupportFilter } from "@services/types";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import { getConnection } from "typeorm";
@@ -48,17 +50,20 @@ describe("Innovator Service Suite", () => {
   let innovationService: InnovationService;
   let assessmentService: InnovationAssessmentService;
   let notificationService: NotificationService;
+  let supportService: InnovationSupportService;
 
   let userService: UserService;
   let accessorOrganisation: Organisation;
+  let accessorOrganisation2: Organisation;
 
   let innovatorRequestUser: RequestUser;
   let accessorRequestUser: RequestUser;
   let qAccessorRequestUser: RequestUser;
+  let qAccessorRequestUser2: RequestUser;
   let assessmentRequestUser: RequestUser;
 
   beforeAll(async () => {
-    // await setupTestsConnection();
+    //await setupTestsConnection();
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
     });
@@ -70,6 +75,7 @@ describe("Innovator Service Suite", () => {
     notificationService = new NotificationService(process.env.DB_TESTS_NAME);
 
     userService = new UserService(process.env.DB_TESTS_NAME);
+    supportService = new InnovationSupportService(process.env.DB_TESTS_NAME);
 
     const innovatorUser = await fixtures.createInnovatorUser();
     const innovatorOrganisation = await fixtures.createOrganisation(
@@ -82,15 +88,24 @@ describe("Innovator Service Suite", () => {
     );
 
     const qualAccessorUser = await fixtures.createAccessorUser();
+    const qualAccessorUser2 = await fixtures.createAccessorUser();
     const accessorUser = await fixtures.createAccessorUser();
     const assessmentUser = await fixtures.createAssessmentUser();
 
     accessorOrganisation = await fixtures.createOrganisation(
       OrganisationType.ACCESSOR
     );
+    accessorOrganisation2 = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
+    );
     const organisationQAccessorUser = await fixtures.addUserToOrganisation(
       qualAccessorUser,
       accessorOrganisation,
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    );
+    const organisationQAccessorUser2 = await fixtures.addUserToOrganisation(
+      qualAccessorUser2,
+      accessorOrganisation2,
       AccessorOrganisationRole.QUALIFYING_ACCESSOR
     );
     const organisationAccessorUser = await fixtures.addUserToOrganisation(
@@ -102,9 +117,16 @@ describe("Innovator Service Suite", () => {
     const organisationUnit = await fixtures.createOrganisationUnit(
       accessorOrganisation
     );
+    const organisationUnit2 = await fixtures.createOrganisationUnit(
+      accessorOrganisation
+    );
     const organisationUnitQAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
       organisationQAccessorUser,
       organisationUnit
+    );
+    const organisationUnitQAccessorUser2 = await fixtures.addOrganisationUserToOrganisationUnit(
+      organisationQAccessorUser2,
+      organisationUnit2
     );
     const organisationUnitAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
       organisationAccessorUser,
@@ -117,6 +139,11 @@ describe("Innovator Service Suite", () => {
       qualAccessorUser,
       organisationQAccessorUser,
       organisationUnitQAccessorUser
+    );
+    qAccessorRequestUser2 = fixtures.getRequestUser(
+      qualAccessorUser2,
+      organisationQAccessorUser2,
+      organisationUnitQAccessorUser2
     );
     accessorRequestUser = fixtures.getRequestUser(
       accessorUser,
@@ -156,7 +183,7 @@ describe("Innovator Service Suite", () => {
     await query.from(OrganisationUser).execute();
     await query.from(Organisation).execute();
     await query.from(User).execute();
-    // closeTestsConnection();
+    //closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -1095,5 +1122,269 @@ describe("Innovator Service Suite", () => {
     expect(result).toBeDefined();
     expect(result.name).toBe(":innovation_name");
     expect(result.status).toBe(InnovationStatus.CREATED);
+  });
+
+  it("should list innovations WITH COUNT 1 within the list of statuses IF UNASSIGNED", async () => {
+    const innovations: Innovation[] = await fixtures.saveInnovationsWithAssessment(
+      fixtures.generateInnovation({
+        owner: { id: innovatorRequestUser.id },
+      })
+    );
+
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue(
+      innovations.map((inno) => ({
+        id: inno.assessments.map((a) => a.assignTo).join(),
+        displayName: "assessement_user_name",
+      }))
+    );
+
+    let result: InnovationListModel;
+    try {
+      result = await innovationService.getInnovationListByState(
+        assessmentRequestUser,
+        [InnovationStatus.NEEDS_ASSESSMENT],
+        0,
+        10,
+        [],
+        SupportFilter.UNASSIGNED
+      );
+    } catch (error) {
+      throw error;
+    }
+
+    expect(result.count).toBe(1);
+  });
+
+  it("should list innovations WITH COUNT 0 within the list of statuses IF NOT UNASSIGNED", async () => {
+    const innovations: Innovation[] = await fixtures.saveInnovationsWithAssessment(
+      fixtures.generateInnovation({
+        owner: { id: innovatorRequestUser.id },
+      })
+    );
+
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue(
+      innovations.map((inno) => ({
+        id: inno.assessments.map((a) => a.assignTo).join(),
+        displayName: "assessement_user_name",
+      }))
+    );
+
+    let result: InnovationListModel;
+    try {
+      result = await innovationService.getInnovationListByState(
+        assessmentRequestUser,
+        [InnovationStatus.NEEDS_ASSESSMENT],
+        0,
+        10,
+        [],
+        SupportFilter.ENGAGING
+      );
+    } catch (error) {
+      throw error;
+    }
+
+    expect(result.count).toBe(0);
+  });
+
+  it("should list innovations WITH COUNT 1 within the list of statuses IF ENGAGING SUPPORT EXISTS", async () => {
+    const innovations: Innovation[] = await fixtures.saveInnovationsWithAssessment(
+      fixtures.generateInnovation({
+        owner: { id: innovatorRequestUser.id },
+        organisationShares: [{ id: accessorOrganisation.id }],
+      })
+    );
+    const supportObj = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [accessorRequestUser.organisationUnitUser.id],
+    };
+
+    const support = await supportService.create(
+      qAccessorRequestUser,
+      innovations[0].id,
+      supportObj
+    );
+
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue(
+      innovations.map((inno) => ({
+        id: inno.assessments.map((a) => a.assignTo).join(),
+        displayName: "assessement_user_name",
+      }))
+    );
+
+    let result: InnovationListModel;
+    try {
+      result = await innovationService.getInnovationListByState(
+        assessmentRequestUser,
+        [InnovationStatus.NEEDS_ASSESSMENT],
+        0,
+        10,
+        [],
+        SupportFilter.ENGAGING
+      );
+    } catch (error) {
+      throw error;
+    }
+
+    expect(result.count).toBe(1);
+  });
+
+  it("should list innovations WITH COUNT 0 within the list of statuses IF SUPPORT OTHER THAN ENGAGING EXISTS", async () => {
+    const innovations: Innovation[] = await fixtures.saveInnovationsWithAssessment(
+      fixtures.generateInnovation({
+        owner: { id: innovatorRequestUser.id },
+        organisationShares: [{ id: accessorOrganisation.id }],
+      })
+    );
+    const supportObj = {
+      status: InnovationSupportStatus.NOT_YET,
+      accessors: [],
+    };
+
+    const support = await supportService.create(
+      qAccessorRequestUser,
+      innovations[0].id,
+      supportObj
+    );
+
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue(
+      innovations.map((inno) => ({
+        id: inno.assessments.map((a) => a.assignTo).join(),
+        displayName: "assessement_user_name",
+      }))
+    );
+
+    let result: InnovationListModel;
+    try {
+      result = await innovationService.getInnovationListByState(
+        assessmentRequestUser,
+        [InnovationStatus.NEEDS_ASSESSMENT],
+        0,
+        10,
+        [],
+        SupportFilter.ENGAGING
+      );
+    } catch (error) {
+      throw error;
+    }
+
+    expect(result.count).toBe(0);
+  });
+
+  it("should list innovations WITH COUNT 0 within the list of statuses IF ENGAGING AND OTHER SUPPORT EXISTS", async () => {
+    const innovations: Innovation[] = await fixtures.saveInnovationsWithAssessment(
+      fixtures.generateInnovation({
+        owner: { id: innovatorRequestUser.id },
+        organisationShares: [
+          { id: accessorOrganisation.id },
+          { id: accessorOrganisation2.id },
+        ],
+      })
+    );
+    const supportObj = {
+      status: InnovationSupportStatus.NOT_YET,
+      accessors: [],
+    };
+
+    const support = await supportService.create(
+      qAccessorRequestUser,
+      innovations[0].id,
+      supportObj
+    );
+
+    const supportObj2 = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [],
+    };
+
+    const support2 = await supportService.create(
+      qAccessorRequestUser2,
+      innovations[0].id,
+      supportObj2
+    );
+
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue(
+      innovations.map((inno) => ({
+        id: inno.assessments.map((a) => a.assignTo).join(),
+        displayName: "assessement_user_name",
+      }))
+    );
+
+    let result: InnovationListModel;
+    try {
+      result = await innovationService.getInnovationListByState(
+        assessmentRequestUser,
+        [InnovationStatus.NEEDS_ASSESSMENT],
+        0,
+        10,
+        [],
+        SupportFilter.NOT_ENGAGING
+      );
+    } catch (error) {
+      throw error;
+    }
+
+    expect(result.count).toBe(0);
+  });
+
+  it("should list innovations WITH COUNT 1 within the list of statuses IF ENGAGING AND OTHER SUPPORT EXISTS", async () => {
+    const innovations: Innovation[] = await fixtures.saveInnovationsWithAssessment(
+      fixtures.generateInnovation({
+        owner: { id: innovatorRequestUser.id },
+        organisationShares: [
+          { id: accessorOrganisation.id },
+          { id: accessorOrganisation2.id },
+        ],
+      })
+    );
+    const supportObj = {
+      status: InnovationSupportStatus.NOT_YET,
+      accessors: [],
+    };
+
+    const support = await supportService.create(
+      qAccessorRequestUser,
+      innovations[0].id,
+      supportObj
+    );
+
+    const supportObj2 = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [],
+    };
+
+    const support2 = await supportService.create(
+      qAccessorRequestUser2,
+      innovations[0].id,
+      supportObj2
+    );
+
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue(
+      innovations.map((inno) => ({
+        id: inno.assessments.map((a) => a.assignTo).join(),
+        displayName: "assessement_user_name",
+      }))
+    );
+
+    let result: InnovationListModel;
+    try {
+      result = await innovationService.getInnovationListByState(
+        assessmentRequestUser,
+        [InnovationStatus.NEEDS_ASSESSMENT],
+        0,
+        10,
+        [],
+        SupportFilter.ENGAGING
+      );
+    } catch (error) {
+      throw error;
+    }
+
+    expect(result.count).toBe(1);
   });
 });
