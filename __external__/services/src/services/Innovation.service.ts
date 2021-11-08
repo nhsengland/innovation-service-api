@@ -850,38 +850,6 @@ export class InnovationService extends BaseService<Innovation> {
     };
   }
 
-  async getUnassignedInnovationsCount(
-    requestUser: RequestUser,
-    statuses: string[]
-  ) {
-    const query = this.repository.createQueryBuilder("innovation").distinct();
-    if (requestUser.type === UserType.ASSESSMENT) {
-      query.where(
-        "NOT EXISTS (SELECT 1 FROM innovation_support s where s.innovation_id = innovation.id and deleted_at is null)"
-      );
-    }
-    if (
-      requestUser.type === UserType.ACCESSOR &&
-      requestUser.organisationUser.role ===
-        AccessorOrganisationRole.QUALIFYING_ACCESSOR
-    ) {
-      query.where(
-        `NOT EXISTS (SELECT 1 FROM innovation_support s where s.innovation_id = innovation.id and deleted_at is null and s.organisation_unit_id = ${requestUser.organisationUnitUser.organisationUnit.id})`
-      );
-    }
-
-    query.andWhere(
-      "innovation.status in (:...statuses) and innovation.deleted_at IS NULL",
-      {
-        statuses,
-      }
-    );
-
-    const result = await query.getCount();
-
-    return result;
-  }
-
   private buildSupportFilter(
     requestUser: RequestUser,
     filter: SupportFilter,
