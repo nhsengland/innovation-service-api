@@ -84,8 +84,6 @@ describe("Notification Service Suite", () => {
         },
       },
     ]);
-
-    jest.spyOn(LoggerService.prototype, "error").mockImplementation();
   });
 
   afterAll(async () => {
