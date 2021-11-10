@@ -1560,20 +1560,20 @@ export class InnovationService extends BaseService<Innovation> {
     switch (filter) {
       case SupportFilter.UNASSIGNED:
         query.andWhere(
-          "NOT EXISTS (SELECT 1 FROM innovation_support s where s.innovation_id = innovation.id and innovation.deleted_at is null)"
+          "NOT EXISTS (SELECT 1 FROM innovation_support s where s.innovation_id = innovation.id and deleted_at is null)"
         );
         break;
       case SupportFilter.ENGAGING:
         query.andWhere(
-          `EXISTS (SELECT 1 FROM innovation_support s where s.innovation_id = innovation.id and innovation.deleted_at is null and s.status = '${InnovationSupportStatus.ENGAGING}')`
+          `EXISTS (SELECT 1 FROM innovation_support s where s.innovation_id = innovation.id and deleted_at is null and s.status = '${InnovationSupportStatus.ENGAGING}')`
         );
         break;
       case SupportFilter.NOT_ENGAGING:
         query.andWhere(
-          `EXISTS (SELECT 1 FROM innovation_support s where s.innovation_id = innovation.id and innovation.deleted_at is null and s.status NOT IN ('${InnovationSupportStatus.ENGAGING}'))`
+          `EXISTS (SELECT 1 FROM innovation_support s where s.innovation_id = innovation.id and deleted_at is null and s.status NOT IN ('${InnovationSupportStatus.ENGAGING}'))`
         );
         query.andWhere(
-          `NOT EXISTS (SELECT 1 FROM innovation_support s where s.innovation_id = innovation.id and innovation.deleted_at is null and s.status = '${InnovationSupportStatus.ENGAGING}')`
+          `NOT EXISTS (SELECT 1 FROM innovation_support s where s.innovation_id = innovation.id and deleted_at is null and s.status = '${InnovationSupportStatus.ENGAGING}')`
         );
         break;
       default:
