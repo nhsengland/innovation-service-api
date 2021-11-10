@@ -18,6 +18,7 @@ import {
 import { RequestUser } from "@services/models/RequestUser";
 import { UserCreationModel } from "@services/models/UserCreationModel";
 import { UserCreationResult } from "@services/models/UserCreationResult";
+import { UserLockResult } from "@services/models/UserLockResult";
 import { UserProfileUpdateModel } from "@services/models/UserProfileUpdateModel";
 import { UserUpdateModel } from "@services/models/UserUpdateModel";
 import { UserUpdateResult } from "@services/models/UserUpdateResult";
@@ -516,5 +517,73 @@ export class UserService {
     });
 
     return users;
+  }
+
+  async lockUsers(
+    requestUser: RequestUser,
+    users: string[]
+  ): Promise<UserLockResult[]> {
+    if (!requestUser || !users || users.length === 0) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    const graphAccessToken = await authenticateWitGraphAPI();
+    const results: UserLockResult[] = [];
+
+    for (let i = 0; i < users.length; i++) {
+      const user = users[i];
+      let result: UserLockResult;
+
+      try {
+        result = await this.lockUser(requestUser, users[i], graphAccessToken);
+      } catch (err) {
+        result = {
+          id: user,
+          status: "ERROR",
+          error: {
+            code: err.constructor.name,
+            message: err.message,
+          },
+        };
+      }
+
+      results.push(result);
+    }
+
+    return results;
+  }
+
+  async lockUser(
+    requestUser: RequestUser,
+    userId: string,
+    graphAccessToken?: string
+  ): Promise<UserUpdateResult> {
+    if (!requestUser || !userId) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    if (!graphAccessToken) {
+      graphAccessToken = await authenticateWitGraphAPI();
+    }
+
+    const user = await getUserFromB2C(userId, graphAccessToken);
+    if (!user) {
+      throw new Error("Invalid user id.");
+    }
+
+    try {
+      await this.updateB2CUser(
+        { accountEnabled: false },
+        userId,
+        graphAccessToken
+      );
+    } catch {
+      throw new Error("Error updating user.");
+    }
+
+    return {
+      id: userId,
+      status: "OK",
+    };
   }
 }
