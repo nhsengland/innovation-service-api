@@ -877,7 +877,11 @@ export class InnovationService extends BaseService<Innovation> {
     );
 
     // get overdue innovations before pagination
-    const overdue = await this.getOverdueInnovations(query);
+    const overdue = await this.getOverdueInnovations(
+      requestUser,
+      supportFilter,
+      statuses
+    );
 
     query.skip(skip);
     query.take(take);
@@ -1584,12 +1588,32 @@ export class InnovationService extends BaseService<Innovation> {
   }
 
   private async getOverdueInnovations(
-    query: SelectQueryBuilder<Innovation>
+    requestUser,
+    supportFilter,
+    statuses
   ): Promise<number> {
-    const q = new SelectQueryBuilder(query.clone());
+    const query = this.repository
+      .createQueryBuilder("innovation")
+      .distinct()
+      .leftJoinAndSelect("innovation.assessments", "assessment")
+      .leftJoinAndSelect("assessment.assignTo", "assignTo")
+      .leftJoinAndSelect("innovation.innovationSupports", "supports")
+      .leftJoinAndSelect("supports.organisationUnit", "unit")
+      .leftJoinAndSelect("unit.organisation", "organisation");
 
-    q.andWhere(`DATEDIFF(day,innovation.submitted_at, getdate()) > 7`);
+    this.buildSupportFilter(requestUser, supportFilter, query);
 
-    return await q.getCount();
+    query.andWhere(
+      "innovation.status in (:...statuses) and innovation.deleted_at IS NULL",
+      {
+        statuses,
+      }
+    );
+
+    query.andWhere(
+      `DATEDIFF(day,innovation.submitted_at, getdate()) > 7 AND assessment.finished_at IS NULL`
+    );
+
+    return await query.getCount();
   }
 }
