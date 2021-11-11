@@ -367,6 +367,30 @@ export class InnovationSupportService {
       );
     }
 
+    try {
+      const innovation = await this.innovationService.find(innovationId, {
+        relations: ["owner"],
+      });
+
+      const owner = innovation.owner.id;
+      await this.notificationService.sendEmail(
+        requestUser,
+        EmailNotificationTemplate.INNOVATORS_SUPPORT_STATUS_UPDATE,
+        innovationId,
+        innovationId,
+        [owner],
+        {
+          organisation_name: organisationUnit.name,
+          innovation_name: innovation.name,
+        }
+      );
+    } catch (error) {
+      this.logService.error(
+        `An error has occured while sending an email with template ${EmailNotificationTemplate.INNOVATORS_SUPPORT_STATUS_UPDATE} from ${requestUser.id}`,
+        error
+      );
+    }
+
     if (
       support.status === InnovationSupportStatus.ENGAGING ||
       support.status === InnovationSupportStatus.COMPLETE
@@ -560,6 +584,29 @@ export class InnovationSupportService {
           }
         }
 
+        try {
+          const innovation = await this.innovationService.find(innovationId, {
+            relations: ["owner"],
+          });
+
+          const owner = innovation.owner.id;
+          await this.notificationService.sendEmail(
+            requestUser,
+            EmailNotificationTemplate.INNOVATORS_SUPPORT_STATUS_UPDATE,
+            innovationId,
+            innovationId,
+            [owner],
+            {
+              organisation_name: organisationUnit.name,
+              innovation_name: innovation.name,
+            }
+          );
+        } catch (error) {
+          this.logService.error(
+            `An error has occured while sending an email with template ${EmailNotificationTemplate.INNOVATORS_SUPPORT_STATUS_UPDATE} from ${requestUser.id}`,
+            error
+          );
+        }
         return await transactionManager.save(
           InnovationSupport,
           innovationSupport
