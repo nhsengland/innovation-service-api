@@ -1,7 +1,8 @@
 import Joi = require("joi");
+import * as constants from "../../utils/constants";
 
 const payloadSchema = Joi.object({
-  status: Joi.string().required(),
+  status: Joi.string().max(constants.mediumFieldCharacterLimit).required(),
   comment: Joi.string().allow(null).allow("").required(),
 })
   .required()

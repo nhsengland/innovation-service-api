@@ -1,10 +1,13 @@
 import Joi = require("joi");
+import * as constants from "../../utils/constants";
 
 const payloadSchema = Joi.object({
   actionType: Joi.string().valid("first_time_signin", "transfer").required(),
   innovation: Joi.object({
     name: Joi.string().required(),
-    description: Joi.string().required(),
+    description: Joi.string()
+      .max(constants.mediumFieldCharacterLimit)
+      .required(),
     countryName: Joi.string().required(),
     postcode: Joi.string().allow(null).allow("").optional(),
     organisationShares: Joi.array().items(Joi.string()).required(),
