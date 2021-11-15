@@ -426,6 +426,7 @@ export class NotificationService {
     const result = [
       { id: NotificationContextType.ACTION, isSubscribed: true },
       { id: NotificationContextType.SUPPORT, isSubscribed: true },
+      { id: NotificationContextType.COMMENT, isSubscribed: true },
     ];
 
     // if the user type has a specific notification
