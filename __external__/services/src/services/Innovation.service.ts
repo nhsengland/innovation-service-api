@@ -3,6 +3,7 @@ import {
   Innovation,
   InnovationAction,
   InnovationActionStatus,
+  InnovationAssessment,
   InnovationSection,
   InnovationSectionCatalogue,
   InnovationSectionStatus,
@@ -47,6 +48,7 @@ import {
   In,
   IsNull,
   Repository,
+  SelectQueryBuilder,
 } from "typeorm";
 import {
   AccessorInnovationSummary,
@@ -61,6 +63,7 @@ import { UserService } from "./User.service";
 import * as constants from "../../../../utils/constants";
 import { InnovationCreationModel } from "@services/models/InnovationCreationModel";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import { OrderByClauseType, SupportFilter } from "@services/types";
 
 export class InnovationService extends BaseService<Innovation> {
   private readonly connection: Connection;
@@ -852,23 +855,42 @@ export class InnovationService extends BaseService<Innovation> {
     statuses: string[],
     skip: number,
     take: number,
-    order?: { [key: string]: string }
+    order: OrderByClauseType[] = [],
+    supportFilter?: SupportFilter
   ): Promise<InnovationListModel> {
-    const filter: FindManyOptions<Innovation> = {
-      where: { status: In(statuses), deletedAt: IsNull() },
-      relations: [
-        "assessments",
-        "assessments.assignTo",
-        "innovationSupports",
-        "innovationSupports.organisationUnit",
-        "innovationSupports.organisationUnit.organisation",
-      ],
-      skip,
-      take,
-      order: order || { createdAt: "DESC" },
-    };
+    const query = this.repository
+      .createQueryBuilder("innovation")
+      .distinct()
+      .leftJoinAndSelect("innovation.assessments", "assessment")
+      .leftJoinAndSelect("assessment.assignTo", "assignTo")
+      .leftJoinAndSelect("innovation.innovationSupports", "supports")
+      .leftJoinAndSelect("supports.organisationUnit", "unit")
+      .leftJoinAndSelect("unit.organisation", "organisation");
 
-    const result = await this.repository.findAndCount(filter);
+    this.buildSupportFilter(requestUser, supportFilter, query);
+
+    query.andWhere(
+      "innovation.status in (:...statuses) and innovation.deleted_at IS NULL",
+      {
+        statuses,
+      }
+    );
+
+    // get overdue innovations before pagination
+    const overdue = await this.getOverdueInnovations(
+      requestUser,
+      supportFilter,
+      statuses
+    );
+
+    query.skip(skip);
+    query.take(take);
+
+    for (const orderClause of order) {
+      query.addOrderBy(orderClause.field, orderClause.direction);
+    }
+
+    const result = await query.getManyAndCount();
 
     const deepUsers = result[0]
       .filter(
@@ -916,6 +938,7 @@ export class InnovationService extends BaseService<Innovation> {
     return {
       data: this.mapResponse(res, notifications),
       count: result[1],
+      overdue,
       tabInfo: aggregatedNotifications,
     };
   }
@@ -1531,5 +1554,66 @@ export class InnovationService extends BaseService<Innovation> {
 
   public getConnection() {
     return this.connection;
+  }
+
+  private buildSupportFilter(
+    requestUser: RequestUser,
+    filter: SupportFilter,
+    query: SelectQueryBuilder<Innovation>
+  ): SelectQueryBuilder<Innovation> {
+    switch (filter) {
+      case SupportFilter.UNASSIGNED:
+        query.andWhere(
+          "NOT EXISTS (SELECT 1 FROM innovation_support s where s.innovation_id = innovation.id and deleted_at is null)"
+        );
+        break;
+      case SupportFilter.ENGAGING:
+        query.andWhere(
+          `EXISTS (SELECT 1 FROM innovation_support s where s.innovation_id = innovation.id and deleted_at is null and s.status = '${InnovationSupportStatus.ENGAGING}')`
+        );
+        break;
+      case SupportFilter.NOT_ENGAGING:
+        query.andWhere(
+          `EXISTS (SELECT 1 FROM innovation_support s where s.innovation_id = innovation.id and deleted_at is null and s.status NOT IN ('${InnovationSupportStatus.ENGAGING}'))`
+        );
+        query.andWhere(
+          `NOT EXISTS (SELECT 1 FROM innovation_support s where s.innovation_id = innovation.id and deleted_at is null and s.status = '${InnovationSupportStatus.ENGAGING}')`
+        );
+        break;
+      default:
+        break;
+    }
+
+    return query;
+  }
+
+  private async getOverdueInnovations(
+    requestUser,
+    supportFilter,
+    statuses
+  ): Promise<number> {
+    const query = this.repository
+      .createQueryBuilder("innovation")
+      .distinct()
+      .leftJoinAndSelect("innovation.assessments", "assessment")
+      .leftJoinAndSelect("assessment.assignTo", "assignTo")
+      .leftJoinAndSelect("innovation.innovationSupports", "supports")
+      .leftJoinAndSelect("supports.organisationUnit", "unit")
+      .leftJoinAndSelect("unit.organisation", "organisation");
+
+    this.buildSupportFilter(requestUser, supportFilter, query);
+
+    query.andWhere(
+      "innovation.status in (:...statuses) and innovation.deleted_at IS NULL",
+      {
+        statuses,
+      }
+    );
+
+    query.andWhere(
+      `DATEDIFF(day,innovation.submitted_at, getdate()) > 7 AND assessment.finished_at IS NULL`
+    );
+
+    return await query.getCount();
   }
 }

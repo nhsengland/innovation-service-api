@@ -1,22 +1,17 @@
 import { HttpRequest } from "@azure/functions";
-import * as persistence from "./persistence";
-import * as Responsify from "../utils/responsify";
+import { UserType } from "@services/index";
 import {
   AllowedUserType,
   AppInsights,
   JwtDecoder,
   SQLConnector,
-  Validator,
 } from "../utils/decorators";
+import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
-import { UserType } from "@services/index";
-import { ValidateQuery } from "./validation";
-import { orderClauseMappings } from "./mappers";
-import { parse } from "../utils/mapper";
+import * as persistence from "./persistence";
 
-class AssessmentsListInnovations {
+class AssessmentsGetInnovationComments {
   @AppInsights()
-  @Validator(ValidateQuery, "query", "Missing query fields")
   @SQLConnector()
   @JwtDecoder()
   @AllowedUserType(UserType.ASSESSMENT)
@@ -24,9 +19,8 @@ class AssessmentsListInnovations {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const statuses = req.query.status.split(",");
-    const skip = parseInt(req.query.skip);
-    const take = parseInt(req.query.take);
+    const innovationId = req.params.innovationId;
+
     let order;
     const query: any = req.query;
 
@@ -34,17 +28,12 @@ class AssessmentsListInnovations {
       order = JSON.parse(query.order);
     }
 
-    const mappedOrder = parse(order, orderClauseMappings);
-
     let result;
     try {
-      result = await persistence.getInnovationList(
+      result = await persistence.findInnovationComments(
         context,
-        statuses,
-        skip,
-        take,
-        mappedOrder,
-        query.supportFilter
+        innovationId,
+        order
       );
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
@@ -57,4 +46,4 @@ class AssessmentsListInnovations {
   }
 }
 
-export default AssessmentsListInnovations.httpTrigger;
+export default AssessmentsGetInnovationComments.httpTrigger;

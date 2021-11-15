@@ -2,6 +2,7 @@ export interface InnovationListModel {
   data: InnovationViewModel[];
   count: number;
   tabInfo: { [key: string]: number };
+  overdue: number;
 }
 
 export interface InnovationViewModel {

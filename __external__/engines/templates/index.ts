@@ -180,4 +180,21 @@ export const getTemplates = (): EmailTemplate[] => [
       needs_assessment_url: "",
     },
   },
+  {
+    id: "002cd16a-97da-43b5-836f-8631dbbcca84",
+    code: "INNOVATORS_SUPPORT_STATUS_UPDATE",
+    path: {
+      url: "transactional/innovator/innovations/:innovationId/data-sharing",
+      params: {
+        contextId: "",
+        innovationId: "",
+      },
+    },
+    props: {
+      display_name: "",
+      innovation_name: "",
+      organisation_name: "",
+      support_url: "",
+    },
+  },
 ];
