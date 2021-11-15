@@ -179,7 +179,7 @@ export class UserService {
     const odataFilter = `$filter=id in (${userIds})`;
 
     const users =
-      (await getUsersFromB2C(accessToken, odataFilter, "beta")) || [];
+      (await getUsersFromB2C(accessToken, odataFilter, "beta", true)) || [];
 
     const result = users.map((u) => ({
       id: u.id,
@@ -191,7 +191,10 @@ export class UserService {
     return result;
   }
 
-  async getListOfUsers(ids: string[]): Promise<ProfileSlimModel[]> {
+  async getListOfUsers(
+    ids: string[],
+    excludeLocked?: boolean
+  ): Promise<ProfileSlimModel[]> {
     if (!ids || ids.length === 0) {
       return [];
     }
@@ -223,7 +226,9 @@ export class UserService {
       const userIds = userIdsChunks[i].map((u) => `"${u}"`).join(",");
       const odataFilter = `$filter=id in (${userIds})`;
 
-      promises.push(getUsersFromB2C(accessToken, odataFilter));
+      promises.push(
+        getUsersFromB2C(accessToken, odataFilter, undefined, excludeLocked)
+      );
     }
 
     // promise all and merge all results
@@ -579,12 +584,6 @@ export class UserService {
       );
     } catch {
       throw new Error("Error locking user at IdP");
-    }
-
-    try {
-      await this.userRepo.update({ id: userId }, { lockedAt: new Date() });
-    } catch (error) {
-      throw new Error("Error locking user at Database");
     }
 
     return {

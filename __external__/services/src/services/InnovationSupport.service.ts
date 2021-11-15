@@ -92,19 +92,20 @@ export class InnovationSupportService {
     let b2cMap;
     if (organisationUnitUsers && organisationUnitUsers.length > 0) {
       b2cMap = await this.organisationService.findOrganisationUnitUsersNames(
-        organisationUnitUsers
+        organisationUnitUsers,
+        true
       );
     }
 
     return {
       id: innovationSupport.id,
       status: innovationSupport.status,
-      accessors: organisationUnitUsers
-        ?.filter((x) => !x.organisationUser.user.lockedAt)
-        .map((organisationUnitUser: OrganisationUnitUser) => ({
+      accessors: organisationUnitUsers?.map(
+        (organisationUnitUser: OrganisationUnitUser) => ({
           id: organisationUnitUser.id,
           name: b2cMap[organisationUnitUser.organisationUser.user.id],
-        })),
+        })
+      ),
     };
   }
 
