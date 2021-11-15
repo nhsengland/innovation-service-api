@@ -5,7 +5,7 @@ export type OrderByClauseType = {
 };
 
 export enum SupportFilter {
-  UNASSIGNED,
-  ENGAGING,
-  NOT_ENGAGING,
+  UNASSIGNED = "UNASSIGNED",
+  ENGAGING = "ENGAGING",
+  NOT_ENGAGING = "NOT_ENGAGING",
 }
