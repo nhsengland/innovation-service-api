@@ -22,6 +22,7 @@ import { UserLockResult } from "@services/models/UserLockResult";
 import { UserProfileUpdateModel } from "@services/models/UserProfileUpdateModel";
 import { UserUpdateModel } from "@services/models/UserUpdateModel";
 import { UserUpdateResult } from "@services/models/UserUpdateResult";
+import { UserSearchResult } from "@services/types";
 import {
   Connection,
   EntityManager,
@@ -167,6 +168,44 @@ export class UserService {
     }
 
     return profile;
+  }
+
+  async searchUsersByEmail(
+    requestUser: RequestUser,
+    emails: string[]
+  ): Promise<UserSearchResult[]> {
+    if (!requestUser || !emails || emails.length === 0) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+    const retVal: UserSearchResult[] = [];
+
+    for (const email of emails) {
+      const result = await this.searchUserByEmail(email);
+      if (result) {
+        retVal.push(result);
+      }
+    }
+
+    return retVal;
+  }
+
+  async searchUserByEmail(email: string): Promise<UserSearchResult> {
+    const accessToken = await authenticateWitGraphAPI();
+    const userB2C = await getUserFromB2CByEmail(email, accessToken);
+
+    const user = await this.find(userB2C.id, {
+      relations: ["userOrganisations"],
+    });
+
+    if (userB2C && user) {
+      return {
+        id: userB2C.id,
+        displayName: userB2C.displayName,
+        userOrganisations: user.userOrganisations,
+      };
+    }
+
+    return null;
   }
 
   async getUsersEmail(ids: string[]): Promise<UserEmailModel[]> {

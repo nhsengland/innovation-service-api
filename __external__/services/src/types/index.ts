@@ -1,3 +1,5 @@
+import { OrganisationUser } from "@domain/index";
+
 export type OrderByCriteria = "ASC" | "DESC";
 export type OrderByClauseType = {
   field: string;
@@ -9,3 +11,8 @@ export enum SupportFilter {
   ENGAGING,
   NOT_ENGAGING,
 }
+export type UserSearchResult = {
+  id: string;
+  displayName: string;
+  userOrganisations: OrganisationUser[];
+};
