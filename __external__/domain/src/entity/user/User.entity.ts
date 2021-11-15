@@ -20,6 +20,9 @@ export class User extends Base {
   @Column({ name: "delete_reason", type: "nvarchar", nullable: true })
   deleteReason: string;
 
+  @Column({ name: "locked_at", nullable: true })
+  lockedAt: Date;
+
   //relationships
   @OneToMany(() => OrganisationUser, (record) => record.user, {
     lazy: true,

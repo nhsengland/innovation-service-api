@@ -429,7 +429,7 @@ export const innovatorsAssessmentCompleteHandler = async (
 };
 
 const baseEmailExecutor = async (
-  targetUsers,
+  targetUsers: string[],
   params,
   connectionName,
   template
@@ -507,7 +507,9 @@ const getRecipients = async (innovationId: string, connectionName?: string) => {
   });
 
   const recipients = supports.flatMap((s) =>
-    s.organisationUnitUsers.map((x) => x.organisationUser.user.id)
+    s.organisationUnitUsers
+      .filter((x) => !x.organisationUser.user.lockedAt)
+      .map((x) => x.organisationUser.user.id)
   );
 
   return recipients;

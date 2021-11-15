@@ -578,7 +578,13 @@ export class UserService {
         graphAccessToken
       );
     } catch {
-      throw new Error("Error updating user.");
+      throw new Error("Error locking user at IdP");
+    }
+
+    try {
+      await this.userRepo.update({ id: userId }, { lockedAt: new Date() });
+    } catch (error) {
+      throw new Error("Error locking user at Database");
     }
 
     return {

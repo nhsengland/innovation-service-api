@@ -99,12 +99,12 @@ export class InnovationSupportService {
     return {
       id: innovationSupport.id,
       status: innovationSupport.status,
-      accessors: organisationUnitUsers?.map(
-        (organisationUnitUser: OrganisationUnitUser) => ({
+      accessors: organisationUnitUsers
+        ?.filter((x) => !x.organisationUser.user.lockedAt)
+        .map((organisationUnitUser: OrganisationUnitUser) => ({
           id: organisationUnitUser.id,
           name: b2cMap[organisationUnitUser.organisationUser.user.id],
-        })
-      ),
+        })),
     };
   }
 
