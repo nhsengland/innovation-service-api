@@ -458,13 +458,22 @@ export const innovatorsSupportStatusUpdateHandler = async (
   targetUsers?: string[],
   connectionName?: string
 ): Promise<EmailResponse[]> => {
+  const recipients = await filterRecipientsByPreference(
+    NotificationContextType.SUPPORT,
+    targetUsers,
+    connectionName
+  );
+
+  // exit early if there are no recipients after filtering out preferences.
+  if (recipients.length === 0) return;
+  //
   const support_url = parseUrl(params, template);
   params.emailProps = {
     ...params.emailProps,
     support_url,
   };
   const result = await baseEmailExecutor(
-    targetUsers,
+    recipients,
     params,
     connectionName,
     template
