@@ -14,5 +14,13 @@ export enum SupportFilter {
 export type UserSearchResult = {
   id: string;
   displayName: string;
-  userOrganisations: OrganisationUser[];
+  userOrganisations: {
+    id: string;
+    name: string;
+    role: string;
+    units: {
+      id: string;
+      name: string;
+    }[];
+  }[];
 };

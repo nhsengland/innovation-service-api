@@ -1,6 +1,7 @@
 interface UserLockError {
   code: string;
   message: string;
+  data?: any;
 }
 
 export interface UserLockResult {

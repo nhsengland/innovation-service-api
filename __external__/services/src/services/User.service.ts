@@ -1,6 +1,7 @@
 import {
   Innovation,
   InnovationStatus,
+  InnovationSupport,
   InnovationSupportStatus,
   Organisation,
   OrganisationUnit,
@@ -57,6 +58,7 @@ export class UserService {
   private readonly orgUserRepo: Repository<OrganisationUser>;
   private readonly orgUnitUserRepo: Repository<OrganisationUnitUser>;
   private readonly innovationRepo: Repository<Innovation>;
+  private readonly innovationSupportRepo: Repository<InnovationSupport>;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -66,6 +68,10 @@ export class UserService {
     this.orgUserRepo = getRepository(OrganisationUser, connectionName);
     this.orgUnitUserRepo = getRepository(OrganisationUnitUser, connectionName);
     this.innovationRepo = getRepository(Innovation, connectionName);
+    this.innovationSupportRepo = getRepository(
+      InnovationSupport,
+      connectionName
+    );
   }
 
   async find(id: string, options?: FindOneOptions) {
@@ -77,8 +83,8 @@ export class UserService {
     return await this.userRepo.save(user);
   }
 
-  async getUser(id: string) {
-    return await this.userRepo.findOne(id);
+  async getUser(id: string, options?: FindOneOptions<User>) {
+    return await this.userRepo.findOne(id, options);
   }
 
   async updateB2CUser(
@@ -207,14 +213,45 @@ export class UserService {
     const userB2C = await getUserFromB2CByEmail(email, accessToken);
 
     const user = await this.find(userB2C.id, {
-      relations: ["userOrganisations"],
+      relations: [
+        "userOrganisations",
+        "userOrganisations.organisation",
+        "userOrganisations.userOrganisationUnits",
+        "userOrganisations.userOrganisationUnits.innovationSupports",
+        "userOrganisations.userOrganisationUnits.innovationSupports.innovation",
+        "userOrganisations.userOrganisationUnits.organisationUnit",
+      ],
     });
+
+    const userOrgs = await user.userOrganisations;
+
+    const userOrganisations = [];
+
+    for (const userOrg of userOrgs) {
+      const userUnits = userOrg.userOrganisationUnits;
+
+      const unitsSlim = [];
+      for (const unit of userUnits) {
+        unitsSlim.push({
+          id: unit.organisationUnit.id,
+          name: unit.organisationUnit.name,
+          supportCount: unit.innovationSupports.length,
+        });
+      }
+
+      userOrganisations.push({
+        id: userOrg.organisation.id,
+        name: userOrg.organisation.name,
+        role: userOrg.role,
+        units: unitsSlim,
+      });
+    }
 
     if (userB2C && user) {
       return {
         id: userB2C.id,
         displayName: userB2C.displayName,
-        userOrganisations: user.userOrganisations,
+        userOrganisations,
       };
     }
 
@@ -600,6 +637,7 @@ export class UserService {
           error: {
             code: err.constructor.name,
             message: err.message,
+            data: err.data,
           },
         };
       }
@@ -628,110 +666,28 @@ export class UserService {
       throw new Error("Invalid user id.");
     }
 
-    const innovationUser = await this.getUser(userId);
+    const userToBeRemoved = await this.getUser(userId, {
+      relations: [
+        "userOrganisations",
+        "userOrganisations.organisation",
+        "userOrganisations.userOrganisationUnits",
+        "userOrganisations.userOrganisationUnits.organisationUnit",
+      ],
+    });
 
-    // Make sure the user is not the only Assessment User on the platform
-    if (innovationUser.type === UserType.ASSESSMENT) {
-      const assessmentUsersOnThePlatform = await this.getUsersOfType(
-        UserType.ASSESSMENT
-      );
-      const assessmentUsersExcludingTarget = assessmentUsersOnThePlatform.filter(
-        (a) => a.id !== userId
-      );
+    try {
+      await this.CheckAssessmentUser(userToBeRemoved);
 
-      if (assessmentUsersExcludingTarget.length === 0) {
-        throw new LastAssessmentUserOnPlatformError(
-          `The user with id ${userId} is the last Assessment User on the platform. You cannot lock this account`
-        );
+      // Make sure the user is not the last user on the Organisation
+      if (userToBeRemoved.type === UserType.ACCESSOR) {
+        // Make sure it is not the last user providing support on an innovation
+        await this.CheckAccessorOrganisation(userToBeRemoved);
+
+        // Get all Innovations which the user is providing support to.
+        await this.checkAccessorSupports(userToBeRemoved);
       }
-    }
-
-    // Make sure the user is not the last user on the Organisation
-    if (innovationUser.type === UserType.ACCESSOR) {
-      const userOrganisations = innovationUser.userOrganisations;
-      for (const userOrg of userOrganisations) {
-        const organisationId = userOrg.organisation.id;
-        const orgMembers = await this.orgUserRepo
-          .createQueryBuilder("orgUser")
-          .where("orgUser.organisation_id = :organisationId", {
-            organisationId,
-          })
-          .andWhere("orgUser.user_id != :userId", { userId })
-          .getMany();
-
-        if (orgMembers.length === 0) {
-          throw new LastAccessorUserOnOrganisationError(
-            `The user with id ${userId} is the last Accessor User on the Organisation ${userOrg.organisation.name}(${organisationId}). You cannot lock this account`
-          );
-        }
-
-        // Make sure it is also not the last User on the organisation units
-        const userUnits = userOrg.userOrganisationUnits;
-        for (const userUnit of userUnits) {
-          const unitId = userUnit.organisationUnit.id;
-          const unitMembers = await this.orgUnitUserRepo
-            .createQueryBuilder("unitUser")
-            .innerJoinAndSelect("organisationUser", "orgUser")
-            .where("unitUser.organisation_unit_id = :unitId", { unitId })
-            .andWhere("orgUser.user_id != :userId", { userId })
-            .getMany();
-
-          if (unitMembers.length === 0) {
-            throw new LastAccessorUserOnOrganisationUnitError(
-              `The user with id ${userId} is the last Accessor User on the Organisation Unit ${userUnit.organisationUnit.name}(${unitId}). You cannot lock this account`
-            );
-          }
-        }
-      }
-
-      // Make sure it is not the last user providing support on an innovation
-
-      // Get all Innovations which the user is providing support to.
-      const innovations = await this.innovationRepo
-        .createQueryBuilder("innovations")
-        .innerJoinAndSelect("innovationSupports", "supports")
-        .innerJoinAndSelect("supports.organisationUnitUsers", "unitUsers")
-        .innerJoinAndSelect("unitUsers.organisationUser", "organisationUser")
-        .where("organisationUser.userId = :userId", { userId })
-        .andWhere("supports.status = :status", {
-          status: InnovationSupportStatus.ENGAGING,
-        })
-        .getMany();
-
-      // For each innovation, grab the supports list
-      for (const innovation of innovations) {
-        // Get the units to which the user belongs to
-        const units = innovationUser.userOrganisations.flatMap((o) =>
-          o.userOrganisationUnits.map((u) => u.organisationUnit)
-        );
-
-        for (const unit of units) {
-          // get supports from the user's unit that have someone other than the user supporting the innovation
-          const result = innovation.innovationSupports
-            // filter out supports from other units
-            .filter(
-              (s) =>
-                s.organisationUnit.id === unit.id &&
-                s.status === InnovationSupportStatus.ENGAGING
-            )
-            // map the supports from the user's unit with someone other than him supporting the innovation
-            .flatMap((s) =>
-              s.organisationUnitUsers
-                .filter((us) => us.organisationUser.user.id !== userId)
-                .flatMap((s) => s.innovationSupports.map((x) => x))
-            )
-            // remove supports where there is at least one accessor supporting the innovation
-            .filter((s) => s.organisationUnitUsers.length > 0);
-
-          // if after removing supports with at least one accessor there is anything remaining
-          // it means there is a support where the user was the only/last person providing support.
-          if (result.length > 0) {
-            throw new LastAccessorFromUnitProvidingSupportError(
-              `The user with id ${userId} is the last Accessor User of the Organisation Unit ${unit.name}(${unit.id}) providing support to the innovation ${innovation.name}(${innovation.id}). You cannot lock this account`
-            );
-          }
-        }
-      }
+    } catch (error) {
+      throw error;
     }
 
     try {
@@ -748,5 +704,129 @@ export class UserService {
       id: userId,
       status: "OK",
     };
+  }
+
+  private async CheckAssessmentUser(userBeingRemoved: User) {
+    // Make sure the user is not the only Assessment User on the platform
+    if (userBeingRemoved.type === UserType.ASSESSMENT) {
+      const assessmentUsersOnThePlatform = await this.getUsersOfType(
+        UserType.ASSESSMENT
+      );
+      const assessmentUsersExcludingTarget = assessmentUsersOnThePlatform.filter(
+        (a) => a.id !== userBeingRemoved.id
+      );
+
+      if (assessmentUsersExcludingTarget.length === 0) {
+        throw new LastAssessmentUserOnPlatformError(
+          `The user with id ${userBeingRemoved.id} is the last Assessment User on the platform. You cannot lock this account`
+        );
+      }
+    }
+  }
+
+  private async CheckAccessorOrganisation(userToBeRemoved: User) {
+    const userOrganisations = await userToBeRemoved.userOrganisations;
+    for (const userOrg of userOrganisations) {
+      const organisationId = userOrg.organisation.id;
+      const orgMembers = await this.orgUserRepo
+        .createQueryBuilder("orgUser")
+        .where("orgUser.organisation_id = :organisationId", {
+          organisationId,
+        })
+        .andWhere("orgUser.user_id != :userId", { userId: userToBeRemoved.id })
+        .getMany();
+
+      if (orgMembers.length === 0) {
+        throw new LastAccessorUserOnOrganisationError(
+          `The user with id ${userToBeRemoved.id} is the last Accessor User on the Organisation ${userOrg.organisation.name}(${organisationId}). You cannot lock this account`
+        );
+      }
+
+      // Make sure it is also not the last User on the organisation units
+      const userUnits = userOrg.userOrganisationUnits;
+      for (const userUnit of userUnits) {
+        const unitId = userUnit.organisationUnit.id;
+        const unitMembers = await this.orgUnitUserRepo
+          .createQueryBuilder("unitUser")
+          .innerJoinAndSelect(
+            "organisation_user",
+            "orgUser",
+            "unitUser.organisation_user_id = orgUser.id"
+          )
+          .where("unitUser.organisation_unit_id = :unitId", { unitId })
+          .andWhere("orgUser.user_id != :userId", {
+            userId: userToBeRemoved.id,
+          })
+          .getMany();
+
+        if (unitMembers.length === 0) {
+          throw new LastAccessorUserOnOrganisationUnitError(
+            `The user with id ${userToBeRemoved.id} is the last Accessor User on the Organisation Unit ${userUnit.organisationUnit.name}(${unitId}). You cannot lock this account`
+          );
+        }
+      }
+    }
+  }
+
+  private async checkAccessorSupports(userToBeRemoved: User) {
+    const query = this.innovationRepo
+      .createQueryBuilder("innovations")
+      .select("innovations.id", "innovationId")
+      .addSelect("innovations.name", "innovationName")
+      .addSelect("unit.id", "unitId")
+      .addSelect("unit.name", "unitName")
+      .innerJoin(
+        "innovation_support",
+        "supports",
+        "innovations.id = supports.innovation_id"
+      )
+      .innerJoin(
+        "innovation_support_user",
+        "userSupport",
+        "supports.id = userSupport.innovation_support_id"
+      )
+      .innerJoin(
+        "organisation_unit_user",
+        "unitUsers",
+        "userSupport.organisation_unit_user_id = unitUsers.id"
+      )
+      .innerJoin(
+        "organisation_unit",
+        "unit",
+        "unit.id = unitUsers.organisation_unit_id"
+      )
+      .innerJoin(
+        "organisation_user",
+        "organisationUser",
+        "organisationUser.id = unitUsers.organisation_user_id"
+      )
+      .where("organisationUser.user_id = :userId", {
+        userId: userToBeRemoved.id,
+      })
+      .andWhere("supports.status = :status", {
+        status: InnovationSupportStatus.ENGAGING,
+      })
+      .andWhere(
+        `NOT EXISTS(
+        SELECT 1 FROM innovation_support s
+        INNER JOIN innovation_support_user u on s.id = u.innovation_support_id
+        INNER JOIN organisation_unit_user ous on ous.id = u.organisation_unit_user_id
+        INNER JOIN organisation_user ou on ou.id = ous.organisation_user_id
+        WHERE s.id = supports.id and ou.user_id != :userId
+      )`,
+        {
+          userId: userToBeRemoved.id,
+        }
+      );
+    const innovations = await query.getRawMany();
+
+    if (innovations.length > 0) {
+      throw new LastAccessorFromUnitProvidingSupportError(
+        `The user with id ${userToBeRemoved.id} is the last Accessor User from his unit providing support to ${innovations.length} innovation(s). You cannot lock this account.
+        Check the data property of this error for more information.
+        `,
+        innovations
+      );
+    }
   }
 }

@@ -139,8 +139,10 @@ export class LastAccessorUserOnOrganisationUnitError extends Error {
 }
 
 export class LastAccessorFromUnitProvidingSupportError extends Error {
-  constructor(message: string) {
+  data: any;
+  constructor(message: string, data?: any) {
     super(message);
     this.name = "LastAccessorFromUnitProvidingSupportError";
+    this.data = data;
   }
 }
