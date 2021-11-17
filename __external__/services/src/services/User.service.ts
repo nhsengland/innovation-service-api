@@ -26,7 +26,10 @@ import {
 import { RequestUser } from "@services/models/RequestUser";
 import { UserCreationModel } from "@services/models/UserCreationModel";
 import { UserCreationResult } from "@services/models/UserCreationResult";
-import { UserLockResult } from "@services/models/UserLockResult";
+import {
+  UserLockResult,
+  UserUnlockResult,
+} from "@services/models/UserLockResult";
 import { UserProfileUpdateModel } from "@services/models/UserProfileUpdateModel";
 import { UserUpdateModel } from "@services/models/UserUpdateModel";
 import { UserUpdateResult } from "@services/models/UserUpdateResult";
@@ -693,6 +696,75 @@ export class UserService {
     try {
       await this.updateB2CUser(
         { accountEnabled: false },
+        userId,
+        graphAccessToken
+      );
+    } catch {
+      throw new Error("Error locking user at IdP");
+    }
+
+    return {
+      id: userId,
+      status: "OK",
+    };
+  }
+
+  async unlockUsers(
+    requestUser: RequestUser,
+    users: string[]
+  ): Promise<UserUnlockResult[]> {
+    if (!requestUser || !users || users.length === 0) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    const graphAccessToken = await authenticateWitGraphAPI();
+    const results: UserUnlockResult[] = [];
+
+    for (let i = 0; i < users.length; i++) {
+      const user = users[i];
+      let result: UserUnlockResult;
+
+      try {
+        result = await this.unlockUser(requestUser, users[i], graphAccessToken);
+      } catch (err) {
+        result = {
+          id: user,
+          status: "ERROR",
+          error: {
+            code: err.constructor.name,
+            message: err.message,
+            data: err.data,
+          },
+        };
+      }
+
+      results.push(result);
+    }
+
+    return results;
+  }
+
+  async unlockUser(
+    requestUser: RequestUser,
+    userId: string,
+    graphAccessToken?: string
+  ): Promise<UserUpdateResult> {
+    if (!requestUser || !userId) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    if (!graphAccessToken) {
+      graphAccessToken = await authenticateWitGraphAPI();
+    }
+
+    const user = await getUserFromB2C(userId, graphAccessToken);
+    if (!user) {
+      throw new Error("Invalid user id.");
+    }
+
+    try {
+      await this.updateB2CUser(
+        { accountEnabled: true },
         userId,
         graphAccessToken
       );

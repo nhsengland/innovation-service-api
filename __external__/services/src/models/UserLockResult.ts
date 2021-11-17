@@ -9,3 +9,9 @@ export interface UserLockResult {
   status: "OK" | "ERROR";
   error?: UserLockError;
 }
+
+export interface UserUnlockResult {
+  id: string;
+  status: "OK" | "ERROR";
+  error?: UserLockError;
+}
