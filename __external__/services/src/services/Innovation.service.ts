@@ -64,6 +64,8 @@ import * as constants from "../../../../utils/constants";
 import { InnovationCreationModel } from "@services/models/InnovationCreationModel";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import { OrderByClauseType, SupportFilter } from "@services/types";
+import { Activity, ActivityType } from "@domain/enums/activity.enums";
+import { ActivityLogService } from "./ActivityLog.service";
 
 export class InnovationService extends BaseService<Innovation> {
   private readonly connection: Connection;
@@ -71,6 +73,7 @@ export class InnovationService extends BaseService<Innovation> {
   private readonly supportRepo: Repository<InnovationSupport>;
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
+  private readonly activityLogService: ActivityLogService;
 
   constructor(connectionName?: string) {
     super(Innovation, connectionName);
@@ -80,6 +83,7 @@ export class InnovationService extends BaseService<Innovation> {
     this.notificationService = new NotificationService(connectionName);
     this.supportRepo = getRepository(InnovationSupport, connectionName);
     this.logService = new LoggerService();
+    this.activityLogService = new ActivityLogService(connectionName);
   }
 
   async createInnovation(
@@ -103,7 +107,22 @@ export class InnovationService extends BaseService<Innovation> {
       organisationShares: innovation.organisationShares.map((id) => ({ id })),
     });
 
-    return await this.repository.save(_innovation);
+    let result = await this.repository.save(_innovation);
+
+    try {
+      await this.createActivityLog(
+        requestUser,
+        result,
+        Activity.INNOVATION_CREATION
+      );
+    } catch (error) {
+      this.logService.error(
+        `An error has occured while creating activity log from ${requestUser.id}`,
+        error
+      );
+    }
+
+    return result;
   }
 
   async findInnovation(
@@ -1042,6 +1061,19 @@ export class InnovationService extends BaseService<Innovation> {
       );
     }
 
+    try {
+      await this.activityLogService.create(
+        requestUser,
+        innovation.id,
+        Activity.INNOVATION_SUBMISSION
+      );
+    } catch (error) {
+      this.logService.error(
+        `An error has occured while creating activity log from ${requestUser.id}`,
+        error
+      );
+    } 
+
     return {
       id: innovation.id,
       status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
@@ -1615,5 +1647,17 @@ export class InnovationService extends BaseService<Innovation> {
     );
 
     return await query.getCount();
+  }
+
+  private async createActivityLog(
+    requestUser: RequestUser,
+    innovation: Innovation,
+    activity: Activity
+  ) {
+    return await this.activityLogService.create(
+      requestUser,
+      innovation.id,
+      activity
+    );
   }
 }

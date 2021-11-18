@@ -1,3 +1,4 @@
+import { Activity } from "@domain/enums/activity.enums";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   Comment,
@@ -16,6 +17,7 @@ import { CommentModel } from "@services/models/CommentModel";
 import { RequestUser } from "@services/models/RequestUser";
 
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
+import { ActivityLogService } from "./ActivityLog.service";
 import { InnovationService } from "./Innovation.service";
 import { InnovationSupportService } from "./InnovationSupport.service";
 import { LoggerService } from "./Logger.service";
@@ -31,6 +33,7 @@ export class CommentService {
   private readonly innovationSupportService: InnovationSupportService;
   private readonly organisationService: OrganisationService;
   private readonly logService: LoggerService;
+  private readonly activityLogService: ActivityLogService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -43,6 +46,7 @@ export class CommentService {
     );
     this.organisationService = new OrganisationService(connectionName);
     this.logService = new LoggerService();
+    this.activityLogService = new ActivityLogService(connectionName);
   }
 
   async create(
@@ -157,6 +161,19 @@ export class CommentService {
     } catch (error) {
       this.logService.error(
         `An error has occured while sending an email of type ${EmailNotificationTemplate.INNOVATORS_COMMENT_RECEIVED}`,
+        error
+      );
+    }
+
+    try {
+      await this.activityLogService.create(
+        requestUser,
+        innovationId,
+        Activity.COMMENT_CREATION
+      );
+    } catch (error) {
+      this.logService.error(
+        `An error has occured while creating activity log from ${requestUser.id}`,
         error
       );
     }

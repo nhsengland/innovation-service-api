@@ -1,3 +1,4 @@
+import { Activity } from "@domain/enums/activity.enums";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   Comment,
@@ -21,6 +22,7 @@ import {
   getOrganisationsFromOrganisationUnitsObj,
 } from "../helpers";
 import { InnovationAssessmentResult } from "../models/InnovationAssessmentResult";
+import { ActivityLogService } from "./ActivityLog.service";
 import { InnovationService } from "./Innovation.service";
 import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
@@ -35,6 +37,7 @@ export class InnovationAssessmentService {
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
   private readonly organisationService: OrganisationService;
+  private readonly activityLogService: ActivityLogService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -44,6 +47,7 @@ export class InnovationAssessmentService {
     this.notificationService = new NotificationService(connectionName);
     this.logService = new LoggerService();
     this.organisationService = new OrganisationService(connectionName);
+    this.activityLogService = new ActivityLogService(connectionName);
   }
 
   async find(
@@ -160,7 +164,23 @@ export class InnovationAssessmentService {
         updatedBy: requestUser.id,
       });
 
-      return await transactionManager.save(InnovationAssessment, assessmentObj);
+      let result = await transactionManager.save(InnovationAssessment, assessmentObj);
+
+      try {
+        await this.activityLogService.create(
+          requestUser,
+          innovationId,
+          Activity.NEEDS_ASSESSMENT_START
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while creating activity log from ${requestUser.id}`,
+          error
+        );
+      }
+      
+      return result;
+
     });
   }
 
@@ -320,6 +340,19 @@ export class InnovationAssessmentService {
             error
           );
         }
+      }
+
+      try {
+        await this.activityLogService.create(
+          requestUser,
+          innovationId,
+          Activity.NEEDS_ASSESSMENT_COMPLETED
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while creating activity log from ${requestUser.id}`,
+          error
+        );
       }
     }
 

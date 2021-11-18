@@ -20,6 +20,7 @@ export { InnovationSupportService } from "../src/services/InnovationSupport.serv
 export { InnovationSupportLogService } from "../src/services/InnovationSupportLog.service";
 export { InnovationTransferService } from "../src/services/InnovationTransfer.service";
 export { OrganisationService } from "../src/services/Organisation.service";
+export { ActivityLogService } from "../src/services/ActivityLog.service";
 
 export { BaseService } from "../src/services/Base.service";
 export { UserService } from "../src/services/User.service";
@@ -88,6 +89,7 @@ export {
   InnovatorOrganisationRole,
   OrganisationUserRole,
   UserType,
+  ActivityLog,
 } from "@domain/index";
 
 const getDefaultConnection = (): ConnectionOptions => ({

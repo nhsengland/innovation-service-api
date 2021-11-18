@@ -1,3 +1,4 @@
+import { Activity } from "@domain/enums/activity.enums";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   Innovation,
@@ -24,6 +25,7 @@ import { RequestUser } from "@services/models/RequestUser";
 import { Connection, FindOneOptions, getConnection } from "typeorm";
 import { InnovationSectionModel } from "../models/InnovationSectionModel";
 import { InnovationSectionResult } from "../models/InnovationSectionResult";
+import { ActivityLogService } from "./ActivityLog.service";
 import { BaseService } from "./Base.service";
 import { FileService } from "./File.service";
 import { InnovationService } from "./Innovation.service";
@@ -36,6 +38,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
   private readonly innovationService: InnovationService;
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
+  private readonly activityLogService: ActivityLogService;
 
   constructor(connectionName?: string) {
     super(InnovationSection, connectionName);
@@ -44,6 +47,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     this.innovationService = new InnovationService(connectionName);
     this.notificationService = new NotificationService(connectionName);
     this.logService = new LoggerService();
+    this.activityLogService = new ActivityLogService(connectionName);
   }
 
   async findAllInnovationSectionsMetadata(
@@ -331,7 +335,22 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
 
     updatedInnovation.updatedBy = requestUser.id;
 
-    return this.innovationService.update(innovationId, updatedInnovation);
+    let result = this.innovationService.update(innovationId, updatedInnovation);
+
+    try {
+      await this.activityLogService.create(
+        requestUser,
+        innovationId,
+        Activity.SECTION_DRAFT_UPDATE
+      );
+    } catch (error) {
+      this.logService.error(
+        `An error has occured while creating activity log from ${requestUser.id}`,
+        error
+      );
+    }
+
+    return result;
   }
 
   async findAll(filter?: any): Promise<InnovationSection[]> {
@@ -451,6 +470,19 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
       }
     }
 
+    try {
+      await this.activityLogService.create(
+        requestUser,
+        innovationId,
+        Activity.SECTION_SUBMISSION
+      );
+    } catch (error) {
+      this.logService.error(
+        `An error has occured while creating activity log from ${requestUser.id}`,
+        error
+      );
+    }
+    
     return result;
   }
 
