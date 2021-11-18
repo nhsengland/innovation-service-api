@@ -624,32 +624,6 @@ export const setupCompleteInnovation = async (
       innovation.id,
       supportObj1
     );
-
-    // const supportObj2 = {
-    //   status: InnovationSupportStatus.ENGAGING,
-    //   accessors: [accessor2RequestUser.organisationUnitUser.id],
-    //   comment: "another test comment",
-    // };
-
-    // const support2 = await supportService.create(
-    //   qAccessorRequestUser,
-    //   innovation.id,
-    //   supportObj2
-    // );
-
-    // const supportObj3 = {
-    //   status: InnovationSupportStatus.NOT_YET,
-    //   accessors: [accessor3RequestUser.organisationUnitUser.id],
-    //   comment: "another test comment",
-    // }
-
-    // const support3 = await supportService.create(
-    //   qAccessorRequestUser,
-    //   innovation.id,
-    //   supportObj3
-    // );
-
-    // supports = [support1, support2, support3];
   }
 
   return {
