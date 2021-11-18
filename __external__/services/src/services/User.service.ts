@@ -884,7 +884,7 @@ export class UserService {
         INNER JOIN innovation_support_user u on s.id = u.innovation_support_id
         INNER JOIN organisation_unit_user ous on ous.id = u.organisation_unit_user_id
         INNER JOIN organisation_user ou on ou.id = ous.organisation_user_id
-        WHERE s.id = supports.id and ou.user_id != :userId
+        WHERE s.id = supports.id and ou.user_id != :userId and s.deleted_at IS NULL
       )`,
         {
           userId: userToBeRemoved.id,
