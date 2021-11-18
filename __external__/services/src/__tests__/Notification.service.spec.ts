@@ -267,7 +267,7 @@ describe("Notification Service Suite", () => {
     });
     const innovation = await fixtures.saveInnovation(innovationObj);
 
-    await fixtures.createSupportInInnovation(
+    await fixtures.createSupportInInnovationMultipleAccessors(
       {
         id: qaccessor.id,
         type: UserType.ACCESSOR,
@@ -275,18 +275,7 @@ describe("Notification Service Suite", () => {
         organisationUnitUser: qUnitUser,
       },
       innovation,
-      aUnitUser1.id
-    );
-
-    await fixtures.createSupportInInnovation(
-      {
-        id: qaccessor.id,
-        type: UserType.ACCESSOR,
-        organisationUser: qOrgUser,
-        organisationUnitUser: qUnitUser,
-      },
-      innovation,
-      aUnitUser2.id
+      [aUnitUser1.id, aUnitUser2.id]
     );
 
     const requestUser: RequestUser = {
