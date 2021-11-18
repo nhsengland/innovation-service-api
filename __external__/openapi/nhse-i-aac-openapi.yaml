@@ -409,7 +409,7 @@ paths:
           description: "Unauthorized"
         "403":
           description: "Forbidden"
-     
+
   "/accessors/{userId}/innovations/{innovationId}/support-logs":
     get:
       tags:
@@ -546,7 +546,7 @@ paths:
         "401":
           description: "Unauthorized"
         "403":
-          description: "Forbidden"       
+          description: "Forbidden"
 
   "/accessors/{userId}/innovations/{innovationId}/actions":
     get:
@@ -2607,6 +2607,92 @@ paths:
         - OpenId:
             - users_write
       parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/user-admin/users/lock":
+    patch:
+      tags:
+        - "Admin"
+        - "User"
+        - "LockUsers"
+      description: "Lock users"
+      operationId: "admins-lock-users"
+      security:
+        - OpenId:
+            - users_write
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/user-admin/users/unlock":
+    patch:
+      tags:
+        - "Admin"
+        - "User"
+        - "unlockUsers"
+      description: "Unlock users"
+      operationId: "admins-unlock-users"
+      security:
+        - OpenId:
+            - users_write
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/user-admin/users/search":
+    get:
+      tags:
+        - "Admin"
+        - "User"
+        - "searchUsers"
+      description: "Search users by email address"
+      operationId: "admins-search-users"
+      security:
+        - OpenId:
+            - users_read
+      parameters:
+        - name: emails
+          in: query
+          required: true
+          schema:
+            type: string
         - name: Authorization
           in: header
           schema:
