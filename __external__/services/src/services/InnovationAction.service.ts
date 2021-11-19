@@ -139,7 +139,7 @@ export class InnovationActionService {
       await this.notificationService.create(
         requestUser,
         NotificationAudience.INNOVATORS,
-        innovationId,
+        innovation.id,
         NotificationContextType.ACTION,
 
         result.id,
@@ -169,7 +169,7 @@ export class InnovationActionService {
     try {
       await this.activityLogService.create(
         requestUser,
-        innovationId,
+        innovation,
         Activity.ACTION_CREATION
       );
     } catch (error) {

@@ -55,8 +55,8 @@ export class InnovationSupportService {
     this.organisationService = new OrganisationService(connectionName);
     this.userService = new UserService(connectionName);
     this.notificationService = new NotificationService(connectionName);
-    this.logService = new LoggerService();
     this.activityLogService = new ActivityLogService(connectionName);
+    this.logService = new LoggerService();
   }
 
   async find(
@@ -417,7 +417,7 @@ export class InnovationSupportService {
     try {
       await this.activityLogService.create(
         requestUser,
-        innovationId,
+        innovation,
         Activity.SUPPORT_STATUS_UPDATE
       );
     } catch (error) {

@@ -1,4 +1,4 @@
-import { InnovationFile, Innovation, User } from "@domain/index";
+import { InnovationFile, Innovation, User, ActivityLog } from "@domain/index";
 import { getConnection } from "typeorm";
 import { FileService } from "../services/File.service";
 import { InnovationService } from "../services/Innovation.service";
@@ -25,6 +25,7 @@ describe("File Service Suite", () => {
     const query = getConnection(process.env.DB_TESTS_NAME)
       .createQueryBuilder()
       .delete();
+    await query.from(ActivityLog).execute();
     await query.from(InnovationFile).execute();
     await query.from(Innovation).execute();
     await query.from(User).execute();

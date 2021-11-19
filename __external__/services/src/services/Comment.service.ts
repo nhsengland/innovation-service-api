@@ -45,8 +45,8 @@ export class CommentService {
       connectionName
     );
     this.organisationService = new OrganisationService(connectionName);
-    this.logService = new LoggerService();
     this.activityLogService = new ActivityLogService(connectionName);
+    this.logService = new LoggerService();
   }
 
   async create(
@@ -90,7 +90,31 @@ export class CommentService {
       organisationUnit,
     };
 
-    const result = await this.commentRepo.save(commentObj);
+    const result = await this.connection.transaction(async (trs) => {
+      const innovation = await this.innovationService.find(innovationId);
+      if (!innovation) {
+        throw new InnovationNotFoundError(
+          `The Innovation with id ${innovationId} was not found.`
+        );
+      }
+      const comment = await trs.save(Comment, commentObj);
+      try {
+        await this.activityLogService.create(
+          requestUser,
+          innovation,
+          Activity.COMMENT_CREATION,
+          trs
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while creating activity log from ${requestUser.id}`,
+          error
+        );
+        throw error;
+      }
+
+      return comment;
+    });
 
     let targetNotificationUsers;
     // If the comment if made by an accessor, it also has to send a notification for assigned accessors regardless of the unit they belong to.
@@ -161,19 +185,6 @@ export class CommentService {
     } catch (error) {
       this.logService.error(
         `An error has occured while sending an email of type ${EmailNotificationTemplate.INNOVATORS_COMMENT_RECEIVED}`,
-        error
-      );
-    }
-
-    try {
-      await this.activityLogService.create(
-        requestUser,
-        innovationId,
-        Activity.COMMENT_CREATION
-      );
-    } catch (error) {
-      this.logService.error(
-        `An error has occured while creating activity log from ${requestUser.id}`,
         error
       );
     }

@@ -82,8 +82,8 @@ export class InnovationService extends BaseService<Innovation> {
     this.userService = new UserService(connectionName);
     this.notificationService = new NotificationService(connectionName);
     this.supportRepo = getRepository(InnovationSupport, connectionName);
-    this.logService = new LoggerService();
     this.activityLogService = new ActivityLogService(connectionName);
+    this.logService = new LoggerService();
   }
 
   async createInnovation(
@@ -107,7 +107,7 @@ export class InnovationService extends BaseService<Innovation> {
       organisationShares: innovation.organisationShares.map((id) => ({ id })),
     });
 
-    let result = await this.repository.save(_innovation);
+    const result = await this.repository.save(_innovation);
 
     try {
       await this.createActivityLog(
@@ -1000,11 +1000,31 @@ export class InnovationService extends BaseService<Innovation> {
       );
     }
 
-    await this.repository.update(innovation.id, {
-      submittedAt: new Date(),
-      status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
-      updatedBy: requestUser.id,
+    await this.connection.transaction(async (trs) => {
+      const updatedInnovation = await trs.update(
+        Innovation,
+        { id: innovation.id },
+        {
+          submittedAt: new Date(),
+          status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
+          updatedBy: requestUser.id,
+        }
+      );
+      await this.activityLogService.create(
+        requestUser,
+        innovation,
+        Activity.INNOVATION_SUBMISSION,
+        trs
+      );
+
+      return updatedInnovation;
     });
+
+    // await this.repository.update(innovation.id, {
+    //   submittedAt: new Date(),
+    //   status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
+    //   updatedBy: requestUser.id,
+    // });
 
     try {
       await this.notificationService.create(
@@ -1060,19 +1080,6 @@ export class InnovationService extends BaseService<Innovation> {
         error
       );
     }
-
-    try {
-      await this.activityLogService.create(
-        requestUser,
-        innovation.id,
-        Activity.INNOVATION_SUBMISSION
-      );
-    } catch (error) {
-      this.logService.error(
-        `An error has occured while creating activity log from ${requestUser.id}`,
-        error
-      );
-    } 
 
     return {
       id: innovation.id,
@@ -1656,7 +1663,7 @@ export class InnovationService extends BaseService<Innovation> {
   ) {
     return await this.activityLogService.create(
       requestUser,
-      innovation.id,
+      innovation,
       activity
     );
   }

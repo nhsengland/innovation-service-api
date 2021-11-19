@@ -1,6 +1,7 @@
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   AccessorOrganisationRole,
+  ActivityLog,
   Comment,
   Innovation,
   InnovationAction,
@@ -144,6 +145,7 @@ describe("Innovation Support Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(ActivityLog).execute();
     await query.from(OrganisationUnitUser).execute();
     await query.from(OrganisationUnit).execute();
     await query.from(OrganisationUser).execute();
@@ -159,6 +161,7 @@ describe("Innovation Support Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(ActivityLog).execute();
     await query.from(InnovationSupportLog).execute();
     await query.from(NotificationUser).execute();
     await query.from(Notification).execute();

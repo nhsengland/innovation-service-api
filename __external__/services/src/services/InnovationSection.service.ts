@@ -335,12 +335,15 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
 
     updatedInnovation.updatedBy = requestUser.id;
 
-    let result = this.innovationService.update(innovationId, updatedInnovation);
+    const result = this.innovationService.update(
+      innovationId,
+      updatedInnovation
+    );
 
     try {
       await this.activityLogService.create(
         requestUser,
-        innovationId,
+        innovation,
         Activity.SECTION_DRAFT_UPDATE
       );
     } catch (error) {
@@ -473,7 +476,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     try {
       await this.activityLogService.create(
         requestUser,
-        innovationId,
+        innovation,
         Activity.SECTION_SUBMISSION
       );
     } catch (error) {
@@ -482,7 +485,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
         error
       );
     }
-    
+
     return result;
   }
 

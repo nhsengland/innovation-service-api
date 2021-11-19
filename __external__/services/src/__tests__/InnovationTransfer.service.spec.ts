@@ -1,4 +1,5 @@
 import {
+  ActivityLog,
   Innovation,
   InnovationTransfer,
   InnovationTransferStatus,
@@ -56,7 +57,7 @@ describe("Innovation Transfer Suite", () => {
     const query = getConnection(process.env.DB_TESTS_NAME)
       .createQueryBuilder()
       .delete();
-
+    await query.from(ActivityLog).execute();
     await query.from(Innovation).execute();
     await query.from(User).execute();
 

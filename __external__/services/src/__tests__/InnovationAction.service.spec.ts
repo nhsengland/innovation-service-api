@@ -1,6 +1,7 @@
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   AccessorOrganisationRole,
+  ActivityLog,
   Comment,
   Innovation,
   InnovationAction,
@@ -157,7 +158,7 @@ describe("Innovation Action Suite", () => {
     const query = getConnection(process.env.DB_TESTS_NAME)
       .createQueryBuilder()
       .delete();
-
+    await query.from(ActivityLog).execute();
     await query.from(InnovationSupport).execute();
     await query.from(OrganisationUnitUser).execute();
     await query.from(OrganisationUnit).execute();

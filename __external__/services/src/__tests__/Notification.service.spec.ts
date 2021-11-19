@@ -25,6 +25,7 @@ import {
   User,
   UserType,
   NotificationPreference,
+  ActivityLog,
 } from "@domain/index";
 import * as engines from "@engines/index";
 import { InvalidParamsError } from "@services/errors";
@@ -64,6 +65,9 @@ describe("Notification Service Suite", () => {
       },
     } as any);
 
+    jest.spyOn(LoggerService.prototype, "error").mockImplementation();
+    jest.spyOn(LoggerService.prototype, "log").mockImplementation();
+
     jest.spyOn(engines, "emailEngines").mockReturnValue([
       {
         key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
@@ -95,6 +99,7 @@ describe("Notification Service Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(ActivityLog).execute();
     await query.from(InnovationSupportLog).execute();
     await query.from(Comment).execute();
     await query.from(InnovationAction).execute();
