@@ -27,7 +27,8 @@ export class ActivityLogService {
     requestUser: RequestUser,
     innovation: Innovation,
     activity: Activity,
-    transaction?: EntityManager
+    transaction: EntityManager,
+    customParams?: { [key: string]: string }
   ) {
     if (!requestUser || !innovation || !activity) {
       throw new InvalidParamsError("Invalid parameters.");
@@ -38,7 +39,8 @@ export class ActivityLogService {
     const params = this.getActivityParameters(
       activity,
       requestUser,
-      innovation
+      innovation,
+      customParams
     );
 
     const activityLogObj = ActivityLog.new({

@@ -45,7 +45,7 @@ describe("Innovation Support Suite", () => {
   let naRequestUser: RequestUser;
 
   beforeAll(async () => {
-    // await setupTestsConnection();
+    await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -153,7 +153,7 @@ describe("Innovation Support Suite", () => {
     await query.from(Innovation).execute();
     await query.from(User).execute();
 
-    // closeTestsConnection();
+    closeTestsConnection();
   });
 
   afterEach(async () => {

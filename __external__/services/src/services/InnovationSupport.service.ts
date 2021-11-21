@@ -329,6 +329,21 @@ export class InnovationSupportService {
             organisationUnit,
           });
           await transactionManager.save(Comment, comment);
+
+          try {
+            await this.activityLogService.create(
+              requestUser,
+              innovation,
+              Activity.COMMENT_CREATION,
+              transactionManager
+            );
+          } catch (error) {
+            this.logService.error(
+              `An error has occured while creating activity log from ${requestUser.id}`,
+              error
+            );
+            throw error;
+          }
         }
 
         const innovationSupport = {
@@ -346,10 +361,32 @@ export class InnovationSupportService {
           usersToBeNotified
         );
 
-        return await transactionManager.save(
+        const retVal = await transactionManager.save(
           InnovationSupport,
           innovationSupport
         );
+
+        try {
+          await this.activityLogService.create(
+            requestUser,
+            innovation,
+            Activity.SUPPORT_STATUS_UPDATE,
+            transactionManager,
+            {
+              organisationUnit:
+                requestUser.organisationUnitUser.organisationUnit.name,
+            }
+          );
+        } catch (error) {
+          this.logService.error(
+            `An error has occured while creating activity log from ${requestUser.id}`,
+            error
+          );
+
+          throw error;
+        }
+
+        return retVal;
       }
     );
 
@@ -412,19 +449,6 @@ export class InnovationSupportService {
           error
         );
       }
-    }
-
-    try {
-      await this.activityLogService.create(
-        requestUser,
-        innovation,
-        Activity.SUPPORT_STATUS_UPDATE
-      );
-    } catch (error) {
-      this.logService.error(
-        `An error has occured while creating activity log from ${requestUser.id}`,
-        error
-      );
     }
 
     return result;

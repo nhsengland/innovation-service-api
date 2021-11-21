@@ -340,18 +340,22 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
       updatedInnovation
     );
 
-    try {
-      await this.activityLogService.create(
-        requestUser,
-        innovation,
-        Activity.SECTION_DRAFT_UPDATE
-      );
-    } catch (error) {
-      this.logService.error(
-        `An error has occured while creating activity log from ${requestUser.id}`,
-        error
-      );
-    }
+    // TODO: CONVERT TO TRANSACTION
+
+    // try {
+    //   await this.activityLogService.create(
+    //     requestUser,
+    //     innovation,
+    //     Activity.SECTION_DRAFT_UPDATE
+    //   );
+    // } catch (error) {
+    //   this.logService.error(
+    //     `An error has occured while creating activity log from ${requestUser.id}`,
+    //     error
+    //   );
+
+    //   throw error;
+    // }
 
     return result;
   }
@@ -404,6 +408,24 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
             });
 
             await transactionManager.save(InnovationSection, innovSectionObj);
+            try {
+              await this.activityLogService.create(
+                requestUser,
+                innovation,
+                Activity.SECTION_SUBMISSION,
+                transactionManager,
+                {
+                  sectionName: InnovationSectionCatalogue[secKey],
+                }
+              );
+            } catch (error) {
+              this.logService.error(
+                `An error has occured while creating activity log from ${requestUser.id}`,
+                error
+              );
+
+              throw error;
+            }
           } else {
             const innovationActions = await innovSections[secIdx].actions;
             const actions = innovationActions.filter(
@@ -432,6 +454,24 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
                 submittedAt: new Date(),
               }
             );
+            try {
+              await this.activityLogService.create(
+                requestUser,
+                innovation,
+                Activity.SECTION_SUBMISSION,
+                transactionManager,
+                {
+                  sectionName: innovSections[secIdx].section,
+                }
+              );
+            } catch (error) {
+              this.logService.error(
+                `An error has occured while creating activity log from ${requestUser.id}`,
+                error
+              );
+
+              throw error;
+            }
           }
         }
       }
@@ -471,19 +511,6 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
           );
         }
       }
-    }
-
-    try {
-      await this.activityLogService.create(
-        requestUser,
-        innovation,
-        Activity.SECTION_SUBMISSION
-      );
-    } catch (error) {
-      this.logService.error(
-        `An error has occured while creating activity log from ${requestUser.id}`,
-        error
-      );
     }
 
     return result;

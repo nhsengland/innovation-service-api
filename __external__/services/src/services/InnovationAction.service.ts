@@ -133,7 +133,29 @@ export class InnovationActionService {
       updatedBy: requestUser.id,
     };
 
-    const result = await this.actionRepo.save(actionObj);
+    //const result = await this.actionRepo.save(actionObj);
+    const result = await this.connection.transaction(async (trs) => {
+      const action = await trs.save(InnovationAction, actionObj);
+      try {
+        await this.activityLogService.create(
+          requestUser,
+          innovation,
+          Activity.ACTION_CREATION,
+          trs,
+          {
+            sectionName: action.innovationSection.section,
+          }
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while creating activity log from ${requestUser.id}`,
+          error
+        );
+        throw error;
+      }
+
+      return action;
+    });
 
     try {
       await this.notificationService.create(
@@ -162,19 +184,6 @@ export class InnovationActionService {
     } catch (error) {
       this.logService.error(
         `An error has occured an email with the template ${EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST} from ${requestUser.id}`,
-        error
-      );
-    }
-
-    try {
-      await this.activityLogService.create(
-        requestUser,
-        innovation,
-        Activity.ACTION_CREATION
-      );
-    } catch (error) {
-      this.logService.error(
-        `An error has occured while creating activity log from ${requestUser.id}`,
         error
       );
     }

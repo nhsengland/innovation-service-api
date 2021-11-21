@@ -107,20 +107,27 @@ export class InnovationService extends BaseService<Innovation> {
       organisationShares: innovation.organisationShares.map((id) => ({ id })),
     });
 
-    const result = await this.repository.save(_innovation);
+    //const result = await this.repository.save(_innovation);
+    const result = await this.connection.transaction(async (trs) => {
+      const innov = await trs.save(Innovation, _innovation);
+      try {
+        await this.createActivityLog(
+          requestUser,
+          innov,
+          Activity.INNOVATION_CREATION,
+          trs
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while creating activity log from ${requestUser.id}`,
+          error
+        );
 
-    try {
-      await this.createActivityLog(
-        requestUser,
-        result,
-        Activity.INNOVATION_CREATION
-      );
-    } catch (error) {
-      this.logService.error(
-        `An error has occured while creating activity log from ${requestUser.id}`,
-        error
-      );
-    }
+        throw error;
+      }
+
+      return innov;
+    });
 
     return result;
   }
@@ -1659,12 +1666,14 @@ export class InnovationService extends BaseService<Innovation> {
   private async createActivityLog(
     requestUser: RequestUser,
     innovation: Innovation,
-    activity: Activity
+    activity: Activity,
+    transaction: EntityManager
   ) {
     return await this.activityLogService.create(
       requestUser,
       innovation,
-      activity
+      activity,
+      transaction
     );
   }
 }
