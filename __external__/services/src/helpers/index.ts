@@ -53,7 +53,8 @@ export async function getUserFromB2C(id: string, accessToken?: string) {
 export async function getUsersFromB2C(
   accessToken: string,
   odataFilter: string,
-  apiVersion?: string
+  apiVersion?: string,
+  excludeLocked?: boolean
 ) {
   try {
     apiVersion = apiVersion || "v1.0";
@@ -65,6 +66,13 @@ export async function getUsersFromB2C(
       `https://graph.microsoft.com/${apiVersion}/users?${odataFilter}`,
       config
     );
+
+    // if exclude, filter out locked accounts
+
+    if (excludeLocked) {
+      return result.data.value?.filter((x) => !x.accountEnabled) || [];
+    }
+
     return result.data.value || [];
   } catch (error) {
     throw error;
