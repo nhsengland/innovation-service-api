@@ -335,27 +335,41 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
 
     updatedInnovation.updatedBy = requestUser.id;
 
-    const result = this.innovationService.update(
-      innovationId,
-      updatedInnovation
-    );
+    // const result = this.innovationService.update(
+    //   innovationId,
+    //   updatedInnovation
+    // );
 
-    // TODO: CONVERT TO TRANSACTION
+    const result = await this.connection.transaction(async (transaction) => {
+      if (!updatedInnovation.id) {
+        updatedInnovation.id = innovation.id;
+      }
 
-    // try {
-    //   await this.activityLogService.create(
-    //     requestUser,
-    //     innovation,
-    //     Activity.SECTION_DRAFT_UPDATE
-    //   );
-    // } catch (error) {
-    //   this.logService.error(
-    //     `An error has occured while creating activity log from ${requestUser.id}`,
-    //     error
-    //   );
+      const innov = await transaction.save(Innovation, updatedInnovation);
 
-    //   throw error;
-    // }
+      for (const section of sections) {
+        try {
+          await this.activityLogService.create(
+            requestUser,
+            innovation,
+            Activity.SECTION_DRAFT_UPDATE,
+            transaction,
+            {
+              sectionName: section.section,
+            }
+          );
+        } catch (error) {
+          this.logService.error(
+            `An error has occured while creating activity log from ${requestUser.id}`,
+            error
+          );
+
+          throw error;
+        }
+      }
+
+      return innov;
+    });
 
     return result;
   }
@@ -454,6 +468,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
                 submittedAt: new Date(),
               }
             );
+
             try {
               await this.activityLogService.create(
                 requestUser,
