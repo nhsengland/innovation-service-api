@@ -69,11 +69,16 @@ export class ActivityLogService {
     let activityParams: object;
 
     switch (activity) {
+      case Activity.INNOVATION_CREATION:
+        activityParams = {
+          innovationName: innovation.name,
+        };
+        break;
       case Activity.OWNERSHIP_TRANSFER:
       case Activity.ACTION_STATUS_DECLINED_UPDATE:
         activityParams = {
-          actionUserId: requestUser.id,
-          interveningUserId: "", //Check innovation transfer & Decline action implemention to retrieve value
+          actionUserId: params?.actionUserId || requestUser.id,
+          interveningUserId: params?.interveningUserId, //Check innovation transfer & Decline action implemention to retrieve value
         };
         break;
 

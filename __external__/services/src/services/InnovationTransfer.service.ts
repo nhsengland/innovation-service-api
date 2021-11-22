@@ -1,6 +1,11 @@
 import { InnovationTransfer } from "@domain/entity/innovation/InnovationTransfer.entity";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
-import { Innovation, InnovationTransferStatus, UserType } from "@domain/index";
+import {
+  Activity,
+  Innovation,
+  InnovationTransferStatus,
+  UserType,
+} from "@domain/index";
 import {
   InnovationNotFoundError,
   InnovationTransferAlreadyExistsError,
@@ -9,13 +14,20 @@ import {
 } from "@services/errors";
 import { InnovationTransferResult } from "@services/models/InnovationTransferResult";
 import { RequestUser } from "@services/models/RequestUser";
-import { Connection, getConnection, getRepository, Repository } from "typeorm";
+import {
+  Connection,
+  EntityManager,
+  getConnection,
+  getRepository,
+  Repository,
+} from "typeorm";
 import {
   authenticateWitGraphAPI,
   checkIfValidUUID,
   getUserFromB2C,
   getUserFromB2CByEmail,
 } from "../helpers";
+import { ActivityLogService } from "./ActivityLog.service";
 import { InnovationService } from "./Innovation.service";
 import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
@@ -36,6 +48,7 @@ export class InnovationTransferService {
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
   private readonly userService: UserService;
+  private readonly activityLogService: ActivityLogService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -44,6 +57,7 @@ export class InnovationTransferService {
     this.notificationService = new NotificationService(connectionName);
     this.userService = new UserService(connectionName);
     this.logService = new LoggerService();
+    this.activityLogService = new ActivityLogService(connectionName);
   }
 
   async checkOne(id: string) {
@@ -335,6 +349,25 @@ export class InnovationTransferService {
         );
 
         try {
+          await this.createActivityLog(
+            requestUser,
+            transfer.innovation,
+            Activity.OWNERSHIP_TRANSFER,
+            transactionManager,
+            {
+              actionUserId: originB2cUser,
+              interveningUserId: destB2cUser,
+            }
+          );
+        } catch (error) {
+          this.logService.error(
+            `An error has occured while creating activity log from ${requestUser.id}`,
+            error
+          );
+          throw error;
+        }
+
+        try {
           await this.notificationService.sendEmail(
             requestUser,
             EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_CONFIRMATION,
@@ -431,5 +464,21 @@ export class InnovationTransferService {
     const query = this.getQuery(filter);
 
     return await query.getOne();
+  }
+
+  private async createActivityLog(
+    requestUser: RequestUser,
+    innovation: Innovation,
+    activity: Activity,
+    transaction: EntityManager,
+    params?: { [key: string]: string }
+  ) {
+    return await this.activityLogService.create(
+      requestUser,
+      innovation,
+      activity,
+      transaction,
+      params
+    );
   }
 }
