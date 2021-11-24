@@ -1,6 +1,6 @@
 import { Activity, ActivityType } from "@domain/enums/activity.enums";
 import { ActivityLog, Innovation } from "@domain/index";
-import { InnovationNotFoundError, InvalidParamsError } from "@services/errors";
+import { InvalidParamsError } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
 import {
   Connection,
@@ -9,7 +9,6 @@ import {
   getRepository,
   Repository,
 } from "typeorm";
-import { InnovationService } from "./Innovation.service";
 import { LoggerService } from "./Logger.service";
 
 export class ActivityLogService {

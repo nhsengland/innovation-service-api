@@ -347,25 +347,23 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
 
       const innov = await transaction.save(Innovation, updatedInnovation);
 
-      for (const section of sections) {
-        try {
-          await this.activityLogService.create(
-            requestUser,
-            innovation,
-            Activity.SECTION_DRAFT_UPDATE,
-            transaction,
-            {
-              sectionName: section.section,
-            }
-          );
-        } catch (error) {
-          this.logService.error(
-            `An error has occured while creating activity log from ${requestUser.id}`,
-            error
-          );
+      try {
+        await this.activityLogService.create(
+          requestUser,
+          innovation,
+          Activity.SECTION_DRAFT_UPDATE,
+          transaction,
+          {
+            sectionName: section,
+          }
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while creating activity log from ${requestUser.id}`,
+          error
+        );
 
-          throw error;
-        }
+        throw error;
       }
 
       return innov;
@@ -592,14 +590,14 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
         if (dependency.files) {
           data[dependency.type].forEach(
             (dep: any) =>
-              (dep.files = dep.files?.map((obj: InnovationFile) => ({
-                id: obj.id,
-                displayFileName: obj.displayFileName,
-                url: this.fileService.getDownloadUrl(
-                  obj.id,
-                  obj.displayFileName
-                ),
-              })))
+            (dep.files = dep.files?.map((obj: InnovationFile) => ({
+              id: obj.id,
+              displayFileName: obj.displayFileName,
+              url: this.fileService.getDownloadUrl(
+                obj.id,
+                obj.displayFileName
+              ),
+            })))
           );
         }
       }

@@ -135,7 +135,7 @@ export class InnovationActionService {
 
     //const result = await this.actionRepo.save(actionObj);
     const result = await this.connection.transaction(async (trs) => {
-      const action = await trs.save(InnovationAction, actionObj);
+      const actionResult = await trs.save(InnovationAction, actionObj);
       try {
         await this.activityLogService.create(
           requestUser,
@@ -143,7 +143,7 @@ export class InnovationActionService {
           Activity.ACTION_CREATION,
           trs,
           {
-            sectionName: action.innovationSection.section,
+            sectionName: action.section,
           }
         );
       } catch (error) {
@@ -154,7 +154,7 @@ export class InnovationActionService {
         throw error;
       }
 
-      return action;
+      return actionResult;
     });
 
     try {

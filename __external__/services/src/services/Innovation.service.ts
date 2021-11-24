@@ -115,7 +115,10 @@ export class InnovationService extends BaseService<Innovation> {
           requestUser,
           innov,
           Activity.INNOVATION_CREATION,
-          trs
+          trs,
+          {
+            innovationName: innov.name,
+          }
         );
       } catch (error) {
         this.logService.error(
@@ -1017,7 +1020,7 @@ export class InnovationService extends BaseService<Innovation> {
           updatedBy: requestUser.id,
         }
       );
-      await this.activityLogService.create(
+      await this.createActivityLog(
         requestUser,
         innovation,
         Activity.INNOVATION_SUBMISSION,
@@ -1667,13 +1670,15 @@ export class InnovationService extends BaseService<Innovation> {
     requestUser: RequestUser,
     innovation: Innovation,
     activity: Activity,
-    transaction: EntityManager
+    transaction: EntityManager,
+    customParams?: { [key: string]: string }
   ) {
     return await this.activityLogService.create(
       requestUser,
       innovation,
       activity,
-      transaction
+      transaction,
+      customParams
     );
   }
 }

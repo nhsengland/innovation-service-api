@@ -264,20 +264,22 @@ export class InnovationAssessmentService {
         suggestedOrganisationUnits = assessmentDb.organisationUnits;
         const assessmentTrs = await transactionManager.save(assessmentDb);
 
-        try {
-          await this.activityLogService.create(
-            requestUser,
-            innovation,
-            Activity.NEEDS_ASSESSMENT_COMPLETED,
-            transactionManager
-          );
-        } catch (error) {
-          this.logService.error(
-            `An error has occured while creating activity log from ${requestUser.id}`,
-            error
-          );
+        if (assessment.isSubmission) {
+          try {
+            await this.activityLogService.create(
+              requestUser,
+              innovation,
+              Activity.NEEDS_ASSESSMENT_COMPLETED,
+              transactionManager
+            );
+          } catch (error) {
+            this.logService.error(
+              `An error has occured while creating activity log from ${requestUser.id}`,
+              error
+            );
 
-          throw error;
+            throw error;
+          }
         }
 
         return assessmentTrs;
