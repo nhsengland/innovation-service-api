@@ -40,10 +40,49 @@ const payloadSchema = Joi.object({
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
       .allow(""),
-    userTestFeedback: Joi.string()
-      .max(constants.mediumFieldCharacterLimit)
-      .allow(null)
-      .allow(""),
+    userTests: Joi.array().items(
+      Joi.object({
+        id: Joi.string().allow(null).allow(""),
+        kind: Joi.string().allow(null).allow(""),
+        feedback: Joi.string()
+          .max(constants.mediumFieldCharacterLimit)
+          .allow(null)
+          .allow(""),
+      })
+    ),
+    deploymentPlans: Joi.array().items(
+      Joi.object({
+        id: Joi.string().allow(null).allow(""),
+        name: Joi.string().allow(null).allow(""),
+        commercialBasis: Joi.string()
+          .max(constants.mediumFieldCharacterLimit)
+          .allow(null)
+          .allow(""),
+        orgDeploymentAffect: Joi.string()
+          .max(constants.mediumFieldCharacterLimit)
+          .allow(null)
+          .allow(""),
+      })
+    ),
+    subgroups: Joi.array().items(
+      Joi.object({
+        id: Joi.string().allow(null).allow(""),
+        name: Joi.string().allow(null).allow(""),
+        costDescription: Joi.string()
+          .max(constants.mediumFieldCharacterLimit)
+          .allow(null)
+          .allow(""),
+        patientsRange: Joi.string().allow(null).allow(""),
+        sellExpectations: Joi.string()
+          .max(constants.mediumFieldCharacterLimit)
+          .allow(null)
+          .allow(""),
+        usageExpectations: Joi.string()
+          .max(constants.mediumFieldCharacterLimit)
+          .allow(null)
+          .allow(""),
+      })
+    ),
     costDescription: Joi.string()
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
@@ -77,14 +116,6 @@ const payloadSchema = Joi.object({
       .allow(null)
       .allow(""),
     fundingDescription: Joi.string()
-      .max(constants.mediumFieldCharacterLimit)
-      .allow(null)
-      .allow(""),
-    deploymentPlansComercialBasis: Joi.string()
-      .max(constants.mediumFieldCharacterLimit)
-      .allow(null)
-      .allow(""),
-    deploymentPlansOrgDeploymentAffect: Joi.string()
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
       .allow(""),
