@@ -7,6 +7,7 @@ import {
   InvalidParamsError,
   InvalidUserRoleError,
   InvalidUserTypeError,
+  LastAccessorFromUnitProvidingSupportError,
   MissingUserOrganisationError,
   MissingUserOrganisationUnitError,
   ResourceNotFoundError,
@@ -109,6 +110,11 @@ export const ErroHandling = (error: Error) => {
   } else if (error instanceof InnovationTransferAlreadyExistsError) {
     return UnprocessableEntity({
       error: error.name,
+    });
+  } else if (error instanceof LastAccessorFromUnitProvidingSupportError) {
+    return Forbidden({
+      data: error.data,
+      error: error,
     });
   } else {
     return Internal();

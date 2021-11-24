@@ -1,4 +1,8 @@
 import {
+  Innovation,
+  InnovationStatus,
+  InnovationSupport,
+  InnovationSupportStatus,
   Organisation,
   OrganisationUnit,
   OrganisationUnitUser,
@@ -10,6 +14,10 @@ import {
   InvalidDataError,
   InvalidParamsError,
   InvalidUserTypeError,
+  LastAccessorFromUnitProvidingSupportError,
+  LastAccessorUserOnOrganisationError,
+  LastAccessorUserOnOrganisationUnitError,
+  LastAssessmentUserOnPlatformError,
 } from "@services/errors";
 import {
   ProfileSlimModel,
@@ -18,9 +26,14 @@ import {
 import { RequestUser } from "@services/models/RequestUser";
 import { UserCreationModel } from "@services/models/UserCreationModel";
 import { UserCreationResult } from "@services/models/UserCreationResult";
+import {
+  UserLockResult,
+  UserUnlockResult,
+} from "@services/models/UserLockResult";
 import { UserProfileUpdateModel } from "@services/models/UserProfileUpdateModel";
 import { UserUpdateModel } from "@services/models/UserUpdateModel";
 import { UserUpdateResult } from "@services/models/UserUpdateResult";
+import { UserSearchResult } from "@services/types";
 import {
   Connection,
   EntityManager,
@@ -45,12 +58,23 @@ export class UserService {
   private readonly userRepo: Repository<User>;
   private readonly orgRepo: Repository<Organisation>;
   private readonly orgUnitRepo: Repository<OrganisationUnit>;
+  private readonly orgUserRepo: Repository<OrganisationUser>;
+  private readonly orgUnitUserRepo: Repository<OrganisationUnitUser>;
+  private readonly innovationRepo: Repository<Innovation>;
+  private readonly innovationSupportRepo: Repository<InnovationSupport>;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.userRepo = getRepository(User, connectionName);
     this.orgRepo = getRepository(Organisation, connectionName);
     this.orgUnitRepo = getRepository(OrganisationUnit, connectionName);
+    this.orgUserRepo = getRepository(OrganisationUser, connectionName);
+    this.orgUnitUserRepo = getRepository(OrganisationUnitUser, connectionName);
+    this.innovationRepo = getRepository(Innovation, connectionName);
+    this.innovationSupportRepo = getRepository(
+      InnovationSupport,
+      connectionName
+    );
   }
 
   async find(id: string, options?: FindOneOptions) {
@@ -62,8 +86,8 @@ export class UserService {
     return await this.userRepo.save(user);
   }
 
-  async getUser(id: string) {
-    return await this.userRepo.findOne(id);
+  async getUser(id: string, options?: FindOneOptions<User>) {
+    return await this.userRepo.findOne(id, options);
   }
 
   async updateB2CUser(
@@ -168,6 +192,75 @@ export class UserService {
     return profile;
   }
 
+  async searchUsersByEmail(
+    requestUser: RequestUser,
+    emails: string[]
+  ): Promise<UserSearchResult[]> {
+    if (!requestUser || !emails || emails.length === 0) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+    const retVal: UserSearchResult[] = [];
+
+    for (const email of emails) {
+      const result = await this.searchUserByEmail(email);
+      if (result) {
+        retVal.push(result);
+      }
+    }
+
+    return retVal;
+  }
+
+  async searchUserByEmail(email: string): Promise<UserSearchResult> {
+    const accessToken = await authenticateWitGraphAPI();
+    const userB2C = await getUserFromB2CByEmail(email, accessToken);
+
+    const user = await this.find(userB2C.id, {
+      relations: [
+        "userOrganisations",
+        "userOrganisations.organisation",
+        "userOrganisations.userOrganisationUnits",
+        "userOrganisations.userOrganisationUnits.innovationSupports",
+        "userOrganisations.userOrganisationUnits.innovationSupports.innovation",
+        "userOrganisations.userOrganisationUnits.organisationUnit",
+      ],
+    });
+
+    const userOrgs = await user.userOrganisations;
+
+    const userOrganisations = [];
+
+    for (const userOrg of userOrgs) {
+      const userUnits = userOrg.userOrganisationUnits;
+
+      const unitsSlim = [];
+      for (const unit of userUnits) {
+        unitsSlim.push({
+          id: unit.organisationUnit.id,
+          name: unit.organisationUnit.name,
+          supportCount: unit.innovationSupports.length,
+        });
+      }
+
+      userOrganisations.push({
+        id: userOrg.organisation.id,
+        name: userOrg.organisation.name,
+        role: userOrg.role,
+        units: unitsSlim,
+      });
+    }
+
+    if (userB2C && user) {
+      return {
+        id: userB2C.id,
+        displayName: userB2C.displayName,
+        userOrganisations,
+      };
+    }
+
+    return null;
+  }
+
   async getUsersEmail(ids: string[]): Promise<UserEmailModel[]> {
     if (ids.length === 0) {
       return null;
@@ -178,7 +271,7 @@ export class UserService {
     const odataFilter = `$filter=id in (${userIds})`;
 
     const users =
-      (await getUsersFromB2C(accessToken, odataFilter, "beta")) || [];
+      (await getUsersFromB2C(accessToken, odataFilter, "beta", true)) || [];
 
     const result = users.map((u) => ({
       id: u.id,
@@ -190,7 +283,10 @@ export class UserService {
     return result;
   }
 
-  async getListOfUsers(ids: string[]): Promise<ProfileSlimModel[]> {
+  async getListOfUsers(
+    ids: string[],
+    excludeLocked?: boolean
+  ): Promise<ProfileSlimModel[]> {
     if (!ids || ids.length === 0) {
       return [];
     }
@@ -222,7 +318,9 @@ export class UserService {
       const userIds = userIdsChunks[i].map((u) => `"${u}"`).join(",");
       const odataFilter = `$filter=id in (${userIds})`;
 
-      promises.push(getUsersFromB2C(accessToken, odataFilter));
+      promises.push(
+        getUsersFromB2C(accessToken, odataFilter, undefined, excludeLocked)
+      );
     }
 
     // promise all and merge all results
@@ -516,5 +614,291 @@ export class UserService {
     });
 
     return users;
+  }
+
+  async lockUsers(
+    requestUser: RequestUser,
+    users: string[]
+  ): Promise<UserLockResult[]> {
+    if (!requestUser || !users || users.length === 0) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    const graphAccessToken = await authenticateWitGraphAPI();
+    const results: UserLockResult[] = [];
+
+    for (let i = 0; i < users.length; i++) {
+      const user = users[i];
+      let result: UserLockResult;
+
+      try {
+        result = await this.lockUser(requestUser, users[i], graphAccessToken);
+      } catch (err) {
+        result = {
+          id: user,
+          status: "ERROR",
+          error: {
+            code: err.constructor.name,
+            message: err.message,
+            data: err.data,
+          },
+        };
+      }
+
+      results.push(result);
+    }
+
+    return results;
+  }
+
+  async lockUser(
+    requestUser: RequestUser,
+    userId: string,
+    graphAccessToken?: string
+  ): Promise<UserUpdateResult> {
+    if (!requestUser || !userId) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    if (!graphAccessToken) {
+      graphAccessToken = await authenticateWitGraphAPI();
+    }
+
+    const user = await getUserFromB2C(userId, graphAccessToken);
+    if (!user) {
+      throw new Error("Invalid user id.");
+    }
+
+    const userToBeRemoved = await this.getUser(userId, {
+      relations: [
+        "userOrganisations",
+        "userOrganisations.organisation",
+        "userOrganisations.userOrganisationUnits",
+        "userOrganisations.userOrganisationUnits.organisationUnit",
+      ],
+    });
+
+    try {
+      await this.CheckAssessmentUser(userToBeRemoved);
+
+      // Make sure the user is not the last user on the Organisation
+      if (userToBeRemoved.type === UserType.ACCESSOR) {
+        // Make sure it is not the last user providing support on an innovation
+        await this.CheckAccessorOrganisation(userToBeRemoved);
+
+        // Get all Innovations which the user is providing support to.
+        await this.checkAccessorSupports(userToBeRemoved);
+      }
+    } catch (error) {
+      throw error;
+    }
+
+    try {
+      await this.updateB2CUser(
+        { accountEnabled: false },
+        userId,
+        graphAccessToken
+      );
+    } catch {
+      throw new Error("Error locking user at IdP");
+    }
+
+    return {
+      id: userId,
+      status: "OK",
+    };
+  }
+
+  async unlockUsers(
+    requestUser: RequestUser,
+    users: string[]
+  ): Promise<UserUnlockResult[]> {
+    if (!requestUser || !users || users.length === 0) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    const graphAccessToken = await authenticateWitGraphAPI();
+    const results: UserUnlockResult[] = [];
+
+    for (let i = 0; i < users.length; i++) {
+      const user = users[i];
+      let result: UserUnlockResult;
+
+      try {
+        result = await this.unlockUser(requestUser, users[i], graphAccessToken);
+      } catch (err) {
+        result = {
+          id: user,
+          status: "ERROR",
+          error: {
+            code: err.constructor.name,
+            message: err.message,
+            data: err.data,
+          },
+        };
+      }
+
+      results.push(result);
+    }
+
+    return results;
+  }
+
+  async unlockUser(
+    requestUser: RequestUser,
+    userId: string,
+    graphAccessToken?: string
+  ): Promise<UserUpdateResult> {
+    if (!requestUser || !userId) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    if (!graphAccessToken) {
+      graphAccessToken = await authenticateWitGraphAPI();
+    }
+
+    const user = await getUserFromB2C(userId, graphAccessToken);
+    if (!user) {
+      throw new Error("Invalid user id.");
+    }
+
+    try {
+      await this.updateB2CUser(
+        { accountEnabled: true },
+        userId,
+        graphAccessToken
+      );
+    } catch {
+      throw new Error("Error locking user at IdP");
+    }
+
+    return {
+      id: userId,
+      status: "OK",
+    };
+  }
+
+  private async CheckAssessmentUser(userBeingRemoved: User) {
+    // Make sure the user is not the only Assessment User on the platform
+    if (userBeingRemoved.type === UserType.ASSESSMENT) {
+      const assessmentUsersOnThePlatform = await this.getUsersOfType(
+        UserType.ASSESSMENT
+      );
+      const assessmentUsersExcludingTarget = assessmentUsersOnThePlatform.filter(
+        (a) => a.id !== userBeingRemoved.id
+      );
+
+      if (assessmentUsersExcludingTarget.length === 0) {
+        throw new LastAssessmentUserOnPlatformError(
+          `The user with id ${userBeingRemoved.id} is the last Assessment User on the platform. You cannot lock this account`
+        );
+      }
+    }
+  }
+
+  private async CheckAccessorOrganisation(userToBeRemoved: User) {
+    const userOrganisations = await userToBeRemoved.userOrganisations;
+    for (const userOrg of userOrganisations) {
+      const organisationId = userOrg.organisation.id;
+      const orgMembers = await this.orgUserRepo
+        .createQueryBuilder("orgUser")
+        .where("orgUser.organisation_id = :organisationId", {
+          organisationId,
+        })
+        .andWhere("orgUser.user_id != :userId", { userId: userToBeRemoved.id })
+        .getMany();
+
+      if (orgMembers.length === 0) {
+        throw new LastAccessorUserOnOrganisationError(
+          `The user with id ${userToBeRemoved.id} is the last Accessor User on the Organisation ${userOrg.organisation.name}(${organisationId}). You cannot lock this account`
+        );
+      }
+
+      // Make sure it is also not the last User on the organisation units
+      const userUnits = userOrg.userOrganisationUnits;
+      for (const userUnit of userUnits) {
+        const unitId = userUnit.organisationUnit.id;
+        const unitMembers = await this.orgUnitUserRepo
+          .createQueryBuilder("unitUser")
+          .innerJoinAndSelect(
+            "organisation_user",
+            "orgUser",
+            "unitUser.organisation_user_id = orgUser.id"
+          )
+          .where("unitUser.organisation_unit_id = :unitId", { unitId })
+          .andWhere("orgUser.user_id != :userId", {
+            userId: userToBeRemoved.id,
+          })
+          .getMany();
+
+        if (unitMembers.length === 0) {
+          throw new LastAccessorUserOnOrganisationUnitError(
+            `The user with id ${userToBeRemoved.id} is the last Accessor User on the Organisation Unit ${userUnit.organisationUnit.name}(${unitId}). You cannot lock this account`
+          );
+        }
+      }
+    }
+  }
+
+  private async checkAccessorSupports(userToBeRemoved: User) {
+    const query = this.innovationRepo
+      .createQueryBuilder("innovations")
+      .select("innovations.id", "innovationId")
+      .addSelect("innovations.name", "innovationName")
+      .addSelect("unit.id", "unitId")
+      .addSelect("unit.name", "unitName")
+      .innerJoin(
+        "innovation_support",
+        "supports",
+        "innovations.id = supports.innovation_id"
+      )
+      .innerJoin(
+        "innovation_support_user",
+        "userSupport",
+        "supports.id = userSupport.innovation_support_id"
+      )
+      .innerJoin(
+        "organisation_unit_user",
+        "unitUsers",
+        "userSupport.organisation_unit_user_id = unitUsers.id"
+      )
+      .innerJoin(
+        "organisation_unit",
+        "unit",
+        "unit.id = unitUsers.organisation_unit_id"
+      )
+      .innerJoin(
+        "organisation_user",
+        "organisationUser",
+        "organisationUser.id = unitUsers.organisation_user_id"
+      )
+      .where("organisationUser.user_id = :userId", {
+        userId: userToBeRemoved.id,
+      })
+      .andWhere("supports.status = :status", {
+        status: InnovationSupportStatus.ENGAGING,
+      })
+      .andWhere(
+        `NOT EXISTS(
+        SELECT 1 FROM innovation_support s
+        INNER JOIN innovation_support_user u on s.id = u.innovation_support_id
+        INNER JOIN organisation_unit_user ous on ous.id = u.organisation_unit_user_id
+        INNER JOIN organisation_user ou on ou.id = ous.organisation_user_id
+        WHERE s.id = supports.id and ou.user_id != :userId and s.deleted_at IS NULL
+      )`,
+        {
+          userId: userToBeRemoved.id,
+        }
+      );
+    const innovations = await query.getRawMany();
+
+    if (innovations.length > 0) {
+      throw new LastAccessorFromUnitProvidingSupportError(
+        `The user with id ${userToBeRemoved.id} is the last Accessor User from his unit providing support to ${innovations.length} innovation(s). You cannot lock this account.
+        Check the data property of this error for more information.
+        `,
+        innovations
+      );
+    }
   }
 }

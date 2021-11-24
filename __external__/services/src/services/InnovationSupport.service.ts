@@ -96,7 +96,8 @@ export class InnovationSupportService {
     let b2cMap;
     if (organisationUnitUsers && organisationUnitUsers.length > 0) {
       b2cMap = await this.organisationService.findOrganisationUnitUsersNames(
-        organisationUnitUsers
+        organisationUnitUsers,
+        true
       );
     }
 
