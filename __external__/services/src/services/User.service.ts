@@ -13,6 +13,7 @@ import {
 import {
   InvalidDataError,
   InvalidParamsError,
+  InvalidUserRoleError,
   InvalidUserTypeError,
   LastAccessorFromUnitProvidingSupportError,
   LastAccessorUserOnOrganisationError,
@@ -660,6 +661,12 @@ export class UserService {
       throw new InvalidParamsError("Invalid params.");
     }
 
+    if (requestUser.type !== UserType.ADMIN) {
+      throw new InvalidUserRoleError(
+        "User has no permissions to execute this operation"
+      );
+    }
+
     if (!graphAccessToken) {
       graphAccessToken = await authenticateWitGraphAPI();
     }
@@ -751,6 +758,12 @@ export class UserService {
   ): Promise<UserUpdateResult> {
     if (!requestUser || !userId) {
       throw new InvalidParamsError("Invalid params.");
+    }
+
+    if (requestUser.type !== UserType.ADMIN) {
+      throw new InvalidUserRoleError(
+        "User has no permissions to execute this operation"
+      );
     }
 
     if (!graphAccessToken) {
