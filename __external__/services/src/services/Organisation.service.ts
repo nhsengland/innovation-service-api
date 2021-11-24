@@ -210,13 +210,17 @@ export class OrganisationService extends BaseService<Organisation> {
   }
 
   async findOrganisationUnitUsersNames(
-    organisationUnitUsers: OrganisationUnitUser[]
+    organisationUnitUsers: OrganisationUnitUser[],
+    excludeLocked?: boolean
   ) {
     const userIds = organisationUnitUsers.map(
       (organisationUnitUser: OrganisationUnitUser) =>
         organisationUnitUser.organisationUser.user.id
     );
-    const b2cUsers = await this.userService.getListOfUsers(userIds);
+    const b2cUsers = await this.userService.getListOfUsers(
+      userIds,
+      excludeLocked
+    );
     if (!b2cUsers) return [];
 
     return b2cUsers.reduce((map, obj) => {
