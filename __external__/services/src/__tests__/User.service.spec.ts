@@ -3,6 +3,7 @@
  */
 import {
   AccessorOrganisationRole,
+  InnovatorOrganisationRole,
   Organisation,
   OrganisationType,
   OrganisationUnit,
@@ -71,7 +72,7 @@ describe("User Service Suite", () => {
     await query.from(OrganisationUnit).execute();
     await query.from(Organisation).execute();
 
-    // closeTestsConnection();
+    //closeTestsConnection();
   });
 
   afterEach(async () => {
