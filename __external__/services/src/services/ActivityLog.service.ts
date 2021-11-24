@@ -1,6 +1,8 @@
 import { Activity, ActivityType } from "@domain/enums/activity.enums";
 import { ActivityLog, Innovation } from "@domain/index";
 import { InvalidParamsError } from "@services/errors";
+import { checkIfValidUUID } from "@services/helpers";
+import { ActivityLogModel } from "@services/models/ActivityLogModel";
 import { RequestUser } from "@services/models/RequestUser";
 import {
   Connection,
@@ -10,16 +12,92 @@ import {
   Repository,
 } from "typeorm";
 import { LoggerService } from "./Logger.service";
+import { UserService } from "./User.service";
 
 export class ActivityLogService {
   private readonly connection: Connection;
   private readonly activityLogRepo: Repository<ActivityLog>;
   private readonly loggerService: LoggerService;
+  private readonly userService: UserService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.activityLogRepo = getRepository(ActivityLog, connectionName);
     this.loggerService = new LoggerService();
+    this.userService = new UserService(connectionName);
+  }
+
+  async getInnovationActivitiesById(
+    requestUser: RequestUser,
+    innovationId: string,
+    take: number,
+    skip: number,
+    activityTypes: string,
+    order?: { [key: string]: string }
+  ) {
+    if (!requestUser || !innovationId || !checkIfValidUUID(innovationId)) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+
+    const activityLogs: ActivityLog[] = await this.findMany(
+      innovationId,
+      take,
+      skip,
+      activityTypes,
+      order
+    );
+
+    const userIds = [];
+    activityLogs.forEach(
+      (res: ActivityLog) => {
+
+        let obj = JSON.parse(res.param);
+        if (obj) {
+          if (obj.hasOwnProperty('actionUserId') && userIds.indexOf(obj['actionUserId']) === -1) {
+            userIds.push(obj['actionUserId']);
+          }
+          if (obj.hasOwnProperty('interveningUserId')  && userIds.indexOf(obj['actionUserId']) === -1) {
+            userIds.push(obj['interveningUserId']);
+          }
+        }
+      }
+    );
+
+    const b2cUsers = await this.userService.getListOfUsers(userIds);
+    const b2cUserNames = b2cUsers.reduce((map, obj) => {
+      map[obj.id] = obj.displayName;
+      return map;
+    }, {});
+
+    const response: ActivityLogModel[] = activityLogs.map((log) => {
+      const rec: ActivityLogModel = {
+        id: log.id,
+        createdAt: log.createdAt,
+        type: log.type,
+        activity: log.activity,
+        params: JSON.parse(log.param),
+      };
+
+      return rec;
+    });
+
+    response.forEach(log => {
+      let obj = log.params;
+      if (obj) {
+        if (obj['actionUserId']) {
+          const name = b2cUserNames[obj['actionUserId']];
+          obj['actionUserId'] = name;
+          this.renameKey(obj, 'actionUserId', 'actionUserName')
+        }
+        if (obj['interveningUserId']) {
+          const name = b2cUserNames[obj['interveningUserId']];
+          obj['interveningUserId'] = name;
+          this.renameKey(obj, 'interveningUserId', 'interveningUserName')
+        }
+      }
+    });
+
+    return response;
   }
 
   async create(
@@ -170,5 +248,40 @@ export class ActivityLogService {
     }
 
     return activityType;
+  }
+
+  private async findMany(innovationId: string, take: number, skip: number, activityTypes?: string, order?: { [key: string]: string }) {
+    const query = await this.activityLogRepo
+      .createQueryBuilder("activityLog")
+      .where("innovation_id = :innovationId", {
+        innovationId: innovationId,
+      });
+
+
+
+    if (activityTypes && activityTypes.length > 0) {
+      var types = activityTypes.split(',');
+      query.andWhere("activityLog.type in (:...types)", {
+        types,
+      });
+    }
+
+    query.take(take);
+    query.skip(skip);
+
+    if (order) {
+      for (const key of Object.keys(order)) {
+        query.orderBy(key, order[key] as "ASC" | "DESC");
+      }
+    } else {
+      query.orderBy("activityLog.createdAt", "ASC");
+    }
+
+    return query.getMany();
+  }
+
+  private renameKey(obj, oldKey, newKey) {
+    obj[newKey] = obj[oldKey];
+    delete obj[oldKey];
   }
 }
