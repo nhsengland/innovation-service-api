@@ -1,4 +1,5 @@
 import {
+  AccessorOrganisationRole,
   Innovation,
   InnovationStatus,
   InnovationSupport,
@@ -41,6 +42,7 @@ import {
   FindOneOptions,
   getConnection,
   getRepository,
+  IsNull,
   Repository,
 } from "typeorm";
 import {
@@ -701,11 +703,20 @@ export class UserService {
     }
 
     try {
-      await this.updateB2CUser(
-        { accountEnabled: false },
-        userId,
-        graphAccessToken
-      );
+      await this.connection.transaction(async (transaction) => {
+        await transaction.update(
+          User,
+          { id: userId },
+          {
+            lockedAt: new Date(),
+          }
+        );
+        return await this.updateB2CUser(
+          { accountEnabled: false },
+          userId,
+          graphAccessToken
+        );
+      });
     } catch {
       throw new Error("Error locking user at IdP");
     }
@@ -776,11 +787,20 @@ export class UserService {
     }
 
     try {
-      await this.updateB2CUser(
-        { accountEnabled: true },
-        userId,
-        graphAccessToken
-      );
+      await this.connection.transaction(async (transaction) => {
+        await transaction.update(
+          User,
+          { id: userId },
+          {
+            lockedAt: null,
+          }
+        );
+        return await this.updateB2CUser(
+          { accountEnabled: true },
+          userId,
+          graphAccessToken
+        );
+      });
     } catch {
       throw new Error("Error locking user at IdP");
     }
@@ -794,14 +814,19 @@ export class UserService {
   private async CheckAssessmentUser(userBeingRemoved: User) {
     // Make sure the user is not the only Assessment User on the platform
     if (userBeingRemoved.type === UserType.ASSESSMENT) {
-      const assessmentUsersOnThePlatform = await this.getUsersOfType(
-        UserType.ASSESSMENT
-      );
-      const assessmentUsersExcludingTarget = assessmentUsersOnThePlatform.filter(
-        (a) => a.id !== userBeingRemoved.id
-      );
+      const query = this.userRepo
+        .createQueryBuilder("usr")
+        .where(`usr.type = :userType`, {
+          userType: UserType.ASSESSMENT,
+        })
+        .andWhere(`usr.id != :userBeingRemoved`, {
+          userBeingRemoved: userBeingRemoved.id,
+        })
+        .andWhere("usr.locked_at IS NULL");
 
-      if (assessmentUsersExcludingTarget.length === 0) {
+      const assessmentUsersOnThePlatform = await query.getMany();
+
+      if (assessmentUsersOnThePlatform.length === 0) {
         throw new LastAssessmentUserOnPlatformError(
           `The user with id ${userBeingRemoved.id} is the last Assessment User on the platform. You cannot lock this account`
         );
@@ -815,15 +840,23 @@ export class UserService {
       const organisationId = userOrg.organisation.id;
       const orgMembers = await this.orgUserRepo
         .createQueryBuilder("orgUser")
+        .innerJoin(
+          "user",
+          "usr",
+          "orgUser.user_id = usr.id and usr.locked_at IS NULL"
+        )
         .where("orgUser.organisation_id = :organisationId", {
           organisationId,
         })
         .andWhere("orgUser.user_id != :userId", { userId: userToBeRemoved.id })
+        .andWhere("orgUser.role = :role", {
+          role: AccessorOrganisationRole.QUALIFYING_ACCESSOR,
+        })
         .getMany();
 
       if (orgMembers.length === 0) {
         throw new LastAccessorUserOnOrganisationError(
-          `The user with id ${userToBeRemoved.id} is the last Accessor User on the Organisation ${userOrg.organisation.name}(${organisationId}). You cannot lock this account`
+          `The user with id ${userToBeRemoved.id} is the last Qualifying Accessor User on the Organisation ${userOrg.organisation.name}(${organisationId}). You cannot lock this account`
         );
       }
 
@@ -842,11 +875,14 @@ export class UserService {
           .andWhere("orgUser.user_id != :userId", {
             userId: userToBeRemoved.id,
           })
+          .andWhere("orgUser.role = :role", {
+            role: AccessorOrganisationRole.QUALIFYING_ACCESSOR,
+          })
           .getMany();
 
         if (unitMembers.length === 0) {
           throw new LastAccessorUserOnOrganisationUnitError(
-            `The user with id ${userToBeRemoved.id} is the last Accessor User on the Organisation Unit ${userUnit.organisationUnit.name}(${unitId}). You cannot lock this account`
+            `The user with id ${userToBeRemoved.id} is the last Qualifying Accessor User on the Organisation Unit ${userUnit.organisationUnit.name}(${unitId}). You cannot lock this account`
           );
         }
       }
@@ -884,6 +920,11 @@ export class UserService {
         "organisation_user",
         "organisationUser",
         "organisationUser.id = unitUsers.organisation_user_id"
+      )
+      .innerJoin(
+        "user",
+        "usr",
+        "organisationUser.user_id = usr.id and usr.locked_at IS NULL"
       )
       .where("organisationUser.user_id = :userId", {
         userId: userToBeRemoved.id,

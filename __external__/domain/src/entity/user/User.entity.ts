@@ -17,6 +17,12 @@ export class User extends Base {
   })
   type: UserType;
 
+  @Column({
+    name: "locked_at",
+    nullable: true,
+  })
+  lockedAt: Date;
+
   @Column({ name: "delete_reason", type: "nvarchar", nullable: true })
   deleteReason: string;
 
