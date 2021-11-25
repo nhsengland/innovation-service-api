@@ -590,14 +590,14 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
         if (dependency.files) {
           data[dependency.type].forEach(
             (dep: any) =>
-            (dep.files = dep.files?.map((obj: InnovationFile) => ({
-              id: obj.id,
-              displayFileName: obj.displayFileName,
-              url: this.fileService.getDownloadUrl(
-                obj.id,
-                obj.displayFileName
-              ),
-            })))
+              (dep.files = dep.files?.map((obj: InnovationFile) => ({
+                id: obj.id,
+                displayFileName: obj.displayFileName,
+                url: this.fileService.getDownloadUrl(
+                  obj.id,
+                  obj.displayFileName
+                ),
+              })))
           );
         }
       }

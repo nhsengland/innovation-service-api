@@ -9,6 +9,7 @@ import {
   InnovationSupport,
   NotificationAudience,
   NotificationContextType,
+  UserType,
 } from "@domain/index";
 import {
   InnovationNotFoundError,
@@ -526,6 +527,12 @@ export class InnovationActionService {
     innovationId: string,
     action: any
   ) {
+    const innovation = await this.innovationService.find(innovationId);
+    if (!innovation) {
+      throw new InnovationNotFoundError(
+        `The Innovation with id ${innovationId} was not found.`
+      );
+    }
     return await this.connection.transaction(async (transactionManager) => {
       if (action.comment) {
         const comment = Comment.new({
@@ -544,6 +551,43 @@ export class InnovationActionService {
 
       innovationAction.status = action.status;
       innovationAction.updatedBy = requestUser.id;
+
+      if (requestUser.type === UserType.INNOVATOR) {
+        try {
+          await this.activityLogService.create(
+            requestUser,
+            innovation,
+            Activity.ACTION_STATUS_DECLINED_UPDATE,
+            transactionManager,
+            {
+              interveningUserId: innovationAction.createdBy,
+            }
+          );
+        } catch (error) {
+          this.logService.error(
+            `An error has occured while creating activity log from ${requestUser.id}`,
+            error
+          );
+          throw error;
+        }
+      } else {
+        if (action.status === "COMPLETED") {
+          try {
+            await this.activityLogService.create(
+              requestUser,
+              innovation,
+              Activity.ACTION_STATUS_COMPLETED_UPDATE,
+              transactionManager
+            );
+          } catch (error) {
+            this.logService.error(
+              `An error has occured while creating activity log from ${requestUser.id}`,
+              error
+            );
+            throw error;
+          }
+        }
+      }
 
       return await transactionManager.save(InnovationAction, innovationAction);
     });
