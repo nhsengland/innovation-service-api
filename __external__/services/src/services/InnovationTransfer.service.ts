@@ -355,8 +355,8 @@ export class InnovationTransferService {
             Activity.OWNERSHIP_TRANSFER,
             transactionManager,
             {
-              actionUserId: originB2cUser,
-              interveningUserId: destB2cUser,
+              actionUserId: originB2cUser.id,
+              interveningUserId: destB2cUser.id,
             }
           );
         } catch (error) {

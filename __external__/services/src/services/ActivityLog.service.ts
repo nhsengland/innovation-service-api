@@ -85,7 +85,7 @@ export class ActivityLogService {
     innovation: Innovation,
     activity: Activity,
     transaction: EntityManager,
-    customParams?: { [key: string]: string }
+    customParams?: { [key: string]: any }
   ) {
     if (!requestUser || !innovation || !activity) {
       throw new InvalidParamsError("Invalid parameters.");
