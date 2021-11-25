@@ -3,5 +3,5 @@ export interface ActivityLogModel {
   type: string;
   activity: string;
   innovation: { id: string; name: string };
-  params?: { [key: string]: string };
+  params?: { [key: string]: any };
 }
