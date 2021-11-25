@@ -81,6 +81,12 @@ const payloadSchema = Joi.object({
           .max(constants.mediumFieldCharacterLimit)
           .allow(null)
           .allow(""),
+        carePathway: Joi.string().allow(null).allow(""),
+        conditions: Joi.string().allow(null).allow(""),
+        otherCondition: Joi.string().allow(null).allow(""),
+        otherBenefit: Joi.string().allow(null).allow(""),
+        costComparison: Joi.string().allow(null).allow(""),
+        benefits: Joi.array().items(Joi.string().allow(null).allow("")),
       })
     ),
     costDescription: Joi.string()
