@@ -484,7 +484,7 @@ paths:
         "403":
           description: "Forbidden"
 
-  "accessors/{userId}/innovations/{innovationId}/activities":
+  "/accessors/{userId}/innovations/{innovationId}/activities":
     get:
       tags:
         - "Accessor"
@@ -1149,7 +1149,7 @@ paths:
         "403":
           description: "Forbidden"
 
-  "innovators/{userId}/innovations/{innovationId}/activities":
+  "/innovators/{userId}/innovations/{innovationId}/activities":
     get:
       tags:
         - "Innovator"
@@ -2417,7 +2417,7 @@ paths:
         "403":
           description: "Forbidden"
 
-  "assessments/{userId}/innovations/{innovationId}/activities":
+  "/assessments/{userId}/innovations/{innovationId}/activities":
     get:
       tags:
         - "Assessment"
