@@ -270,7 +270,10 @@ export class InnovationAssessmentService {
               requestUser,
               innovation,
               Activity.NEEDS_ASSESSMENT_COMPLETED,
-              transactionManager
+              transactionManager,
+              {
+                assessmentId: assessmentTrs.id,
+              }
             );
           } catch (error) {
             this.logService.error(

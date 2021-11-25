@@ -419,7 +419,10 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
               submittedAt: new Date(),
             });
 
-            await transactionManager.save(InnovationSection, innovSectionObj);
+            const innSection = await transactionManager.save(
+              InnovationSection,
+              innovSectionObj
+            );
             try {
               await this.activityLogService.create(
                 requestUser,
@@ -428,6 +431,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
                 transactionManager,
                 {
                   sectionName: InnovationSectionCatalogue[secKey],
+                  sectionId: innSection.id,
                 }
               );
             } catch (error) {
@@ -475,6 +479,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
                 transactionManager,
                 {
                   sectionName: innovSections[secIdx].section,
+                  sectionId: innovSections[secIdx].id,
                 }
               );
             } catch (error) {
