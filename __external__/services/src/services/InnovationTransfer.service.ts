@@ -473,7 +473,7 @@ export class InnovationTransferService {
     transaction: EntityManager,
     params?: { [key: string]: string }
   ) {
-    return await this.activityLogService.create(
+    return await this.activityLogService.createLog(
       requestUser,
       innovation,
       activity,

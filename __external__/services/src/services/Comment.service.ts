@@ -99,7 +99,7 @@ export class CommentService {
       }
       const comment = await trs.save(Comment, commentObj);
       try {
-        await this.activityLogService.create(
+        await this.activityLogService.createLog(
           requestUser,
           innovation,
           Activity.COMMENT_CREATION,

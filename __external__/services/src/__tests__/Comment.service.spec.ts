@@ -150,7 +150,7 @@ describe("Comment Service Suite", () => {
 
   it("should rollback a comment if ActivityLog fails to log", async () => {
     jest
-      .spyOn(ActivityLogService.prototype, "create")
+      .spyOn(ActivityLogService.prototype, "createLog")
       .mockRejectedValueOnce({ error: "Error" });
 
     let err;
