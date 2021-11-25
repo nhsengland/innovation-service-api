@@ -8,9 +8,15 @@ export const getInnovationActivitiesById = async (
     activityTypes: string,
     order?: { [key: string]: string }
 ) => {
-    const result = await ctx.services.ActivityLogService.getInnovationActivitiesById(
+    const innovation = await ctx.services.InnovationService.findInnovation(
         ctx.auth.requestUser,
         innovationId,
+        null
+      );
+
+    const result = await ctx.services.ActivityLogService.getInnovationActivitiesById(
+        ctx.auth.requestUser,
+        innovation,
         take,
         skip,
         activityTypes,

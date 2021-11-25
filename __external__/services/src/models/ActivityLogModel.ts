@@ -1,9 +1,7 @@
-import { OrganisationUnitModel } from "./OrganisationUnitModel";
-
 export interface ActivityLogModel {
-    createdAt: Date;
-    id: string;
+    date: Date;
     type: string;
     activity: string;
+    innovation: { id: string, name: string };
     params?: { [key: string]: string };
 }

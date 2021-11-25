@@ -29,52 +29,32 @@ export class ActivityLogService {
 
   async getInnovationActivitiesById(
     requestUser: RequestUser,
-    innovationId: string,
+    innovation: Innovation,
     take: number,
     skip: number,
     activityTypes: string,
     order?: { [key: string]: string }
   ) {
-    if (!requestUser || !innovationId || !checkIfValidUUID(innovationId)) {
+    if (!requestUser || !innovation) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
     const activityLogs: ActivityLog[] = await this.findMany(
-      innovationId,
+      innovation.id,
       take,
       skip,
       activityTypes,
       order
     );
 
-    const userIds = [];
-    activityLogs.forEach(
-      (res: ActivityLog) => {
-
-        let obj = JSON.parse(res.param);
-        if (obj) {
-          if (obj.hasOwnProperty('actionUserId') && userIds.indexOf(obj['actionUserId']) === -1) {
-            userIds.push(obj['actionUserId']);
-          }
-          if (obj.hasOwnProperty('interveningUserId')  && userIds.indexOf(obj['actionUserId']) === -1) {
-            userIds.push(obj['interveningUserId']);
-          }
-        }
-      }
-    );
-
-    const b2cUsers = await this.userService.getListOfUsers(userIds);
-    const b2cUserNames = b2cUsers.reduce((map, obj) => {
-      map[obj.id] = obj.displayName;
-      return map;
-    }, {});
+    const b2cUserNames = await this.getNamesForParamUserIds(activityLogs);
 
     const response: ActivityLogModel[] = activityLogs.map((log) => {
       const rec: ActivityLogModel = {
-        id: log.id,
-        createdAt: log.createdAt,
+        date: log.createdAt,
         type: log.type,
         activity: log.activity,
+        innovation: { id: innovation.id, name: innovation.name },
         params: JSON.parse(log.param),
       };
 
@@ -278,6 +258,33 @@ export class ActivityLogService {
     }
 
     return query.getMany();
+  }
+
+  private async getNamesForParamUserIds(activityLogs) {
+    const userIds = [];
+    activityLogs.forEach(
+      (res: ActivityLog) => {
+
+        let obj = JSON.parse(res.param);
+        if (obj) {
+          if (obj.hasOwnProperty('actionUserId') && userIds.indexOf(obj['actionUserId']) === -1) {
+            userIds.push(obj['actionUserId']);
+          }
+          if (obj.hasOwnProperty('interveningUserId') && userIds.indexOf(obj['actionUserId']) === -1) {
+            userIds.push(obj['interveningUserId']);
+          }
+        }
+      }
+    );
+
+    const b2cUsers = await this.userService.getListOfUsers(userIds);
+    const b2cUserNames = b2cUsers.reduce((map, obj) => {
+      map[obj.id] = obj.displayName;
+      return map;
+    }, {});
+
+
+    return b2cUserNames;
   }
 
   private renameKey(obj, oldKey, newKey) {
