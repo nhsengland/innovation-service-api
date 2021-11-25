@@ -76,6 +76,40 @@ describe("[User Account Lock suite", () => {
     expect(result[0].error.code).toBe("LastAssessmentUserOnPlatformError");
   });
 
+  it("Should not lock User if is last assessment user when there other locked users", async () => {
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
+      id: "user_id_from_b2c",
+      displayName: "Accessor A",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "test_user@example.com",
+        },
+      ],
+      mobilePhone: "+351960000000",
+    });
+
+    jest.spyOn(helpers, "saveB2CUser").mockImplementation();
+    await fixtures.createAssessmentUser(new Date());
+    await fixtures.createAssessmentUser(new Date());
+    const assessmentUser = await fixtures.createAssessmentUser();
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ADMIN,
+    };
+    // Act
+
+    const result = await userService.lockUsers(requestUser, [
+      assessmentUser.id,
+    ]);
+
+    expect(result.length).toBeGreaterThan(0);
+    expect(result[0].error.code).toBe("LastAssessmentUserOnPlatformError");
+  });
+
   it("Should lock Assessment User if is not last assessment user", async () => {
     jest
       .spyOn(helpers, "authenticateWitGraphAPI")
@@ -145,7 +179,7 @@ describe("[User Account Lock suite", () => {
     const organisationAccessorUser = await fixtures.addUserToOrganisation(
       accessorUser,
       accessorOrganisation,
-      AccessorOrganisationRole.ACCESSOR
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR
     );
 
     const organisationUnit = await fixtures.createOrganisationUnit(
@@ -204,12 +238,12 @@ describe("[User Account Lock suite", () => {
     const organisationAccessorUser1 = await fixtures.addUserToOrganisation(
       accessorUser1,
       accessorOrganisation,
-      AccessorOrganisationRole.ACCESSOR
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR
     );
     const organisationAccessorUser2 = await fixtures.addUserToOrganisation(
       accessorUser2,
       accessorOrganisation,
-      AccessorOrganisationRole.ACCESSOR
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR
     );
 
     const organisationUnit1 = await fixtures.createOrganisationUnit(
@@ -278,12 +312,12 @@ describe("[User Account Lock suite", () => {
     const organisationAccessorUser1 = await fixtures.addUserToOrganisation(
       accessorUser1,
       accessorOrganisation,
-      AccessorOrganisationRole.ACCESSOR
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR
     );
     const organisationAccessorUser2 = await fixtures.addUserToOrganisation(
       accessorUser2,
       accessorOrganisation,
-      AccessorOrganisationRole.ACCESSOR
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR
     );
 
     const organisationUnit1 = await fixtures.createOrganisationUnit(

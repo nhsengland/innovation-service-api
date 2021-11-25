@@ -128,11 +128,12 @@ export const createInnovatorUser = async () => {
   return await innovatorService.create(innovator);
 };
 
-export const createAssessmentUser = async () => {
+export const createAssessmentUser = async (lockedAt?: Date) => {
   const usr = new User();
   const userService = new UserService(process.env.DB_TESTS_NAME);
   usr.id = uuid.v4();
   usr.type = UserType.ASSESSMENT;
+  usr.lockedAt = lockedAt;
   return await userService.create(usr);
 };
 
