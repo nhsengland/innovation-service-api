@@ -104,12 +104,17 @@ export class InnovationSupportService {
     return {
       id: innovationSupport.id,
       status: innovationSupport.status,
-      accessors: organisationUnitUsers?.map(
-        (organisationUnitUser: OrganisationUnitUser) => ({
+      accessors: organisationUnitUsers
+        ?.filter((organisationUnitUser: OrganisationUnitUser) => {
+          const organisationUser = organisationUnitUser.organisationUser;
+          const name = b2cMap[organisationUser.user.id];
+          if (name) return true;
+          return false;
+        })
+        .map((organisationUnitUser: OrganisationUnitUser) => ({
           id: organisationUnitUser.id,
           name: b2cMap[organisationUnitUser.organisationUser.user.id],
-        })
-      ),
+        })),
     };
   }
 
