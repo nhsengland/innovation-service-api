@@ -1,5 +1,6 @@
 import {
   AccessorOrganisationRole,
+  ActivityLog,
   Comment,
   Innovation,
   Notification,
@@ -17,6 +18,7 @@ import {
   MissingUserOrganisationError,
 } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
+import { ActivityLogService } from "@services/services/ActivityLog.service";
 import { NotificationService } from "@services/services/Notification.service";
 import { OrganisationService } from "@services/services/Organisation.service";
 import { UserService } from "@services/services/User.service";
@@ -101,6 +103,7 @@ describe("Comment Service Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(ActivityLog).execute();
     await query.from(Innovation).execute();
     await query.from(OrganisationUnitUser).execute();
     await query.from(OrganisationUnit).execute();
@@ -143,6 +146,27 @@ describe("Comment Service Suite", () => {
     );
 
     expect(comment).toBeDefined();
+  });
+
+  it("should rollback a comment if ActivityLog fails to log", async () => {
+    jest
+      .spyOn(ActivityLogService.prototype, "create")
+      .mockRejectedValueOnce({ error: "Error" });
+
+    let err;
+    let comment;
+    try {
+      comment = await commentService.create(
+        innovatorRequestUser,
+        innovation.id,
+        "My Comment"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(comment).toBeUndefined();
   });
 
   it("should throw when createByAccessor() with invalid params", async () => {

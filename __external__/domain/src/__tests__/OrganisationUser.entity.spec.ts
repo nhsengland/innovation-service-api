@@ -1,3 +1,4 @@
+import { ActivityLog } from "@domain/index";
 import { classToPlain } from "class-transformer";
 import { getConnection, getRepository, Repository } from "typeorm";
 import { getEntityColumnList } from "../../tools/helpers";
@@ -29,6 +30,7 @@ describe("OrganisationUser Test Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(ActivityLog).execute();
     await query.from(OrganisationUser).execute();
     await query.from(Organisation).execute();
     await query.from(User).execute();

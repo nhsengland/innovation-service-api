@@ -1,5 +1,6 @@
 import {
   AccessorOrganisationRole,
+  ActivityLog,
   Comment,
   Innovation,
   InnovationAssessment,
@@ -95,6 +96,7 @@ describe("Innovation Assessment Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(ActivityLog).execute();
     await query.from(OrganisationUnit).execute();
     await query.from(OrganisationUser).execute();
     await query.from(Organisation).execute();
@@ -109,6 +111,7 @@ describe("Innovation Assessment Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(ActivityLog).execute();
     await query.from(NotificationUser).execute();
     await query.from(Notification).execute();
     await query.from(Comment).execute();

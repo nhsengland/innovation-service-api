@@ -14,6 +14,7 @@ import { InnovatorService } from "./Innovator.service";
 import { NotificationService } from "./Notification.service";
 import { OrganisationService } from "./Organisation.service";
 import { UserService } from "./User.service";
+import { ActivityLogService } from "./ActivityLog.service";
 
 export type Services = {
   AccessorService?: AccessorService;
@@ -32,6 +33,7 @@ export type Services = {
   InnovatorService?: InnovatorService;
   OrganisationService?: OrganisationService;
   NotificationService?: NotificationService;
+  ActivityLogService?: ActivityLogService;
 };
 
 function initialize<T>(constructors: T[], connectionName?: string): Services {
@@ -65,6 +67,7 @@ export const initializeAllServices = (connectionName?: string): Services => {
     InnovatorService,
     OrganisationService,
     NotificationService,
+    ActivityLogService,
   ];
   return initialize(services, connectionName);
 };

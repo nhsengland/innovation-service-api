@@ -1,3 +1,4 @@
+import { ActivityLog } from "@domain/index";
 import { classToPlain } from "class-transformer";
 import { getConnection, getRepository, Repository } from "typeorm";
 import { getEntityColumnList } from "../../tools/helpers";
@@ -12,11 +13,11 @@ describe("User Test Suite", () => {
   });
 
   afterEach(async () => {
-    await getConnection(process.env.DB_TESTS_NAME)
+    const query = getConnection(process.env.DB_TESTS_NAME)
       .createQueryBuilder()
-      .delete()
-      .from(User)
-      .execute();
+      .delete();
+    await query.from(ActivityLog).execute();
+    await query.from(User).execute();
   });
 
   describe("User Suite", () => {

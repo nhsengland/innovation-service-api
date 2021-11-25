@@ -1,3 +1,4 @@
+import { Activity } from "@domain/enums/activity.enums";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   AccessorOrganisationRole,
@@ -25,6 +26,7 @@ import { checkIfValidUUID } from "@services/helpers";
 import { InnovationSupportModel } from "@services/models/InnovationSupportModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
+import { ActivityLogService } from "./ActivityLog.service";
 import { InnovationService } from "./Innovation.service";
 import { InnovationSupportLogService } from "./InnovationSupportLog.service";
 import { LoggerService } from "./Logger.service";
@@ -41,6 +43,7 @@ export class InnovationSupportService {
   private readonly userService: UserService;
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
+  private readonly activityLogService: ActivityLogService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -52,6 +55,7 @@ export class InnovationSupportService {
     this.organisationService = new OrganisationService(connectionName);
     this.userService = new UserService(connectionName);
     this.notificationService = new NotificationService(connectionName);
+    this.activityLogService = new ActivityLogService(connectionName);
     this.logService = new LoggerService();
   }
 
@@ -325,7 +329,26 @@ export class InnovationSupportService {
             updatedBy: requestUser.id,
             organisationUnit,
           });
-          await transactionManager.save(Comment, comment);
+          const commentResult = await transactionManager.save(Comment, comment);
+
+          try {
+            await this.activityLogService.create(
+              requestUser,
+              innovation,
+              Activity.COMMENT_CREATION,
+              transactionManager,
+              {
+                commentId: commentResult.id,
+                commentValue: support.comment,
+              }
+            );
+          } catch (error) {
+            this.logService.error(
+              `An error has occured while creating activity log from ${requestUser.id}`,
+              error
+            );
+            throw error;
+          }
         }
 
         const innovationSupport = {
@@ -343,10 +366,33 @@ export class InnovationSupportService {
           usersToBeNotified
         );
 
-        return await transactionManager.save(
+        const retVal = await transactionManager.save(
           InnovationSupport,
           innovationSupport
         );
+
+        try {
+          await this.activityLogService.create(
+            requestUser,
+            innovation,
+            Activity.SUPPORT_STATUS_UPDATE,
+            transactionManager,
+            {
+              organisationUnit:
+                requestUser.organisationUnitUser.organisationUnit.name,
+              innovationSUPPORTStatus: support.status,
+            }
+          );
+        } catch (error) {
+          this.logService.error(
+            `An error has occured while creating activity log from ${requestUser.id}`,
+            error
+          );
+
+          throw error;
+        }
+
+        return retVal;
       }
     );
 

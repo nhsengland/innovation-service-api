@@ -3,6 +3,8 @@
  */
 import {
   AccessorOrganisationRole,
+  ActivityLog,
+  NotificationPreference,
   InnovatorOrganisationRole,
   Organisation,
   OrganisationType,
@@ -80,6 +82,8 @@ describe("User Service Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(ActivityLog).execute();
+    await query.from(NotificationPreference).execute();
     await query.from(OrganisationUnitUser).execute();
     await query.from(OrganisationUser).execute();
     await query.from(User).execute();

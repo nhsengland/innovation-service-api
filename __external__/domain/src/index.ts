@@ -20,6 +20,7 @@ export { InnovationSupportLog } from "./entity/innovation/InnovationSupportLog.e
 export { InnovationSupportType } from "./entity/innovation/InnovationSupportType.entity";
 export { InnovationTransfer } from "./entity/innovation/InnovationTransfer.entity";
 export { InnovationUserTest } from "./entity/innovation/InnovationUserTest.entity";
+export { ActivityLog } from "./entity/innovation/ActivityLog.entity";
 
 export { Organisation } from "./entity/organisation/Organisation.entity";
 export { OrganisationUnit } from "./entity/organisation/OrganisationUnit.entity";
@@ -36,5 +37,6 @@ export * from "./enums/catalog.enums";
 export * from "./enums/innovation.enums";
 export * from "./enums/organisation.enums";
 export * from "./enums/user.enums";
+export * from "./enums/activity.enums";
 
 export { connection } from "./connections";

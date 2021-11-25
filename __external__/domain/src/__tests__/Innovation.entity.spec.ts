@@ -47,6 +47,7 @@ import { InnovationUserTest } from "../entity/innovation/InnovationUserTest.enti
 import { InnovationSubgroup } from "../entity/innovation/InnovationSubgroup.entity";
 import { InnovationSection } from "../entity/innovation/InnovationSection.entity";
 import { InnovationFile } from "../entity/innovation/InnovationFile.entity";
+import { ActivityLog } from "@domain/index";
 
 const dummy = {
   subgroup: {
@@ -94,6 +95,7 @@ describe("Innovation Test Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(ActivityLog).execute();
     await query.from(InnovationFile).execute();
     await query.from(InnovationSection).execute();
     await query.from(InnovationSupport).execute();

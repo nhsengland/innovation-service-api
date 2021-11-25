@@ -1,3 +1,4 @@
+import { Activity } from "@domain/enums/activity.enums";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   Comment,
@@ -16,6 +17,7 @@ import { CommentModel } from "@services/models/CommentModel";
 import { RequestUser } from "@services/models/RequestUser";
 
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
+import { ActivityLogService } from "./ActivityLog.service";
 import { InnovationService } from "./Innovation.service";
 import { InnovationSupportService } from "./InnovationSupport.service";
 import { LoggerService } from "./Logger.service";
@@ -31,6 +33,7 @@ export class CommentService {
   private readonly innovationSupportService: InnovationSupportService;
   private readonly organisationService: OrganisationService;
   private readonly logService: LoggerService;
+  private readonly activityLogService: ActivityLogService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -42,6 +45,7 @@ export class CommentService {
       connectionName
     );
     this.organisationService = new OrganisationService(connectionName);
+    this.activityLogService = new ActivityLogService(connectionName);
     this.logService = new LoggerService();
   }
 
@@ -86,7 +90,35 @@ export class CommentService {
       organisationUnit,
     };
 
-    const result = await this.commentRepo.save(commentObj);
+    const result = await this.connection.transaction(async (trs) => {
+      const innovation = await this.innovationService.find(innovationId);
+      if (!innovation) {
+        throw new InnovationNotFoundError(
+          `The Innovation with id ${innovationId} was not found.`
+        );
+      }
+      const comment = await trs.save(Comment, commentObj);
+      try {
+        await this.activityLogService.create(
+          requestUser,
+          innovation,
+          Activity.COMMENT_CREATION,
+          trs,
+          {
+            commentId: comment.id,
+            commentValue: comment.message,
+          }
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while creating activity log from ${requestUser.id}`,
+          error
+        );
+        throw error;
+      }
+
+      return comment;
+    });
 
     let targetNotificationUsers;
     // If the comment if made by an accessor, it also has to send a notification for assigned accessors regardless of the unit they belong to.

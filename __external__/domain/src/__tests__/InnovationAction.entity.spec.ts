@@ -1,3 +1,4 @@
+import { ActivityLog } from "@domain/index";
 import { classToPlain } from "class-transformer";
 import { getConnection, getRepository, Repository } from "typeorm";
 import { getEntityColumnList } from "../../tools/helpers";
@@ -55,7 +56,7 @@ describe("Innovation Action Test Suite", () => {
     const query = getConnection(process.env.DB_TESTS_NAME)
       .createQueryBuilder()
       .delete();
-
+    await query.from(ActivityLog).execute();
     await query.from(InnovationAction).execute();
     await query.from(InnovationSection).execute();
     await query.from(InnovationSupport).execute();
