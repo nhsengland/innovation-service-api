@@ -1,5 +1,6 @@
 import {
   AccessorOrganisationRole,
+  ActivityLog,
   Comment,
   Innovation,
   InnovationAction,
@@ -123,6 +124,7 @@ describe("Innovation Support Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(ActivityLog).execute();
     await query.from(NotificationUser).execute();
     await query.from(Notification).execute();
     await query.from(Comment).execute();
@@ -145,6 +147,7 @@ describe("Innovation Support Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(ActivityLog).execute();
     await query.from(InnovationSupportLog).execute();
   });
 

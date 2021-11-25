@@ -1,3 +1,4 @@
+import { Activity } from "@domain/enums/activity.enums";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   Innovation,
@@ -24,6 +25,7 @@ import { RequestUser } from "@services/models/RequestUser";
 import { Connection, FindOneOptions, getConnection } from "typeorm";
 import { InnovationSectionModel } from "../models/InnovationSectionModel";
 import { InnovationSectionResult } from "../models/InnovationSectionResult";
+import { ActivityLogService } from "./ActivityLog.service";
 import { BaseService } from "./Base.service";
 import { FileService } from "./File.service";
 import { InnovationService } from "./Innovation.service";
@@ -36,6 +38,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
   private readonly innovationService: InnovationService;
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
+  private readonly activityLogService: ActivityLogService;
 
   constructor(connectionName?: string) {
     super(InnovationSection, connectionName);
@@ -44,6 +47,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     this.innovationService = new InnovationService(connectionName);
     this.notificationService = new NotificationService(connectionName);
     this.logService = new LoggerService();
+    this.activityLogService = new ActivityLogService(connectionName);
   }
 
   async findAllInnovationSectionsMetadata(
@@ -331,7 +335,41 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
 
     updatedInnovation.updatedBy = requestUser.id;
 
-    return this.innovationService.update(innovationId, updatedInnovation);
+    // const result = this.innovationService.update(
+    //   innovationId,
+    //   updatedInnovation
+    // );
+
+    const result = await this.connection.transaction(async (transaction) => {
+      if (!updatedInnovation.id) {
+        updatedInnovation.id = innovation.id;
+      }
+
+      const innov = await transaction.save(Innovation, updatedInnovation);
+
+      try {
+        await this.activityLogService.create(
+          requestUser,
+          innovation,
+          Activity.SECTION_DRAFT_UPDATE,
+          transaction,
+          {
+            sectionName: section,
+          }
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while creating activity log from ${requestUser.id}`,
+          error
+        );
+
+        throw error;
+      }
+
+      return innov;
+    });
+
+    return result;
   }
 
   async findAll(filter?: any): Promise<InnovationSection[]> {
@@ -382,6 +420,24 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
             });
 
             await transactionManager.save(InnovationSection, innovSectionObj);
+            try {
+              await this.activityLogService.create(
+                requestUser,
+                innovation,
+                Activity.SECTION_SUBMISSION,
+                transactionManager,
+                {
+                  sectionName: InnovationSectionCatalogue[secKey],
+                }
+              );
+            } catch (error) {
+              this.logService.error(
+                `An error has occured while creating activity log from ${requestUser.id}`,
+                error
+              );
+
+              throw error;
+            }
           } else {
             const innovationActions = await innovSections[secIdx].actions;
             const actions = innovationActions.filter(
@@ -410,6 +466,25 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
                 submittedAt: new Date(),
               }
             );
+
+            try {
+              await this.activityLogService.create(
+                requestUser,
+                innovation,
+                Activity.SECTION_SUBMISSION,
+                transactionManager,
+                {
+                  sectionName: innovSections[secIdx].section,
+                }
+              );
+            } catch (error) {
+              this.logService.error(
+                `An error has occured while creating activity log from ${requestUser.id}`,
+                error
+              );
+
+              throw error;
+            }
           }
         }
       }
@@ -515,14 +590,14 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
         if (dependency.files) {
           data[dependency.type].forEach(
             (dep: any) =>
-              (dep.files = dep.files?.map((obj: InnovationFile) => ({
-                id: obj.id,
-                displayFileName: obj.displayFileName,
-                url: this.fileService.getDownloadUrl(
-                  obj.id,
-                  obj.displayFileName
-                ),
-              })))
+            (dep.files = dep.files?.map((obj: InnovationFile) => ({
+              id: obj.id,
+              displayFileName: obj.displayFileName,
+              url: this.fileService.getDownloadUrl(
+                obj.id,
+                obj.displayFileName
+              ),
+            })))
           );
         }
       }

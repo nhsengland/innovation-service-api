@@ -22,7 +22,11 @@ import {
 import * as fixtures from "../__fixtures__";
 import * as dotenv from "dotenv";
 import * as path from "path";
-import { InnovatorOrganisationRole, OrganisationType } from "@domain/index";
+import {
+  ActivityLog,
+  InnovatorOrganisationRole,
+  OrganisationType,
+} from "@domain/index";
 import {
   InvalidUserRoleError,
   MissingUserOrganisationError,
@@ -47,6 +51,7 @@ describe("Advanced filter suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(ActivityLog).execute();
     await query.from(InnovationSupportLog).execute();
     await query.from(InnovationSupport).execute();
     await query.from(Comment).execute();

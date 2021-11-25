@@ -1,5 +1,6 @@
 import {
   AccessorOrganisationRole,
+  ActivityLog,
   Organisation,
   OrganisationType,
   OrganisationUnit,
@@ -51,6 +52,7 @@ describe("Organisation Service Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(ActivityLog).execute();
     await query.from(OrganisationUnitUser).execute();
     await query.from(OrganisationUser).execute();
     await query.from(OrganisationUnit).execute();
