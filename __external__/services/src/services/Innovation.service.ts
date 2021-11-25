@@ -115,10 +115,7 @@ export class InnovationService extends BaseService<Innovation> {
           requestUser,
           innov,
           Activity.INNOVATION_CREATION,
-          trs,
-          {
-            innovationName: innov.name,
-          }
+          trs
         );
       } catch (error) {
         this.logService.error(

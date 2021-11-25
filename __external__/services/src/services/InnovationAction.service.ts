@@ -144,6 +144,7 @@ export class InnovationActionService {
           trs,
           {
             sectionName: action.section,
+            actionId: actionResult.id,
           }
         );
       } catch (error) {

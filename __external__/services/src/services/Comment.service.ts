@@ -103,7 +103,11 @@ export class CommentService {
           requestUser,
           innovation,
           Activity.COMMENT_CREATION,
-          trs
+          trs,
+          {
+            commentId: comment.id,
+            commentValue: comment.message,
+          }
         );
       } catch (error) {
         this.logService.error(
