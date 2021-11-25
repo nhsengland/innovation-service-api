@@ -1,7 +1,6 @@
 import { Activity, ActivityType } from "@domain/enums/activity.enums";
 import { ActivityLog, Innovation } from "@domain/index";
 import { InvalidParamsError } from "@services/errors";
-import { checkIfValidUUID } from "@services/helpers";
 import { ActivityLogModel } from "@services/models/ActivityLogModel";
 import { RequestUser } from "@services/models/RequestUser";
 import {
@@ -11,16 +10,18 @@ import {
   getRepository,
   Repository,
 } from "typeorm";
+import { BaseService } from "./Base.service";
 import { LoggerService } from "./Logger.service";
 import { UserService } from "./User.service";
 
-export class ActivityLogService {
+export class ActivityLogService extends BaseService<ActivityLog> {
   private readonly connection: Connection;
   private readonly activityLogRepo: Repository<ActivityLog>;
   private readonly loggerService: LoggerService;
   private readonly userService: UserService;
 
   constructor(connectionName?: string) {
+    super(ActivityLog, connectionName);
     this.connection = getConnection(connectionName);
     this.activityLogRepo = getRepository(ActivityLog, connectionName);
     this.loggerService = new LoggerService();
@@ -39,7 +40,7 @@ export class ActivityLogService {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
-    const activityLogs: ActivityLog[] = await this.findMany(
+    const activityLogs = await this.findMany(
       innovation.id,
       take,
       skip,
@@ -47,9 +48,9 @@ export class ActivityLogService {
       order
     );
 
-    const b2cUserNames = await this.getNamesForParamUserIds(activityLogs);
+    const b2cUserNames = await this.getNamesForParamUserIds(activityLogs[0]);
 
-    const response: ActivityLogModel[] = activityLogs.map((log) => {
+    const response: ActivityLogModel[] = activityLogs[0].map((log) => {
       const rec: ActivityLogModel = {
         date: log.createdAt,
         type: log.type,
@@ -77,15 +78,20 @@ export class ActivityLogService {
       }
     });
 
-    return response;
+    const result = {
+      data: response,
+      count: activityLogs[1],
+    };
+
+    return result;
   }
 
-  async create(
+  async createLog(
     requestUser: RequestUser,
     innovation: Innovation,
     activity: Activity,
     transaction: EntityManager,
-    customParams?: { [key: string]: string }
+    customParams?: { [key: string]: any }
   ) {
     if (!requestUser || !innovation || !activity) {
       throw new InvalidParamsError("Invalid parameters.");
@@ -119,7 +125,6 @@ export class ActivityLogService {
       assessmentId: params?.assessmentId,
       innovationSUPPORTStatus: params?.innovationSUPPORTStatus,
       sectionId: params?.sectionId,
-      sectionName: params?.sectionName,
       actionId: params?.actionId,
       organisations: params?.organisations,
       organisationUnit: params?.organisationUnit,
@@ -185,31 +190,31 @@ export class ActivityLogService {
     activityTypes?: string,
     order?: { [key: string]: string }
   ) {
-    const query = await this.activityLogRepo
-      .createQueryBuilder("activityLog")
-      .where("innovation_id = :innovationId", {
-        innovationId: innovationId,
-      });
+    const filterOptions = {
+      where: {},
+      skip,
+      take,
+      order: order || { date: "ASC" },
+    };
+
+    filterOptions.where = `innovation_id = '${innovationId}'`;
 
     if (activityTypes && activityTypes.length > 0) {
       const types = activityTypes.split(",");
-      query.andWhere("activityLog.type in (:...types)", {
-        types,
-      });
+      const userIds = types.map((t) => `'${t}'`).join(",");
+      filterOptions.where += ` and activityLog.type in (${userIds})`;
     }
 
-    query.take(take);
-    query.skip(skip);
-
-    if (order) {
-      for (const key of Object.keys(order)) {
-        query.orderBy(key, order[key] as "ASC" | "DESC");
-      }
-    } else {
-      query.orderBy("activityLog.createdAt", "ASC");
+    const logs = await this.repository.findAndCount(filterOptions);
+    // If no records = quick return
+    if (logs[1] === 0) {
+      return {
+        data: [],
+        count: 0,
+      };
     }
 
-    return query.getMany();
+    return logs;
   }
 
   private async getNamesForParamUserIds(activityLogs) {

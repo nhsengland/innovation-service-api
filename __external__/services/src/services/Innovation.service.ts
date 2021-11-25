@@ -1668,9 +1668,9 @@ export class InnovationService extends BaseService<Innovation> {
     innovation: Innovation,
     activity: Activity,
     transaction: EntityManager,
-    customParams?: { [key: string]: string }
+    customParams?: { [key: string]: any }
   ) {
-    return await this.activityLogService.create(
+    return await this.activityLogService.createLog(
       requestUser,
       innovation,
       activity,
