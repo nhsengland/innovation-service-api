@@ -329,14 +329,18 @@ export class InnovationSupportService {
             updatedBy: requestUser.id,
             organisationUnit,
           });
-          await transactionManager.save(Comment, comment);
+          const commentResult = await transactionManager.save(Comment, comment);
 
           try {
             await this.activityLogService.create(
               requestUser,
               innovation,
               Activity.COMMENT_CREATION,
-              transactionManager
+              transactionManager,
+              {
+                commentId: commentResult.id,
+                commentValue: support.comment,
+              }
             );
           } catch (error) {
             this.logService.error(
@@ -376,6 +380,7 @@ export class InnovationSupportService {
             {
               organisationUnit:
                 requestUser.organisationUnitUser.organisationUnit.name,
+              innovationSUPPORTStatus: support.status,
             }
           );
         } catch (error) {

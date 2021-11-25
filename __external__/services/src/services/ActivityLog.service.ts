@@ -61,18 +61,18 @@ export class ActivityLogService {
       return rec;
     });
 
-    response.forEach(log => {
-      let obj = log.params;
+    response.forEach((log) => {
+      const obj = log.params;
       if (obj) {
-        if (obj['actionUserId']) {
-          const name = b2cUserNames[obj['actionUserId']];
-          obj['actionUserId'] = name;
-          this.renameKey(obj, 'actionUserId', 'actionUserName')
+        if (obj["actionUserId"]) {
+          const name = b2cUserNames[obj["actionUserId"]];
+          obj["actionUserId"] = name;
+          this.renameKey(obj, "actionUserId", "actionUserName");
         }
-        if (obj['interveningUserId']) {
-          const name = b2cUserNames[obj['interveningUserId']];
-          obj['interveningUserId'] = name;
-          this.renameKey(obj, 'interveningUserId', 'interveningUserName')
+        if (obj["interveningUserId"]) {
+          const name = b2cUserNames[obj["interveningUserId"]];
+          obj["interveningUserId"] = name;
+          this.renameKey(obj, "interveningUserId", "interveningUserName");
         }
       }
     });
@@ -93,12 +93,7 @@ export class ActivityLogService {
 
     const activityType = this.getActivityType(activity);
 
-    const params = this.getActivityParameters(
-      activity,
-      requestUser,
-      innovation,
-      customParams
-    );
+    const params = this.getActivityParameters(requestUser, customParams);
 
     const activityLogObj = ActivityLog.new({
       innovation: { id: innovation.id },
@@ -117,70 +112,23 @@ export class ActivityLogService {
     return await this.activityLogRepo.save(activityLogObj);
   }
 
-  private getActivityParameters(
-    activity: Activity,
-    requestUser: RequestUser,
-    innovation?: Innovation,
-    params?
-  ) {
-    let activityParams: object;
-
-    switch (activity) {
-      case Activity.INNOVATION_CREATION:
-        activityParams = {
-          innovationName: innovation.name,
-        };
-        break;
-      case Activity.OWNERSHIP_TRANSFER:
-      case Activity.ACTION_STATUS_DECLINED_UPDATE:
-        activityParams = {
-          actionUserId: params?.actionUserId || requestUser.id,
-          interveningUserId: params?.interveningUserId, //Check innovation transfer & Decline action implemention to retrieve value
-        };
-        break;
-
-      case Activity.SECTION_DRAFT_UPDATE:
-      case Activity.SECTION_SUBMISSION:
-        activityParams = {
-          sectionName: params.sectionName,
-        };
-        break;
-
-      case Activity.NEEDS_ASSESSMENT_START:
-      case Activity.NEEDS_ASSESSMENT_COMPLETED:
-      case Activity.ORGANISATION_SUGGESTION:
-      case Activity.COMMENT_CREATION:
-      case Activity.ACTION_STATUS_COMPLETED_UPDATE:
-        activityParams = {
-          actionUserId: requestUser.id,
-        };
-        break;
-
-      case Activity.SUPPORT_STATUS_UPDATE:
-        activityParams = {
-          actionUserId: requestUser.id,
-          organisationUnit: params.organisationUnit,
-        };
-        break;
-
-      case Activity.ACTION_CREATION:
-        activityParams = {
-          actionUserId: requestUser.id,
-          sectionName: params.sectionName,
-        };
-        break;
-
-      case Activity.ACTION_STATUS_IN_REVIEW_UPDATE:
-        activityParams = {
-          totalActions: params.totalActions,
-          sectionName: params.sectionName,
-        };
-        break;
-
-      default:
-        activityParams = null;
-        break;
-    }
+  private getActivityParameters(requestUser: RequestUser, params?) {
+    const activityParams = {
+      actionUserId: params?.actionUserId || requestUser.id,
+      interveningUserId: params?.interveningUserId, //Check innovation transfer & Decline action implemention to retrieve value
+      assessmentId: params?.assessmentId,
+      innovationSUPPORTStatus: params?.innovationSUPPORTStatus,
+      sectionId: params?.sectionId,
+      sectionName: params?.sectionName,
+      actionId: params?.actionId,
+      organisations: params?.organisations,
+      organisationUnit: params?.organisationUnit,
+      comment: {
+        id: params?.commentId,
+        value: params?.commentValue,
+      },
+      totalActions: params?.totalActions,
+    };
 
     return JSON.stringify(activityParams);
   }
@@ -230,17 +178,21 @@ export class ActivityLogService {
     return activityType;
   }
 
-  private async findMany(innovationId: string, take: number, skip: number, activityTypes?: string, order?: { [key: string]: string }) {
+  private async findMany(
+    innovationId: string,
+    take: number,
+    skip: number,
+    activityTypes?: string,
+    order?: { [key: string]: string }
+  ) {
     const query = await this.activityLogRepo
       .createQueryBuilder("activityLog")
       .where("innovation_id = :innovationId", {
         innovationId: innovationId,
       });
 
-
-
     if (activityTypes && activityTypes.length > 0) {
-      var types = activityTypes.split(',');
+      const types = activityTypes.split(",");
       query.andWhere("activityLog.type in (:...types)", {
         types,
       });
@@ -262,27 +214,29 @@ export class ActivityLogService {
 
   private async getNamesForParamUserIds(activityLogs) {
     const userIds = [];
-    activityLogs.forEach(
-      (res: ActivityLog) => {
-
-        let obj = JSON.parse(res.param);
-        if (obj) {
-          if (obj.hasOwnProperty('actionUserId') && userIds.indexOf(obj['actionUserId']) === -1) {
-            userIds.push(obj['actionUserId']);
-          }
-          if (obj.hasOwnProperty('interveningUserId') && userIds.indexOf(obj['actionUserId']) === -1) {
-            userIds.push(obj['interveningUserId']);
-          }
+    activityLogs.forEach((res: ActivityLog) => {
+      const obj = JSON.parse(res.param);
+      if (obj) {
+        if (
+          obj.hasOwnProperty("actionUserId") &&
+          userIds.indexOf(obj["actionUserId"]) === -1
+        ) {
+          userIds.push(obj["actionUserId"]);
+        }
+        if (
+          obj.hasOwnProperty("interveningUserId") &&
+          userIds.indexOf(obj["actionUserId"]) === -1
+        ) {
+          userIds.push(obj["interveningUserId"]);
         }
       }
-    );
+    });
 
     const b2cUsers = await this.userService.getListOfUsers(userIds);
     const b2cUserNames = b2cUsers.reduce((map, obj) => {
       map[obj.id] = obj.displayName;
       return map;
     }, {});
-
 
     return b2cUserNames;
   }
