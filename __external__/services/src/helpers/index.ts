@@ -58,6 +58,10 @@ export async function getUsersFromB2C(
 ) {
   try {
     apiVersion = apiVersion || "v1.0";
+
+    // if exclude locked, only beta version supports this.
+    apiVersion = excludeLocked ? "beta" : apiVersion;
+
     const config = {
       headers: { Authorization: `Bearer ${accessToken}` },
     };
@@ -70,7 +74,9 @@ export async function getUsersFromB2C(
     // if exclude, filter out locked accounts
 
     if (excludeLocked) {
-      return result.data.value?.filter((x) => !x.accountEnabled) || [];
+      const onlyUnlocked =
+        result.data.value?.filter((x) => x.accountEnabled) || [];
+      return onlyUnlocked;
     }
 
     return result.data.value || [];
