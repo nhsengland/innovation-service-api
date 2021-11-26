@@ -362,7 +362,7 @@ export class InnovationSupportService {
             {
               organisationUnit:
                 requestUser.organisationUnitUser.organisationUnit.name,
-              innovationSUPPORTStatus: retVal.status,
+              innovationSupportStatus: retVal.status,
               commentId: commentResult?.id,
               commentValue: commentResult?.message,
             }
@@ -653,7 +653,7 @@ export class InnovationSupportService {
             {
               organisationUnit:
                 requestUser.organisationUnitUser.organisationUnit.name,
-              innovationSUPPORTStatus: result.status,
+              innovationSupportStatus: result.status,
               commentId: commentResult?.id,
               commentValue: commentResult?.message,
             }
