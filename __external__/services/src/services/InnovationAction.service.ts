@@ -143,7 +143,7 @@ export class InnovationActionService {
           Activity.ACTION_CREATION,
           trs,
           {
-            sectionName: action.section,
+            sectionId: action.section,
             actionId: actionResult.id,
             commentValue: actionResult.description,
           }

@@ -48,6 +48,14 @@ export class ActivityLogService extends BaseService<ActivityLog> {
       order
     );
 
+    // If no records = quick return
+    if (activityLogs[1] === 0) {
+      return {
+        data: [],
+        count: 0,
+      };
+    }
+
     const b2cUserNames = await this.getNamesForParamUserIds(activityLogs[0]);
 
     const response: ActivityLogModel[] = activityLogs[0].map((log) => {
@@ -123,7 +131,7 @@ export class ActivityLogService extends BaseService<ActivityLog> {
       actionUserId: params?.actionUserId || requestUser.id,
       interveningUserId: params?.interveningUserId, //Check innovation transfer & Decline action implemention to retrieve value
       assessmentId: params?.assessmentId,
-      innovationSUPPORTStatus: params?.innovationSUPPORTStatus,
+      innovationSupportStatus: params?.innovationSupportStatus,
       sectionId: params?.sectionId,
       actionId: params?.actionId,
       organisations: params?.organisations,
@@ -206,13 +214,6 @@ export class ActivityLogService extends BaseService<ActivityLog> {
     }
 
     const logs = await this.repository.findAndCount(filterOptions);
-    // If no records = quick return
-    if (logs[1] === 0) {
-      return {
-        data: [],
-        count: 0,
-      };
-    }
 
     return logs;
   }
