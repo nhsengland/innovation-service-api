@@ -536,8 +536,9 @@ export class InnovationActionService {
       );
     }
     return await this.connection.transaction(async (transactionManager) => {
+      let comment;
       if (action.comment) {
-        const comment = Comment.new({
+        comment = Comment.new({
           user: { id: requestUser.id },
           innovation: { id: innovationId },
           message: action.comment,
@@ -554,15 +555,18 @@ export class InnovationActionService {
       innovationAction.status = action.status;
       innovationAction.updatedBy = requestUser.id;
 
-      if (requestUser.type === UserType.INNOVATOR) {
+      if (action.status === InnovationActionStatus.DECLINED) {
         try {
-          await this.activityLogService.create(
+          await this.activityLogService.createLog(
             requestUser,
             innovation,
             Activity.ACTION_STATUS_DECLINED_UPDATE,
             transactionManager,
             {
+              actionId: innovationAction.id,
               interveningUserId: innovationAction.createdBy,
+              commentId: comment?.id,
+              commentValue: comment?.message,
             }
           );
         } catch (error) {
@@ -573,13 +577,18 @@ export class InnovationActionService {
           throw error;
         }
       } else {
-        if (action.status === "COMPLETED") {
+        if (action.status === InnovationActionStatus.COMPLETED) {
           try {
-            await this.activityLogService.create(
+            await this.activityLogService.createLog(
               requestUser,
               innovation,
               Activity.ACTION_STATUS_COMPLETED_UPDATE,
-              transactionManager
+              transactionManager,
+              {
+                actionId: innovationAction.id,
+                commentId: comment?.id,
+                commentValue: comment?.message,
+              }
             );
           } catch (error) {
             this.logService.error(
