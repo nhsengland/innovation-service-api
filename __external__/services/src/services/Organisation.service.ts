@@ -193,20 +193,28 @@ export class OrganisationService extends BaseService<Organisation> {
 
     // Get user personal information from b2c
     const b2cMap = await this.findOrganisationUnitUsersNames(
-      organisationUnitUsers
+      organisationUnitUsers,
+      true
     );
 
     // create response
-    return organisationUnitUsers.map(
-      (organisationUnitUser: OrganisationUnitUser) => {
+    const result = organisationUnitUsers
+      .filter((organisationUnitUser) => {
+        const organisationUser = organisationUnitUser.organisationUser;
+        const name = b2cMap[organisationUser.user.id];
+        if (name) return true;
+        return false;
+      })
+      .map((organisationUnitUser: OrganisationUnitUser) => {
         const organisationUser = organisationUnitUser.organisationUser;
 
         return {
           id: organisationUnitUser.id,
           name: b2cMap[organisationUser.user.id],
         };
-      }
-    );
+      });
+
+    return result;
   }
 
   async findOrganisationUnitUsersNames(

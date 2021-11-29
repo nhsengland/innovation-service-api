@@ -146,6 +146,7 @@ export class InnovationAssessmentService {
     }
 
     return await this.connection.transaction(async (transactionManager) => {
+      let commentRes;
       if (assessment.comment) {
         const comment = Comment.new({
           user: { id: requestUser.id },
@@ -154,7 +155,7 @@ export class InnovationAssessmentService {
           createdBy: requestUser.id,
           updatedBy: requestUser.id,
         });
-        await transactionManager.save(Comment, comment);
+        commentRes = await transactionManager.save(Comment, comment);
       }
 
       await transactionManager.update(
@@ -177,11 +178,15 @@ export class InnovationAssessmentService {
       );
 
       try {
-        await this.activityLogService.create(
+        await this.activityLogService.createLog(
           requestUser,
           innovation,
           Activity.NEEDS_ASSESSMENT_START,
-          transactionManager
+          transactionManager,
+          {
+            commentId: commentRes?.id,
+            commentValue: commentRes?.message,
+          }
         );
       } catch (error) {
         this.logService.error(
@@ -266,7 +271,7 @@ export class InnovationAssessmentService {
 
         if (assessment.isSubmission) {
           try {
-            await this.activityLogService.create(
+            await this.activityLogService.createLog(
               requestUser,
               innovation,
               Activity.NEEDS_ASSESSMENT_COMPLETED,

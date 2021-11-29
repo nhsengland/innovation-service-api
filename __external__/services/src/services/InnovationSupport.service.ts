@@ -104,12 +104,17 @@ export class InnovationSupportService {
     return {
       id: innovationSupport.id,
       status: innovationSupport.status,
-      accessors: organisationUnitUsers?.map(
-        (organisationUnitUser: OrganisationUnitUser) => ({
+      accessors: organisationUnitUsers
+        ?.filter((organisationUnitUser: OrganisationUnitUser) => {
+          const organisationUser = organisationUnitUser.organisationUser;
+          const name = b2cMap[organisationUser.user.id];
+          if (name) return true;
+          return false;
+        })
+        .map((organisationUnitUser: OrganisationUnitUser) => ({
           id: organisationUnitUser.id,
           name: b2cMap[organisationUnitUser.organisationUser.user.id],
-        })
-      ),
+        })),
     };
   }
 
@@ -320,6 +325,7 @@ export class InnovationSupportService {
 
     const result = await this.connection.transaction(
       async (transactionManager) => {
+        let commentResult;
         if (support.comment) {
           const comment = Comment.new({
             user: { id: requestUser.id },
@@ -329,28 +335,9 @@ export class InnovationSupportService {
             updatedBy: requestUser.id,
             organisationUnit,
           });
-          const commentResult = await transactionManager.save(Comment, comment);
 
-          try {
-            await this.activityLogService.create(
-              requestUser,
-              innovation,
-              Activity.COMMENT_CREATION,
-              transactionManager,
-              {
-                commentId: commentResult.id,
-                commentValue: support.comment,
-              }
-            );
-          } catch (error) {
-            this.logService.error(
-              `An error has occured while creating activity log from ${requestUser.id}`,
-              error
-            );
-            throw error;
-          }
+          commentResult = await transactionManager.save(Comment, comment);
         }
-
         const innovationSupport = {
           status: support.status,
           createdBy: requestUser.id,
@@ -372,7 +359,7 @@ export class InnovationSupportService {
         );
 
         try {
-          await this.activityLogService.create(
+          await this.activityLogService.createLog(
             requestUser,
             innovation,
             Activity.SUPPORT_STATUS_UPDATE,
@@ -380,7 +367,9 @@ export class InnovationSupportService {
             {
               organisationUnit:
                 requestUser.organisationUnitUser.organisationUnit.name,
-              innovationSUPPORTStatus: support.status,
+              innovationSupportStatus: retVal.status,
+              commentId: commentResult?.id,
+              commentValue: commentResult?.message,
             }
           );
         } catch (error) {
@@ -508,6 +497,7 @@ export class InnovationSupportService {
 
     const result = await this.connection.transaction(
       async (transactionManager) => {
+        let commentResult;
         if (support.comment) {
           const comment = Comment.new({
             user: { id: requestUser.id },
@@ -517,7 +507,7 @@ export class InnovationSupportService {
             updatedBy: requestUser.id,
             organisationUnit,
           });
-          await transactionManager.save(Comment, comment);
+          commentResult = await transactionManager.save(Comment, comment);
         }
 
         if (
@@ -654,10 +644,35 @@ export class InnovationSupportService {
             error
           );
         }
-        return await transactionManager.save(
+        const result = await transactionManager.save(
           InnovationSupport,
           innovationSupport
         );
+
+        try {
+          await this.activityLogService.createLog(
+            requestUser,
+            innovation,
+            Activity.SUPPORT_STATUS_UPDATE,
+            transactionManager,
+            {
+              organisationUnit:
+                requestUser.organisationUnitUser.organisationUnit.name,
+              innovationSupportStatus: result.status,
+              commentId: commentResult?.id,
+              commentValue: commentResult?.message,
+            }
+          );
+        } catch (error) {
+          this.logService.error(
+            `An error has occured while creating activity log from ${requestUser.id}`,
+            error
+          );
+
+          throw error;
+        }
+
+        return result;
       }
     );
 

@@ -138,14 +138,15 @@ export class InnovationActionService {
     const result = await this.connection.transaction(async (trs) => {
       const actionResult = await trs.save(InnovationAction, actionObj);
       try {
-        await this.activityLogService.create(
+        await this.activityLogService.createLog(
           requestUser,
           innovation,
           Activity.ACTION_CREATION,
           trs,
           {
-            sectionName: action.section,
+            sectionId: action.section,
             actionId: actionResult.id,
+            commentValue: actionResult.description,
           }
         );
       } catch (error) {
