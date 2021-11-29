@@ -231,7 +231,7 @@ export class ActivityLogService extends BaseService<ActivityLog> {
         }
         if (
           obj.hasOwnProperty("interveningUserId") &&
-          userIds.indexOf(obj["actionUserId"]) === -1
+          userIds.indexOf(obj["interveningUserId"]) === -1
         ) {
           userIds.push(obj["interveningUserId"]);
         }
