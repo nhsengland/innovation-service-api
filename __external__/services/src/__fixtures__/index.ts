@@ -128,11 +128,12 @@ export const createInnovatorUser = async () => {
   return await innovatorService.create(innovator);
 };
 
-export const createAssessmentUser = async () => {
+export const createAssessmentUser = async (lockedAt?: Date) => {
   const usr = new User();
   const userService = new UserService(process.env.DB_TESTS_NAME);
   usr.id = uuid.v4();
   usr.type = UserType.ASSESSMENT;
+  usr.lockedAt = lockedAt;
   return await userService.create(usr);
 };
 
@@ -260,6 +261,27 @@ export const createSupportInInnovation = async (
   const supportObj = InnovationSupport.new({
     status: InnovationSupportStatus.ENGAGING,
     accessors: [organisationUnitUserId],
+  });
+
+  return await innovationSupportService.create(
+    requestUser,
+    innovation.id,
+    supportObj
+  );
+};
+
+export const createSupportInInnovationMultipleAccessors = async (
+  requestUser: RequestUser,
+  innovation: Innovation,
+  organisationUnitUserIds: string[]
+): Promise<InnovationSupport> => {
+  const innovationSupportService = new InnovationSupportService(
+    process.env.DB_TESTS_NAME
+  );
+
+  const supportObj = InnovationSupport.new({
+    status: InnovationSupportStatus.ENGAGING,
+    accessors: organisationUnitUserIds,
   });
 
   return await innovationSupportService.create(
@@ -603,32 +625,6 @@ export const setupCompleteInnovation = async (
       innovation.id,
       supportObj1
     );
-
-    const supportObj2 = {
-      status: InnovationSupportStatus.ENGAGING,
-      accessors: [accessor2RequestUser.organisationUnitUser.id],
-      comment: "another test comment",
-    };
-
-    const support2 = await supportService.create(
-      qAccessorRequestUser,
-      innovation.id,
-      supportObj2
-    );
-
-    // const supportObj3 = {
-    //   status: InnovationSupportStatus.NOT_YET,
-    //   accessors: [accessor3RequestUser.organisationUnitUser.id],
-    //   comment: "another test comment",
-    // }
-
-    // const support3 = await supportService.create(
-    //   qAccessorRequestUser,
-    //   innovation.id,
-    //   supportObj3
-    // );
-
-    // supports = [support1, support2, support3];
   }
 
   return {

@@ -1,3 +1,4 @@
+import { Activity } from "@domain/enums/activity.enums";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   AccessorOrganisationRole,
@@ -29,6 +30,7 @@ import {
   getRepository,
   Repository,
 } from "typeorm";
+import { ActivityLogService } from "./ActivityLog.service";
 import { InnovationService } from "./Innovation.service";
 import { InnovationSectionService } from "./InnovationSection.service";
 import { LoggerService } from "./Logger.service";
@@ -43,6 +45,7 @@ export class InnovationActionService {
   private readonly userService: UserService;
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
+  private readonly activityLogService: ActivityLogService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -54,6 +57,7 @@ export class InnovationActionService {
     this.userService = new UserService(connectionName);
     this.notificationService = new NotificationService(connectionName);
     this.logService = new LoggerService();
+    this.activityLogService = new ActivityLogService(connectionName);
   }
 
   async create(requestUser: RequestUser, innovationId: string, action: any) {
@@ -129,13 +133,37 @@ export class InnovationActionService {
       updatedBy: requestUser.id,
     };
 
-    const result = await this.actionRepo.save(actionObj);
+    //const result = await this.actionRepo.save(actionObj);
+    const result = await this.connection.transaction(async (trs) => {
+      const actionResult = await trs.save(InnovationAction, actionObj);
+      try {
+        await this.activityLogService.createLog(
+          requestUser,
+          innovation,
+          Activity.ACTION_CREATION,
+          trs,
+          {
+            sectionId: action.section,
+            actionId: actionResult.id,
+            commentValue: actionResult.description,
+          }
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while creating activity log from ${requestUser.id}`,
+          error
+        );
+        throw error;
+      }
+
+      return actionResult;
+    });
 
     try {
       await this.notificationService.create(
         requestUser,
         NotificationAudience.INNOVATORS,
-        innovationId,
+        innovation.id,
         NotificationContextType.ACTION,
 
         result.id,

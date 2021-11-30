@@ -25,6 +25,7 @@ import {
   User,
   UserType,
   NotificationPreference,
+  ActivityLog,
 } from "@domain/index";
 import * as engines from "@engines/index";
 import { InvalidParamsError } from "@services/errors";
@@ -64,6 +65,9 @@ describe("Notification Service Suite", () => {
       },
     } as any);
 
+    jest.spyOn(LoggerService.prototype, "error").mockImplementation();
+    jest.spyOn(LoggerService.prototype, "log").mockImplementation();
+
     jest.spyOn(engines, "emailEngines").mockReturnValue([
       {
         key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
@@ -95,6 +99,7 @@ describe("Notification Service Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(ActivityLog).execute();
     await query.from(InnovationSupportLog).execute();
     await query.from(Comment).execute();
     await query.from(InnovationAction).execute();
@@ -267,7 +272,7 @@ describe("Notification Service Suite", () => {
     });
     const innovation = await fixtures.saveInnovation(innovationObj);
 
-    await fixtures.createSupportInInnovation(
+    await fixtures.createSupportInInnovationMultipleAccessors(
       {
         id: qaccessor.id,
         type: UserType.ACCESSOR,
@@ -275,18 +280,7 @@ describe("Notification Service Suite", () => {
         organisationUnitUser: qUnitUser,
       },
       innovation,
-      aUnitUser1.id
-    );
-
-    await fixtures.createSupportInInnovation(
-      {
-        id: qaccessor.id,
-        type: UserType.ACCESSOR,
-        organisationUser: qOrgUser,
-        organisationUnitUser: qUnitUser,
-      },
-      innovation,
-      aUnitUser2.id
+      [aUnitUser1.id, aUnitUser2.id]
     );
 
     const requestUser: RequestUser = {

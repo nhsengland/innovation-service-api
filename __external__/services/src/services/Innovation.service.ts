@@ -64,6 +64,8 @@ import * as constants from "../../../../utils/constants";
 import { InnovationCreationModel } from "@services/models/InnovationCreationModel";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import { OrderByClauseType, SupportFilter } from "@services/types";
+import { Activity, ActivityType } from "@domain/enums/activity.enums";
+import { ActivityLogService } from "./ActivityLog.service";
 
 export class InnovationService extends BaseService<Innovation> {
   private readonly connection: Connection;
@@ -71,6 +73,7 @@ export class InnovationService extends BaseService<Innovation> {
   private readonly supportRepo: Repository<InnovationSupport>;
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
+  private readonly activityLogService: ActivityLogService;
 
   constructor(connectionName?: string) {
     super(Innovation, connectionName);
@@ -79,6 +82,7 @@ export class InnovationService extends BaseService<Innovation> {
     this.userService = new UserService(connectionName);
     this.notificationService = new NotificationService(connectionName);
     this.supportRepo = getRepository(InnovationSupport, connectionName);
+    this.activityLogService = new ActivityLogService(connectionName);
     this.logService = new LoggerService();
   }
 
@@ -103,7 +107,29 @@ export class InnovationService extends BaseService<Innovation> {
       organisationShares: innovation.organisationShares.map((id) => ({ id })),
     });
 
-    return await this.repository.save(_innovation);
+    //const result = await this.repository.save(_innovation);
+    const result = await this.connection.transaction(async (trs) => {
+      const innov = await trs.save(Innovation, _innovation);
+      try {
+        await this.createActivityLog(
+          requestUser,
+          innov,
+          Activity.INNOVATION_CREATION,
+          trs
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while creating activity log from ${requestUser.id}`,
+          error
+        );
+
+        throw error;
+      }
+
+      return innov;
+    });
+
+    return result;
   }
 
   async findInnovation(
@@ -981,11 +1007,31 @@ export class InnovationService extends BaseService<Innovation> {
       );
     }
 
-    await this.repository.update(innovation.id, {
-      submittedAt: new Date(),
-      status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
-      updatedBy: requestUser.id,
+    await this.connection.transaction(async (trs) => {
+      const updatedInnovation = await trs.update(
+        Innovation,
+        { id: innovation.id },
+        {
+          submittedAt: new Date(),
+          status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
+          updatedBy: requestUser.id,
+        }
+      );
+      await this.createActivityLog(
+        requestUser,
+        innovation,
+        Activity.INNOVATION_SUBMISSION,
+        trs
+      );
+
+      return updatedInnovation;
     });
+
+    // await this.repository.update(innovation.id, {
+    //   submittedAt: new Date(),
+    //   status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
+    //   updatedBy: requestUser.id,
+    // });
 
     try {
       await this.notificationService.create(
@@ -1615,5 +1661,21 @@ export class InnovationService extends BaseService<Innovation> {
     );
 
     return await query.getCount();
+  }
+
+  private async createActivityLog(
+    requestUser: RequestUser,
+    innovation: Innovation,
+    activity: Activity,
+    transaction: EntityManager,
+    customParams?: { [key: string]: any }
+  ) {
+    return await this.activityLogService.createLog(
+      requestUser,
+      innovation,
+      activity,
+      transaction,
+      customParams
+    );
   }
 }

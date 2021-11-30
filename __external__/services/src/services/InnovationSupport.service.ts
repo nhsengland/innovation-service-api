@@ -1,3 +1,4 @@
+import { Activity } from "@domain/enums/activity.enums";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   AccessorOrganisationRole,
@@ -25,6 +26,7 @@ import { checkIfValidUUID } from "@services/helpers";
 import { InnovationSupportModel } from "@services/models/InnovationSupportModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
+import { ActivityLogService } from "./ActivityLog.service";
 import { InnovationService } from "./Innovation.service";
 import { InnovationSupportLogService } from "./InnovationSupportLog.service";
 import { LoggerService } from "./Logger.service";
@@ -41,6 +43,7 @@ export class InnovationSupportService {
   private readonly userService: UserService;
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
+  private readonly activityLogService: ActivityLogService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -52,6 +55,7 @@ export class InnovationSupportService {
     this.organisationService = new OrganisationService(connectionName);
     this.userService = new UserService(connectionName);
     this.notificationService = new NotificationService(connectionName);
+    this.activityLogService = new ActivityLogService(connectionName);
     this.logService = new LoggerService();
   }
 
@@ -92,19 +96,25 @@ export class InnovationSupportService {
     let b2cMap;
     if (organisationUnitUsers && organisationUnitUsers.length > 0) {
       b2cMap = await this.organisationService.findOrganisationUnitUsersNames(
-        organisationUnitUsers
+        organisationUnitUsers,
+        true
       );
     }
 
     return {
       id: innovationSupport.id,
       status: innovationSupport.status,
-      accessors: organisationUnitUsers?.map(
-        (organisationUnitUser: OrganisationUnitUser) => ({
+      accessors: organisationUnitUsers
+        ?.filter((organisationUnitUser: OrganisationUnitUser) => {
+          const organisationUser = organisationUnitUser.organisationUser;
+          const name = b2cMap[organisationUser.user.id];
+          if (name) return true;
+          return false;
+        })
+        .map((organisationUnitUser: OrganisationUnitUser) => ({
           id: organisationUnitUser.id,
           name: b2cMap[organisationUnitUser.organisationUser.user.id],
-        })
-      ),
+        })),
     };
   }
 
@@ -315,6 +325,7 @@ export class InnovationSupportService {
 
     const result = await this.connection.transaction(
       async (transactionManager) => {
+        let commentResult;
         if (support.comment) {
           const comment = Comment.new({
             user: { id: requestUser.id },
@@ -324,9 +335,9 @@ export class InnovationSupportService {
             updatedBy: requestUser.id,
             organisationUnit,
           });
-          await transactionManager.save(Comment, comment);
-        }
 
+          commentResult = await transactionManager.save(Comment, comment);
+        }
         const innovationSupport = {
           status: support.status,
           createdBy: requestUser.id,
@@ -342,10 +353,35 @@ export class InnovationSupportService {
           usersToBeNotified
         );
 
-        return await transactionManager.save(
+        const retVal = await transactionManager.save(
           InnovationSupport,
           innovationSupport
         );
+
+        try {
+          await this.activityLogService.createLog(
+            requestUser,
+            innovation,
+            Activity.SUPPORT_STATUS_UPDATE,
+            transactionManager,
+            {
+              organisationUnit:
+                requestUser.organisationUnitUser.organisationUnit.name,
+              innovationSupportStatus: retVal.status,
+              commentId: commentResult?.id,
+              commentValue: commentResult?.message,
+            }
+          );
+        } catch (error) {
+          this.logService.error(
+            `An error has occured while creating activity log from ${requestUser.id}`,
+            error
+          );
+
+          throw error;
+        }
+
+        return retVal;
       }
     );
 
@@ -461,6 +497,7 @@ export class InnovationSupportService {
 
     const result = await this.connection.transaction(
       async (transactionManager) => {
+        let commentResult;
         if (support.comment) {
           const comment = Comment.new({
             user: { id: requestUser.id },
@@ -470,7 +507,7 @@ export class InnovationSupportService {
             updatedBy: requestUser.id,
             organisationUnit,
           });
-          await transactionManager.save(Comment, comment);
+          commentResult = await transactionManager.save(Comment, comment);
         }
 
         if (
@@ -607,10 +644,35 @@ export class InnovationSupportService {
             error
           );
         }
-        return await transactionManager.save(
+        const result = await transactionManager.save(
           InnovationSupport,
           innovationSupport
         );
+
+        try {
+          await this.activityLogService.createLog(
+            requestUser,
+            innovation,
+            Activity.SUPPORT_STATUS_UPDATE,
+            transactionManager,
+            {
+              organisationUnit:
+                requestUser.organisationUnitUser.organisationUnit.name,
+              innovationSupportStatus: result.status,
+              commentId: commentResult?.id,
+              commentValue: commentResult?.message,
+            }
+          );
+        } catch (error) {
+          this.logService.error(
+            `An error has occured while creating activity log from ${requestUser.id}`,
+            error
+          );
+
+          throw error;
+        }
+
+        return result;
       }
     );
 

@@ -1,5 +1,6 @@
 import * as storage_blob from "@azure/storage-blob";
 import {
+  ActivityLog,
   ClinicalEvidenceTypeCatalogue,
   EvidenceTypeCatalogue,
   Innovation,
@@ -68,6 +69,7 @@ describe("Innovation Evidence Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(ActivityLog).execute();
     await query.from(InnovationSection).execute();
     await query.from(Innovation).execute();
     await query.from(User).execute();

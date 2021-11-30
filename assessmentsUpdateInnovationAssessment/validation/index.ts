@@ -1,11 +1,20 @@
 import Joi = require("joi");
+import * as constants from "../../utils/constants";
 
 const payloadSchema = Joi.object({
   id: Joi.string().allow(null).allow("").optional(),
-  description: Joi.string().allow(null).allow("").optional(),
+  description: Joi.string()
+    .max(constants.largeFieldCharacterLimit)
+    .allow(null)
+    .allow("")
+    .optional(),
   assignToName: Joi.string().allow(null).allow("").optional(),
   innovation: Joi.string().allow(null).allow("").optional(),
-  summary: Joi.string().allow(null).allow("").optional(),
+  summary: Joi.string()
+    .max(constants.largeFieldCharacterLimit)
+    .allow(null)
+    .allow("")
+    .optional(),
   maturityLevel: Joi.string().allow(null).allow("").optional(),
   hasRegulatoryApprovals: Joi.string().allow(null).allow("").optional(),
   hasRegulatoryApprovalsComment: Joi.string().allow(null).allow("").optional(),

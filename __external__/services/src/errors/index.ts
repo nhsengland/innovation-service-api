@@ -116,3 +116,33 @@ export class InvalidSectionStateError extends Error {
     this.name = "InvalidSectionStateError";
   }
 }
+
+export class LastAssessmentUserOnPlatformError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "LastAssessmentUserOnPlatformError";
+  }
+}
+
+export class LastAccessorUserOnOrganisationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "LastAccessorUserOnOrganisationError";
+  }
+}
+
+export class LastAccessorUserOnOrganisationUnitError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "LastAccessorUserOnOrganisationUnitError";
+  }
+}
+
+export class LastAccessorFromUnitProvidingSupportError extends Error {
+  data: any;
+  constructor(message: string, data?: any) {
+    super(message);
+    this.name = "LastAccessorFromUnitProvidingSupportError";
+    this.data = data;
+  }
+}

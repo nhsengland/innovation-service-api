@@ -53,10 +53,15 @@ export async function getUserFromB2C(id: string, accessToken?: string) {
 export async function getUsersFromB2C(
   accessToken: string,
   odataFilter: string,
-  apiVersion?: string
+  apiVersion?: string,
+  excludeLocked?: boolean
 ) {
   try {
     apiVersion = apiVersion || "v1.0";
+
+    // if exclude locked, only beta version supports this.
+    apiVersion = excludeLocked ? "beta" : apiVersion;
+
     const config = {
       headers: { Authorization: `Bearer ${accessToken}` },
     };
@@ -65,6 +70,15 @@ export async function getUsersFromB2C(
       `https://graph.microsoft.com/${apiVersion}/users?${odataFilter}`,
       config
     );
+
+    // if exclude, filter out locked accounts
+
+    if (excludeLocked) {
+      const onlyUnlocked =
+        result.data.value?.filter((x) => x.accountEnabled) || [];
+      return onlyUnlocked;
+    }
+
     return result.data.value || [];
   } catch (error) {
     throw error;
