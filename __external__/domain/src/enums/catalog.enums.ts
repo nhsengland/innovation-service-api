@@ -216,6 +216,7 @@ export enum InnovationCertificationCatalogue {
 }
 
 export enum InnovationSupportTypeCatalogue {
+  ADOPTION = "ADOPTION",
   ASSESSMENT = "ASSESSMENT",
   PRODUCT_MIGRATION = "PRODUCT_MIGRATION",
   CLINICAL_TESTS = "CLINICAL_TESTS",
