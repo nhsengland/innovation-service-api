@@ -14,7 +14,7 @@ describe("Email Service Suite", () => {
   let emailService: EmailService;
 
   beforeAll(async () => {
-    // await setupTestsConnection();
+    //await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -24,7 +24,7 @@ describe("Email Service Suite", () => {
   });
 
   afterAll(async () => {
-    // await closeTestsConnection();
+    //await closeTestsConnection();
   });
 
   it("should instantiate the Email service", () => {
@@ -51,6 +51,7 @@ describe("Email Service Suite", () => {
       innovator_name: "Innovator Name 1",
       innovation_name: "The Innovation",
       action_url: "https://example.com/action_1",
+      test: "gdgjkfd",
     };
 
     const actual = await emailService.sendMany(
