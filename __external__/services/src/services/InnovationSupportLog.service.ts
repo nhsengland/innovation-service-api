@@ -1,9 +1,11 @@
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
+  Activity,
   Innovation,
   InnovationSupportLog,
   InnovationSupportLogType,
   InnovationSupportStatus,
+  OrganisationUnit,
 } from "@domain/index";
 import {
   InnovationNotFoundError,
@@ -14,7 +16,8 @@ import {
 import { checkIfValidUUID } from "@services/helpers";
 import { InnovationSupportLogModel } from "@services/models/InnovationSupportLogModel";
 import { RequestUser } from "@services/models/RequestUser";
-import { getConnection, getRepository, Repository } from "typeorm";
+import { Connection, getConnection, getRepository, Repository } from "typeorm";
+import { ActivityLogService } from "./ActivityLog.service";
 import { InnovationService } from "./Innovation.service";
 import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
@@ -22,21 +25,26 @@ import { OrganisationService } from "./Organisation.service";
 import { UserService } from "./User.service";
 
 export class InnovationSupportLogService {
+  private readonly connection: Connection;
   private readonly supportLogRepo: Repository<InnovationSupportLog>;
   private readonly innovationService: InnovationService;
   private readonly userService: UserService;
   private readonly organisationService: OrganisationService;
   private readonly notificationService: NotificationService;
   private readonly loggerService: LoggerService;
+  private readonly activityLogService: ActivityLogService;
+  private readonly organisationUnitRepo: Repository<OrganisationUnit>;
 
   constructor(connectionName?: string) {
-    getConnection(connectionName);
+    this.connection = getConnection(connectionName);
     this.supportLogRepo = getRepository(InnovationSupportLog, connectionName);
     this.innovationService = new InnovationService(connectionName);
     this.userService = new UserService(connectionName);
     this.organisationService = new OrganisationService(connectionName);
     this.notificationService = new NotificationService(connectionName);
     this.loggerService = new LoggerService();
+    this.activityLogService = new ActivityLogService(connectionName);
+    this.organisationUnitRepo = getRepository(OrganisationUnit, connectionName);
   }
 
   async create(
@@ -117,7 +125,40 @@ export class InnovationSupportLogService {
       updatedBy: requestUser.id,
     });
 
-    const result = await this.supportLogRepo.save(supportLogObj);
+    const result = await this.connection.transaction(async (trs) => {
+      const supportLogResult = await trs.save(supportLogObj);
+      if (
+        supportLog.type === InnovationSupportLogType.ACCESSOR_SUGGESTION &&
+        supportLog?.organisationUnits &&
+        supportLog?.organisationUnits.length > 0
+      ) {
+        const orgUnits = await this.organisationUnitRepo.findByIds(
+          supportLog?.organisationUnits
+        );
+
+        try {
+          await this.activityLogService.createLog(
+            requestUser,
+            innovation,
+            Activity.ORGANISATION_SUGGESTION,
+            trs,
+            {
+              organisations: orgUnits.map((ou) => ou.name),
+            }
+          );
+        } catch (error) {
+          this.loggerService.error(
+            `An error has occured while creating activity log from ${requestUser.id}`,
+            error
+          );
+
+          throw error;
+        }
+      }
+
+      return supportLogResult;
+    });
+
     if (supportLog.type === InnovationSupportLogType.ACCESSOR_SUGGESTION) {
       const targetUsers = await this.organisationService.findQualifyingAccessorsFromUnits(
         supportLog?.organisationUnits,
