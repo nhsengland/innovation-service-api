@@ -202,7 +202,7 @@ export class ActivityLogService extends BaseService<ActivityLog> {
       where: {},
       skip,
       take,
-      order: order || { date: "ASC" },
+      order: order || { createdAt: "ASC" },
     };
 
     filterOptions.where = `innovation_id = '${innovationId}'`;

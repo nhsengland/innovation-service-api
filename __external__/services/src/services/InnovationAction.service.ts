@@ -9,6 +9,7 @@ import {
   InnovationSupport,
   NotificationAudience,
   NotificationContextType,
+  UserType,
 } from "@domain/index";
 import {
   InnovationNotFoundError,
@@ -528,9 +529,16 @@ export class InnovationActionService {
     innovationId: string,
     action: any
   ) {
+    const innovation = await this.innovationService.find(innovationId);
+    if (!innovation) {
+      throw new InnovationNotFoundError(
+        `The Innovation with id ${innovationId} was not found.`
+      );
+    }
     return await this.connection.transaction(async (transactionManager) => {
+      let comment;
       if (action.comment) {
-        const comment = Comment.new({
+        comment = Comment.new({
           user: { id: requestUser.id },
           innovation: { id: innovationId },
           message: action.comment,
@@ -546,6 +554,51 @@ export class InnovationActionService {
 
       innovationAction.status = action.status;
       innovationAction.updatedBy = requestUser.id;
+
+      if (action.status === InnovationActionStatus.DECLINED) {
+        try {
+          await this.activityLogService.createLog(
+            requestUser,
+            innovation,
+            Activity.ACTION_STATUS_DECLINED_UPDATE,
+            transactionManager,
+            {
+              actionId: innovationAction.id,
+              interveningUserId: innovationAction.createdBy,
+              commentId: comment?.id,
+              commentValue: comment?.message,
+            }
+          );
+        } catch (error) {
+          this.logService.error(
+            `An error has occured while creating activity log from ${requestUser.id}`,
+            error
+          );
+          throw error;
+        }
+      } else {
+        if (action.status === InnovationActionStatus.COMPLETED) {
+          try {
+            await this.activityLogService.createLog(
+              requestUser,
+              innovation,
+              Activity.ACTION_STATUS_COMPLETED_UPDATE,
+              transactionManager,
+              {
+                actionId: innovationAction.id,
+                commentId: comment?.id,
+                commentValue: comment?.message,
+              }
+            );
+          } catch (error) {
+            this.logService.error(
+              `An error has occured while creating activity log from ${requestUser.id}`,
+              error
+            );
+            throw error;
+          }
+        }
+      }
 
       return await transactionManager.save(InnovationAction, innovationAction);
     });

@@ -28,7 +28,7 @@ import { closeTestsConnection, setupTestsConnection } from "..";
 import { InnovationSupportLogService } from "../services/InnovationSupportLog.service";
 import * as fixtures from "../__fixtures__";
 
-describe("Innovation Support Suite", () => {
+describe("Innovation Suggestion Suite", () => {
   let suggestionService: InnovationSuggestionService;
   let supportLogService: InnovationSupportLogService;
   let innovation: Innovation;
@@ -123,20 +123,10 @@ describe("Innovation Support Suite", () => {
     const query = getConnection(process.env.DB_TESTS_NAME)
       .createQueryBuilder()
       .delete();
-
-    await query.from(ActivityLog).execute();
-    await query.from(NotificationUser).execute();
-    await query.from(Notification).execute();
-    await query.from(Comment).execute();
-    await query.from(InnovationAction).execute();
-    await query.from(InnovationSection).execute();
-    await query.from(InnovationSupport).execute();
     await query.from(OrganisationUnitUser).execute();
     await query.from(OrganisationUnit).execute();
     await query.from(OrganisationUser).execute();
     await query.from(Organisation).execute();
-    await query.from(InnovationAssessment).execute();
-    await query.from(Innovation).execute();
     await query.from(User).execute();
 
     // closeTestsConnection();
@@ -149,6 +139,14 @@ describe("Innovation Support Suite", () => {
 
     await query.from(ActivityLog).execute();
     await query.from(InnovationSupportLog).execute();
+    await query.from(NotificationUser).execute();
+    await query.from(Notification).execute();
+    await query.from(Comment).execute();
+    await query.from(InnovationAssessment).execute();
+    await query.from(InnovationAction).execute();
+    await query.from(InnovationSection).execute();
+    await query.from(InnovationSupport).execute();
+    await query.from(Innovation).execute();
   });
 
   it("should find all suggestions by innovation with supports", async () => {

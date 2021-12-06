@@ -423,26 +423,6 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
             });
 
             await transactionManager.save(InnovationSection, innovSectionObj);
-            if (innovation.status != InnovationStatus.CREATED) {
-              try {
-                await this.activityLogService.createLog(
-                  requestUser,
-                  innovation,
-                  Activity.SECTION_SUBMISSION,
-                  transactionManager,
-                  {
-                    sectionId: InnovationSectionCatalogue[secKey],
-                  }
-                );
-              } catch (error) {
-                this.logService.error(
-                  `An error has occured while creating activity log from ${requestUser.id}`,
-                  error
-                );
-
-                throw error;
-              }
-            }
           } else {
             const innovationActions = await innovSections[secIdx].actions;
             const actions = innovationActions.filter(
@@ -481,6 +461,28 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
                   transactionManager,
                   {
                     sectionId: innovSections[secIdx].section,
+                  }
+                );
+              } catch (error) {
+                this.logService.error(
+                  `An error has occured while creating activity log from ${requestUser.id}`,
+                  error
+                );
+
+                throw error;
+              }
+            }
+
+            if (updatedActions && updatedActions.length > 0) {
+              try {
+                await this.activityLogService.createLog(
+                  requestUser,
+                  innovation,
+                  Activity.ACTION_STATUS_IN_REVIEW_UPDATE,
+                  transactionManager,
+                  {
+                    totalActions: updatedActions.length,
+                    sectionId: secKey,
                   }
                 );
               } catch (error) {

@@ -64,7 +64,7 @@ import * as constants from "../../../../utils/constants";
 import { InnovationCreationModel } from "@services/models/InnovationCreationModel";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import { OrderByClauseType, SupportFilter } from "@services/types";
-import { Activity, ActivityType } from "@domain/enums/activity.enums";
+import { Activity } from "@domain/enums/activity.enums";
 import { ActivityLogService } from "./ActivityLog.service";
 
 export class InnovationService extends BaseService<Innovation> {
@@ -74,6 +74,7 @@ export class InnovationService extends BaseService<Innovation> {
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
   private readonly activityLogService: ActivityLogService;
+  private readonly organisationRepo: Repository<Organisation>;
 
   constructor(connectionName?: string) {
     super(Innovation, connectionName);
@@ -84,6 +85,7 @@ export class InnovationService extends BaseService<Innovation> {
     this.supportRepo = getRepository(InnovationSupport, connectionName);
     this.activityLogService = new ActivityLogService(connectionName);
     this.logService = new LoggerService();
+    this.organisationRepo = getRepository(Organisation, connectionName);
   }
 
   async createInnovation(
@@ -1167,6 +1169,7 @@ export class InnovationService extends BaseService<Innovation> {
       status: InnovationStatus.ARCHIVED,
     };
   }
+
   async archiveInnovation(
     requestUser: RequestUser,
     id: string,
@@ -1402,6 +1405,29 @@ export class InnovationService extends BaseService<Innovation> {
       innovation.organisationShares = organisations.map((id: string) =>
         Organisation.new({ id })
       );
+
+      const orgs = await this.organisationRepo.findByIds(
+        innovation.organisationShares.map((org) => org.id)
+      );
+
+      try {
+        await this.createActivityLog(
+          requestUser,
+          innovation,
+          Activity.SHARING_PREFERENCES_UPDATE,
+          transactionManager,
+          {
+            organisations: orgs.map((org) => org.name),
+          }
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while creating activity log from ${requestUser.id}`,
+          error
+        );
+
+        throw error;
+      }
 
       return await transactionManager.save(Innovation, innovation);
     });
