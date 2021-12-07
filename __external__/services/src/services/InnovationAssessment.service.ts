@@ -113,7 +113,7 @@ export class InnovationAssessmentService {
       summary: assessment.summary,
       finishedAt: assessment.finishedAt,
       maturityLevel: assessment.maturityLevel,
-      maturitylevelcomment: assessment.maturitylevelcomment,
+      maturityLevelComment: assessment.maturityLevelComment,
       hasRegulatoryApprovals: assessment.hasRegulatoryApprovals,
       hasRegulatoryApprovalsComment: assessment.hasRegulatoryApprovalsComment,
       hasEvidence: assessment.hasEvidence,

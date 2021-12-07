@@ -42,7 +42,7 @@ export class InnovationAssessment extends Base {
     nullable: true,
     length: 150,
   })
-  maturitylevelcomment: string;
+  maturityLevelComment: string;
 
   @Column({ name: "finished_at", nullable: true })
   finishedAt: Date;
