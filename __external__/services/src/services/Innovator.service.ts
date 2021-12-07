@@ -95,7 +95,6 @@ export class InnovatorService extends BaseService<User> {
         innovation: _innovation,
       };
 
-      await this.sendEmail(innovator);
       await queryRunner.commitTransaction();
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -104,6 +103,7 @@ export class InnovatorService extends BaseService<User> {
       await queryRunner.release();
     }
 
+    await this.sendEmail(innovator);
     return result;
   }
 
