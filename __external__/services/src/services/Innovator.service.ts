@@ -16,6 +16,7 @@ import { TransactionResult } from "../models/InnovatorTransactionResult";
 import { BaseService } from "./Base.service";
 import { InnovationService } from "./Innovation.service";
 import { InnovationTransferService } from "./InnovationTransfer.service";
+import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
 import { UserService } from "./User.service";
 
@@ -25,6 +26,7 @@ export class InnovatorService extends BaseService<User> {
   private readonly innovationService: InnovationService;
   private readonly userService: UserService;
   private readonly notificationService: NotificationService;
+  private readonly logService: LoggerService;
 
   constructor(connectionName?: string) {
     super(User, connectionName);
@@ -35,6 +37,7 @@ export class InnovatorService extends BaseService<User> {
     this.innovationService = new InnovationService(connectionName);
     this.userService = new UserService(connectionName);
     this.notificationService = new NotificationService(connectionName);
+    this.logService = new LoggerService();
   }
 
   async create(user: User): Promise<User> {
@@ -113,16 +116,24 @@ export class InnovatorService extends BaseService<User> {
       type: UserType.INNOVATOR,
     };
 
-    await this.notificationService.sendEmail(
-      requestUser,
-      EmailNotificationTemplate.INNOVATORS_ACCOUNT_CREATED,
-      null,
-      innovator.id,
-      [innovator.id],
-      {
-        innovation_service_url: process.env.CLIENT_WEB_BASE_URL,
-      }
-    );
+    try {
+      await this.notificationService.sendEmail(
+        requestUser,
+        EmailNotificationTemplate.INNOVATORS_ACCOUNT_CREATED,
+        null,
+        innovator.id,
+        [innovator.id],
+        {
+          innovation_service_url: process.env.CLIENT_WEB_BASE_URL,
+        }
+      );
+    }
+    catch (error) {
+      this.logService.error(
+        `An error has occured while sending an email with the template ${EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_SUBMITED}.`,
+        error
+      );
+    }
   }
 
   async createFirstTimeSignInTransfer(
