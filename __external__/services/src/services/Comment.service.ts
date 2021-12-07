@@ -98,23 +98,25 @@ export class CommentService {
         );
       }
       const comment = await trs.save(Comment, commentObj);
-      try {
-        await this.activityLogService.createLog(
-          requestUser,
-          innovation,
-          Activity.COMMENT_CREATION,
-          trs,
-          {
-            commentId: comment.id,
-            commentValue: comment.message,
-          }
-        );
-      } catch (error) {
-        this.logService.error(
-          `An error has occured while creating activity log from ${requestUser.id}`,
-          error
-        );
-        throw error;
+      if (comment.replyTo === null) {
+        try {
+          await this.activityLogService.createLog(
+            requestUser,
+            innovation,
+            Activity.COMMENT_CREATION,
+            trs,
+            {
+              commentId: comment.id,
+              commentValue: comment.message,
+            }
+          );
+        } catch (error) {
+          this.logService.error(
+            `An error has occured while creating activity log from ${requestUser.id}`,
+            error
+          );
+          throw error;
+        }
       }
 
       return comment;
