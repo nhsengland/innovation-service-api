@@ -16,7 +16,7 @@ const payloadSchema = Joi.object({
     .allow("")
     .optional(),
   maturityLevel: Joi.string().allow(null).allow("").optional(),
-  maturitylevelcomment: Joi.string().allow(null).allow("").optional(),
+  maturityLevelComment: Joi.string().allow(null).allow("").optional(),
   hasRegulatoryApprovals: Joi.string().allow(null).allow("").optional(),
   hasRegulatoryApprovalsComment: Joi.string().allow(null).allow("").optional(),
   hasEvidence: Joi.string().allow(null).allow("").optional(),
