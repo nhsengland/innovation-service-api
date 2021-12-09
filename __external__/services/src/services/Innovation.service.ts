@@ -1104,21 +1104,7 @@ export class InnovationService extends BaseService<Innovation> {
     supports: any[]
   ) {
     // Update all supports and DECLINE all open actions
-    const supportUsers = [];
     for (let orgSupIdx = 0; orgSupIdx < supports.length; orgSupIdx++) {
-      const organisationUnitUsers = supports[orgSupIdx].organisationUnitUsers;
-      if (organisationUnitUsers && organisationUnitUsers.length > 0) {
-        for (
-          let userIdx = 0;
-          userIdx < organisationUnitUsers.length;
-          userIdx++
-        ) {
-          supportUsers.push(
-            organisationUnitUsers[userIdx].organisationUser.user.id
-          );
-        }
-      }
-
       const innovationSupport = supports[orgSupIdx];
       innovationSupport.organisationUnitUsers = [];
       const innovationActions = await innovationSupport.actions;
@@ -1150,19 +1136,6 @@ export class InnovationService extends BaseService<Innovation> {
     innovation.archiveReason = reason;
     innovation.deletedAt = new Date();
     await transactionManager.save(Innovation, innovation);
-
-    if (supportUsers && supportUsers.length > 0) {
-      await this.notificationService.sendEmail(
-        requestUser,
-        EmailNotificationTemplate.ACCESSORS_INNOVATION_ARCHIVAL_UPDATE,
-        innovation.id,
-        innovation.id,
-        supportUsers,
-        {
-          innovation_name: innovation.name,
-        }
-      );
-    }
 
     return {
       id: innovation.id,
@@ -1198,8 +1171,26 @@ export class InnovationService extends BaseService<Innovation> {
       throw new InnovationNotFoundError("Innovation not found for the user.");
     }
     const supports = innovation.innovationSupports;
+
+    const supportUsers = [];
+    for (let orgSupIdx = 0; orgSupIdx < supports.length; orgSupIdx++) {
+      const organisationUnitUsers = supports[orgSupIdx].organisationUnitUsers;
+      if (organisationUnitUsers && organisationUnitUsers.length > 0) {
+        for (
+          let userIdx = 0;
+          userIdx < organisationUnitUsers.length;
+          userIdx++
+        ) {
+          supportUsers.push(
+            organisationUnitUsers[userIdx].organisationUser.user.id
+          );
+        }
+      }
+    }
+
+    let result;
     if (transactionManager) {
-      return await this.archiveInnovationTransaction(
+      result = await this.archiveInnovationTransaction(
         transactionManager,
         requestUser,
         innovation,
@@ -1207,7 +1198,7 @@ export class InnovationService extends BaseService<Innovation> {
         supports
       );
     } else {
-      return await this.connection.transaction(async (transactionManager) => {
+      result = await this.connection.transaction(async (transactionManager) => {
         return this.archiveInnovationTransaction(
           transactionManager,
           requestUser,
@@ -1217,6 +1208,27 @@ export class InnovationService extends BaseService<Innovation> {
         );
       });
     }
+
+    if (supportUsers && supportUsers.length > 0) {
+      try {
+        await this.notificationService.sendEmail(
+          requestUser,
+          EmailNotificationTemplate.ACCESSORS_INNOVATION_ARCHIVAL_UPDATE,
+          innovation.id,
+          innovation.id,
+          supportUsers,
+          {
+            innovation_name: innovation.name,
+          }
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while sending an email with the template ${EmailNotificationTemplate.ACCESSORS_INNOVATION_ARCHIVAL_UPDATE}.`,
+          error
+        );
+      }
+    }
+    return result;
   }
 
   async getOrganisationUnitShares(

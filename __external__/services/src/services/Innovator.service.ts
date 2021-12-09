@@ -127,10 +127,9 @@ export class InnovatorService extends BaseService<User> {
           innovation_service_url: process.env.CLIENT_WEB_BASE_URL,
         }
       );
-    }
-    catch (error) {
+    } catch (error) {
       this.logService.error(
-        `An error has occured while sending an email with the template ${EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_SUBMITED}.`,
+        `An error has occured while sending an email with the template ${EmailNotificationTemplate.INNOVATORS_ACCOUNT_CREATED}.`,
         error
       );
     }
