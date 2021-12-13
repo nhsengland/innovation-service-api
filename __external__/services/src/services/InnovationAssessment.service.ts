@@ -38,6 +38,7 @@ export class InnovationAssessmentService {
   private readonly logService: LoggerService;
   private readonly organisationService: OrganisationService;
   private readonly activityLogService: ActivityLogService;
+  private readonly organisationUnitRepo: Repository<OrganisationUnit>;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -48,6 +49,7 @@ export class InnovationAssessmentService {
     this.logService = new LoggerService();
     this.organisationService = new OrganisationService(connectionName);
     this.activityLogService = new ActivityLogService(connectionName);
+    this.organisationUnitRepo = getRepository(OrganisationUnit, connectionName);
   }
 
   async find(
@@ -111,6 +113,7 @@ export class InnovationAssessmentService {
       summary: assessment.summary,
       finishedAt: assessment.finishedAt,
       maturityLevel: assessment.maturityLevel,
+      maturityLevelComment: assessment.maturityLevelComment,
       hasRegulatoryApprovals: assessment.hasRegulatoryApprovals,
       hasRegulatoryApprovalsComment: assessment.hasRegulatoryApprovalsComment,
       hasEvidence: assessment.hasEvidence,
@@ -278,6 +281,34 @@ export class InnovationAssessmentService {
               transactionManager,
               {
                 assessmentId: assessmentTrs.id,
+              }
+            );
+          } catch (error) {
+            this.logService.error(
+              `An error has occured while creating activity log from ${requestUser.id}`,
+              error
+            );
+
+            throw error;
+          }
+        }
+
+        if (
+          suggestedOrganisationUnits &&
+          suggestedOrganisationUnits.length > 0
+        ) {
+          const orgUnits = await this.organisationUnitRepo.findByIds(
+            suggestedOrganisationUnits.map((ou) => ou.id)
+          );
+
+          try {
+            await this.activityLogService.createLog(
+              requestUser,
+              innovation,
+              Activity.ORGANISATION_SUGGESTION,
+              transactionManager,
+              {
+                organisations: orgUnits.map((ou) => ou.name),
               }
             );
           } catch (error) {

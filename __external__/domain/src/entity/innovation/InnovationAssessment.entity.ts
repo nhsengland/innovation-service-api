@@ -36,6 +36,14 @@ export class InnovationAssessment extends Base {
   })
   maturityLevel: MaturityLevelCatalogue;
 
+  @Column({
+    name: "maturity_level_comment",
+    type: "nvarchar",
+    nullable: true,
+    length: 150,
+  })
+  maturityLevelComment: string;
+
   @Column({ name: "finished_at", nullable: true })
   finishedAt: Date;
 

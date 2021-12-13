@@ -5,6 +5,7 @@ export interface InnovationAssessmentResult {
   description: string;
   summary?: string;
   maturityLevel?: string;
+  maturityLevelComment?: string;
   hasRegulatoryApprovals?: string;
   hasRegulatoryApprovalsComment?: string;
   hasEvidence?: string;
