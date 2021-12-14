@@ -3,6 +3,10 @@ import { MigrationInterface, QueryRunner } from "typeorm";
 export class migrateSupportLogToActivityLog1638966930402
   implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    //Update createdBy to userId for comments where createdBy is null
+    await queryRunner.query(
+      `UPDATE [dbo].[comment] set created_by = user_id, updated_by = user_id where created_by IS NULL`
+    );
 
     // Move Activity log data into a temp table
     await queryRunner.query(
@@ -130,20 +134,14 @@ export class migrateSupportLogToActivityLog1638966930402
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`DELETE FROM dbo.activity_log;`);
 
-    await queryRunner.query(
-      `DELETE FROM dbo.activity_log;`
-    );
-    
     await queryRunner.query(
       `INSERT INTO dbo.activity_log 
       SELECT created_at, created_by, updated_at, updated_by, deleted_at, id, innovation_id, type, activity, param  from #TempAcitivityLog
       `
     );
 
-    await queryRunner.query(
-      `DROP TABLE IF EXISTS  #TempAcitivityLog`
-    );
-
+    await queryRunner.query(`DROP TABLE IF EXISTS  #TempAcitivityLog`);
   }
 }
