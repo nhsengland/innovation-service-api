@@ -27,13 +27,10 @@ export class loadInitialServiceRoles1639572757510 extends BaseSeed {
     // Seed roles
     const roles = [
       {
-        name: "Super Admin",
+        name: "ADMIN",
       },
       {
-        name: "Admin",
-      },
-      {
-        name: "Service Team",
+        name: "SERVICE_TEAM",
       },
     ];
 

@@ -22,37 +22,37 @@ export class createServiceRoleTables1639563073826
     );
 
     await queryRunner.query(`
-        CREATE TABLE "role" (
-            "created_at" datetime2 NOT NULL CONSTRAINT "df_role_created_at" DEFAULT getdate(), 
-            "created_by" nvarchar(255), 
-            "updated_at" datetime2 NOT NULL CONSTRAINT "df_role_updated_at" DEFAULT getdate(), 
-            "updated_by" nvarchar(255),
-            "deleted_at" datetime2,
-            "id" uniqueidentifier NOT NULL CONSTRAINT "df_role_id" DEFAULT NEWSEQUENTIALID(),
-            "name" nvarchar(100) NOT NULL,
-            CONSTRAINT "pk_role_id" PRIMARY KEY ("id")
-			)
-        `);
-
-    await queryRunner.query(`
         CREATE TABLE "service_role" (
             "created_at" datetime2 NOT NULL CONSTRAINT "df_service_role_created_at" DEFAULT getdate(), 
             "created_by" nvarchar(255), 
             "updated_at" datetime2 NOT NULL CONSTRAINT "df_service_role_updated_at" DEFAULT getdate(), 
             "updated_by" nvarchar(255),
             "deleted_at" datetime2,
-			      "id" uniqueidentifier NOT NULL CONSTRAINT "df_service_role_id" DEFAULT NEWSEQUENTIALID(),
-            "user_id" nvarchar(255) NOT NULL,
-            "role_id" uniqueidentifier NOT NULL,
-			"active_since" datetime2 NOT NULL CONSTRAINT "df_service_role_active_since" DEFAULT getdate(), 
-            CONSTRAINT "pk_service_role_id" PRIMARY KEY ("id"),
-			CONSTRAINT "idx_service_role_user_id_role_id" UNIQUE ("user_id", "role_id")
+            "id" uniqueidentifier NOT NULL CONSTRAINT "df_service_role_id" DEFAULT NEWSEQUENTIALID(),
+            "name" nvarchar(100) NOT NULL,
+            CONSTRAINT "pk_service_role_id" PRIMARY KEY ("id")
 			)
         `);
 
     await queryRunner.query(`
-        ALTER TABLE "service_role" ADD CONSTRAINT "fk_service_role_user_user_id" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
-        ALTER TABLE "service_role" ADD CONSTRAINT "fk_service_role_role_role_id" FOREIGN KEY ("role_id") REFERENCES "role"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+        CREATE TABLE "user_role" (
+            "created_at" datetime2 NOT NULL CONSTRAINT "df_user_role_created_at" DEFAULT getdate(), 
+            "created_by" nvarchar(255), 
+            "updated_at" datetime2 NOT NULL CONSTRAINT "df_user_role_updated_at" DEFAULT getdate(), 
+            "updated_by" nvarchar(255),
+            "deleted_at" datetime2,
+			      "id" uniqueidentifier NOT NULL CONSTRAINT "df_user_role_id" DEFAULT NEWSEQUENTIALID(),
+            "user_id" nvarchar(255) NOT NULL,
+            "role_id" uniqueidentifier NOT NULL,
+			      "active_since" datetime2 NOT NULL CONSTRAINT "df_user_role_active_since" DEFAULT getdate(), 
+            CONSTRAINT "pk_user_role_id" PRIMARY KEY ("id"),
+			CONSTRAINT "idx_user_role_user_id_role_id" UNIQUE ("user_id", "role_id")
+			)
+        `);
+
+    await queryRunner.query(`
+        ALTER TABLE "user_role" ADD CONSTRAINT "fk_user_role_user_user_id" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+        ALTER TABLE "user_role" ADD CONSTRAINT "fk_user_role_role_role_id" FOREIGN KEY ("role_id") REFERENCES "role"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
         `);
   }
 
@@ -66,15 +66,15 @@ export class createServiceRoleTables1639563073826
     );
 
     await queryRunner.query(
-      `ALTER TABLE "service_role" DROP CONSTRAINT "fk_service_role_user_user_id"`
+      `ALTER TABLE "user_role" DROP CONSTRAINT "fk_user_role_user_user_id"`
     );
 
     await queryRunner.query(
-      `ALTER TABLE "service_role" DROP CONSTRAINT "fk_service_role_role_role_id"`
+      `ALTER TABLE "user_role" DROP CONSTRAINT "fk_user_role_role_role_id"`
     );
 
-    await queryRunner.query(`DROP TABLE "service_role"`);
+    await queryRunner.query(`DROP TABLE "user_role"`);
 
-    await queryRunner.query(`DROP TABLE "role"`);
+    await queryRunner.query(`DROP TABLE "service_role"`);
   }
 }
