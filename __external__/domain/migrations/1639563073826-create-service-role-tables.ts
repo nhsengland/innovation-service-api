@@ -23,6 +23,11 @@ export class createServiceRoleTables1639563073826
 
     await queryRunner.query(`
         CREATE TABLE "role" (
+            "created_at" datetime2 NOT NULL CONSTRAINT "df_role_created_at" DEFAULT getdate(), 
+            "created_by" nvarchar(255), 
+            "updated_at" datetime2 NOT NULL CONSTRAINT "df_role_updated_at" DEFAULT getdate(), 
+            "updated_by" nvarchar(255),
+            "deleted_at" datetime2,
             "id" uniqueidentifier NOT NULL CONSTRAINT "df_role_id" DEFAULT NEWSEQUENTIALID(),
             "name" nvarchar(100) NOT NULL,
             CONSTRAINT "pk_role_id" PRIMARY KEY ("id")
@@ -36,7 +41,7 @@ export class createServiceRoleTables1639563073826
             "updated_at" datetime2 NOT NULL CONSTRAINT "df_service_role_updated_at" DEFAULT getdate(), 
             "updated_by" nvarchar(255),
             "deleted_at" datetime2,
-			"id" uniqueidentifier NOT NULL CONSTRAINT "df_service_role_id" DEFAULT NEWSEQUENTIALID(),
+			      "id" uniqueidentifier NOT NULL CONSTRAINT "df_service_role_id" DEFAULT NEWSEQUENTIALID(),
             "user_id" nvarchar(255) NOT NULL,
             "role_id" uniqueidentifier NOT NULL,
 			"active_since" datetime2 NOT NULL CONSTRAINT "df_service_role_active_since" DEFAULT getdate(), 
