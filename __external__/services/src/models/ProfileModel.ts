@@ -9,4 +9,5 @@ export interface ProfileModel {
   email?: string;
   phone?: string;
   passwordResetOn?: string;
+  roles?: string[];
 }

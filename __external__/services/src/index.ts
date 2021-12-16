@@ -90,6 +90,8 @@ export {
   OrganisationUserRole,
   UserType,
   ActivityLog,
+  UserRole,
+  Role,
 } from "@domain/index";
 
 const getDefaultConnection = (): ConnectionOptions => ({
