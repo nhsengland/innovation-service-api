@@ -32,7 +32,7 @@ export { Notification } from "./entity/user/Notification.entity";
 export { NotificationUser } from "./entity/user/NotificationUser.entity";
 export { NotificationPreference } from "./entity/user/NotificationPreference.entity";
 export { User } from "./entity/user/User.entity";
-export { ServiceRole } from "./entity/user/ServiceRole.entity";
+export { Role } from "./entity/user/Role.entity";
 export { UserRole } from "./entity/user/UserRole.entity";
 
 export * from "./enums/catalog.enums";

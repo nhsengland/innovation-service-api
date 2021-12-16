@@ -1,4 +1,4 @@
-import { User, ServiceRole } from "@domain/index";
+import { User, Role } from "@domain/index";
 import {
   Column,
   Entity,
@@ -19,9 +19,9 @@ export class UserRole extends Base {
   activeSince: Date;
 
   //relationships
-  @OneToOne(() => ServiceRole, { nullable: false, primary: true })
+  @OneToOne(() => Role, { nullable: false, primary: true })
   @JoinColumn({ name: "role_id" })
-  role: ServiceRole;
+  role: Role;
 
   @ManyToOne(() => User, { nullable: false, primary: true })
   @JoinColumn({ name: "user_id" })

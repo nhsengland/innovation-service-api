@@ -1,6 +1,6 @@
 /*eslint @typescript-eslint/no-unused-vars: ["off", { "varsIgnorePattern": "[qQ]ueryRunner" }]*/
 
-import { ServiceRole, UserRole, User, UserType } from "@domain/index";
+import { Role, UserRole, User, UserType } from "@domain/index";
 import { QueryRunner } from "typeorm";
 
 import { BaseSeed } from "../tools/bases/base-seed";
@@ -12,7 +12,7 @@ export class loadInitialServiceRoles1639572757510 extends BaseSeed {
     const adminUserId = process.env.ADMIN_OID;
     const userRepo = this.getRepository(User);
     const userRoleRepo = this.getRepository(UserRole);
-    const serviceRoleRepo = this.getRepository(ServiceRole);
+    const roleRepo = this.getRepository(Role);
 
     // Add admin user
     const userObj = User.new({
@@ -37,13 +37,13 @@ export class loadInitialServiceRoles1639572757510 extends BaseSeed {
     for (let roleIdx = 0; roleIdx < roles.length; roleIdx++) {
       const curr = roles[roleIdx];
 
-      const roleObj = ServiceRole.new({
+      const roleObj = Role.new({
         name: curr.name,
         createdBy: "seed",
         updatedBy: "seed",
       });
 
-      await serviceRoleRepo.save(roleObj);
+      await roleRepo.save(roleObj);
     }
 
     // Assign service roles to Admin User
@@ -67,6 +67,6 @@ export class loadInitialServiceRoles1639572757510 extends BaseSeed {
     const query = this.getConnection().createQueryBuilder().delete();
 
     await query.from(UserRole).execute();
-    await query.from(ServiceRole).execute();
+    await query.from(Role).execute();
   }
 }

@@ -1,8 +1,8 @@
 import { Column, Entity, PrimaryColumn } from "typeorm";
 import { Base } from "../Base.entity";
 
-@Entity("service_role")
-export class ServiceRole extends Base {
+@Entity("role")
+export class Role extends Base {
   //columns
   @PrimaryColumn({ nullable: false })
   id: string;
@@ -12,7 +12,7 @@ export class ServiceRole extends Base {
 
   //static constructor
   static new(data) {
-    const newObj = new ServiceRole();
+    const newObj = new Role();
     Object.keys(data).forEach((key) => {
       newObj[key] = data[key];
     });
