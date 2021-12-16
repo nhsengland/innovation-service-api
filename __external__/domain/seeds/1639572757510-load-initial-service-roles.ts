@@ -47,7 +47,7 @@ export class loadInitialServiceRoles1639572757510 extends BaseSeed {
     }
 
     // Assign service roles to Admin User
-    const userRoles = await userRoleRepo.find();
+    const userRoles = await roleRepo.find();
 
     for (let roleIdx = 0; roleIdx < userRoles.length; roleIdx++) {
       const curr = userRoles[roleIdx];
