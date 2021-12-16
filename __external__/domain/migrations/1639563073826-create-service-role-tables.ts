@@ -46,13 +46,13 @@ export class createServiceRoleTables1639563073826
             "role_id" uniqueidentifier NOT NULL,
 			      "active_since" datetime2 NOT NULL CONSTRAINT "df_user_role_active_since" DEFAULT getdate(), 
             CONSTRAINT "pk_user_role_id" PRIMARY KEY ("id"),
-			CONSTRAINT "idx_user_role_user_id_role_id" UNIQUE ("user_id", "role_id")
+			      CONSTRAINT "idx_user_role_user_id_role_id" UNIQUE ("user_id", "role_id")
 			)
         `);
 
     await queryRunner.query(`
         ALTER TABLE "user_role" ADD CONSTRAINT "fk_user_role_user_user_id" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
-        ALTER TABLE "user_role" ADD CONSTRAINT "fk_user_role_role_role_id" FOREIGN KEY ("role_id") REFERENCES "role"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+        ALTER TABLE "user_role" ADD CONSTRAINT "fk_user_role_role_role_id" FOREIGN KEY ("role_id") REFERENCES "service_role"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
         `);
   }
 
