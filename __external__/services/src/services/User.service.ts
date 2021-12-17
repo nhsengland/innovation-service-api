@@ -191,14 +191,12 @@ export class UserService {
           });
         }
 
-        const abc = await this.userRoleRepo.find({ relations: ["user"] });
         const userRoles: UserRole[] = await this.userRoleRepo.find({
           relations: ["user", "role"],
-          where: { user: id}
+          where: { user: id },
         });
 
-        profile.roles = userRoles.map((ur) => ur.role.name);
-
+        profile.roles = userRoles?.map((ur) => ur.role.name);
       }
     } catch (error) {
       throw error;

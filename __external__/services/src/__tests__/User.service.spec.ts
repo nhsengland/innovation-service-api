@@ -13,6 +13,7 @@ import {
   OrganisationUser,
   User,
   UserType,
+  UserRole,
 } from "@domain/index";
 import {
   InvalidDataError,
@@ -576,5 +577,55 @@ describe("User Service Suite", () => {
     expect(err).toBeDefined();
     expect(err.message.toLocaleLowerCase()).toBe("error updating user.");
     expect(actual).toBeUndefined();
+  });
+
+  it("should retrieve user profile with roles", async () => {
+    // Arrange
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue("access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
+      displayName: "Admin User",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "test_user@example.com",
+        },
+      ],
+      mobilePhone: "+351960000000",
+    });
+    jest
+      .spyOn(getRepository(User, process.env.DB_TESTS_NAME), "findOne")
+      .mockResolvedValue({
+        type: UserType.ADMIN,
+        userOrganisations: [],
+      } as any);
+
+    jest
+      .spyOn(getRepository(UserRole, process.env.DB_TESTS_NAME), "find")
+      .mockResolvedValue([
+        {
+          role: { name: ":role1" },
+        },
+        {
+          role: { name: ":role2" },
+        },
+      ] as any);
+
+    const adminUser = await fixtures.createAdminUser();
+
+    let actual: ProfileModel;
+    let err;
+
+    // Act
+    try {
+      actual = await userService.getProfile(adminUser.id);
+    } catch (error) {
+      err = error;
+    }
+
+    // Assert
+    expect(err).toBeUndefined();
+    expect(actual.roles.length).toBeGreaterThan(0);
   });
 });
