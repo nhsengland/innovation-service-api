@@ -1,10 +1,10 @@
-import { Column, Entity, PrimaryColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { Base } from "../Base.entity";
 
 @Entity("role")
 export class Role extends Base {
   //columns
-  @PrimaryColumn({ nullable: false })
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column({ name: "name", type: "nvarchar", length: 100, nullable: false })
