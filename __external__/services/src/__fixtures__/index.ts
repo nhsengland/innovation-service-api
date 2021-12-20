@@ -137,6 +137,14 @@ export const createAssessmentUser = async (lockedAt?: Date) => {
   return await userService.create(usr);
 };
 
+export const createAdminUser = async () => {
+  const admin = new User();
+  const userService = new UserService(process.env.DB_TESTS_NAME);
+  admin.type = UserType.ADMIN;
+  admin.id = uuid.v4();
+  return await userService.create(admin);
+};
+
 // ****************************
 // Organisation
 // ****************************
