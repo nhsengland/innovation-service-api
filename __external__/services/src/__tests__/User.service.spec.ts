@@ -88,8 +88,6 @@ describe("User Service Suite", () => {
     await query.from(NotificationPreference).execute();
     await query.from(OrganisationUnitUser).execute();
     await query.from(OrganisationUser).execute();
-    await query.from(UserRole).execute();
-    await query.from(Role).execute();
     await query.from(User).execute();
   });
 
