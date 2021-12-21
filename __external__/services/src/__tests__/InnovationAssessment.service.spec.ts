@@ -12,6 +12,7 @@ import {
   OrganisationUnit,
   OrganisationUser,
   User,
+  UserRole,
 } from "@domain/index";
 import { RequestUser } from "@services/models/RequestUser";
 import { LoggerService } from "@services/services/Logger.service";
@@ -101,6 +102,7 @@ describe("Innovation Assessment Suite", () => {
     await query.from(OrganisationUser).execute();
     await query.from(Organisation).execute();
     await query.from(Innovation).execute();
+    await query.from(UserRole).execute();
     await query.from(User).execute();
 
     //closeTestsConnection();

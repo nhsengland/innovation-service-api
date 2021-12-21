@@ -3,6 +3,7 @@ import { UserType } from "../../enums/user.enums";
 
 import { Base } from "../Base.entity";
 import { OrganisationUser } from "../organisation/OrganisationUser.entity";
+import { UserRole } from "./UserRole.entity";
 
 @Entity("user")
 export class User extends Base {
@@ -31,6 +32,9 @@ export class User extends Base {
     lazy: true,
   })
   userOrganisations: OrganisationUser[];
+
+  @OneToMany(() => UserRole, (ur) => ur.user, { cascade: ["update", "insert"] })
+  serviceRoles: UserRole[];
 
   //static constructor
   static new(data) {

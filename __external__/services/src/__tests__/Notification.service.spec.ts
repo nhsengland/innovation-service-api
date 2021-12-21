@@ -26,6 +26,7 @@ import {
   UserType,
   NotificationPreference,
   ActivityLog,
+  UserRole,
 } from "@domain/index";
 import * as engines from "@engines/index";
 import { InvalidParamsError } from "@services/errors";
@@ -114,6 +115,7 @@ describe("Notification Service Suite", () => {
     await query.from(Notification).execute();
     await query.from(Innovation).execute();
     await query.from(NotificationPreference).execute();
+    await query.from(UserRole).execute();
     await query.from(User).execute();
   });
 

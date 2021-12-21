@@ -9,6 +9,7 @@ import {
   InnovationSection,
   InnovationSectionCatalogue,
   User,
+  UserRole,
   UserType,
   YesOrNoCatalogue,
 } from "@domain/index";
@@ -72,6 +73,7 @@ describe("Innovation Evidence Suite", () => {
     await query.from(ActivityLog).execute();
     await query.from(InnovationSection).execute();
     await query.from(Innovation).execute();
+    await query.from(UserRole).execute();
     await query.from(User).execute();
 
     // closeTestsConnection();

@@ -18,6 +18,7 @@ import {
   OrganisationUnitUser,
   OrganisationUser,
   User,
+  UserRole,
   UserType,
 } from "@domain/index";
 import * as engines from "@engines/index";
@@ -166,6 +167,7 @@ describe("Innovation Action Suite", () => {
     await query.from(Organisation).execute();
     await query.from(InnovationSection).execute();
     await query.from(Innovation).execute();
+    await query.from(UserRole).execute();
     await query.from(User).execute();
 
     // closeTestsConnection();

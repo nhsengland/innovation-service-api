@@ -1,6 +1,6 @@
 import { AccessorService } from "../services/Accessor.service";
 import { getConnection } from "typeorm";
-import { User } from "@domain/index";
+import { User, UserRole } from "@domain/index";
 import * as dotenv from "dotenv";
 import * as path from "path";
 
@@ -19,6 +19,7 @@ describe("Accessor Service Suite", () => {
     const query = getConnection(process.env.DB_TESTS_NAME)
       .createQueryBuilder()
       .delete();
+    await query.from(UserRole).execute();
     await query.from(User).execute();
   });
 

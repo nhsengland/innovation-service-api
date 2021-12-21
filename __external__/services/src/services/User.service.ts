@@ -164,12 +164,15 @@ export class UserService {
           "userOrganisations.organisation",
           "userOrganisations.userOrganisationUnits",
           "userOrganisations.userOrganisationUnits.organisationUnit",
+          "serviceRoles",
+          "serviceRoles.role",
         ],
       });
       if (userDb) {
         const organisations: OrganisationUser[] = await userDb.userOrganisations;
 
         profile.type = userDb.type;
+        profile.roles = userDb.serviceRoles?.map((sr) => sr.role.name) || [];
         profile.organisations = [];
 
         for (let idx = 0; idx < organisations.length; idx++) {
@@ -190,13 +193,6 @@ export class UserService {
             })),
           });
         }
-
-        const userRoles: UserRole[] = await this.userRoleRepo.find({
-          relations: ["user", "role"],
-          where: { user: id },
-        });
-
-        profile.roles = userRoles?.map((ur) => ur.role.name);
       }
     } catch (error) {
       throw error;
