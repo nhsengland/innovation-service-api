@@ -10,6 +10,7 @@ import {
   OrganisationUser,
   setupTestsConnection,
   User,
+  UserRole,
   UserType,
 } from "..";
 import * as fixtures from "../__fixtures__";
@@ -36,6 +37,7 @@ describe("[User Account Lock suite", () => {
 
     await query.from(OrganisationUnitUser).execute();
     await query.from(OrganisationUser).execute();
+    await query.from(UserRole).execute();
     await query.from(User).execute();
     await query.from(OrganisationUnit).execute();
     await query.from(Organisation).execute();

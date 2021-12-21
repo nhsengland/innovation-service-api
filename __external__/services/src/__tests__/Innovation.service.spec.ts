@@ -21,6 +21,7 @@ import {
   OrganisationUnitUser,
   OrganisationUser,
   User,
+  UserRole,
   UserType,
 } from "@domain/index";
 import * as engines from "@engines/index";
@@ -183,6 +184,7 @@ describe("Innovator Service Suite", () => {
     await query.from(OrganisationUnit).execute();
     await query.from(OrganisationUser).execute();
     await query.from(Organisation).execute();
+    await query.from(UserRole).execute();
     await query.from(User).execute();
     //closeTestsConnection();
   });

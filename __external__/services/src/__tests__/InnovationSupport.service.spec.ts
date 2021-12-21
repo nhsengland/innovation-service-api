@@ -17,6 +17,7 @@ import {
   OrganisationUnitUser,
   OrganisationUser,
   User,
+  UserRole,
   UserType,
 } from "@domain/index";
 import {
@@ -151,6 +152,7 @@ describe("Innovation Support Suite", () => {
     await query.from(OrganisationUser).execute();
     await query.from(Organisation).execute();
     await query.from(Innovation).execute();
+    await query.from(UserRole).execute();
     await query.from(User).execute();
 
     //closeTestsConnection();

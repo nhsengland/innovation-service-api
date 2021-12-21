@@ -17,6 +17,7 @@ import {
   OrganisationUnitUser,
   OrganisationUser,
   User,
+  UserRole,
 } from "@domain/index";
 import { InvalidParamsError } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
@@ -127,6 +128,7 @@ describe("Innovation Suggestion Suite", () => {
     await query.from(OrganisationUnit).execute();
     await query.from(OrganisationUser).execute();
     await query.from(Organisation).execute();
+    await query.from(UserRole).execute();
     await query.from(User).execute();
 
     // closeTestsConnection();
