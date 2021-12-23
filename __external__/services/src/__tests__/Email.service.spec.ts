@@ -26,7 +26,6 @@ describe("Email Service Suite", () => {
 
   beforeAll(async () => {
     //await setupTestsConnection();
-    await setupTestsCosmosDb();
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
     });
@@ -36,7 +35,6 @@ describe("Email Service Suite", () => {
 
   afterAll(async () => {
     //await closeTestsConnection();
-    await closeTestsCosmosDb();
   });
 
   it("should instantiate the Email service", () => {
