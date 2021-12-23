@@ -5,7 +5,7 @@ const TTL2lsSchema = new mongoose.Schema({
   userId: mongoose.Schema.Types.String,
   code: mongoose.Schema.Types.String,
   eventType: { type: String, enum: ["LOGIN", "ACTION"], default: "LOGIN" },
-  createdAt: { type: Date, expires: process.env.TTL2LS },
+  createdAt: { type: Date, expires: process.env.TTL2LS || 300 },
 });
 
 export const TTL2ls =

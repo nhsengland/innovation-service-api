@@ -146,3 +146,10 @@ export class LastAccessorFromUnitProvidingSupportError extends Error {
     this.data = data;
   }
 }
+
+export class UserEmailNotFound extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "UserEmailNotFound";
+  }
+}

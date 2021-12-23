@@ -56,8 +56,6 @@ import {
   saveB2CUser,
 } from "../helpers";
 import { ProfileModel } from "../models/ProfileModel";
-import { TTL2ls } from "../../../../schemas/TTL2ls";
-import { Document } from "mongoose";
 
 export class UserService {
   private readonly connection: Connection;
@@ -67,8 +65,6 @@ export class UserService {
   private readonly orgUserRepo: Repository<OrganisationUser>;
   private readonly orgUnitUserRepo: Repository<OrganisationUnitUser>;
   private readonly innovationRepo: Repository<Innovation>;
-  private readonly innovationSupportRepo: Repository<InnovationSupport>;
-  private readonly userRoleRepo: Repository<UserRole>;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -78,11 +74,6 @@ export class UserService {
     this.orgUserRepo = getRepository(OrganisationUser, connectionName);
     this.orgUnitUserRepo = getRepository(OrganisationUnitUser, connectionName);
     this.innovationRepo = getRepository(Innovation, connectionName);
-    this.innovationSupportRepo = getRepository(
-      InnovationSupport,
-      connectionName
-    );
-    this.userRoleRepo = getRepository(UserRole, connectionName);
   }
 
   async find(id: string, options?: FindOneOptions) {
@@ -817,39 +808,6 @@ export class UserService {
       id: userId,
       status: "OK",
     };
-  }
-
-  async send2LS(userId: string): Promise<void> {
-    const userEmails = await this.getUsersEmail([userId]);
-
-    // export const GetId = (doc: Document<typeof Survey>): string => {
-    //   return doc.get("_id").toString();
-    // };
-
-    for (const user of userEmails) {
-      // generate 6 digit code
-      const code = Math.floor(100000 + Math.random() * 900000);
-      // persist it to TTL document
-      const ttl2ls = new TTL2ls({ code, userId: user.email });
-
-      await ttl2ls.save();
-      // send email to user with 6 digit code
-
-      // TODO
-    }
-  }
-
-  async validate2LS(userId: string, code: string): Promise<boolean> {
-    // get 6 digit code from document store for this user
-    // if it exists, compare it
-    // if it matches, return true
-    const doc = new TTL2ls();
-
-    const ttlCode = await doc.find({ userId, code });
-
-    if (ttlCode === code) return true;
-
-    return false;
   }
 
   private async CheckAssessmentUser(userBeingRemoved: User) {
