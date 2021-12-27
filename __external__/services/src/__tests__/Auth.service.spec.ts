@@ -194,11 +194,11 @@ describe("Auth Service Suite", () => {
 
     jest
       .spyOn(TTL2ls, "findOne")
-      .mockResolvedValue({ code: await authService.hash("000000") });
+      .mockResolvedValue({ id: ":id", code: await authService.hash("000000") });
 
     await authService.send2LS(user.id);
 
-    const actual = await authService.totpExists(user.id);
+    const actual = await authService.totpExists(user.id, "ACTION");
 
     expect(actual).toBe(true);
   });
@@ -224,7 +224,7 @@ describe("Auth Service Suite", () => {
     jest.spyOn(authService, "sendTOTP").mockImplementation();
     jest.spyOn(TTL2ls, "findOne").mockImplementation();
 
-    const actual = await authService.totpExists(user.id);
+    const actual = await authService.totpExists(user.id, "ACTION");
 
     expect(actual).toBe(false);
   });

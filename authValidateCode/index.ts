@@ -1,12 +1,19 @@
 import { HttpRequest } from "@azure/functions";
-import { AppInsights, CosmosConnector } from "../utils/decorators";
+import {
+  AppInsights,
+  CosmosConnector,
+  JwtDecoder,
+  SQLConnector,
+} from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
 import { CustomContext } from "../utils/types";
 import * as persistence from "./persistence";
 import { ValidatePayload } from "./validation";
 
-class SurveyCreateOne {
+class authValidateCode {
   @AppInsights()
+  @SQLConnector()
+  @JwtDecoder()
   @CosmosConnector()
   static async httpTrigger(
     context: CustomContext,
@@ -23,7 +30,7 @@ class SurveyCreateOne {
     }
 
     try {
-      const result = await persistence.validate(context, codeItem);
+      const result = await persistence.validate(context, codeItem.code);
 
       context.res = Responsify.Ok(result);
     } catch (error) {
@@ -36,4 +43,4 @@ class SurveyCreateOne {
   }
 }
 
-export default SurveyCreateOne.httpTrigger;
+export default authValidateCode.httpTrigger;

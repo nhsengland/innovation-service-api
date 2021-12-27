@@ -5,14 +5,17 @@ import { EmailService } from "./Email.service";
 import { UserEmailModel } from "@services/models/ProfileSlimModel";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import { UserEmailNotFound } from "@services/errors";
+import { LoggerService } from "./Logger.service";
 
 export class AuthService {
   private readonly userService: UserService;
   private readonly emailService: EmailService;
+  private readonly loggerService: LoggerService;
 
   constructor(connectionName: string) {
     this.userService = new UserService(connectionName);
     this.emailService = new EmailService(connectionName);
+    this.loggerService = new LoggerService();
   }
   async send2LS(userId: string): Promise<string> {
     const userEmails = await this.userService.getUsersEmail([userId]);
@@ -35,7 +38,11 @@ export class AuthService {
     );
 
     // send email to user with 6 digit code
-    await this.sendTOTP(user, code);
+    try {
+      await this.sendTOTP(user, code);
+    } catch (error) {
+      this.loggerService.error("Error sending TOTP", error);
+    }
 
     return code;
   }
@@ -52,14 +59,13 @@ export class AuthService {
     return await this.verify(code, ttlCode.code);
   }
 
-  async totpExists(userId: string): Promise<boolean> {
-    const ttlCode = await TTL2ls.findOne({ userId });
-    if (ttlCode) return true;
-    return false;
+  async totpExists(userId: string, action: string, id?: string) {
+    const ttlCode = await TTL2ls.findOne({ userId, action, id });
+    return ttlCode;
   }
 
   async sendTOTP(recipient: UserEmailModel, code: string) {
-    await this.emailService.sendOne(
+    return await this.emailService.sendOne(
       recipient,
       EmailNotificationTemplate.ADMINS_LOGIN_VALIDATION,
       {
