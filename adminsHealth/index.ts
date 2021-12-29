@@ -9,8 +9,6 @@ import {
 } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
 import { CustomContext } from "../utils/types";
-import * as persistence from "./persistence";
-import { ValidatePayload } from "./validation";
 
 class adminHealth {
   @AppInsights()
@@ -23,7 +21,7 @@ class adminHealth {
     req: HttpRequest
   ): Promise<void> {
     try {
-      const result = "ADMIN HEALTH CHECK";
+      const result = { message: "ADMIN HEALTH CHECK" };
 
       context.res = Responsify.Ok(result);
     } catch (error) {

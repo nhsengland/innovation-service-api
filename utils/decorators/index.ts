@@ -386,8 +386,8 @@ export function SLSValidation(action: SLSEventType) {
       const context: CustomContext = args[0];
       const req: HttpRequest = args[1];
 
-      const code = req.headers["x-2ls-code"];
-      const id = req.headers["x-2ls-id"];
+      const code = req.query["code"];
+      const id = req.query["id"];
 
       try {
         const valid = await context.services.AuthService.validate2LS(
@@ -405,7 +405,6 @@ export function SLSValidation(action: SLSEventType) {
             action
           );
           context.res = Responsify.Forbidden({
-            code: generatedCode.code,
             id: generatedCode.id,
           });
           shortCircuit = true;
