@@ -1,4 +1,5 @@
 import { HttpRequest } from "@azure/functions";
+import { SLSEventType } from "@services/types";
 import {
   AppInsights,
   CosmosConnector,
@@ -16,7 +17,7 @@ class adminHealth {
   @SQLConnector()
   @JwtDecoder()
   @CosmosConnector()
-  @SLSValidation("LOGIN")
+  @SLSValidation(SLSEventType.ADMIN_HEALTH)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest

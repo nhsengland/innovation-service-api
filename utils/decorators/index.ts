@@ -1,5 +1,6 @@
 import { HttpRequest } from "@azure/functions";
 import { OrganisationUser, UserType } from "@services/index";
+import { SLSEventType } from "@services/types";
 import { decodeToken } from "../authentication";
 import {
   setIsCosmosConnected,
@@ -370,7 +371,7 @@ export function AllowedUserType(...type: UserType[]) {
   };
 }
 
-export function SLSValidation(action: string) {
+export function SLSValidation(action: SLSEventType) {
   let shortCircuit = false;
   return function (
     target: Object,
@@ -385,38 +386,29 @@ export function SLSValidation(action: string) {
       const context: CustomContext = args[0];
       const req: HttpRequest = args[1];
 
-      const code = req.headers["x-sls-code"];
-      const id = req.headers["x-sls-id"];
+      const code = req.headers["x-2ls-code"];
+      const id = req.headers["x-2ls-id"];
 
       try {
-        if (!code) {
-          const totp = await context.services.AuthService.totpExists(
-            context.auth.decodedJwt.oid,
-            action,
-            id
-          );
+        const valid = await context.services.AuthService.validate2LS(
+          context.auth.decodedJwt.oid,
+          action,
+          code,
+          id
+        );
 
+        if (valid) {
+          shortCircuit = false;
+        } else {
           const generatedCode = await context.services.AuthService.send2LS(
-            context.auth.decodedJwt.oid
-          );
-          context.res = Responsify.Ok({ code: generatedCode });
-          shortCircuit = true;
-        }
-
-        if (code) {
-          const valid = await context.services.AuthService.validate2LS(
             context.auth.decodedJwt.oid,
-            code
+            action
           );
-          if (valid) {
-            shortCircuit = false;
-          } else {
-            const generatedCode = await context.services.AuthService.send2LS(
-              context.auth.decodedJwt.oid
-            );
-            context.res = Responsify.Ok({ code: generatedCode });
-            shortCircuit = true;
-          }
+          context.res = Responsify.Forbidden({
+            code: generatedCode.code,
+            id: generatedCode.id,
+          });
+          shortCircuit = true;
         }
       } catch (error) {
         context.log.error(error);

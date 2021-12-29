@@ -5,6 +5,7 @@ import { TTL2ls } from "../../../../schemas/TTL2ls";
 import { closeTestsConnection, setupTestsConnection, UserType } from "..";
 import * as helpers from "../helpers";
 import * as fixtures from "../__fixtures__";
+import { SLSEventType } from "@services/types";
 
 const dummy = {
   email: "email@email.com",
@@ -55,7 +56,7 @@ describe("Auth Service Suite", () => {
 
     let err;
     try {
-      await authService.send2LS(user.id);
+      await authService.send2LS(user.id, SLSEventType.LOGIN);
     } catch (error) {
       err = error;
     }
@@ -82,10 +83,10 @@ describe("Auth Service Suite", () => {
     jest.spyOn(authService, "sendTOTP").mockImplementation();
 
     const user = await fixtures.createAdminUser();
-    const code = await authService.send2LS(user.id);
+    const code = await authService.send2LS(user.id, SLSEventType.LOGIN);
 
     expect(code).toBeDefined();
-    expect(code.length).toBe(6);
+    expect(code.code.length).toBe(6);
   });
 
   it.skip("Should validate a TOTP for a given user", async () => {
@@ -107,13 +108,18 @@ describe("Auth Service Suite", () => {
     jest.spyOn(authService, "sendTOTP").mockImplementation();
 
     const user = await fixtures.createAdminUser();
-    const code = await authService.send2LS(user.id);
+    const code = await authService.send2LS(user.id, SLSEventType.LOGIN);
 
     jest
       .spyOn(TTL2ls, "findOne")
       .mockResolvedValue({ code: await authService.hash(code) });
 
-    const actual = await authService.validate2LS(user.id, code);
+    const actual = await authService.validate2LS(
+      user.id,
+      SLSEventType.LOGIN,
+      code.code,
+      ":id"
+    );
 
     expect(actual).toBe(true);
   });
@@ -143,9 +149,14 @@ describe("Auth Service Suite", () => {
       .spyOn(TTL2ls, "findOne")
       .mockResolvedValue({ code: await authService.hash("111111") });
 
-    await authService.send2LS(user.id);
+    await authService.send2LS(user.id, SLSEventType.LOGIN);
 
-    const actual = await authService.validate2LS(user.id, "00000");
+    const actual = await authService.validate2LS(
+      user.id,
+      SLSEventType.LOGIN,
+      "00000",
+      ":id"
+    );
 
     expect(actual).toBe(false);
   });
@@ -167,7 +178,12 @@ describe("Auth Service Suite", () => {
 
     const user = await fixtures.createAdminUser();
 
-    const actual = await authService.validate2LS(user.id, "00000");
+    const actual = await authService.validate2LS(
+      user.id,
+      SLSEventType.LOGIN,
+      "00000",
+      ":id"
+    );
 
     expect(actual).toBe(false);
   });
@@ -196,9 +212,9 @@ describe("Auth Service Suite", () => {
       .spyOn(TTL2ls, "findOne")
       .mockResolvedValue({ id: ":id", code: await authService.hash("000000") });
 
-    await authService.send2LS(user.id);
+    await authService.send2LS(user.id, SLSEventType.LOGIN);
 
-    const actual = await authService.totpExists(user.id, "ACTION");
+    const actual = await authService.totpExists(user.id, "ACTION", ":id");
 
     expect(actual).toBe(true);
   });
@@ -224,7 +240,7 @@ describe("Auth Service Suite", () => {
     jest.spyOn(authService, "sendTOTP").mockImplementation();
     jest.spyOn(TTL2ls, "findOne").mockImplementation();
 
-    const actual = await authService.totpExists(user.id, "ACTION");
+    const actual = await authService.totpExists(user.id, "ACTION", ":id");
 
     expect(actual).toBe(false);
   });

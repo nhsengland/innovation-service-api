@@ -6,6 +6,8 @@ import { UserEmailModel } from "@services/models/ProfileSlimModel";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import { UserEmailNotFound } from "@services/errors";
 import { LoggerService } from "./Logger.service";
+import { SLSEventType } from "@services/types";
+import { number } from "joi";
 
 export class AuthService {
   private readonly userService: UserService;
@@ -17,7 +19,7 @@ export class AuthService {
     this.emailService = new EmailService(connectionName);
     this.loggerService = new LoggerService();
   }
-  async send2LS(userId: string): Promise<string> {
+  async send2LS(userId: string, eventType: SLSEventType) {
     const userEmails = await this.userService.getUsersEmail([userId]);
 
     if (userEmails.length === 0) {
@@ -31,10 +33,10 @@ export class AuthService {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const hashedCode = await this.hash(code);
     // persist it to TTL document
-    await TTL2ls.findOneAndUpdate(
-      { userId },
-      { code: hashedCode, createdAt: new Date() },
-      { upsert: true }
+    const persistedCode = await TTL2ls.findOneAndUpdate(
+      { userId, eventType },
+      { code: hashedCode, eventType, createdAt: new Date() },
+      { upsert: true, new: true }
     );
 
     // send email to user with 6 digit code
@@ -44,23 +46,43 @@ export class AuthService {
       this.loggerService.error("Error sending TOTP", error);
     }
 
-    return code;
+    return { code, id: persistedCode?.get("_id").toString() };
   }
 
-  async validate2LS(userId: string, code: string): Promise<boolean> {
+  async validate2LS(
+    userId: string,
+    eventType: SLSEventType,
+    code?: string,
+    id?: string
+  ): Promise<boolean> {
     // get 6 digit code from document store for this user
     // if it exists, compare it
     // if it matches, return true
 
-    const ttlCode = await TTL2ls.findOne({ userId });
+    if (!code) {
+      // code already validated for this operation
+      // do not resend and let the operation to carry through
+      const totp = await TTL2ls.findOne({ userId, eventType });
+      return totp && totp.validatedAt;
+    }
+
+    const ttlCode = await TTL2ls.findOne({ userId, _id: id, eventType });
 
     if (!ttlCode) return false;
 
-    return await this.verify(code, ttlCode.code);
+    const verified = !ttlCode.validatedAt
+      ? await this.verify(code, ttlCode.code)
+      : true;
+
+    if (verified) {
+      await TTL2ls.findByIdAndUpdate(id, { validatedAt: new Date() });
+    }
+
+    return verified;
   }
 
-  async totpExists(userId: string, action: string, id?: string) {
-    const ttlCode = await TTL2ls.findOne({ userId, action, id });
+  async totpExists(userId: string, eventType: string, id: string) {
+    const ttlCode = await TTL2ls.findOne({ userId, eventType, id });
     return ttlCode;
   }
 
