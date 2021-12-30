@@ -184,7 +184,7 @@ export const getTemplates = (): EmailTemplate[] => [
     id: "002cd16a-97da-43b5-836f-8631dbbcca84",
     code: "INNOVATORS_SUPPORT_STATUS_UPDATE",
     path: {
-      url: "transactional/innovator/innovations/:innovationId/data-sharing",
+      url: "transactional/innovator/innovations/:innovationId/support",
       params: {
         contextId: "",
         innovationId: "",
