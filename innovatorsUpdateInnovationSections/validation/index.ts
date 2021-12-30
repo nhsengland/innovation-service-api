@@ -66,27 +66,36 @@ const payloadSchema = Joi.object({
     ),
     subgroups: Joi.array().items(
       Joi.object({
-        id: Joi.string().allow(null).allow(""),
-        name: Joi.string().allow(null).allow(""),
+        id: Joi.string().allow(null).allow("").optional(),
+        name: Joi.string().allow(null).allow("").optional(),
         costDescription: Joi.string()
           .max(constants.mediumFieldCharacterLimit)
           .allow(null)
-          .allow(""),
-        patientsRange: Joi.string().allow(null).allow(""),
+          .allow("")
+          .optional(),
+        patientsRange: Joi.string().allow(null).allow("").optional(),
         sellExpectations: Joi.string()
           .max(constants.mediumFieldCharacterLimit)
           .allow(null)
-          .allow(""),
+          .allow("")
+          .optional(),
         usageExpectations: Joi.string()
           .max(constants.mediumFieldCharacterLimit)
           .allow(null)
-          .allow(""),
-        carePathway: Joi.string().allow(null).allow(""),
-        conditions: Joi.string().allow(null).allow(""),
-        otherCondition: Joi.string().allow(null).allow(""),
-        otherBenefit: Joi.string().allow(null).allow(""),
-        costComparison: Joi.string().allow(null).allow(""),
-        benefits: Joi.array().items(Joi.string().allow(null).allow("")),
+          .allow("")
+          .optional(),
+        carePathway: Joi.string().allow(null).allow("").optional(),
+        conditions: Joi.string()
+          .max(constants.mediumFieldCharacterLimit)
+          .allow(null)
+          .allow("")
+          .optional(),
+        otherCondition: Joi.string().allow(null).allow("").optional(),
+        otherBenefit: Joi.string().allow(null).allow("").optional(),
+        costComparison: Joi.string().allow(null).allow("").optional(),
+        benefits: Joi.array().items(
+          Joi.string().allow(null).allow("").optional()
+        ),
       })
     ),
     costDescription: Joi.string()
