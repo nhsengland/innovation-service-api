@@ -1,8 +1,11 @@
 import * as mongoose from "mongoose";
 import { setupConnection } from "@services/index";
+import * as dotenv from "dotenv";
 
 let isCosmosConnected = false;
 let isSQLConnected = false;
+
+dotenv.config();
 
 export const setupCosmosDb = async () => {
   if (!isCosmosConnected) {
@@ -15,6 +18,23 @@ export const setupCosmosDb = async () => {
       dbName: process.env.COSMOS_DB_NAME,
     });
     isCosmosConnected = true;
+  }
+};
+
+// export const setupCosmosDb = async () => {
+//   if (!isCosmosConnected) {
+//     const connectionString = `mongodb://localhost`;
+//     await mongoose.connect(connectionString, {
+//       dbName: process.env.COSMOSDB_DB,
+//     });
+//     isCosmosConnected = true;
+//   }
+// };
+
+export const closeTestsCosmosDb = async () => {
+  if (isCosmosConnected) {
+    await mongoose.disconnect();
+    isCosmosConnected = false;
   }
 };
 

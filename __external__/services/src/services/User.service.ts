@@ -65,8 +65,6 @@ export class UserService {
   private readonly orgUserRepo: Repository<OrganisationUser>;
   private readonly orgUnitUserRepo: Repository<OrganisationUnitUser>;
   private readonly innovationRepo: Repository<Innovation>;
-  private readonly innovationSupportRepo: Repository<InnovationSupport>;
-  private readonly userRoleRepo: Repository<UserRole>;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -76,11 +74,6 @@ export class UserService {
     this.orgUserRepo = getRepository(OrganisationUser, connectionName);
     this.orgUnitUserRepo = getRepository(OrganisationUnitUser, connectionName);
     this.innovationRepo = getRepository(Innovation, connectionName);
-    this.innovationSupportRepo = getRepository(
-      InnovationSupport,
-      connectionName
-    );
-    this.userRoleRepo = getRepository(UserRole, connectionName);
   }
 
   async find(id: string, options?: FindOneOptions) {

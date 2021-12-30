@@ -1,5 +1,6 @@
 import { HttpRequest } from "@azure/functions";
 import { OrganisationUser, UserType } from "@services/index";
+import { SLSEventType } from "@services/types";
 import { decodeToken } from "../authentication";
 import {
   setIsCosmosConnected,
@@ -365,6 +366,67 @@ export function AllowedUserType(...type: UserType[]) {
       context.auth.requestUser = requestUser;
 
       await original.apply(this, args);
+      return;
+    };
+  };
+}
+
+export function SLSValidation(action: SLSEventType) {
+  let shortCircuit = false;
+  return function (
+    target: Object,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    const decoratorId = "SLS Validation";
+
+    const original = descriptor.value;
+
+    descriptor.value = async function (...args: any[]) {
+      const context: CustomContext = args[0];
+      const req: HttpRequest = args[1];
+
+      const code = req.query["code"];
+      const id = req.query["id"];
+
+      try {
+        const valid = await context.services.AuthService.validate2LS(
+          context.auth.decodedJwt.oid,
+          action,
+          code,
+          id
+        );
+
+        if (valid) {
+          shortCircuit = false;
+        } else {
+          const generatedCode = await context.services.AuthService.send2LS(
+            context.auth.decodedJwt.oid,
+            action
+          );
+          context.res = Responsify.Forbidden({
+            id: generatedCode.id,
+          });
+          shortCircuit = true;
+        }
+      } catch (error) {
+        context.log.error(error);
+        context.logger(
+          `${decoratorId}: an error has occurred. Check details.`,
+          Severity.Error,
+          {
+            error,
+          }
+        );
+        context.res = Responsify.Internal({
+          error: "Error validating SLS",
+        });
+        return;
+      }
+
+      if (!shortCircuit) {
+        await original.apply(this, args);
+      }
       return;
     };
   };

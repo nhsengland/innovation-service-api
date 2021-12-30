@@ -3,19 +3,23 @@ import { EmailService } from "@services/services/Email.service";
 import { UserService } from "@services/services/User.service";
 import * as dotenv from "dotenv";
 import * as path from "path";
-import { closeTestsConnection, setupTestsConnection } from "..";
+import { closeTestsConnection, setupTestsConnection, UserType } from "..";
 import * as helpers from "../helpers";
 
 const dummy = {
   email: "email@email.com",
+  requestUser: {
+    id: ":userId",
+    type: UserType.ADMIN,
+  },
 };
+
 describe("Email Service Suite", () => {
   let userService: UserService;
   let emailService: EmailService;
 
   beforeAll(async () => {
     //await setupTestsConnection();
-
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
     });

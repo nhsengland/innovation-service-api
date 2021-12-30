@@ -197,4 +197,12 @@ export const getTemplates = (): EmailTemplate[] => [
       support_url: "",
     },
   },
+  {
+    id: "93dd9c64-1914-4fa3-b5f3-27e33f2770d5",
+    code: "ADMINS_LOGIN_VALIDATION",
+    props: {
+      display_name: "",
+      code: "",
+    },
+  },
 ];

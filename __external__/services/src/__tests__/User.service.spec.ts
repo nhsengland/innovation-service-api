@@ -48,7 +48,6 @@ describe("User Service Suite", () => {
 
   beforeAll(async () => {
     //await setupTestsConnection();
-
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
     });
