@@ -43,6 +43,7 @@ import {
   StandardMetCatalogue,
   SubgroupBenefitCatalogue,
   User,
+  UserRole,
   UserType,
   YesOrNoCatalogue,
 } from "@domain/index";
@@ -112,7 +113,7 @@ describe("Innovation Section Service Suite", () => {
     const query = getConnection(process.env.DB_TESTS_NAME)
       .createQueryBuilder()
       .delete();
-
+    await query.from(UserRole).execute();
     await query.from(User).execute();
     //closeTestsConnection();
   });

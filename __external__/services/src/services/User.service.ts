@@ -9,6 +9,7 @@ import {
   OrganisationUnitUser,
   OrganisationUser,
   User,
+  UserRole,
   UserType,
 } from "@domain/index";
 import {
@@ -64,7 +65,6 @@ export class UserService {
   private readonly orgUserRepo: Repository<OrganisationUser>;
   private readonly orgUnitUserRepo: Repository<OrganisationUnitUser>;
   private readonly innovationRepo: Repository<Innovation>;
-  private readonly innovationSupportRepo: Repository<InnovationSupport>;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -74,10 +74,6 @@ export class UserService {
     this.orgUserRepo = getRepository(OrganisationUser, connectionName);
     this.orgUnitUserRepo = getRepository(OrganisationUnitUser, connectionName);
     this.innovationRepo = getRepository(Innovation, connectionName);
-    this.innovationSupportRepo = getRepository(
-      InnovationSupport,
-      connectionName
-    );
   }
 
   async find(id: string, options?: FindOneOptions) {
@@ -161,12 +157,15 @@ export class UserService {
           "userOrganisations.organisation",
           "userOrganisations.userOrganisationUnits",
           "userOrganisations.userOrganisationUnits.organisationUnit",
+          "serviceRoles",
+          "serviceRoles.role",
         ],
       });
       if (userDb) {
         const organisations: OrganisationUser[] = await userDb.userOrganisations;
 
         profile.type = userDb.type;
+        profile.roles = userDb.serviceRoles?.map((sr) => sr.role.name) || [];
         profile.organisations = [];
 
         for (let idx = 0; idx < organisations.length; idx++) {

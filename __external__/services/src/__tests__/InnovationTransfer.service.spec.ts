@@ -4,6 +4,7 @@ import {
   InnovationTransfer,
   InnovationTransferStatus,
   User,
+  UserRole,
 } from "@domain/index";
 import {
   InnovationTransferAlreadyExistsError,
@@ -59,6 +60,7 @@ describe("Innovation Transfer Suite", () => {
       .delete();
     await query.from(ActivityLog).execute();
     await query.from(Innovation).execute();
+    await query.from(UserRole).execute();
     await query.from(User).execute();
 
     // closeTestsConnection();

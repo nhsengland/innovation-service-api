@@ -24,3 +24,11 @@ export type UserSearchResult = {
     }[];
   }[];
 };
+
+export enum SLSEventType {
+  LOGIN = "LOGIN",
+  ADMIN_HEALTH = "ADMIN_HEALTH",
+  ADMIN_CREATE_USER = "ADMIN_CREATE_USER",
+  ADMIN_LOCK_USER = "ADMIN_LOCK_USER",
+  ADMIN_UNLOCK_USER = "ADMIN_UNLOCK_USER",
+}

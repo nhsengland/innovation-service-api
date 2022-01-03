@@ -26,6 +26,7 @@ import {
   ActivityLog,
   InnovatorOrganisationRole,
   OrganisationType,
+  UserRole,
 } from "@domain/index";
 import {
   InvalidUserRoleError,
@@ -66,6 +67,7 @@ describe("Advanced filter suite", () => {
     await query.from(InnovationAction).execute();
     await query.from(InnovationSection).execute();
     await query.from(Innovation).execute();
+    await query.from(UserRole).execute();
     await query.from(User).execute();
   });
 

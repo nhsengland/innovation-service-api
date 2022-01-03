@@ -1,15 +1,19 @@
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import { getTemplates } from "@engines/templates/index";
 import {
   EmailTemplateNotFound,
   InvalidAPIKey,
   InvalidEmailTemplateProps,
+  UserEmailNotFound,
 } from "@services/errors";
 import { UserEmailModel } from "@services/models/ProfileSlimModel";
 import axios from "axios";
 import * as jwt from "jsonwebtoken";
+import { TTL2ls } from "../../../../schemas/TTL2ls";
 import * as uuid from "uuid";
 import { LoggerService } from "./Logger.service";
 import { UserService } from "./User.service";
+import * as crypto from "crypto";
 
 export type EmailResponse = {
   id: string;

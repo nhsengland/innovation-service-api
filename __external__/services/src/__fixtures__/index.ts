@@ -13,7 +13,9 @@ import {
   OrganisationUnit,
   OrganisationUnitUser,
   OrganisationUser,
+  Role,
   User,
+  UserRole,
   UserType,
 } from "@domain/index";
 import { RequestUser } from "@services/models/RequestUser";
@@ -28,6 +30,7 @@ import { NotificationService } from "@services/services/Notification.service";
 import { OrganisationService } from "@services/services/Organisation.service";
 import { UserService } from "@services/services/User.service";
 import * as faker from "faker";
+import { getRepository } from "typeorm";
 import * as uuid from "uuid";
 
 // ****************************
@@ -135,6 +138,32 @@ export const createAssessmentUser = async (lockedAt?: Date) => {
   usr.type = UserType.ASSESSMENT;
   usr.lockedAt = lockedAt;
   return await userService.create(usr);
+};
+
+export const createAdminUser = async () => {
+  const admin = new User();
+  const userService = new UserService(process.env.DB_TESTS_NAME);
+  admin.type = UserType.ADMIN;
+  admin.id = uuid.v4();
+
+  const roleObj = Role.new({
+    name: "SERVICE_TEAM",
+  });
+
+  const roleRepo = getRepository(Role, process.env.DB_TESTS_NAME);
+
+  const role = await roleRepo.save(roleObj);
+  console.log(role);
+  const userRole = UserRole.new({
+    role,
+  });
+
+  admin.serviceRoles = [userRole];
+  try {
+    return await userService.create(admin);
+  } catch (error) {
+    throw error;
+  }
 };
 
 // ****************************

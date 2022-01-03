@@ -5,6 +5,7 @@ import {
   Organisation,
   OrganisationUser,
   User,
+  UserRole,
   UserType,
 } from "@domain/index";
 import { getConnection } from "typeorm";
@@ -40,6 +41,7 @@ describe("Innovator Service Suite", () => {
     await query.from(OrganisationUser).execute();
     await query.from(Organisation).execute();
     await query.from(Innovation).execute();
+    await query.from(UserRole).execute();
     await query.from(User).execute();
     // await closeTestsConnection();
   });

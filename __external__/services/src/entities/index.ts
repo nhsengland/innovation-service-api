@@ -31,6 +31,8 @@ import {
   NotificationPreference,
   User,
   ActivityLog,
+  UserRole,
+  Role,
 } from "@domain/index";
 
 export const entities = [
@@ -66,4 +68,6 @@ export const entities = [
   NotificationPreference,
   User,
   ActivityLog,
+  Role,
+  UserRole,
 ];

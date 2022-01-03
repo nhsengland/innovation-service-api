@@ -1,4 +1,10 @@
-import { InnovationFile, Innovation, User, ActivityLog } from "@domain/index";
+import {
+  InnovationFile,
+  Innovation,
+  User,
+  ActivityLog,
+  UserRole,
+} from "@domain/index";
 import { getConnection } from "typeorm";
 import { FileService } from "../services/File.service";
 import { InnovationService } from "../services/Innovation.service";
@@ -28,6 +34,7 @@ describe("File Service Suite", () => {
     await query.from(ActivityLog).execute();
     await query.from(InnovationFile).execute();
     await query.from(Innovation).execute();
+    await query.from(UserRole).execute();
     await query.from(User).execute();
   });
 
