@@ -2820,7 +2820,7 @@ paths:
           description: "Forbidden"
 
   "/user-admin/ping":
-    get:
+    post:
       tags:
         - "Admin"
         - "User"
