@@ -23,7 +23,7 @@ const TTL2lsSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-TTL2lsSchema.index({ createdAt: 1 }, { expireAfterSeconds: ttl });
+TTL2lsSchema.index({ _ts: 1 }, { expireAfterSeconds: ttl });
 
 export const TTL2ls =
   mongoose.models.TTL2ls || mongoose.model("TTL2ls", TTL2lsSchema);
