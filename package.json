@@ -34,7 +34,7 @@
     "prestart": "npm run build",
     "start": "func start",
     "test:ci": "test -- --ci --reporters=jest-junit --reporters=default --coverage --coverageReporters=cobertura",
-    "test": "jest --runInBand --coverage --silent --forceExit",
+    "test": "jest --runInBand --coverage --silent --forceExit --testTimeout=50000",
     "test:debug": "jest --runInBand --forceExit",
     "test:clean": "jest --clearCache",
     "test:services": "npm test .service.spec.ts",
