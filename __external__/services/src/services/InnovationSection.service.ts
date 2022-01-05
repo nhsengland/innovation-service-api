@@ -666,25 +666,26 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     const original: any[] = await parent[type];
 
     const newValues: string[] = data[type];
-    original
-      .filter((obj) => !newValues.some((code: any) => code === obj.type))
-      .forEach((_, idx) => {
-        original[idx].deletedAt = new Date();
-      });
-
-    newValues?.forEach((code: any) => {
-      const objectIndex = original.findIndex((e: any) => e.type === code);
-      if (objectIndex === -1) {
-        original.push({
-          type: code,
-          createdBy: requestUser.id,
-          updatedBy: requestUser.id,
-          createdAt: new Date(),
-          deletedAt: null,
+    if (newValues !== null) {
+      original
+        .filter((obj) => !newValues.some((code: any) => code === obj.type))
+        .forEach((_, idx) => {
+          original[idx].deletedAt = new Date();
         });
-      }
-    });
 
+      newValues?.forEach((code: any) => {
+        const objectIndex = original.findIndex((e: any) => e.type === code);
+        if (objectIndex === -1) {
+          original.push({
+            type: code,
+            createdBy: requestUser.id,
+            updatedBy: requestUser.id,
+            createdAt: new Date(),
+            deletedAt: null,
+          });
+        }
+      });
+    }
     return original;
   }
 
