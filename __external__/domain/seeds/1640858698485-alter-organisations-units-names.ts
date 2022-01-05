@@ -39,6 +39,32 @@ export class alterOrganisationsUnitsNames1640858698485 extends BaseSeed {
   }
 
   public async down(queryRunner: QueryRunner): Promise<any> {
-    // const repo = this.getRepository();
+    const data = [
+      {
+        acronym: "NOCRI/NIHR",
+        name: "NOCRI/NIHR",
+      },
+      {
+        acronym: "SHTG",
+        name: "Scottish Health Technology Group",
+      },
+    ];
+
+    const orgUnitRepo = this.getRepository(OrganisationUnit);
+
+    // UPDATE Organisation Units Names
+    for (let idx = 0; idx < data.length; idx++) {
+      const orgUnitObj = data[idx];
+
+      const filterOptions = {
+        where: { acronym: orgUnitObj.acronym },
+      };
+      const orgUnit = await orgUnitRepo.findOne(filterOptions);
+
+      if (!orgUnit) continue;
+
+      orgUnit.name = orgUnitObj.name;
+      await orgUnitRepo.save(orgUnit);
+    }
   }
 }
