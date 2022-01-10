@@ -70,7 +70,7 @@ export class Innovation extends Base {
   @Column({ name: "description", nullable: true })
   description: string;
 
-  @Column({ name: "moreSupportDescription", nullable: true })
+  @Column({ name: "more_support_description", nullable: true })
   moreSupportDescription: string;
 
   @Column({ name: "country_name", length: 100 })
