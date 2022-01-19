@@ -6,7 +6,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["get"],
-      "route": "user-admin/users/search"
+      "route": "user-admin/users"
     },
     {
       "type": "http",

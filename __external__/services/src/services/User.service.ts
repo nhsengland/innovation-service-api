@@ -624,14 +624,21 @@ export class UserService {
     skip = 0,
     take = 10
   ): Promise<User[]> {
-    const query = this.connection
-      .createQueryBuilder(User, "users")
-      .where("users.type = :type", { type });
-
-    query.skip(skip);
-    query.take(take);
-
-    const users = await query.getMany();
+    const users = await this.userRepo.find({
+      relations: [
+        "userOrganisations",
+        "userOrganisations.organisation",
+        "userOrganisations.userOrganisationUnits",
+        "userOrganisations.userOrganisationUnits.organisationUnit",
+        "serviceRoles",
+        "serviceRoles.role",
+      ],
+      where: {
+        type,
+      },
+      skip,
+      take,
+    });
 
     return users;
   }

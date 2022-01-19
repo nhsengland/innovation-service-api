@@ -1,10 +1,13 @@
+import { UserType } from "@domain/index";
 import { CustomContext } from "../../utils/types";
 
-export const searchUsers = async (ctx: CustomContext, emails: string[]) => {
-  const result = await ctx.services.UserService.searchUsersByEmail(
-    ctx.auth.requestUser,
-    emails
-  );
+export const searchUsersByType = async (ctx: CustomContext, type: UserType) => {
+  const result = await ctx.services.AdminService.getUsersOfType(type);
+  return result;
+};
+
+export const searchUserByEmail = async (ctx: CustomContext, email: string) => {
+  const result = await ctx.services.AdminService.searchUser(email);
 
   return result;
 };

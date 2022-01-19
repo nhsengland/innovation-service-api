@@ -50,16 +50,17 @@ export class AdminService {
 
     for (const user of users) {
       const b2c = b2cUsers.find((u) => u.id === user.id);
+      const userOrganisations = await user.userOrganisations;
       if (b2c) {
         result.push({
           id: user.id,
           type: user.type,
           displayName: b2c.displayName,
-          userOrganisations: user.userOrganisations.map((o) => ({
+          userOrganisations: userOrganisations.map((o) => ({
             id: o.id,
             name: o.organisation.name,
             role: o.role,
-            units: o.userOrganisationUnits.map((unit) => ({
+            units: o.userOrganisationUnits?.map((unit) => ({
               id: unit.id,
               name: unit.organisationUnit.name,
             })),
