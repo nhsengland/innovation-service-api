@@ -18,16 +18,18 @@ import * as dotenv from "dotenv";
 import * as path from "path";
 import * as helpers from "../helpers";
 import { getConnection } from "typeorm";
+import { AdminService } from "@services/services/Admin.service";
+import { UserLockValidationCode } from "@services/types";
 
 describe("[User Account Lock suite", () => {
-  let userService: UserService;
+  let adminService: AdminService;
   beforeAll(async () => {
     //await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
     });
-    userService = new UserService(process.env.DB_TESTS_NAME);
+    adminService = new AdminService(process.env.DB_TESTS_NAME);
   });
 
   afterEach(async () => {
@@ -70,12 +72,12 @@ describe("[User Account Lock suite", () => {
     };
     // Act
 
-    const result = await userService.lockUsers(requestUser, [
-      assessmentUser.id,
-    ]);
+    const result = await adminService.userLockValidation(assessmentUser.id);
 
     expect(result.length).toBeGreaterThan(0);
-    expect(result[0].error.code).toBe("LastAssessmentUserOnPlatformError");
+    expect(result[0].code).toBe(
+      UserLockValidationCode.LastAssessmentUserOnPlatform
+    );
   });
 
   it("Should not lock User if is last assessment user when there other locked users", async () => {
@@ -104,12 +106,12 @@ describe("[User Account Lock suite", () => {
     };
     // Act
 
-    const result = await userService.lockUsers(requestUser, [
-      assessmentUser.id,
-    ]);
+    const result = await adminService.userLockValidation(assessmentUser.id);
 
     expect(result.length).toBeGreaterThan(0);
-    expect(result[0].error.code).toBe("LastAssessmentUserOnPlatformError");
+    expect(result[0].code).toBe(
+      UserLockValidationCode.LastAssessmentUserOnPlatform
+    );
   });
 
   it("Should lock Assessment User if is not last assessment user", async () => {
@@ -137,7 +139,7 @@ describe("[User Account Lock suite", () => {
     };
     // Act
 
-    const result = await userService.lockUsers(requestUser, [
+    const result = await adminService.lockUsers(requestUser, [
       assessmentUser1.id,
     ]);
 
@@ -198,10 +200,12 @@ describe("[User Account Lock suite", () => {
       type: UserType.ADMIN,
     };
 
-    const result = await userService.lockUsers(requestUser, [accessorUser.id]);
+    const result = await adminService.userLockValidation(accessorUser.id);
 
     expect(result.length).toBeGreaterThan(0);
-    expect(result[0].error.code).toBe("LastAccessorUserOnOrganisationError");
+    expect(result[0].code).toBe(
+      UserLockValidationCode.LastAccessorUserOnOrganisation
+    );
   });
 
   it("Should not lock accessor if its the only one on the organisation unit", async () => {
@@ -269,11 +273,13 @@ describe("[User Account Lock suite", () => {
       type: UserType.ADMIN,
     };
 
-    const result = await userService.lockUsers(requestUser, [accessorUser1.id]);
+    jest.spyOn(UserService.prototype, "updateB2CUser").mockResolvedValue(true);
+
+    const result = await adminService.userLockValidation(accessorUser1.id);
 
     expect(result.length).toBeGreaterThan(0);
-    expect(result[0].error.code).toBe(
-      "LastAccessorUserOnOrganisationUnitError"
+    expect(result[0].code).toBe(
+      UserLockValidationCode.LastAccessorUserOnOrganisationUnit
     );
   });
 
@@ -340,10 +346,8 @@ describe("[User Account Lock suite", () => {
       type: UserType.ADMIN,
     };
 
-    const result = await userService.lockUsers(requestUser, [accessorUser1.id]);
+    const result = await adminService.userLockValidation(accessorUser1.id);
 
-    expect(result.length).toBeGreaterThan(0);
-    expect(result[0].error).toBeUndefined();
-    expect(result[0].status).toBe("OK");
+    expect(result.length).toBe(0);
   });
 });

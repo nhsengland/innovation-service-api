@@ -1,4 +1,4 @@
-import { OrganisationUser } from "@domain/index";
+import { OrganisationUser, UserRole, UserType } from "@domain/index";
 
 export type OrderByCriteria = "ASC" | "DESC";
 export type OrderByClauseType = {
@@ -14,6 +14,7 @@ export enum SupportFilter {
 export type UserSearchResult = {
   id: string;
   displayName: string;
+  type: UserType;
   userOrganisations: {
     id: string;
     name: string;
@@ -23,6 +24,7 @@ export type UserSearchResult = {
       name: string;
     }[];
   }[];
+  serviceRoles?: UserRole[];
 };
 
 export enum SLSEventType {
@@ -31,4 +33,11 @@ export enum SLSEventType {
   ADMIN_CREATE_USER = "ADMIN_CREATE_USER",
   ADMIN_LOCK_USER = "ADMIN_LOCK_USER",
   ADMIN_UNLOCK_USER = "ADMIN_UNLOCK_USER",
+}
+
+export enum UserLockValidationCode {
+  LastAssessmentUserOnPlatform = "LastAssessmentUserOnPlatform",
+  LastAccessorUserOnOrganisation = "LastAccessorUserOnOrganisation",
+  LastAccessorUserOnOrganisationUnit = "LastAccessorUserOnOrganisationUnit",
+  LastAccessorFromUnitProvidingSupport = "LastAccessorFromUnitProvidingSupport",
 }
