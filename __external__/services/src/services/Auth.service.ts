@@ -20,11 +20,7 @@ export class AuthService {
     this.loggerService = new LoggerService();
   }
   async send2LS(userId: string, eventType: SLSEventType) {
-    const userEmails = [
-      {
-        email: "antonio.simoes@bjss.com",
-      },
-    ]; //await this.userService.getUsersEmail([userId]);
+    const userEmails = await this.userService.getUsersEmail([userId]);
 
     if (userEmails.length === 0) {
       throw new UserEmailNotFound("User has no emails");
