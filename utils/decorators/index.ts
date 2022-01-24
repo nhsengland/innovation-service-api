@@ -445,17 +445,12 @@ export function ServiceRoleValidator(...roles: string[]) {
       const context: CustomContext = args[0];
       const oid = context.auth.decodedJwt.oid;
       const user = await context.services.UserService.getUser(oid, {
-        relations: [
-          "userOrganisations",
-          "userOrganisations.organisation",
-          "userOrganisations.userOrganisationUnits",
-          "userOrganisations.userOrganisationUnits.organisationUnit",
-          "serviceRoles",
-          "serviceRoles.role",
-        ],
+        relations: ["serviceRoles", "serviceRoles.role"],
       });
 
-      const userRoles = user?.roles?.filter((ur) => roles.includes(ur.name));
+      const userRoles = user?.serviceRoles?.filter((sr) =>
+        roles.includes(sr.role.name)
+      );
 
       if (userRoles.length === 0) {
         context.log.error(
