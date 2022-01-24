@@ -1,5 +1,5 @@
 import { HttpRequest } from "@azure/functions";
-import { OrganisationUser, UserType } from "@services/index";
+import { OrganisationUser, ServiceRole, UserType } from "@services/index";
 import { SLSEventType } from "@services/types";
 import { decodeToken } from "../authentication";
 import {
@@ -432,7 +432,7 @@ export function SLSValidation(action: SLSEventType) {
   };
 }
 
-export function ServiceRoleValidator(...roles: string[]) {
+export function ServiceRoleValidator(...roles: ServiceRole[]) {
   return function (
     target: Object,
     propertyKey: string,
