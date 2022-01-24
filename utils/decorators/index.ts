@@ -432,13 +432,13 @@ export function SLSValidation(action: SLSEventType) {
   };
 }
 
-export function UserRoleValidator(userType: UserType, ...roles: any[]) {
+export function ServiceRoleValidator(...roles: string[]) {
   return function (
     target: Object,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
-    const decoratorId = "UserRoleValidator";
+    const decoratorId = "ServiceRoleValidator";
     const original = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {
@@ -456,69 +456,22 @@ export function UserRoleValidator(userType: UserType, ...roles: any[]) {
         ],
       });
 
-      if (!user) {
+      const userRoles = user?.roles?.filter((ur) => roles.includes(ur.name));
+
+      if (userRoles.length === 0) {
         context.log.error(
-          `Invalid user. User is of wrong type for this endpoint. {oid: ${oid}}`
+          `Invalid user. User does not have valid role for this endpoint. {oid: ${oid}}`
         );
         context.logger(
           `${decoratorId}: an error has occurred. Check details.`,
           Severity.Error,
           {
-            error: `Invalid user. User is of wrong type for this endpoint. {oid: ${oid}}`,
+            error: `Invalid user. User does not have valid role for this endpoint. {oid: ${oid}}`,
           }
         );
         context.res = Responsify.Forbidden();
         return;
       }
-        const userRoles = user.roles?.filter((ur) => roles.includes(ur.name));
-
-        if (userRoles.length === 0) {
-          context.log.error(
-            `Invalid user. User does not have valid role for this endpoint. {oid: ${oid}}`
-          );
-          context.logger(
-            `${decoratorId}: an error has occurred. Check details.`,
-            Severity.Error,
-            {
-              error: `Invalid user. User does not have valid role for this endpoint. {oid: ${oid}}`,
-            }
-          );
-          context.res = Responsify.Forbidden();
-          return;
-        }
-      
-
-      let requestUser;
-
-      if (user.type === UserType.ACCESSOR) {
-
-        requestUser = {
-          id: oid,
-          type: user.type,
-          organisationUser: {
-            id: user.organisation.id,
-            role: user.organisation.role,
-            organisation: {
-              id: user.organisation.id,
-              name: user.organisation.name,
-            },
-          },
-          organisationUnitUser: {
-            id: user.organisation.organisationUnit.organisationUser.id,
-            organisationUnit: {
-              id: user.organisation.organisationUnit.id,
-              name: user.organisation.organisationUnit.name,
-            },
-          },
-        };
-      } else {
-        requestUser = {
-          id: oid,
-          type: user.type,
-        };
-      }
-
-      context.auth.requestUser = requestUser;
 
       await original.apply(this, args);
       return;
