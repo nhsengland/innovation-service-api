@@ -442,7 +442,6 @@ export function ServiceRoleValidator(...roles: string[]) {
     const original = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {
-
       const context: CustomContext = args[0];
       const oid = context.auth.decodedJwt.oid;
       const user = await context.services.UserService.getUser(oid, {
