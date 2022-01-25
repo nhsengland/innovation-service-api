@@ -7,10 +7,6 @@ import {
 import { UserLockValidationCode } from "@services/types";
 
 export type UserLockValidationResult = {
-  error:
-    | LastAssessmentUserOnPlatformError
-    | LastAccessorUserOnOrganisationError
-    | LastAccessorUserOnOrganisationUnitError
-    | LastAccessorFromUnitProvidingSupportError;
   code: UserLockValidationCode;
+  meta?: { [key: string]: any };
 };

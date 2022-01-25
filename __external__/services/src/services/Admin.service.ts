@@ -56,6 +56,7 @@ export class AdminService {
           id: user.id,
           type: user.type,
           displayName: b2c.displayName,
+          lockedAt: user.lockedAt,
           userOrganisations: userOrganisations.map((o) => ({
             id: o.id,
             name: o.organisation.name,
@@ -79,37 +80,30 @@ export class AdminService {
 
   async lockUsers(
     requestUser: RequestUser,
-    users: string[]
-  ): Promise<UserLockResult[]> {
-    if (!requestUser || !users || users.length === 0) {
+    user: string
+  ): Promise<UserLockResult> {
+    if (!requestUser) {
       throw new InvalidParamsError("Invalid params.");
     }
 
     const graphAccessToken = await authenticateWitGraphAPI();
-    const results: UserLockResult[] = [];
+    let result: UserLockResult;
 
-    for (let i = 0; i < users.length; i++) {
-      const user = users[i];
-      let result: UserLockResult;
-
-      try {
-        result = await this.lockUser(requestUser, users[i], graphAccessToken);
-      } catch (err) {
-        result = {
-          id: user,
-          status: "ERROR",
-          error: {
-            code: err.constructor.name,
-            message: err.message,
-            data: err.data,
-          },
-        };
-      }
-
-      results.push(result);
+    try {
+      result = await this.lockUser(requestUser, user, graphAccessToken);
+    } catch (err) {
+      result = {
+        id: user,
+        status: "ERROR",
+        error: {
+          code: err.constructor.name,
+          message: err.message,
+          data: err.data,
+        },
+      };
     }
 
-    return results;
+    return result;
   }
 
   async lockUser(
@@ -298,9 +292,6 @@ export class AdminService {
 
       if (assessmentUsersOnThePlatform.length === 0) {
         return {
-          error: new LastAssessmentUserOnPlatformError(
-            `The user with id ${userBeingRemoved.id} is the last Assessment User on the platform. You cannot lock this account`
-          ),
           code: UserLockValidationCode.LastAssessmentUserOnPlatform,
         };
       }
@@ -331,10 +322,13 @@ export class AdminService {
 
       if (orgMembers.length === 0) {
         return {
-          error: new LastAccessorUserOnOrganisationError(
-            `The user with id ${userToBeRemoved.id} is the last Qualifying Accessor User on the Organisation ${userOrg.organisation.name}(${organisationId}). You cannot lock this account`
-          ),
           code: UserLockValidationCode.LastAccessorUserOnOrganisation,
+          meta: {
+            organisation: {
+              id: userOrg.organisation.id,
+              name: userOrg.organisation.name,
+            },
+          },
         };
       }
 
@@ -360,10 +354,13 @@ export class AdminService {
 
         if (unitMembers.length === 0) {
           return {
-            error: new LastAccessorUserOnOrganisationUnitError(
-              `The user with id ${userToBeRemoved.id} is the last Qualifying Accessor User on the Organisation Unit ${userUnit.organisationUnit.name}(${unitId}). You cannot lock this account`
-            ),
             code: UserLockValidationCode.LastAccessorUserOnOrganisationUnit,
+            meta: {
+              unit: {
+                id: userUnit.organisationUnit.id,
+                name: userUnit.organisationUnit.name,
+              },
+            },
           };
         }
       }
@@ -431,13 +428,10 @@ export class AdminService {
 
     if (innovations.length > 0) {
       return {
-        error: new LastAccessorFromUnitProvidingSupportError(
-          `The user with id ${userToBeRemoved.id} is the last Accessor User from his unit providing support to ${innovations.length} innovation(s). You cannot lock this account.
-        Check the data property of this error for more information.
-        `,
-          innovations
-        ),
         code: UserLockValidationCode.LastAccessorFromUnitProvidingSupport,
+        meta: {
+          supports: { count: innovations.length, innovations },
+        },
       };
     }
   }

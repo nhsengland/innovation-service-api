@@ -25,3 +25,8 @@ export enum Severity {
   Error = 3,
   Critical = 4,
 }
+
+export enum ServiceRole {
+  ADMIN = "ADMIN",
+  SERVICE_TEAM = "SERVICE_TEAM",
+}

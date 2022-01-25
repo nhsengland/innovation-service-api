@@ -1,15 +1,15 @@
 import { HttpRequest } from "@azure/functions";
 import { UserType } from "@services/index";
-import { SLSEventType } from "@services/types";
 import {
   AppInsights,
   JwtDecoder,
   SLSValidation,
   SQLConnector,
+  UserRoleValidator,
   Validator,
 } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
-import { CustomContext, Severity } from "../utils/types";
+import { CustomContext, ServiceRole, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
 
@@ -21,8 +21,12 @@ class AdminsSearchUsers {
     "query",
     "Invalid querystring params"
   )
-  @JwtDecoder()
-  @SLSValidation(SLSEventType.ADMIN_SEARCH_USER)
+  @JwtDecoder(true)
+  @UserRoleValidator(
+    UserType.ADMIN,
+    ServiceRole.ADMIN,
+    ServiceRole.SERVICE_TEAM
+  )
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest

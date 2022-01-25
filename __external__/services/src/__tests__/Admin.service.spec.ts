@@ -139,13 +139,13 @@ describe("[User Account Lock suite", () => {
     };
     // Act
 
-    const result = await adminService.lockUsers(requestUser, [
-      assessmentUser1.id,
-    ]);
+    const result = await adminService.lockUsers(
+      requestUser,
+      assessmentUser1.id
+    );
 
-    expect(result.length).toBeGreaterThan(0);
-    expect(result[0].error).toBeUndefined();
-    expect(result[0].status).toBe("OK");
+    expect(result.error).toBeUndefined();
+    expect(result.status).toBe("OK");
   });
 
   it("Should not lock accessor if its the only one on the organisation", async () => {

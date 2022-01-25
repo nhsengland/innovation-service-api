@@ -1,26 +1,15 @@
 import {
-  AccessorOrganisationRole,
-  Innovation,
-  InnovationStatus,
-  InnovationSupport,
-  InnovationSupportStatus,
   Organisation,
   OrganisationUnit,
   OrganisationUnitUser,
   OrganisationUser,
   User,
-  UserRole,
   UserType,
 } from "@domain/index";
 import {
   InvalidDataError,
   InvalidParamsError,
-  InvalidUserRoleError,
   InvalidUserTypeError,
-  LastAccessorFromUnitProvidingSupportError,
-  LastAccessorUserOnOrganisationError,
-  LastAccessorUserOnOrganisationUnitError,
-  LastAssessmentUserOnPlatformError,
 } from "@services/errors";
 import {
   ProfileSlimModel,
@@ -29,10 +18,6 @@ import {
 import { RequestUser } from "@services/models/RequestUser";
 import { UserCreationModel } from "@services/models/UserCreationModel";
 import { UserCreationResult } from "@services/models/UserCreationResult";
-import {
-  UserLockResult,
-  UserUnlockResult,
-} from "@services/models/UserLockResult";
 import { UserProfileUpdateModel } from "@services/models/UserProfileUpdateModel";
 import { UserUpdateModel } from "@services/models/UserUpdateModel";
 import { UserUpdateResult } from "@services/models/UserUpdateResult";
@@ -43,7 +28,6 @@ import {
   FindOneOptions,
   getConnection,
   getRepository,
-  IsNull,
   Repository,
 } from "typeorm";
 import {
@@ -62,18 +46,12 @@ export class UserService {
   private readonly userRepo: Repository<User>;
   private readonly orgRepo: Repository<Organisation>;
   private readonly orgUnitRepo: Repository<OrganisationUnit>;
-  private readonly orgUserRepo: Repository<OrganisationUser>;
-  private readonly orgUnitUserRepo: Repository<OrganisationUnitUser>;
-  private readonly innovationRepo: Repository<Innovation>;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.userRepo = getRepository(User, connectionName);
     this.orgRepo = getRepository(Organisation, connectionName);
     this.orgUnitRepo = getRepository(OrganisationUnit, connectionName);
-    this.orgUserRepo = getRepository(OrganisationUser, connectionName);
-    this.orgUnitUserRepo = getRepository(OrganisationUnitUser, connectionName);
-    this.innovationRepo = getRepository(Innovation, connectionName);
   }
 
   async find(id: string, options?: FindOneOptions) {
@@ -257,6 +235,7 @@ export class UserService {
         id: userB2C.id,
         displayName: userB2C.displayName,
         type: user.type,
+        lockedAt: user.lockedAt,
         userOrganisations,
       };
     }
