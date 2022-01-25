@@ -1,5 +1,5 @@
 import { HttpRequest } from "@azure/functions";
-import { OrganisationUser, UserType } from "@services/index";
+import { OrganisationUser, ServiceRole, UserType } from "@services/index";
 import { SLSEventType } from "@services/types";
 import { decodeToken } from "../authentication";
 import {
@@ -427,6 +427,47 @@ export function SLSValidation(action: SLSEventType) {
       if (!shortCircuit) {
         await original.apply(this, args);
       }
+      return;
+    };
+  };
+}
+
+export function ServiceRoleValidator(...roles: ServiceRole[]) {
+  return function (
+    target: Object,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    const decoratorId = "ServiceRoleValidator";
+    const original = descriptor.value;
+
+    descriptor.value = async function (...args: any[]) {
+      const context: CustomContext = args[0];
+      const oid = context.auth.decodedJwt.oid;
+      const user = await context.services.UserService.getUser(oid, {
+        relations: ["serviceRoles", "serviceRoles.role"],
+      });
+
+      const userRoles = user?.serviceRoles?.filter((sr) =>
+        roles.includes(sr.role.name)
+      );
+
+      if (userRoles.length === 0) {
+        context.log.error(
+          `Invalid user. User does not have valid role for this endpoint. {oid: ${oid}}`
+        );
+        context.logger(
+          `${decoratorId}: an error has occurred. Check details.`,
+          Severity.Error,
+          {
+            error: `Invalid user. User does not have valid role for this endpoint. {oid: ${oid}}`,
+          }
+        );
+        context.res = Responsify.Forbidden();
+        return;
+      }
+
+      await original.apply(this, args);
       return;
     };
   };

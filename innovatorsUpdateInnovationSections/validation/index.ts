@@ -134,6 +134,11 @@ const payloadSchema = Joi.object({
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
       .allow(""),
+    moreSupportDescription: Joi.string()
+      .max(constants.mediumFieldCharacterLimit)
+      .allow(null)
+      .allow("")
+      .optional(),
   })
     .required()
     .unknown(true),
