@@ -5,6 +5,11 @@ export enum UserType {
   ASSESSMENT = "ASSESSMENT",
 }
 
+export enum ServiceRole {
+  ADMIN = "ADMIN",
+  SERVICE_TEAM = "SERVICE_TEAM",
+}
+
 export enum NotificationContextType {
   INNOVATION = "INNOVATION",
   ACTION = "ACTION",

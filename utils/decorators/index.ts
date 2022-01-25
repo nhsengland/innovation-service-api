@@ -1,5 +1,5 @@
 import { HttpRequest } from "@azure/functions";
-import { OrganisationUser, UserType } from "@services/index";
+import { OrganisationUser, ServiceRole, UserType } from "@services/index";
 import { SLSEventType } from "@services/types";
 import { decodeToken } from "../authentication";
 import {
@@ -432,45 +432,23 @@ export function SLSValidation(action: SLSEventType) {
   };
 }
 
-export function UserRoleValidator(userType: UserType, ...roles: any[]) {
+export function ServiceRoleValidator(...roles: ServiceRole[]) {
   return function (
     target: Object,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
-    const decoratorId = "UserRoleValidator";
+    const decoratorId = "ServiceRoleValidator";
     const original = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {
       const context: CustomContext = args[0];
       const oid = context.auth.decodedJwt.oid;
       const user = await context.services.UserService.getUser(oid, {
-        relations: [
-          "userOrganisations",
-          "userOrganisations.organisation",
-          "userOrganisations.userOrganisationUnits",
-          "userOrganisations.userOrganisationUnits.organisationUnit",
-          "serviceRoles",
-          "serviceRoles.role",
-        ],
+        relations: ["serviceRoles", "serviceRoles.role"],
       });
 
-      if (!user || user.type !== userType) {
-        context.log.error(
-          `Invalid user. User is of wrong type for this endpoint. {oid: ${oid}}`
-        );
-        context.logger(
-          `${decoratorId}: an error has occurred. Check details.`,
-          Severity.Error,
-          {
-            error: `Invalid user. User is of wrong type for this endpoint. {oid: ${oid}}`,
-          }
-        );
-        context.res = Responsify.Forbidden();
-        return;
-      }
-
-      const userRoles = user.serviceRoles?.filter((sr) =>
+      const userRoles = user?.serviceRoles?.filter((sr) =>
         roles.includes(sr.role.name)
       );
 
@@ -488,43 +466,6 @@ export function UserRoleValidator(userType: UserType, ...roles: any[]) {
         context.res = Responsify.Forbidden();
         return;
       }
-
-      let requestUser;
-
-      if (user.type === UserType.ACCESSOR) {
-        requestUser = {
-          id: oid,
-          type: user.type,
-          organisationUser: {
-            id: user.userOrganisations[0].id,
-            role: user.userOrganisations[0].role,
-            organisation: {
-              id: user.userOrganisations[0].organisation.id,
-              name: user.userOrganisations[0].organisation.name,
-            },
-          },
-          organisationUnitUser: {
-            id:
-              user.userOrganisations[0].userOrganisationUnits[0]
-                .organisationUser.id,
-            organisationUnit: {
-              id:
-                user.userOrganisations[0].userOrganisationUnits[0]
-                  .organisationUnit.id,
-              name:
-                user.userOrganisations[0].userOrganisationUnits[0]
-                  .organisationUnit.name,
-            },
-          },
-        };
-      } else {
-        requestUser = {
-          id: oid,
-          type: user.type,
-        };
-      }
-
-      context.auth.requestUser = requestUser;
 
       await original.apply(this, args);
       return;
