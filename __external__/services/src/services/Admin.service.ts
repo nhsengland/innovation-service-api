@@ -7,14 +7,7 @@ import {
   User,
   UserType,
 } from "@domain/index";
-import {
-  InvalidParamsError,
-  InvalidUserRoleError,
-  LastAccessorFromUnitProvidingSupportError,
-  LastAccessorUserOnOrganisationError,
-  LastAccessorUserOnOrganisationUnitError,
-  LastAssessmentUserOnPlatformError,
-} from "@services/errors";
+import { InvalidParamsError, InvalidUserRoleError } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
 import {
   UserLockResult,
@@ -26,6 +19,7 @@ import { UserLockValidationCode, UserSearchResult } from "@services/types";
 import { Connection, getConnection } from "typeorm";
 import { UserService } from "..";
 import { authenticateWitGraphAPI, getUserFromB2C } from "../helpers";
+import * as rules from "../config/admin-user-lock.config.json";
 
 export class AdminService {
   private readonly connection: Connection;
@@ -239,9 +233,7 @@ export class AdminService {
     };
   }
 
-  async userLockValidation(
-    userId: string
-  ): Promise<UserLockValidationResult[]> {
+  async userLockValidation(userId: string): Promise<{ [key: string]: any }> {
     const userToBeRemoved = await this.userService.getUser(userId, {
       relations: [
         "userOrganisations",
@@ -254,23 +246,38 @@ export class AdminService {
     return await this.runUserValidation(userToBeRemoved);
   }
 
-  private async runUserValidation(
-    user: User
-  ): Promise<UserLockValidationResult[]> {
-    const result: UserLockValidationResult[] = [];
-
-    if (user.type === UserType.ASSESSMENT)
-      result.push(await this.CheckAssessmentUser(user));
+  private async runUserValidation(user: User): Promise<{ [key: string]: any }> {
+    const r = { ...rules };
+    if (user.type === UserType.ASSESSMENT) {
+      const checkAssessmentUser = await this.CheckAssessmentUser(user);
+      if (r[checkAssessmentUser?.code.toString()]) {
+        r[checkAssessmentUser?.code.toString()] = {
+          ...checkAssessmentUser,
+          valid: false,
+        };
+      }
+    }
 
     if (user.type === UserType.ACCESSOR) {
       const accessorOrgRule = await this.CheckAccessorOrganisation(user);
       const accessorSupportRule = await this.checkAccessorSupports(user);
 
-      if (accessorOrgRule) result.push(accessorOrgRule);
-      if (accessorSupportRule) result.push(accessorSupportRule);
+      if (r[accessorOrgRule?.code.toString()]) {
+        r[accessorOrgRule?.code.toString()] = {
+          ...accessorOrgRule,
+          valid: false,
+        };
+      }
+
+      if (r[accessorSupportRule?.code.toString()]) {
+        r[accessorSupportRule?.code.toString()] = {
+          ...accessorSupportRule,
+          valid: false,
+        };
+      }
     }
 
-    return result;
+    return r;
   }
 
   private async CheckAssessmentUser(

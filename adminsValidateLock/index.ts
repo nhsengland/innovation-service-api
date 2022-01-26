@@ -1,12 +1,9 @@
 import { HttpRequest } from "@azure/functions";
-import { UserType } from "@domain/index";
-import { SLSEventType } from "@services/types";
 import {
   AppInsights,
   JwtDecoder,
-  SLSValidation,
+  ServiceRoleValidator,
   SQLConnector,
-  UserRoleValidator,
 } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
 import { CustomContext, ServiceRole, Severity } from "../utils/types";
@@ -16,11 +13,7 @@ class AdminsValidateLock {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder(true)
-  @UserRoleValidator(
-    UserType.ADMIN,
-    ServiceRole.ADMIN,
-    ServiceRole.SERVICE_TEAM
-  )
+  @ServiceRoleValidator(ServiceRole.ADMIN, ServiceRole.SERVICE_TEAM)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest

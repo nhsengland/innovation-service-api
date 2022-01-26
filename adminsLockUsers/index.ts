@@ -4,10 +4,9 @@ import { SLSEventType } from "@services/types";
 import {
   AppInsights,
   JwtDecoder,
+  ServiceRoleValidator,
   SLSValidation,
   SQLConnector,
-  UserRoleValidator,
-  Validator,
 } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
 import { CustomContext, ServiceRole, Severity } from "../utils/types";
@@ -17,11 +16,7 @@ class AdminsLockUsers {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder(true)
-  @UserRoleValidator(
-    UserType.ADMIN,
-    ServiceRole.ADMIN,
-    ServiceRole.SERVICE_TEAM
-  )
+  @ServiceRoleValidator(ServiceRole.ADMIN, ServiceRole.SERVICE_TEAM)
   @SLSValidation(SLSEventType.ADMIN_LOCK_USER)
   static async httpTrigger(
     context: CustomContext,

@@ -74,10 +74,11 @@ describe("[User Account Lock suite", () => {
 
     const result = await adminService.userLockValidation(assessmentUser.id);
 
-    expect(result.length).toBeGreaterThan(0);
-    expect(result[0].code).toBe(
-      UserLockValidationCode.LastAssessmentUserOnPlatform
-    );
+    expect(result).toBeDefined();
+    expect(result.lastAssessmentUserOnPlatform.valid).toBe(false);
+    expect(result.lastAccessorUserOnOrganisation.valid).toBe(true);
+    expect(result.lastAccessorUserOnOrganisationUnit.valid).toBe(true);
+    expect(result.lastAccessorFromUnitProvidingSupport.valid).toBe(true);
   });
 
   it("Should not lock User if is last assessment user when there other locked users", async () => {
@@ -108,10 +109,11 @@ describe("[User Account Lock suite", () => {
 
     const result = await adminService.userLockValidation(assessmentUser.id);
 
-    expect(result.length).toBeGreaterThan(0);
-    expect(result[0].code).toBe(
-      UserLockValidationCode.LastAssessmentUserOnPlatform
-    );
+    expect(result).toBeDefined();
+    expect(result.lastAssessmentUserOnPlatform.valid).toBe(false);
+    expect(result.lastAccessorUserOnOrganisation.valid).toBe(true);
+    expect(result.lastAccessorUserOnOrganisationUnit.valid).toBe(true);
+    expect(result.lastAccessorFromUnitProvidingSupport.valid).toBe(true);
   });
 
   it("Should lock Assessment User if is not last assessment user", async () => {
@@ -202,10 +204,11 @@ describe("[User Account Lock suite", () => {
 
     const result = await adminService.userLockValidation(accessorUser.id);
 
-    expect(result.length).toBeGreaterThan(0);
-    expect(result[0].code).toBe(
-      UserLockValidationCode.LastAccessorUserOnOrganisation
-    );
+    expect(result).toBeDefined();
+    expect(result.lastAssessmentUserOnPlatform.valid).toBe(true);
+    expect(result.lastAccessorUserOnOrganisation.valid).toBe(false);
+    expect(result.lastAccessorUserOnOrganisationUnit.valid).toBe(true);
+    expect(result.lastAccessorFromUnitProvidingSupport.valid).toBe(true);
   });
 
   it("Should not lock accessor if its the only one on the organisation unit", async () => {
@@ -277,10 +280,11 @@ describe("[User Account Lock suite", () => {
 
     const result = await adminService.userLockValidation(accessorUser1.id);
 
-    expect(result.length).toBeGreaterThan(0);
-    expect(result[0].code).toBe(
-      UserLockValidationCode.LastAccessorUserOnOrganisationUnit
-    );
+    expect(result).toBeDefined();
+    expect(result.lastAssessmentUserOnPlatform.valid).toBe(true);
+    expect(result.lastAccessorUserOnOrganisation.valid).toBe(true);
+    expect(result.lastAccessorUserOnOrganisationUnit.valid).toBe(false);
+    expect(result.lastAccessorFromUnitProvidingSupport.valid).toBe(true);
   });
 
   it("Should lock accessor if its NOT the only one on the organisation AND organisation unit", async () => {
@@ -348,6 +352,10 @@ describe("[User Account Lock suite", () => {
 
     const result = await adminService.userLockValidation(accessorUser1.id);
 
-    expect(result.length).toBe(0);
+    expect(result).toBeDefined();
+    expect(result.lastAssessmentUserOnPlatform.valid).toBe(true);
+    expect(result.lastAccessorUserOnOrganisation.valid).toBe(true);
+    expect(result.lastAccessorUserOnOrganisationUnit.valid).toBe(true);
+    expect(result.lastAccessorFromUnitProvidingSupport.valid).toBe(true);
   });
 });

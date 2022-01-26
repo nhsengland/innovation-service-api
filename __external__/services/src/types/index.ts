@@ -39,8 +39,8 @@ export enum SLSEventType {
 }
 
 export enum UserLockValidationCode {
-  LastAssessmentUserOnPlatform = "LastAssessmentUserOnPlatform",
-  LastAccessorUserOnOrganisation = "LastAccessorUserOnOrganisation",
-  LastAccessorUserOnOrganisationUnit = "LastAccessorUserOnOrganisationUnit",
-  LastAccessorFromUnitProvidingSupport = "LastAccessorFromUnitProvidingSupport",
+  LastAssessmentUserOnPlatform = "lastAssessmentUserOnPlatform",
+  LastAccessorUserOnOrganisation = "lastAccessorUserOnOrganisation",
+  LastAccessorUserOnOrganisationUnit = "lastAccessorUserOnOrganisationUnit",
+  LastAccessorFromUnitProvidingSupport = "lastAccessorFromUnitProvidingSupport",
 }

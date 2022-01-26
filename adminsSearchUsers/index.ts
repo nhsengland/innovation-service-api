@@ -3,9 +3,8 @@ import { UserType } from "@services/index";
 import {
   AppInsights,
   JwtDecoder,
-  SLSValidation,
+  ServiceRoleValidator,
   SQLConnector,
-  UserRoleValidator,
   Validator,
 } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
@@ -22,11 +21,7 @@ class AdminsSearchUsers {
     "Invalid querystring params"
   )
   @JwtDecoder(true)
-  @UserRoleValidator(
-    UserType.ADMIN,
-    ServiceRole.ADMIN,
-    ServiceRole.SERVICE_TEAM
-  )
+  @ServiceRoleValidator(ServiceRole.ADMIN, ServiceRole.SERVICE_TEAM)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
