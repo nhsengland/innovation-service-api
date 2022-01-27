@@ -1,7 +1,13 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+/*eslint @typescript-eslint/no-unused-vars: ["off", { "varsIgnorePattern": "[qQ]ueryRunner" }]*/
 
-export class migrateSupportTypeData1643015334322 implements MigrationInterface {
-  public async up(queryRunner: QueryRunner): Promise<void> {
+import { QueryRunner } from "typeorm";
+
+import { BaseSeed } from "../tools/bases/base-seed";
+
+export class migrateSupportTypeData1643281495148 extends BaseSeed {
+  public name = "migrateSupportTypeData1643281495148";
+
+  public async up(queryRunner: QueryRunner): Promise<any> {
     await queryRunner.query(
       `
             INSERT INTO innovation_support_type
@@ -27,7 +33,12 @@ export class migrateSupportTypeData1643015334322 implements MigrationInterface {
     );
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
-    // Action is irreversible as it is only for insert statement.
+  public async down(queryRunner: QueryRunner): Promise<any> {
+    await queryRunner.query(
+      `
+        DELETE FROM innovation_support_type 
+        WHERE type = 'ADOPTION' AND CAST(created_at as datetime2) < CAST('15-Dec-2021' as datetime2)
+        `
+    );
   }
 }
