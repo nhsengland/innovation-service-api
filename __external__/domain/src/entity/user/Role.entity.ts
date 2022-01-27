@@ -1,3 +1,4 @@
+import { ServiceRole } from "@domain/index";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { Base } from "../Base.entity";
 
@@ -8,7 +9,7 @@ export class Role extends Base {
   id: string;
 
   @Column({ name: "name", type: "nvarchar", length: 100, nullable: false })
-  name: string;
+  name: ServiceRole;
 
   //static constructor
   static new(data) {

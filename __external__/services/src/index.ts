@@ -89,6 +89,7 @@ export {
   InnovatorOrganisationRole,
   OrganisationUserRole,
   UserType,
+  ServiceRole,
   ActivityLog,
   UserRole,
   Role,
