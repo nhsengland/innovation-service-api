@@ -2,6 +2,7 @@ import { HttpRequest } from "@azure/functions";
 import { UserType } from "@services/index";
 import { SLSEventType } from "@services/types";
 import {
+  AllowedUserType,
   AppInsights,
   JwtDecoder,
   ServiceRoleValidator,
@@ -16,6 +17,7 @@ class AdminsLockUsers {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder(true)
+  @AllowedUserType(UserType.ADMIN)
   @ServiceRoleValidator(ServiceRole.ADMIN, ServiceRole.SERVICE_TEAM)
   @SLSValidation(SLSEventType.ADMIN_LOCK_USER)
   static async httpTrigger(

@@ -19,7 +19,6 @@ import * as path from "path";
 import * as helpers from "../helpers";
 import { getConnection } from "typeorm";
 import { AdminService } from "@services/services/Admin.service";
-import { UserLockValidationCode } from "@services/types";
 
 describe("[User Account Lock suite", () => {
   let adminService: AdminService;

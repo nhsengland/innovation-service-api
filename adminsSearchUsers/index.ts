@@ -1,6 +1,7 @@
 import { HttpRequest } from "@azure/functions";
 import { UserType } from "@services/index";
 import {
+  AllowedUserType,
   AppInsights,
   JwtDecoder,
   ServiceRoleValidator,
@@ -21,6 +22,7 @@ class AdminsSearchUsers {
     "Invalid querystring params"
   )
   @JwtDecoder(true)
+  @AllowedUserType(UserType.ADMIN)
   @ServiceRoleValidator(ServiceRole.ADMIN, ServiceRole.SERVICE_TEAM)
   static async httpTrigger(
     context: CustomContext,

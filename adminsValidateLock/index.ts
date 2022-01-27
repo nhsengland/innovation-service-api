@@ -1,5 +1,7 @@
 import { HttpRequest } from "@azure/functions";
+import { UserType } from "@domain/index";
 import {
+  AllowedUserType,
   AppInsights,
   JwtDecoder,
   ServiceRoleValidator,
@@ -13,6 +15,7 @@ class AdminsValidateLock {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder(true)
+  @AllowedUserType(UserType.ADMIN)
   @ServiceRoleValidator(ServiceRole.ADMIN, ServiceRole.SERVICE_TEAM)
   static async httpTrigger(
     context: CustomContext,
