@@ -10,6 +10,12 @@ export class migrateSupportTypeData1643281495148 extends BaseSeed {
   public async up(queryRunner: QueryRunner): Promise<any> {
     await queryRunner.query(
       `
+        DELETE FROM innovation_support_type 
+        WHERE type = 'ADOPTION' AND CAST(created_at as datetime2) < CAST('15-Dec-2021' as datetime2)
+        `
+    );
+    await queryRunner.query(
+      `            
             INSERT INTO innovation_support_type
             (
              created_at
