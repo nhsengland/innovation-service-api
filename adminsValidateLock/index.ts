@@ -1,40 +1,30 @@
 import { HttpRequest } from "@azure/functions";
-import { UserType } from "@services/index";
-import { SLSEventType } from "@services/types";
+import { UserType } from "@domain/index";
 import {
   AllowedUserType,
   AppInsights,
   JwtDecoder,
   ServiceRoleValidator,
-  SLSValidation,
   SQLConnector,
 } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
 import { CustomContext, ServiceRole, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 
-class AdminsLockUsers {
+class AdminsValidateLock {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder(true)
   @AllowedUserType(UserType.ADMIN)
   @ServiceRoleValidator(ServiceRole.ADMIN, ServiceRole.SERVICE_TEAM)
-  @SLSValidation(SLSEventType.ADMIN_LOCK_USER)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const user = req.params.userId;
-    const oid = context.auth.decodedJwt.oid;
-
+    const userId = req.params.userId;
     let result;
     try {
-      context.auth.requestUser = {
-        id: oid,
-        type: UserType.ADMIN,
-      };
-
-      result = await persistence.lockUsers(context, user);
+      result = await persistence.lockValidation(context, userId);
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
@@ -46,4 +36,4 @@ class AdminsLockUsers {
   }
 }
 
-export default AdminsLockUsers.httpTrigger;
+export default AdminsValidateLock.httpTrigger;
