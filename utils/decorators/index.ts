@@ -135,7 +135,7 @@ export function Validator(
   };
 }
 
-export function JwtDecoder() {
+export function JwtDecoder(admin?: boolean) {
   return function (
     target: Object,
     propertyKey: string,
@@ -151,7 +151,7 @@ export function JwtDecoder() {
 
       const userId = req.params.userId;
 
-      if (userId && userId !== jwt.oid) {
+      if (!admin && userId && userId !== jwt.oid) {
         context.logger(
           `[${req.method}]${req.url} Operation denied. ${userId} !== ${jwt.oid}`,
           Severity.Information

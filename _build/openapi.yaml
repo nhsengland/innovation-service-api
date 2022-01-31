@@ -2672,7 +2672,42 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
-  /user-admin/users/lock:
+    get:
+      tags:
+        - Admin
+        - User
+        - SearchUsers
+      description: Search users
+      operationId: admins-search-users
+      security:
+        - OpenId:
+            - users_read
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: email
+          in: query
+          schema:
+            type: string
+          required: false
+        - name: type
+          in: query
+          schema:
+            type: string
+          required: false
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/user-admin/users/{userId}/lock':
     patch:
       tags:
         - Admin
@@ -2686,6 +2721,41 @@ paths:
       parameters:
         - name: Authorization
           in: header
+          schema:
+            type: string
+          required: true
+        - name: userId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+    get:
+      tags:
+        - Admin
+        - User
+        - LockUsersValidation
+      description: Lock users validation
+      operationId: admins-lock-users-validation
+      security:
+        - OpenId:
+            - users_read
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: userId
+          in: path
           schema:
             type: string
           required: true
@@ -2724,23 +2794,18 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
-  /user-admin/users/search:
-    get:
+  /user-admin/ping:
+    post:
       tags:
         - Admin
         - User
-        - searchUsers
-      description: Search users by email address
-      operationId: admins-search-users
+        - adminHealth
+      description: Test endpoint
+      operationId: admins-ping
       security:
         - OpenId:
             - users_read
       parameters:
-        - name: emails
-          in: query
-          required: true
-          schema:
-            type: string
         - name: Authorization
           in: header
           schema:
