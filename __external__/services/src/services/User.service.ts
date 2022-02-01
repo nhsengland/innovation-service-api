@@ -310,7 +310,6 @@ export class UserService {
 
     // promise all and merge all results
     return Promise.all(promises).then((results) => {
-      console.log(results);
       return results.flatMap((result) =>
         result?.map((u) => ({
           id: u.id,
