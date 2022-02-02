@@ -1,32 +1,37 @@
 import { HttpRequest } from "@azure/functions";
-import { UserType } from "@domain/index";
+import { ServiceRole, UserType } from "@services/index";
+import { SLSEventType } from "@services/types";
 import {
   AllowedUserType,
   AppInsights,
   JwtDecoder,
+  ServiceRoleValidator,
+  SLSValidation,
   SQLConnector,
+  Validator,
 } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
+import * as validation from "./validation";
 
-class OrganisationUnitsGetAll {
+class AdminsCreateUser {
   @AppInsights()
   @SQLConnector()
-  @JwtDecoder()
-  @AllowedUserType(
-    UserType.INNOVATOR,
-    UserType.ACCESSOR,
-    UserType.ASSESSMENT,
-    UserType.ADMIN
-  )
+  @Validator(validation.ValidatePayload, "body", "Invalid Payload")
+  @JwtDecoder(true)
+  @AllowedUserType(UserType.ADMIN)
+  @ServiceRoleValidator(ServiceRole.ADMIN, ServiceRole.SERVICE_TEAM)
+  @SLSValidation(SLSEventType.ADMIN_CREATE_USER)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
+    const user = req.body;
+
     let result;
     try {
-      result = await persistence.findAll(context);
+      result = await persistence.createUser(context, user);
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
@@ -38,4 +43,4 @@ class OrganisationUnitsGetAll {
   }
 }
 
-export default OrganisationUnitsGetAll.httpTrigger;
+export default AdminsCreateUser.httpTrigger;

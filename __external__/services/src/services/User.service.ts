@@ -362,7 +362,8 @@ export class UserService {
         result = await this.createUser(requestUser, users[i], graphAccessToken);
       } catch (err) {
         result = {
-          email: user.email,
+          id: null,
+          status: "ERROR",
           error: {
             code: err.constructor.name,
             message: err.message,
@@ -392,13 +393,6 @@ export class UserService {
         !userModel.role)
     ) {
       throw new InvalidParamsError("Invalid params. Invalid accessor params.");
-    }
-
-    if (
-      userModel.type !== UserType.ACCESSOR &&
-      userModel.type !== UserType.ASSESSMENT
-    ) {
-      throw new InvalidDataError("Invalid data. Invalid user type.");
     }
 
     if (requestUser.type !== UserType.ADMIN) {
@@ -467,10 +461,6 @@ export class UserService {
         .getOne();
     }
 
-    const result: UserCreationResult = {
-      email: userModel.email,
-      userId: oid,
-    };
     return await this.connection.transaction(
       async (transactionManager: EntityManager) => {
         if (!user) {
@@ -497,7 +487,6 @@ export class UserService {
             OrganisationUser,
             orgUserObj
           );
-          result.organisationUserId = orgUser.id;
 
           if (organisationUnit) {
             const orgUnitUserObj = OrganisationUnitUser.new({
@@ -511,9 +500,13 @@ export class UserService {
               OrganisationUnitUser,
               orgUnitUserObj
             );
-            result.organisationUnitUserId = orgUnitUser.id;
           }
         }
+
+        const result: UserCreationResult = {
+          id: oid,
+          status: "OK",
+        };
 
         return result;
       }
