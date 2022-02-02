@@ -87,10 +87,15 @@ export async function getUsersFromB2C(
 
 export async function getUserFromB2CByEmail(
   email: string,
-  accessToken?: string
+  accessToken?: string,
+  apiVersion?: string
 ) {
   if (!accessToken) {
     accessToken = await authenticateWitGraphAPI();
+  }
+
+  if (!apiVersion) {
+    apiVersion = "v1.0";
   }
 
   const odataFilter = `$filter=identities/any(c:c/issuerAssignedId eq '${email}' and c/issuer eq '${process.env.AD_TENANT_NAME}.onmicrosoft.com')`;
@@ -101,7 +106,7 @@ export async function getUserFromB2CByEmail(
     };
 
     const result = await axios.get(
-      `https://graph.microsoft.com/v1.0/users?${odataFilter}`,
+      `https://graph.microsoft.com/${apiVersion}/users?${odataFilter}`,
       config
     );
     return result.data.value && result.data.value.length > 0
