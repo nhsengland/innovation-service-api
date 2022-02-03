@@ -1,4 +1,5 @@
 import {
+  AccessorOrganisationRole,
   Organisation,
   OrganisationUnit,
   OrganisationUnitUser,
@@ -30,6 +31,7 @@ import {
   getRepository,
   Repository,
 } from "typeorm";
+import { OrganisationRoleValidator } from "utils/decorators";
 import {
   authenticateWitGraphAPI,
   createB2CUser,
@@ -386,11 +388,19 @@ export class UserService {
       throw new InvalidParamsError("Invalid params.");
     }
 
+    // UserType Accessor should have the role and organisation provided in request
     if (
       userModel.type === UserType.ACCESSOR &&
-      (!userModel.organisationAcronym ||
-        !userModel.organisationUnitAcronym ||
-        !userModel.role)
+      (!userModel.role || !userModel.organisationAcronym)
+    ) {
+      throw new InvalidParamsError("Invalid params. Invalid accessor params.");
+    }
+
+    // Organisation Unit is mandatory for Accessors
+    if (
+      userModel.type === UserType.ACCESSOR &&
+      userModel.role === AccessorOrganisationRole.ACCESSOR &&
+      !userModel.organisationUnitAcronym
     ) {
       throw new InvalidParamsError("Invalid params. Invalid accessor params.");
     }
@@ -405,6 +415,36 @@ export class UserService {
 
     if (!userModel.password) {
       userModel.password = Math.random().toString(36).slice(2) + "0aA!";
+    }
+
+    let organisation: Organisation = null;
+    if (userModel.organisationAcronym) {
+      organisation = await this.orgRepo
+        .createQueryBuilder("organisation")
+        .where("acronym = :acronym", {
+          acronym: userModel.organisationAcronym,
+        })
+        .getOne();
+
+      if (!organisation) {
+        throw new InvalidParamsError("Invalid params. Invalid organisation.");
+      }
+    }
+
+    let organisationUnit: OrganisationUnit = null;
+    if (userModel.organisationUnitAcronym) {
+      organisationUnit = await this.orgUnitRepo
+        .createQueryBuilder("organisationUnit")
+        .where("acronym = :acronym", {
+          acronym: userModel.organisationUnitAcronym,
+        })
+        .getOne();
+
+      if (!organisationUnit) {
+        throw new InvalidParamsError(
+          "Invalid params. Invalid organisation unit."
+        );
+      }
     }
 
     let oid: string;
@@ -426,8 +466,8 @@ export class UserService {
         })
         .getOne();
 
-      if (user && user.type !== userModel.type) {
-        throw new InvalidDataError("Invalid data. Invalid user type.");
+      if (user) {
+        throw new InvalidDataError("Invalid data. User already exists.");
       }
     } else {
       // If the user does not exist in the B2C, create b2c user
@@ -439,26 +479,6 @@ export class UserService {
       );
 
       oid = b2cUser.id;
-    }
-
-    let organisation: Organisation = null;
-    if (userModel.organisationAcronym) {
-      organisation = await this.orgRepo
-        .createQueryBuilder("organisation")
-        .where("acronym = :acronym", {
-          acronym: userModel.organisationAcronym,
-        })
-        .getOne();
-    }
-
-    let organisationUnit: OrganisationUnit = null;
-    if (userModel.organisationUnitAcronym) {
-      organisationUnit = await this.orgUnitRepo
-        .createQueryBuilder("organisationUnit")
-        .where("acronym = :acronym", {
-          acronym: userModel.organisationUnitAcronym,
-        })
-        .getOne();
     }
 
     return await this.connection.transaction(
