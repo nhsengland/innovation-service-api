@@ -1,4 +1,5 @@
-module.exports = {
+module.exports = {  
+  testTimeout: 15000,
   preset: 'ts-jest',
   testEnvironment: 'node',
   testMatch: ['**/__tests__/**/*.spec.ts'],
