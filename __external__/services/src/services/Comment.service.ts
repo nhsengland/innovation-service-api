@@ -196,15 +196,13 @@ export class CommentService {
     }
 
     try {
-      if (requestUser.type !== UserType.ACCESSOR) {
-        await this.notificationService.sendEmail(
-          requestUser,
-          EmailNotificationTemplate.ACCESSORS_COMMENT_RECEIVED,
-          innovationId,
-          result.id,
-          []
-        );
-      }
+      await this.notificationService.sendEmail(
+        requestUser,
+        EmailNotificationTemplate.ACCESSORS_COMMENT_RECEIVED,
+        innovationId,
+        result.id,
+        []
+      );
     } catch (error) {
       this.logService.error(
         `An error has occured while sending an email of type ${EmailNotificationTemplate.ACCESSORS_COMMENT_RECEIVED}`,
@@ -212,22 +210,6 @@ export class CommentService {
       );
     }
 
-    try {
-      if (requestUser.type === UserType.ACCESSOR) {
-        await this.notificationService.sendEmail(
-          requestUser,
-          EmailNotificationTemplate.ACCESSORS_COMMENT_RECEIVED,
-          innovationId,
-          result.id,
-          []
-        );
-      }
-    } catch (error) {
-      this.logService.error(
-        `An error has occured while sending an email of type ${EmailNotificationTemplate.ACCESSORS_COMMENT_RECEIVED}`,
-        error
-      );
-    }
     return result;
   }
 
