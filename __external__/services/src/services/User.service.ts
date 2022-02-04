@@ -245,6 +245,19 @@ export class UserService {
     return null;
   }
 
+  async searchUser(email: string): Promise<string> {
+    const accessToken = await authenticateWitGraphAPI();
+    const userB2C = await getUserFromB2CByEmail(email, accessToken);
+
+    const user = await this.find(userB2C.id);
+
+    if (userB2C && user) {
+      return userB2C.id;
+    }
+
+    return null;
+  }
+
   async getUsersEmail(ids: string[]): Promise<UserEmailModel[]> {
     if (ids.length === 0) {
       return null;
