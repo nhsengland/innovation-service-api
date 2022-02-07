@@ -191,6 +191,15 @@ export class UserService {
     return retVal;
   }
 
+  async userExistsAtB2C(email: string): Promise<boolean> {
+    const accessToken = await authenticateWitGraphAPI();
+    const userB2C = await getUserFromB2CByEmail(email, accessToken, "beta");
+
+    if (!userB2C) return false;
+
+    return true;
+  }
+
   async searchUserByEmail(email: string): Promise<UserSearchResult> {
     const accessToken = await authenticateWitGraphAPI();
     const userB2C = await getUserFromB2CByEmail(email, accessToken, "beta");

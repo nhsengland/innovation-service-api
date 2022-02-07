@@ -79,6 +79,13 @@ export class AdminService {
     return [result];
   }
 
+  async userExistsB2C(email: string): Promise<boolean> {
+    const result = await this.userService.userExistsAtB2C(email);
+    // for now, search user by email only yield 0...1 results
+    // frontend is expecting an array
+    return result;
+  }
+
   async lockUsers(
     requestUser: RequestUser,
     user: string
