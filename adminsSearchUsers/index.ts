@@ -1,4 +1,5 @@
 import { HttpRequest } from "@azure/functions";
+import { logger } from "@azure/storage-blob";
 import { UserType } from "@services/index";
 import {
   AllowedUserType,
@@ -46,14 +47,32 @@ class AdminsSearchUsers {
       }
 
       if (email) {
-        result = await persistence.searchUserByEmail(context, email);
-        context.res = Responsify.Ok(result);
+        try {
+          result = await persistence.searchUserByEmail(context, email);
+          context.res = Responsify.Ok(result);
+        } catch (error) {
+          context.logger(`[${req.method}] ${req.url}`, Severity.Error, {
+            error,
+          });
+          context.log.error(error);
+          context.res = Responsify.ErroHandling(error);
+          return;
+        }
       }
 
       if (type) {
-        result = await persistence.searchUsersByType(context, type);
-        context.res = Responsify.Ok(result);
-        return;
+        try {
+          result = await persistence.searchUsersByType(context, type);
+          context.res = Responsify.Ok(result);
+          return;
+        } catch (error) {
+          context.logger(`[${req.method}] ${req.url}`, Severity.Error, {
+            error,
+          });
+          context.log.error(error);
+          context.res = Responsify.ErroHandling(error);
+          return;
+        }
       }
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
