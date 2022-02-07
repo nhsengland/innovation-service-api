@@ -156,24 +156,42 @@ export class EmailService {
     const emailPath = process.env.EMAIL_NOTIFICATION_API_EMAIL_PATH;
     const url = `${baseUrl}${emailPath}`;
 
-    const response = await axios.post(
-      url,
-      {
-        template_id: templateId,
-        email_address: recipientEmail,
-        ...properties,
-      },
-      postConfig
-    );
+    try {
+      const response = await axios.post(
+        url,
+        {
+          template_id: templateId,
+          email_address: recipientEmail,
+          ...properties,
+        },
+        postConfig
+      );
 
-    this.loggerService.log(`An email was sent with template ${templateId}`, 1, {
-      email_address: recipientEmail,
-      template_id: templateId,
-      response: response.data,
-    });
+      this.loggerService.log(
+        `An email was sent with template ${templateId}`,
+        1,
+        {
+          email_address: recipientEmail,
+          template_id: templateId,
+          response: response.data,
+        }
+      );
 
-    if (response && response.data) {
-      return response.data;
+      if (response && response.data) {
+        return response.data;
+      }
+    } catch (error) {
+      this.loggerService.error(
+        `[Error: emailservice.send] An error has occurred when sending an email to ${recipientEmail} with the template ${templateId}`,
+        {
+          error,
+          meta: {
+            ...properties,
+            email_address: recipientEmail,
+            template_id: templateId,
+          },
+        }
+      );
     }
   }
 

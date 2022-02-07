@@ -55,7 +55,6 @@ describe("Email Service Suite", () => {
       innovator_name: "Innovator Name 1",
       innovation_name: "The Innovation",
       action_url: "https://example.com/action_1",
-      test: "gdgjkfd",
     };
 
     const actual = await emailService.sendMany(
