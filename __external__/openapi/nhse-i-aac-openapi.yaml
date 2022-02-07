@@ -2788,11 +2788,6 @@ paths:
           schema:
             type: string
           required: false
-        - name: type
-          in: query
-          schema:
-            type: string
-          required: false
       responses:
         "200":
           description: "OK"
