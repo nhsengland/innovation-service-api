@@ -205,4 +205,19 @@ export const getTemplates = (): EmailTemplate[] => [
       code: "",
     },
   },
+  {
+    id: "bea1d925-1fa9-47c2-9fa2-6d630779e06b",
+    code: "ACCESSORS_COMMENT_RECEIVED",
+    path: {
+      url: "transactional/accessor/innovations/:innovationId/comments",
+      params: {
+        innovationId: "",
+        contextId: "",
+      },
+    },
+    props: {
+      display_name: "",
+      comment_url: "",
+    },
+  },
 ];

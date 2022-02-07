@@ -195,7 +195,9 @@ export class UserService {
 
   async searchUserByEmail(email: string): Promise<UserSearchResult> {
     const accessToken = await authenticateWitGraphAPI();
-    const userB2C = await getUserFromB2CByEmail(email, accessToken);
+    const userB2C = await getUserFromB2CByEmail(email, accessToken, "beta");
+
+    if (!userB2C) return null;
 
     const user = await this.find(userB2C.id, {
       relations: [
@@ -236,6 +238,8 @@ export class UserService {
       return {
         id: userB2C.id,
         displayName: userB2C.displayName,
+        email: userB2C.identities.find((i) => i.signInType === "emailAddress")
+          ?.issuerAssignedId,
         type: user.type,
         lockedAt: user.lockedAt,
         userOrganisations,
@@ -271,7 +275,6 @@ export class UserService {
 
     const users =
       (await getUsersFromB2C(accessToken, odataFilter, "beta", true)) || [];
-
     const result = users.map((u) => ({
       id: u.id,
       displayName: u.displayName,

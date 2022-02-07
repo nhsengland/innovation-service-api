@@ -52,6 +52,7 @@ export class AdminService {
           id: user.id,
           type: user.type,
           displayName: b2c.displayName,
+          email: b2c.email,
           lockedAt: user.lockedAt,
           userOrganisations: userOrganisations.map((o) => ({
             id: o.id,
@@ -70,8 +71,14 @@ export class AdminService {
     return result;
   }
 
-  async searchUser(email: string): Promise<UserSearchResult> {
-    return await this.userService.searchUserByEmail(email);
+  async searchUser(email: string): Promise<UserSearchResult[]> {
+    const result = await this.userService.searchUserByEmail(email);
+    // for now, search user by email only yield 0...1 results
+    // frontend is expecting an array
+
+    if (!result) return [];
+
+    return [result];
   }
 
   async lockUsers(

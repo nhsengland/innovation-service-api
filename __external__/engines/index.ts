@@ -68,4 +68,8 @@ export const emailEngines = (): { key: string; handler: HandlerFunc }[] => [
     key: EmailNotificationTemplate.INNOVATORS_SUPPORT_STATUS_UPDATE,
     handler: handlers.innovatorsSupportStatusUpdateHandler,
   },
+  {
+    key: EmailNotificationTemplate.ACCESSORS_COMMENT_RECEIVED,
+    handler: handlers.accessorsCommentReceivedHandler,
+  },
 ];
