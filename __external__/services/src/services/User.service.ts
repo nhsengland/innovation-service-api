@@ -249,10 +249,12 @@ export class UserService {
     const accessToken = await authenticateWitGraphAPI();
     const userB2C = await getUserFromB2CByEmail(email, accessToken);
 
-    const user = await this.find(userB2C.id);
+    if (userB2C) {
+      const user = await this.find(userB2C.id);
 
-    if (userB2C && user) {
-      return userB2C.id;
+      if (user) {
+        return userB2C.id;
+      }
     }
 
     return null;
@@ -404,16 +406,9 @@ export class UserService {
     // UserType Accessor should have the role and organisation provided in request
     if (
       userModel.type === UserType.ACCESSOR &&
-      (!userModel.role || !userModel.organisationAcronym)
-    ) {
-      throw new InvalidParamsError("Invalid params. Invalid accessor params.");
-    }
-
-    // Organisation Unit is mandatory for Accessors
-    if (
-      userModel.type === UserType.ACCESSOR &&
-      userModel.role === AccessorOrganisationRole.ACCESSOR &&
-      !userModel.organisationUnitAcronym
+      (!userModel.role ||
+        !userModel.organisationAcronym ||
+        !userModel.organisationUnitAcronym)
     ) {
       throw new InvalidParamsError("Invalid params. Invalid accessor params.");
     }
