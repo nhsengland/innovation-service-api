@@ -482,6 +482,49 @@ export const innovatorsSupportStatusUpdateHandler = async (
   return result;
 };
 
+export const accessorsCommentReceivedHandler = async (
+  requestUser: RequestUser,
+  params: {
+    innovationId: string;
+    contextId: string;
+    emailProps?: EmailProps;
+  },
+  template: EmailNotificationTemplate,
+  targetUsers?: string[],
+  connectionName?: string
+): Promise<EmailResponse[]> => {
+  const recipients = await getRecipientsEngaging(
+    params.innovationId,
+    connectionName
+  );
+
+  let filteredRecipients = await filterRecipientsByPreference(
+    NotificationContextType.COMMENT,
+    recipients
+  );
+
+  // exit early if there are no recipients after filtering out preferences.
+  if (filteredRecipients.length === 0) return;
+
+  filteredRecipients = filteredRecipients.filter((r) => r !== requestUser.id);
+
+  const comment_url = parseUrl(params, template);
+
+  params.emailProps = {
+    ...params.emailProps,
+    comment_url,
+  };
+
+  const result = await baseEmailExecutor(
+    filteredRecipients,
+    params,
+    connectionName,
+    template
+  );
+
+  return result;
+};
+
 const parseUrl = (params, templateCode): string => {
   const baseUrl = process.env.CLIENT_WEB_BASE_URL;
   const template = getTemplates().find((t) => t.code === templateCode);
@@ -501,13 +544,40 @@ const parseUrl = (params, templateCode): string => {
   return `${baseUrl}/${url}`;
 };
 
+const getRecipientsEngaging = async (
+  innovationId: string,
+  connectionName?: string
+) => {
+  const innovationSupportRepo = getRepository(
+    InnovationSupport,
+    connectionName
+  );
+  const supports = await innovationSupportRepo.find({
+    where: `innovation_id = '${innovationId}' 
+            and status in('${InnovationSupportStatus.ENGAGING}')`,
+    relations: [
+      "organisationUnitUsers",
+      "organisationUnitUsers.organisationUser",
+      "organisationUnitUsers.organisationUser.user",
+    ],
+  });
+
+  const recipients = supports.flatMap((s) =>
+    s.organisationUnitUsers.map((x) => x.organisationUser.user.id)
+  );
+
+  return recipients;
+};
+
 const getRecipients = async (innovationId: string, connectionName?: string) => {
   const innovationSupportRepo = getRepository(
     InnovationSupport,
     connectionName
   );
   const supports = await innovationSupportRepo.find({
-    where: `innovation_id = '${innovationId}' and status in('${InnovationSupportStatus.ENGAGING}', '${InnovationSupportStatus.COMPLETE}')`,
+    where: `innovation_id = '${innovationId}' 
+            and status in('${InnovationSupportStatus.ENGAGING}', '${InnovationSupportStatus.COMPLETE}')
+           `,
     relations: [
       "organisationUnitUsers",
       "organisationUnitUsers.organisationUser",
