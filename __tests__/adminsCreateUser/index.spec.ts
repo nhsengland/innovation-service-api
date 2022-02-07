@@ -3,9 +3,9 @@ import { ServiceRole, UserType } from "@services/index";
 import {
   createHttpTrigger, runStubFunctionFromBindings
 } from "stub-azure-function-context";
-import adminsSearchUser from "../../adminsSearchUser";
-import * as persistence from "../../adminsSearchUser/persistence";
-import * as validation from "../../adminsSearchUser/validation";
+import adminsCreateUser from "../../adminsCreateUser";
+import * as persistence from "../../adminsCreateUser/persistence";
+import * as validation from "../../adminsCreateUser/validation";
 import * as authentication from "../../utils/authentication";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
@@ -42,11 +42,14 @@ const dummy = {
         }]
       }),
     },
+    AuthService:{
+        validate2LS: () => true
+    },
   },
   adminUser: 'test_admin_oid'
 };
 
-describe("[HttpTrigger] adminsSearchUser Suite", () => {
+describe("[HttpTrigger] adminsCreateUser Suite", () => {
   describe("Function Handler", () => {
     afterEach(() => {
       jest.resetAllMocks();
@@ -66,13 +69,13 @@ describe("[HttpTrigger] adminsSearchUser Suite", () => {
       );
     });
 
-    it("Should return 200 when user is found", async () => {
+    it("Should return 200 when user is created", async () => {
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
-      jest.spyOn(validation, "ValidateQuerySchema").mockReturnValue({} as any);
+      jest.spyOn(validation, "ValidatePayload").mockReturnValue({} as any);
       jest.spyOn(authentication, "decodeToken").mockReturnValue({ oid: dummy.adminUser });
 
-      jest.spyOn(persistence, "searchUserByEmail").mockResolvedValue({ id: ":userId" } as any);
+      jest.spyOn(persistence, "createUser").mockResolvedValue({ id: ":userId" } as any);
 
       const { res } = await mockedRequestFactory({});
 
@@ -85,7 +88,7 @@ describe("[HttpTrigger] adminsSearchUser Suite", () => {
       jest.spyOn(authentication, "decodeToken").mockReturnValue({
         oid: dummy.adminUser,
       });
-      jest.spyOn(persistence, "searchUserByEmail").mockRejectedValue(
+      jest.spyOn(persistence, "createUser").mockRejectedValue(
         "Error."
       );
 
@@ -99,19 +102,26 @@ describe("[HttpTrigger] adminsSearchUser Suite", () => {
 
 async function mockedRequestFactory(data?: any) {
   return runStubFunctionFromBindings(
-    adminsSearchUser,
+    adminsCreateUser,
     [
       {
         type: "httpTrigger",
         name: "req",
         direction: "in",
         data: createHttpTrigger(
-          "HEAD",
+          "POST",
           "http://nhse-i-aac/api/user-admin/user",
           { ...data.headers }, // headers
           {},
-          {}, // payload/body
-          { email: "email@aaa.com" }, // querystring
+          {
+            type: UserType.ASSESSMENT,
+            name: ":email",
+            email: "email@aaa.com"
+          }, // payload/body
+          {
+              code: "testCode",
+              id: "testId",
+          }, // querystring
         ),
       },
       { type: "http", name: "res", direction: "out" },
