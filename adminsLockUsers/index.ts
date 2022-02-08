@@ -4,6 +4,7 @@ import { SLSEventType } from "@services/types";
 import {
   AllowedUserType,
   AppInsights,
+  CosmosConnector,
   JwtDecoder,
   ServiceRoleValidator,
   SLSValidation,
@@ -16,6 +17,7 @@ import * as persistence from "./persistence";
 class AdminsLockUsers {
   @AppInsights()
   @SQLConnector()
+  @CosmosConnector()
   @JwtDecoder(true)
   @AllowedUserType(UserType.ADMIN)
   @ServiceRoleValidator(ServiceRole.ADMIN, ServiceRole.SERVICE_TEAM)

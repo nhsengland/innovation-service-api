@@ -2830,7 +2830,7 @@ paths:
         "403":
           description: "Forbidden"
 
-  "/user-admin/users/unlock":
+  "/user-admin/users/{userId}/unlock":
     patch:
       tags:
         - "Admin"
@@ -2844,6 +2844,11 @@ paths:
       parameters:
         - name: Authorization
           in: header
+          schema:
+            type: string
+          required: true
+        - name: userId
+          in: path
           schema:
             type: string
           required: true

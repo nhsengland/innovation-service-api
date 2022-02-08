@@ -1,37 +1,36 @@
 import { HttpRequest } from "@azure/functions";
 import { UserType } from "@services/index";
+import { SLSEventType } from "@services/types";
 import {
+  AllowedUserType,
   AppInsights,
+  CosmosConnector,
   JwtDecoder,
+  ServiceRoleValidator,
+  SLSValidation,
   SQLConnector,
   Validator,
 } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
-import { CustomContext, Severity } from "../utils/types";
+import { CustomContext, ServiceRole, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
 
 class AdminsLockUsers {
   @AppInsights()
   @SQLConnector()
+  @CosmosConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
   @JwtDecoder()
+  @AllowedUserType(UserType.ADMIN)
+  @ServiceRoleValidator(ServiceRole.ADMIN, ServiceRole.SERVICE_TEAM)
+  @SLSValidation(SLSEventType.ADMIN_LOCK_USER)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const users = req.body;
-    const adminId = process.env.ADMIN_OID;
+    const user = req.params.userId;
     const oid = context.auth.decodedJwt.oid;
-
-    if (oid !== adminId) {
-      context.logger(
-        `[${req.method}]${req.url} Operation denied. ${oid} !== adminId`,
-        Severity.Information
-      );
-      context.res = Responsify.Forbidden({ error: "Operation denied." });
-      return;
-    }
 
     let result;
     try {
@@ -40,7 +39,7 @@ class AdminsLockUsers {
         type: UserType.ADMIN,
       };
 
-      result = await persistence.unlockUsers(context, users);
+      result = await persistence.unlockUser(context, user);
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
