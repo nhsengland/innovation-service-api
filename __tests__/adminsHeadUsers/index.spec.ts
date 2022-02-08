@@ -1,11 +1,11 @@
 /* eslint-disable */
-import { ServiceRole, UserType } from "@services/index";
+import { UserType } from "@services/index";
 import {
   createHttpTrigger, runStubFunctionFromBindings
 } from "stub-azure-function-context";
-import adminsSearchUser from "../../adminsSearchUser";
-import * as persistence from "../../adminsSearchUser/persistence";
-import * as validation from "../../adminsSearchUser/validation";
+import adminsSearchUser from "../../adminsHeadUsers";
+import * as persistence from "../../adminsHeadUsers/persistence";
+import * as validation from "../../adminsHeadUsers/validation";
 import * as authentication from "../../utils/authentication";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
@@ -46,7 +46,7 @@ const dummy = {
   adminUser: 'test_admin_oid'
 };
 
-describe("[HttpTrigger] adminsSearchUser Suite", () => {
+describe("[HttpTrigger] adminsHeadUsers Suite", () => {
   describe("Function Handler", () => {
     afterEach(() => {
       jest.resetAllMocks();
@@ -107,7 +107,7 @@ async function mockedRequestFactory(data?: any) {
         direction: "in",
         data: createHttpTrigger(
           "HEAD",
-          "http://nhse-i-aac/api/user-admin/user",
+          "http://nhse-i-aac/api/user-admin/users",
           { ...data.headers }, // headers
           {},
           {}, // payload/body

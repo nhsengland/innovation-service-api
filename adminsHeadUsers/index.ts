@@ -13,7 +13,7 @@ import { CustomContext, ServiceRole, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
 
-class AdminsSearchUser {
+class AdminsHeadUsers {
   @AppInsights()
   @SQLConnector()
   @Validator(
@@ -31,6 +31,12 @@ class AdminsSearchUser {
     const email: string = req.query.email;
 
     let result;
+
+    if (!email) {
+      context.res = Responsify.BadRequest("email is missing");
+      return;
+    }
+
     try {
       result = await persistence.searchUserByEmail(context, email);
 
@@ -48,4 +54,4 @@ class AdminsSearchUser {
   }
 }
 
-export default AdminsSearchUser.httpTrigger;
+export default AdminsHeadUsers.httpTrigger;

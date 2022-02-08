@@ -288,6 +288,11 @@ export class AdminService {
     return result;
   }
 
+  async userExistsB2C(email: string): Promise<boolean> {
+    const result = await this.userService.userExistsAtB2C(email);
+    return result;
+  }
+
   private async runUserValidation(user: User): Promise<{ [key: string]: any }> {
     const r = { ...rules };
     if (user.type === UserType.ASSESSMENT) {

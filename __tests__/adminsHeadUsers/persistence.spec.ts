@@ -1,16 +1,17 @@
-import { UserService, UserType } from "@services/index";
+import { UserType } from "@services/index";
 import * as typeorm from "typeorm";
-import * as persistence from "../../adminsSearchUser/persistence";
+import * as persistence from "../../AdminsHeadUsers/persistence";
 import { CustomContext } from "../../utils/types";
 import * as dotenv from "dotenv";
 import * as path from "path";
-describe("[adminsSearchUser] Persistence suite", () => {
+import { AdminService } from "@services/services/Admin.service";
+describe("[adminsHeadUsers] Persistence suite", () => {
   beforeAll(() => {
     dotenv.config({
       path: path.resolve(__dirname, "../.environment"),
     });
   });
-  describe("adminsSearchUser", () => {
+  describe("adminsHeadUsers", () => {
     it("should search user", async () => {
       // Arrange
       jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
@@ -20,12 +21,12 @@ describe("[adminsSearchUser] Persistence suite", () => {
           ({ close: () => {} } as typeorm.Connection)
       );
       const spy = jest
-        .spyOn(UserService.prototype, "searchUser")
-        .mockResolvedValue([{ id: "" }] as any);
+        .spyOn(AdminService.prototype, "userExistsB2C")
+        .mockResolvedValue(true);
 
       const ctx = {
         services: {
-          UserService: new UserService(),
+          AdminService: new AdminService(),
         },
         auth: {
           requestUser: {
