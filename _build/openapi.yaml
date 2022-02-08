@@ -2706,7 +2706,7 @@ paths:
         '403':
           description: Forbidden
         '404':
-          description: Not Found 
+          description: Not Found
   '/user-admin/users/{userId}/lock':
     patch:
       tags:
