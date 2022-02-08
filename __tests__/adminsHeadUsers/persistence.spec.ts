@@ -1,6 +1,6 @@
 import { UserType } from "@services/index";
 import * as typeorm from "typeorm";
-import * as persistence from "../../AdminsHeadUsers/persistence";
+import * as persistence from "../../adminsHeadUsers/persistence";
 import { CustomContext } from "../../utils/types";
 import * as dotenv from "dotenv";
 import * as path from "path";
