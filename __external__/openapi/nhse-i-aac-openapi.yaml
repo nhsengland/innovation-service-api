@@ -2767,6 +2767,65 @@ paths:
           description: "Unauthorized"
         "403":
           description: "Forbidden"
+    head:
+      tags:
+        - "Admin"
+        - "User"
+        - "HeadUsers"
+      description: "Head users"
+      operationId: "admins-head-users"
+      security:
+        - OpenId:
+            - users_read
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: email
+          in: query
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"  
+
+  "/user-admin/user":
+    post:
+      tags:
+        - "Admin"
+        - "User"
+        - "CreateUser"
+      description: "Create user"
+      operationId: "admins-create-user"
+      security:
+        - OpenId:
+            - users_write
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/admins-create-user-payload"
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
 
   "/user-admin/users/{userId}/lock":
     patch:
@@ -3062,6 +3121,8 @@ components:
       $ref: "./schemas/survey-get-id.yaml"
 
   requestBodies:
+    admins-create-user-payload:
+      $ref: "./schemas/admins-create-user-payload.yaml"
     admins-create-users-payload:
       $ref: "./schemas/admins-create-users-payload.yaml"
     accessors-create-support-payload:

@@ -1,12 +1,11 @@
 interface UserCreationError {
   code: string;
   message: string;
+  data?: any;
 }
 
 export interface UserCreationResult {
-  email: string;
-  userId?: string;
-  organisationUserId?: string;
-  organisationUnitUserId?: string;
+  id: string;
+  status: "OK" | "ERROR";
   error?: UserCreationError;
 }
