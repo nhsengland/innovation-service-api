@@ -24,7 +24,7 @@ class AdminsUserDetails {
     req: HttpRequest
   ): Promise<void> {
     const model: "MINIMAL" | "FULL" =
-      (req.query.model as "MINIMAL" | "FULL") || "MINIMAL";
+      (req.query.model.toUpperCase() as "MINIMAL" | "FULL") || "MINIMAL";
     const user: string = req.params.userId;
     let result;
     try {
