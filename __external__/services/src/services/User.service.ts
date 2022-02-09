@@ -104,7 +104,10 @@ export class UserService {
     return true;
   }
 
-  async getUserDetails(id: string, model?: "MINIMAL" | "FULL"): Promise<any> {
+  async getUserDetails(
+    id: string,
+    model: "MINIMAL" | "FULL" = "MINIMAL"
+  ): Promise<any> {
     const accessToken = await authenticateWitGraphAPI();
 
     const userB2C = await getUserFromB2C(id, accessToken);
