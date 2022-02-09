@@ -27,7 +27,7 @@ jest.mock("../../utils/logging/insights", () => ({
 }));
 
 
-describe("[HttpTrigger] SurveyCreateOne Suite", () => {
+describe.skip("[HttpTrigger] SurveyCreateOne Suite", () => {
   describe("Function Handler", () => {
     afterEach(() => {
       jest.resetAllMocks();
