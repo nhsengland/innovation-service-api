@@ -1,0 +1,21 @@
+<policies>
+    <inbound>
+        <base />
+        <validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="Unauthorized. Access token is missing or invalid.">
+            <openid-config url="https://${TENANT_ID}.b2clogin.com/${TENANT_ID}.onmicrosoft.com/v2.0/.well-known/openid-configuration?p=B2C_1A_SIGNIN" />
+            <audiences>
+                <audience>${AUDIENCE}</audience>
+            </audiences>
+        </validate-jwt>
+        <set-backend-service base-url="https://nhse-${ENV}-innovation-service-functions.azurewebsites.net/api" />
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies> 

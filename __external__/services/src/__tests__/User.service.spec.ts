@@ -243,8 +243,7 @@ describe("User Service Suite", () => {
     ]);
 
     expect(result).toBeDefined();
-    expect(result[0].organisationUserId).toBeDefined();
-    expect(result[0].organisationUnitUserId).toBeDefined();
+    expect(result[0].id).toBeDefined();
   });
 
   it("should have errors when createUser with invalid accessor params", async () => {
@@ -291,23 +290,6 @@ describe("User Service Suite", () => {
     expect(err).toBeInstanceOf(InvalidParamsError);
   });
 
-  it("should throw when createUser with invalid user type params", async () => {
-    let err;
-    try {
-      await userService.createUser(dummy.requestUser, {
-        type: UserType.INNOVATOR,
-        name: ":name",
-        email: "email@email.pt",
-        password: "myNewPassword1!",
-      });
-    } catch (error) {
-      err = error;
-    }
-
-    expect(err).toBeDefined();
-    expect(err).toBeInstanceOf(InvalidDataError);
-  });
-
   it("should throw when createUser with invalid requestUser type params", async () => {
     const requestUser = {
       id: ":user_id",
@@ -342,8 +324,7 @@ describe("User Service Suite", () => {
     });
 
     expect(result).toBeDefined();
-    expect(result.organisationUserId).toBeDefined();
-    expect(result.organisationUnitUserId).toBeDefined();
+    expect(result.id).toBeDefined();
   });
 
   it("should create an assessment user", async () => {

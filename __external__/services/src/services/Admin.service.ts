@@ -20,6 +20,8 @@ import { Connection, getConnection } from "typeorm";
 import { UserService } from "..";
 import { authenticateWitGraphAPI, getUserFromB2C } from "../helpers";
 import * as rules from "../config/admin-user-lock.config.json";
+import { UserCreationModel } from "@services/models/UserCreationModel";
+import { UserCreationResult } from "@services/models/UserCreationResult";
 
 export class AdminService {
   private readonly connection: Connection;
@@ -260,6 +262,44 @@ export class AdminService {
     });
 
     return await this.runUserValidation(userToBeRemoved);
+  }
+
+  async createUser(
+    requestUser: RequestUser,
+    user: UserCreationModel
+  ): Promise<UserCreationResult> {
+    if (!requestUser || !user) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    const graphAccessToken = await authenticateWitGraphAPI();
+
+    let result: UserCreationResult;
+
+    try {
+      result = await this.userService.createUser(
+        requestUser,
+        user,
+        graphAccessToken
+      );
+    } catch (err) {
+      result = {
+        id: null,
+        status: "ERROR",
+        error: {
+          code: err.constructor.name,
+          message: err.message,
+          data: err.data,
+        },
+      };
+    }
+
+    return result;
+  }
+
+  async userExistsB2C(email: string): Promise<boolean> {
+    const result = await this.userService.userExistsAtB2C(email);
+    return result;
   }
 
   private async runUserValidation(user: User): Promise<{ [key: string]: any }> {

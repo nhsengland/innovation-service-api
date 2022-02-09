@@ -1,4 +1,5 @@
 import {
+  AccessorOrganisationRole,
   Organisation,
   OrganisationUnit,
   OrganisationUnitUser,
@@ -30,6 +31,7 @@ import {
   getRepository,
   Repository,
 } from "typeorm";
+import { OrganisationRoleValidator } from "utils/decorators";
 import {
   authenticateWitGraphAPI,
   createB2CUser,
@@ -311,6 +313,17 @@ export class UserService {
     return null;
   }
 
+  async userExistsAtB2C(email: string): Promise<boolean> {
+    const accessToken = await authenticateWitGraphAPI();
+    const userB2C = await getUserFromB2CByEmail(email, accessToken);
+
+    if (userB2C) {
+      return true;
+    }
+
+    return false;
+  }
+
   async getUsersEmail(ids: string[]): Promise<UserEmailModel[]> {
     if (ids.length === 0) {
       return null;
@@ -429,7 +442,8 @@ export class UserService {
         result = await this.createUser(requestUser, users[i], graphAccessToken);
       } catch (err) {
         result = {
-          email: user.email,
+          id: null,
+          status: "ERROR",
           error: {
             code: err.constructor.name,
             message: err.message,
@@ -452,20 +466,14 @@ export class UserService {
       throw new InvalidParamsError("Invalid params.");
     }
 
+    // UserType Accessor should have the role and organisation provided in request
     if (
       userModel.type === UserType.ACCESSOR &&
-      (!userModel.organisationAcronym ||
-        !userModel.organisationUnitAcronym ||
-        !userModel.role)
+      (!userModel.role ||
+        !userModel.organisationAcronym ||
+        !userModel.organisationUnitAcronym)
     ) {
       throw new InvalidParamsError("Invalid params. Invalid accessor params.");
-    }
-
-    if (
-      userModel.type !== UserType.ACCESSOR &&
-      userModel.type !== UserType.ASSESSMENT
-    ) {
-      throw new InvalidDataError("Invalid data. Invalid user type.");
     }
 
     if (requestUser.type !== UserType.ADMIN) {
@@ -478,6 +486,36 @@ export class UserService {
 
     if (!userModel.password) {
       userModel.password = Math.random().toString(36).slice(2) + "0aA!";
+    }
+
+    let organisation: Organisation = null;
+    if (userModel.organisationAcronym) {
+      organisation = await this.orgRepo
+        .createQueryBuilder("organisation")
+        .where("acronym = :acronym", {
+          acronym: userModel.organisationAcronym,
+        })
+        .getOne();
+
+      if (!organisation) {
+        throw new InvalidParamsError("Invalid params. Invalid organisation.");
+      }
+    }
+
+    let organisationUnit: OrganisationUnit = null;
+    if (userModel.organisationUnitAcronym) {
+      organisationUnit = await this.orgUnitRepo
+        .createQueryBuilder("organisationUnit")
+        .where("acronym = :acronym", {
+          acronym: userModel.organisationUnitAcronym,
+        })
+        .getOne();
+
+      if (!organisationUnit) {
+        throw new InvalidParamsError(
+          "Invalid params. Invalid organisation unit."
+        );
+      }
     }
 
     let oid: string;
@@ -499,8 +537,8 @@ export class UserService {
         })
         .getOne();
 
-      if (user && user.type !== userModel.type) {
-        throw new InvalidDataError("Invalid data. Invalid user type.");
+      if (user) {
+        throw new InvalidDataError("Invalid data. User already exists.");
       }
     } else {
       // If the user does not exist in the B2C, create b2c user
@@ -514,30 +552,6 @@ export class UserService {
       oid = b2cUser.id;
     }
 
-    let organisation: Organisation = null;
-    if (userModel.organisationAcronym) {
-      organisation = await this.orgRepo
-        .createQueryBuilder("organisation")
-        .where("acronym = :acronym", {
-          acronym: userModel.organisationAcronym,
-        })
-        .getOne();
-    }
-
-    let organisationUnit: OrganisationUnit = null;
-    if (userModel.organisationUnitAcronym) {
-      organisationUnit = await this.orgUnitRepo
-        .createQueryBuilder("organisationUnit")
-        .where("acronym = :acronym", {
-          acronym: userModel.organisationUnitAcronym,
-        })
-        .getOne();
-    }
-
-    const result: UserCreationResult = {
-      email: userModel.email,
-      userId: oid,
-    };
     return await this.connection.transaction(
       async (transactionManager: EntityManager) => {
         if (!user) {
@@ -564,7 +578,6 @@ export class UserService {
             OrganisationUser,
             orgUserObj
           );
-          result.organisationUserId = orgUser.id;
 
           if (organisationUnit) {
             const orgUnitUserObj = OrganisationUnitUser.new({
@@ -578,9 +591,13 @@ export class UserService {
               OrganisationUnitUser,
               orgUnitUserObj
             );
-            result.organisationUnitUserId = orgUnitUser.id;
           }
         }
+
+        const result: UserCreationResult = {
+          id: oid,
+          status: "OK",
+        };
 
         return result;
       }
