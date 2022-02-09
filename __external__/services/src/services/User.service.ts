@@ -104,6 +104,70 @@ export class UserService {
     return true;
   }
 
+  async getUserDetails(id: string, model?: "MINIMAL" | "FULL"): Promise<any> {
+    const accessToken = await authenticateWitGraphAPI();
+
+    const userB2C = await getUserFromB2C(id, accessToken);
+
+    if (!userB2C) return null;
+
+    if (model === "MINIMAL") {
+      return {
+        id: userB2C.id,
+        displayName: userB2C.displayName,
+      };
+    }
+
+    const user = await this.find(id, {
+      relations: [
+        "userOrganisations",
+        "userOrganisations.organisation",
+        "userOrganisations.userOrganisationUnits",
+        "userOrganisations.userOrganisationUnits.innovationSupports",
+        "userOrganisations.userOrganisationUnits.innovationSupports.innovation",
+        "userOrganisations.userOrganisationUnits.organisationUnit",
+      ],
+    });
+
+    const userOrgs = await user.userOrganisations;
+
+    const userOrganisations = [];
+
+    for (const userOrg of userOrgs) {
+      const userUnits = userOrg.userOrganisationUnits;
+
+      const unitsSlim = [];
+      for (const unit of userUnits) {
+        unitsSlim.push({
+          id: unit.organisationUnit.id,
+          name: unit.organisationUnit.name,
+          supportCount: unit.innovationSupports.length,
+        });
+      }
+
+      userOrganisations.push({
+        id: userOrg.organisation.id,
+        name: userOrg.organisation.name,
+        role: userOrg.role,
+        units: unitsSlim,
+      });
+    }
+
+    if (userB2C && user) {
+      return {
+        id: userB2C.id,
+        displayName: userB2C.displayName,
+        email: userB2C.identities.find((i) => i.signInType === "emailAddress")
+          ?.issuerAssignedId,
+        type: user.type,
+        lockedAt: user.lockedAt,
+        userOrganisations,
+      };
+    }
+
+    return null;
+  }
+
   async getProfile(id: string, accessToken?: string): Promise<ProfileModel> {
     if (!accessToken) {
       accessToken = await authenticateWitGraphAPI();

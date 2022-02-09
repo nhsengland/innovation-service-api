@@ -1,7 +1,7 @@
 import { Repository, getRepository, getConnection } from "typeorm";
 import { getEntityColumnList } from "../../tools/helpers";
 import { classToPlain } from "class-transformer";
-import { Innovation, InnovationEvidence, User } from "..";
+import { Innovation, InnovationEvidence, User, UserRole } from "..";
 import { Comment } from "../entity/user/Comment.entity";
 import { Organisation } from "../entity/organisation/Organisation.entity";
 import { OrganisationUnit } from "../entity/organisation/OrganisationUnit.entity";
@@ -87,6 +87,7 @@ describe("Innovation Test Suite", () => {
       .createQueryBuilder()
       .delete();
 
+    await query.from(UserRole).execute();
     await query.from(User).execute();
   });
 

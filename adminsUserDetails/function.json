@@ -5,8 +5,8 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": ["patch"],
-      "route": "user-admin/users/{userId}/unlock"
+      "methods": ["get"],
+      "route": "user-admin/users/{userId}"
     },
     {
       "type": "http",
@@ -14,5 +14,5 @@
       "name": "res"
     }
   ],
-  "scriptFile": "../dist/adminsUnlockUsers/index.js"
+  "scriptFile": "../dist/adminsUserDetails/index.js"
 }

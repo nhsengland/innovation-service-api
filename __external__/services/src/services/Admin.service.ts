@@ -81,6 +81,15 @@ export class AdminService {
     return [result];
   }
 
+  async getUserDetails(
+    userId: string,
+    minimal?: "MINIMAL" | "FULL"
+  ): Promise<any> {
+    const result = await this.userService.getUserDetails(userId, minimal);
+
+    return result;
+  }
+
   async lockUsers(
     requestUser: RequestUser,
     user: string

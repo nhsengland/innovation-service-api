@@ -33,7 +33,7 @@ steps:
     targetType: 'inline'
     script: |
       # Write your PowerShell commands here.
-        
+
       start-sleep -s 10
 
 - script: |
@@ -59,9 +59,22 @@ steps:
   displayName: 'Run Migrations against the Container'
 
 - script: |
-    npm test
-  displayName: 'Run Tests'
-  
+    npm run test:clean
+  displayName: 'Run jest cache clean'
+
+- script: |
+    npm run test:domain
+  displayName: 'Run Domain Tests'
+
+- script: |
+    npm run test:services
+  displayName: 'Run Services Tests'
+
+- script: |
+    npm run test:functions
+  displayName: 'Run Azure Functions Tests'
+
+
 - script: |
     npm run build
   displayName: 'Run Build'
