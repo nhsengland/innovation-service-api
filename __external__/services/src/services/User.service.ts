@@ -347,7 +347,8 @@ export class UserService {
 
   async getListOfUsers(
     ids: string[],
-    excludeLocked?: boolean
+    excludeLocked?: boolean,
+    includeEmail?: boolean
   ): Promise<ProfileSlimModel[]> {
     if (!ids || ids.length === 0) {
       return [];
@@ -386,14 +387,27 @@ export class UserService {
     }
 
     // promise all and merge all results
-    return Promise.all(promises).then((results) => {
-      return results.flatMap((result) =>
-        result?.map((u) => ({
-          id: u.id,
-          displayName: u.displayName,
-        }))
-      );
-    });
+    if (includeEmail) {
+      return Promise.all(promises).then((results) => {
+        return results.flatMap((result) =>
+          result?.map((u) => ({
+            id: u.id,
+            displayName: u.displayName,
+            email: u.identities.find((i) => i.signInType === "emailAddress")
+              ?.issuerAssignedId,
+          }))
+        );
+      });
+    } else {
+      return Promise.all(promises).then((results) => {
+        return results.flatMap((result) =>
+          result?.map((u) => ({
+            id: u.id,
+            displayName: u.displayName,
+          }))
+        );
+      });
+    }
   }
 
   async updateProfile(requestUser: RequestUser, user: UserProfileUpdateModel) {

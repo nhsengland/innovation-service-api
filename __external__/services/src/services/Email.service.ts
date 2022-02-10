@@ -6,7 +6,10 @@ import {
   InvalidEmailTemplateProps,
   UserEmailNotFound,
 } from "@services/errors";
-import { UserEmailModel } from "@services/models/ProfileSlimModel";
+import {
+  ProfileSlimModel,
+  UserEmailModel,
+} from "@services/models/ProfileSlimModel";
 import axios from "axios";
 import * as jwt from "jsonwebtoken";
 import { TTL2ls } from "../../../../schemas/TTL2ls";
@@ -111,8 +114,10 @@ export class EmailService {
     if (validProps.errors.length > 0)
       throw new InvalidEmailTemplateProps(validProps.errors.join(";"));
 
-    const recipients: UserEmailModel[] = await this.userService.getUsersEmail(
-      recipientIds
+    const recipients: ProfileSlimModel[] = await this.userService.getListOfUsers(
+      recipientIds,
+      true,
+      true
     );
 
     if (recipients.length === 0) return;
