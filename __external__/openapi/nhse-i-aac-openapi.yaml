@@ -2796,7 +2796,7 @@ paths:
         "401":
           description: "Unauthorized"
         "403":
-          description: "Forbidden"  
+          description: "Forbidden"
 
   "/user-admin/user":
     post:
@@ -2942,6 +2942,11 @@ paths:
           schema:
             type: string
           required: true
+        - name: model
+          in: query
+          schema:
+            type: string
+          required: false
       responses:
         "200":
           description: "OK"
