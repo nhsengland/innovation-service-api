@@ -1,4 +1,4 @@
-import { ActivityLog } from "@domain/index";
+import { ActivityLog, UserRole } from "@domain/index";
 import { classToPlain } from "class-transformer";
 import { getConnection, getRepository, Repository } from "typeorm";
 import { getEntityColumnList } from "../../tools/helpers";
@@ -69,6 +69,7 @@ describe("OrganisationUnitUser Test Suite", () => {
     const query = getConnection(process.env.DB_TESTS_NAME)
       .createQueryBuilder()
       .delete();
+    await query.from(UserRole).execute();
     await query.from(ActivityLog).execute();
     await query.from(OrganisationUser).execute();
     await query.from(OrganisationUnit).execute();

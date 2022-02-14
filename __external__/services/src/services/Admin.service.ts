@@ -20,6 +20,8 @@ import { Connection, getConnection } from "typeorm";
 import { UserService } from "..";
 import { authenticateWitGraphAPI, getUserFromB2C } from "../helpers";
 import * as rules from "../config/admin-user-lock.config.json";
+import { UserCreationModel } from "@services/models/UserCreationModel";
+import { UserCreationResult } from "@services/models/UserCreationResult";
 
 export class AdminService {
   private readonly connection: Connection;
@@ -50,6 +52,7 @@ export class AdminService {
           id: user.id,
           type: user.type,
           displayName: b2c.displayName,
+          email: b2c.email,
           lockedAt: user.lockedAt,
           userOrganisations: userOrganisations.map((o) => ({
             id: o.id,
@@ -68,8 +71,23 @@ export class AdminService {
     return result;
   }
 
-  async searchUser(email: string): Promise<UserSearchResult> {
-    return await this.userService.searchUserByEmail(email);
+  async searchUser(email: string): Promise<UserSearchResult[]> {
+    const result = await this.userService.searchUserByEmail(email);
+    // for now, search user by email only yield 0...1 results
+    // frontend is expecting an array
+
+    if (!result) return [];
+
+    return [result];
+  }
+
+  async getUserDetails(
+    userId: string,
+    minimal?: "MINIMAL" | "FULL"
+  ): Promise<any> {
+    const result = await this.userService.getUserDetails(userId, minimal);
+
+    return result;
   }
 
   async lockUsers(
@@ -244,6 +262,44 @@ export class AdminService {
     });
 
     return await this.runUserValidation(userToBeRemoved);
+  }
+
+  async createUser(
+    requestUser: RequestUser,
+    user: UserCreationModel
+  ): Promise<UserCreationResult> {
+    if (!requestUser || !user) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    const graphAccessToken = await authenticateWitGraphAPI();
+
+    let result: UserCreationResult;
+
+    try {
+      result = await this.userService.createUser(
+        requestUser,
+        user,
+        graphAccessToken
+      );
+    } catch (err) {
+      result = {
+        id: null,
+        status: "ERROR",
+        error: {
+          code: err.constructor.name,
+          message: err.message,
+          data: err.data,
+        },
+      };
+    }
+
+    return result;
+  }
+
+  async userExistsB2C(email: string): Promise<boolean> {
+    const result = await this.userService.userExistsAtB2C(email);
+    return result;
   }
 
   private async runUserValidation(user: User): Promise<{ [key: string]: any }> {

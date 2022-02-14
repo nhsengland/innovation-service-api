@@ -1,4 +1,5 @@
 import {
+  AccessorOrganisationRole,
   Organisation,
   OrganisationUnit,
   OrganisationUnitUser,
@@ -30,6 +31,7 @@ import {
   getRepository,
   Repository,
 } from "typeorm";
+import { OrganisationRoleValidator } from "utils/decorators";
 import {
   authenticateWitGraphAPI,
   createB2CUser,
@@ -100,6 +102,73 @@ export class UserService {
     }
 
     return true;
+  }
+
+  async getUserDetails(
+    id: string,
+    model: "MINIMAL" | "FULL" = "MINIMAL"
+  ): Promise<any> {
+    const accessToken = await authenticateWitGraphAPI();
+
+    const userB2C = await getUserFromB2C(id, accessToken);
+
+    if (!userB2C) return null;
+
+    if (model === "MINIMAL") {
+      return {
+        id: userB2C.id,
+        displayName: userB2C.displayName,
+      };
+    }
+
+    const user = await this.find(id, {
+      relations: [
+        "userOrganisations",
+        "userOrganisations.organisation",
+        "userOrganisations.userOrganisationUnits",
+        "userOrganisations.userOrganisationUnits.innovationSupports",
+        "userOrganisations.userOrganisationUnits.innovationSupports.innovation",
+        "userOrganisations.userOrganisationUnits.organisationUnit",
+      ],
+    });
+
+    const userOrgs = await user.userOrganisations;
+
+    const userOrganisations = [];
+
+    for (const userOrg of userOrgs) {
+      const userUnits = userOrg.userOrganisationUnits;
+
+      const unitsSlim = [];
+      for (const unit of userUnits) {
+        unitsSlim.push({
+          id: unit.organisationUnit.id,
+          name: unit.organisationUnit.name,
+          supportCount: unit.innovationSupports.length,
+        });
+      }
+
+      userOrganisations.push({
+        id: userOrg.organisation.id,
+        name: userOrg.organisation.name,
+        role: userOrg.role,
+        units: unitsSlim,
+      });
+    }
+
+    if (userB2C && user) {
+      return {
+        id: userB2C.id,
+        displayName: userB2C.displayName,
+        email: userB2C.identities.find((i) => i.signInType === "emailAddress")
+          ?.issuerAssignedId,
+        type: user.type,
+        lockedAt: user.lockedAt,
+        userOrganisations,
+      };
+    }
+
+    return null;
   }
 
   async getProfile(id: string, accessToken?: string): Promise<ProfileModel> {
@@ -193,7 +262,9 @@ export class UserService {
 
   async searchUserByEmail(email: string): Promise<UserSearchResult> {
     const accessToken = await authenticateWitGraphAPI();
-    const userB2C = await getUserFromB2CByEmail(email, accessToken);
+    const userB2C = await getUserFromB2CByEmail(email, accessToken, "beta");
+
+    if (!userB2C) return null;
 
     const user = await this.find(userB2C.id, {
       relations: [
@@ -234,6 +305,8 @@ export class UserService {
       return {
         id: userB2C.id,
         displayName: userB2C.displayName,
+        email: userB2C.identities.find((i) => i.signInType === "emailAddress")
+          ?.issuerAssignedId,
         type: user.type,
         lockedAt: user.lockedAt,
         userOrganisations,
@@ -241,6 +314,17 @@ export class UserService {
     }
 
     return null;
+  }
+
+  async userExistsAtB2C(email: string): Promise<boolean> {
+    const accessToken = await authenticateWitGraphAPI();
+    const userB2C = await getUserFromB2CByEmail(email, accessToken);
+
+    if (userB2C) {
+      return true;
+    }
+
+    return false;
   }
 
   async getUsersEmail(ids: string[]): Promise<UserEmailModel[]> {
@@ -254,7 +338,6 @@ export class UserService {
 
     const users =
       (await getUsersFromB2C(accessToken, odataFilter, "beta", true)) || [];
-
     const result = users.map((u) => ({
       id: u.id,
       displayName: u.displayName,
@@ -267,7 +350,8 @@ export class UserService {
 
   async getListOfUsers(
     ids: string[],
-    excludeLocked?: boolean
+    excludeLocked?: boolean,
+    includeEmail?: boolean
   ): Promise<ProfileSlimModel[]> {
     if (!ids || ids.length === 0) {
       return [];
@@ -306,14 +390,27 @@ export class UserService {
     }
 
     // promise all and merge all results
-    return Promise.all(promises).then((results) => {
-      return results.flatMap((result) =>
-        result?.map((u) => ({
-          id: u.id,
-          displayName: u.displayName,
-        }))
-      );
-    });
+    if (includeEmail) {
+      return Promise.all(promises).then((results) => {
+        return results.flatMap((result) =>
+          result?.map((u) => ({
+            id: u.id,
+            displayName: u.displayName,
+            email: u.identities.find((i) => i.signInType === "emailAddress")
+              ?.issuerAssignedId,
+          }))
+        );
+      });
+    } else {
+      return Promise.all(promises).then((results) => {
+        return results.flatMap((result) =>
+          result?.map((u) => ({
+            id: u.id,
+            displayName: u.displayName,
+          }))
+        );
+      });
+    }
   }
 
   async updateProfile(requestUser: RequestUser, user: UserProfileUpdateModel) {
@@ -362,7 +459,8 @@ export class UserService {
         result = await this.createUser(requestUser, users[i], graphAccessToken);
       } catch (err) {
         result = {
-          email: user.email,
+          id: null,
+          status: "ERROR",
           error: {
             code: err.constructor.name,
             message: err.message,
@@ -385,20 +483,14 @@ export class UserService {
       throw new InvalidParamsError("Invalid params.");
     }
 
+    // UserType Accessor should have the role and organisation provided in request
     if (
       userModel.type === UserType.ACCESSOR &&
-      (!userModel.organisationAcronym ||
-        !userModel.organisationUnitAcronym ||
-        !userModel.role)
+      (!userModel.role ||
+        !userModel.organisationAcronym ||
+        !userModel.organisationUnitAcronym)
     ) {
       throw new InvalidParamsError("Invalid params. Invalid accessor params.");
-    }
-
-    if (
-      userModel.type !== UserType.ACCESSOR &&
-      userModel.type !== UserType.ASSESSMENT
-    ) {
-      throw new InvalidDataError("Invalid data. Invalid user type.");
     }
 
     if (requestUser.type !== UserType.ADMIN) {
@@ -411,6 +503,36 @@ export class UserService {
 
     if (!userModel.password) {
       userModel.password = Math.random().toString(36).slice(2) + "0aA!";
+    }
+
+    let organisation: Organisation = null;
+    if (userModel.organisationAcronym) {
+      organisation = await this.orgRepo
+        .createQueryBuilder("organisation")
+        .where("acronym = :acronym", {
+          acronym: userModel.organisationAcronym,
+        })
+        .getOne();
+
+      if (!organisation) {
+        throw new InvalidParamsError("Invalid params. Invalid organisation.");
+      }
+    }
+
+    let organisationUnit: OrganisationUnit = null;
+    if (userModel.organisationUnitAcronym) {
+      organisationUnit = await this.orgUnitRepo
+        .createQueryBuilder("organisationUnit")
+        .where("acronym = :acronym", {
+          acronym: userModel.organisationUnitAcronym,
+        })
+        .getOne();
+
+      if (!organisationUnit) {
+        throw new InvalidParamsError(
+          "Invalid params. Invalid organisation unit."
+        );
+      }
     }
 
     let oid: string;
@@ -432,8 +554,8 @@ export class UserService {
         })
         .getOne();
 
-      if (user && user.type !== userModel.type) {
-        throw new InvalidDataError("Invalid data. Invalid user type.");
+      if (user) {
+        throw new InvalidDataError("Invalid data. User already exists.");
       }
     } else {
       // If the user does not exist in the B2C, create b2c user
@@ -447,30 +569,6 @@ export class UserService {
       oid = b2cUser.id;
     }
 
-    let organisation: Organisation = null;
-    if (userModel.organisationAcronym) {
-      organisation = await this.orgRepo
-        .createQueryBuilder("organisation")
-        .where("acronym = :acronym", {
-          acronym: userModel.organisationAcronym,
-        })
-        .getOne();
-    }
-
-    let organisationUnit: OrganisationUnit = null;
-    if (userModel.organisationUnitAcronym) {
-      organisationUnit = await this.orgUnitRepo
-        .createQueryBuilder("organisationUnit")
-        .where("acronym = :acronym", {
-          acronym: userModel.organisationUnitAcronym,
-        })
-        .getOne();
-    }
-
-    const result: UserCreationResult = {
-      email: userModel.email,
-      userId: oid,
-    };
     return await this.connection.transaction(
       async (transactionManager: EntityManager) => {
         if (!user) {
@@ -497,7 +595,6 @@ export class UserService {
             OrganisationUser,
             orgUserObj
           );
-          result.organisationUserId = orgUser.id;
 
           if (organisationUnit) {
             const orgUnitUserObj = OrganisationUnitUser.new({
@@ -511,9 +608,13 @@ export class UserService {
               OrganisationUnitUser,
               orgUnitUserObj
             );
-            result.organisationUnitUserId = orgUnitUser.id;
           }
         }
+
+        const result: UserCreationResult = {
+          id: oid,
+          status: "OK",
+        };
 
         return result;
       }

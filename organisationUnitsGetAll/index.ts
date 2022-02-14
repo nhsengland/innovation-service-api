@@ -14,7 +14,12 @@ class OrganisationUnitsGetAll {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder()
-  @AllowedUserType(UserType.INNOVATOR, UserType.ACCESSOR, UserType.ASSESSMENT)
+  @AllowedUserType(
+    UserType.INNOVATOR,
+    UserType.ACCESSOR,
+    UserType.ASSESSMENT,
+    UserType.ADMIN
+  )
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest

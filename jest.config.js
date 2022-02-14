@@ -2,7 +2,7 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   testMatch: ['**/__tests__/**/*.spec.ts'],
-  collectCoverage: true,
+  collectCoverage: false,
   coverageReporters: ['html', 'text', 'text-summary'],
   coverageDirectory: 'coverage/function-app',
   setupFilesAfterEnv: ['<rootDir>/__jest__/jest.setup.ts'],

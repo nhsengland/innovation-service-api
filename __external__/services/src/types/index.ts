@@ -15,6 +15,7 @@ export type UserSearchResult = {
   id: string;
   displayName: string;
   type: UserType;
+  email: string;
   lockedAt?: Date;
   userOrganisations: {
     id: string;

@@ -1,11 +1,9 @@
-import { UserCreationModel } from "@services/models/UserCreationModel";
-import { UserUpdateModel } from "@services/models/UserUpdateModel";
 import { CustomContext } from "../../utils/types";
 
-export const unlockUsers = async (ctx: CustomContext, users: string[]) => {
-  const result = await ctx.services.AdminService.unlockUsers(
+export const unlockUser = async (ctx: CustomContext, user: string) => {
+  const result = await ctx.services.AdminService.unlockUser(
     ctx.auth.requestUser,
-    users
+    user
   );
 
   return result;

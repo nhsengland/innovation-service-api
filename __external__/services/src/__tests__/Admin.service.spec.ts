@@ -19,11 +19,12 @@ import * as path from "path";
 import * as helpers from "../helpers";
 import { getConnection } from "typeorm";
 import { AdminService } from "@services/services/Admin.service";
+import { InvalidDataError } from "@services/errors";
 
 describe("[User Account Lock suite", () => {
   let adminService: AdminService;
   beforeAll(async () => {
-    //await setupTestsConnection();
+    // await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -45,7 +46,7 @@ describe("[User Account Lock suite", () => {
   });
 
   afterAll(async () => {
-    //await closeTestsConnection();
+    // await closeTestsConnection();
   });
   it("Should not lock User if is last assessment user", async () => {
     jest
@@ -356,5 +357,194 @@ describe("[User Account Lock suite", () => {
     expect(result.lastAccessorUserOnOrganisation.valid).toBe(true);
     expect(result.lastAccessorUserOnOrganisationUnit.valid).toBe(true);
     expect(result.lastAccessorFromUnitProvidingSupport.valid).toBe(true);
+  });
+
+  it("should not create user if already exists", async () => {
+    //Arrange
+    const userAssessment1 = {
+      type: UserType.ASSESSMENT,
+      name: ":name",
+      email: "email@email.pt",
+    };
+
+    const userAssessment2 = {
+      type: UserType.ASSESSMENT,
+      name: ":name",
+      email: "email@email.pt",
+    };
+
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ADMIN,
+    };
+
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+
+    jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue(true);
+
+    jest.spyOn(helpers, "createB2CUser").mockResolvedValue({
+      id: "user_id_from_b2c",
+      displayName: "New Assessment User",
+    });
+
+    await adminService.createUser(requestUser, userAssessment1);
+
+    //Act
+    const result = await adminService.createUser(requestUser, userAssessment2);
+
+    //Assert
+    expect(result).toBeDefined();
+    expect(result.status).toBe("ERROR");
+  });
+
+  it("should not create ACCESSOR user with invalid params", async () => {
+    //Arrange
+    const organisation = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
+    );
+    const organisationUnit = await fixtures.createOrganisationUnit(
+      organisation
+    );
+
+    const user = {
+      type: UserType.ACCESSOR,
+      name: ":name",
+      email: "email@email.pt",
+      password: "myNewPassword1!",
+    };
+
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ADMIN,
+    };
+
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+
+    jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue(false);
+
+    jest.spyOn(helpers, "createB2CUser").mockResolvedValue({
+      id: "user_id_from_b2c",
+      displayName: "Accessor User",
+    });
+
+    //Act
+    const result = await adminService.createUser(requestUser, user);
+
+    //Assert
+    expect(result).toBeDefined();
+    expect(result.status).toBe("ERROR");
+  });
+
+  it("should not create user with  invalid requestUser param", async () => {
+    //Arrange
+    const organisation = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
+    );
+
+    const user = {
+      type: UserType.ACCESSOR,
+      name: ":name",
+      email: "email@email.pt",
+      password: "myNewPassword1!",
+      role: AccessorOrganisationRole.QUALIFYING_ACCESSOR,
+      organisationAcronym: organisation.acronym,
+    };
+
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ASSESSMENT,
+    };
+
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+
+    //Act
+    const result = await adminService.createUser(requestUser, user);
+
+    //Assert
+    expect(result).toBeDefined();
+    expect(result.status).toBe("ERROR");
+  });
+
+  it("should create a new ASSESSMENT user", async () => {
+    //Arrange
+    const user = {
+      type: UserType.ASSESSMENT,
+      name: ":name",
+      email: "email@email.pt",
+    };
+
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ADMIN,
+    };
+
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+
+    jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue(false);
+
+    jest.spyOn(helpers, "createB2CUser").mockResolvedValue({
+      id: "user_id_from_b2c",
+      displayName: "New Assessment User",
+    });
+
+    //Act
+    const result = await adminService.createUser(requestUser, user);
+
+    //Assert
+    expect(result).toBeDefined();
+    expect(result.id).toBeDefined();
+    expect(result.status).toBe("OK");
+  });
+
+  it("should create a new ACCESSOR user", async () => {
+    //Arrange
+    const organisation = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
+    );
+    const organisationUnit = await fixtures.createOrganisationUnit(
+      organisation
+    );
+
+    const user = {
+      type: UserType.ACCESSOR,
+      name: ":name",
+      email: "email@email.pt",
+      password: "myNewPassword1!",
+      organisationAcronym: organisation.acronym,
+      organisationUnitAcronym: organisationUnit.acronym,
+      role: AccessorOrganisationRole.ACCESSOR,
+    };
+
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ADMIN,
+    };
+
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+
+    jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue(false);
+
+    jest.spyOn(helpers, "createB2CUser").mockResolvedValue({
+      id: "user_id_from_b2c",
+      displayName: "Accessor User",
+    });
+
+    //Act
+    const result = await adminService.createUser(requestUser, user);
+
+    //Assert
+    expect(result).toBeDefined();
+    expect(result.id).toBeDefined();
+    expect(result.status).toBe("OK");
   });
 });

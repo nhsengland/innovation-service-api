@@ -6,7 +6,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["patch"],
-      "route": "user-admin/users/unlock"
+      "route": "user-admin/users/{userId}/unlock"
     },
     {
       "type": "http",
