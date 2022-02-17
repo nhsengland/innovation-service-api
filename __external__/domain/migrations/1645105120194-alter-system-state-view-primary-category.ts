@@ -1,19 +1,18 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import {MigrationInterface, QueryRunner} from "typeorm";
 
-export class alterSystemStateViewPrimaryCategory1644913749262
-  implements MigrationInterface {
+export class alterSystemStateViewPrimaryCategory1645105120194 implements MigrationInterface {
+
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `
         CREATE OR ALTER VIEW [vw_system_state] AS
-                            
+
         SELECT 
         -- users
         innovatorsQuery.usersTypeINNOVATOR as 'Nr of innovator users',
         innovatorsQuery.usersTypeACCESSOR as 'Nr of accessor users',
         innovatorsQuery.usersTypeASSESSMENT as 'Nr of assessment users',
         innovatorsDeletedUserQuery.usersTypeDeletedINNOVATOR as 'Nr of accounts deleted',
-
         -- innovation summary
         innovationsQuery.innovationsTotal as 'Total nr of innovations',
         innovationsQuery.innovationsStatusCREATED as 'Nr innovations to submit to needs assessment',
@@ -33,9 +32,8 @@ export class alterSystemStateViewPrimaryCategory1644913749262
         innovationSupportsQuery.iSupportsStatusCOMPLETE as 'Nr of supports in status complete',
           innovationSupportsUAQuery.iSupportsStatusUNASSIGNED as'Nr of support status in unassigned',
         (innovationSupportsQuery.iSupportsStatusIdlw) + (innovationSupportsUAQuery.iSupportsStatusUNASSIGNED) as 'Number of idle innovations',
-
         innovationSupportHistoryQuery.iSupportStartedLessTwoWeeks as 'Nr innovations with first support started within 15 days after submission',
-        ROUND( COALESCE( NULLIF(innovationSupportHistoryQuery.iSupportStartedLessTwoWeeks, 0) * 100.0 / NULLIF(innovationsQuery.innovationsTotal, 0), 0 ), 2) as '% innovations with first support started within 15 days after submission',
+        --ROUND( COALESCE( NULLIF(innovationSupportHistoryQuery.iSupportStartedLessTwoWeeks, 0) * 100.0 / NULLIF(innovationsQuery.innovationsTotal, 0), 0 ), 2) as '% innovations with first support started within 15 days after submission',
         innovationSupportHistQuery.iSupportStartedMoreTwoWeeks as 'Nr innovations without first support started within 15 days after submission',
         -- innovation actions
         innovationActionsQuery.iActionsTotal as 'Total number of actions',
@@ -47,11 +45,11 @@ export class alterSystemStateViewPrimaryCategory1644913749262
         innovationActionsQuery.iActionsStatusDECLINED as 'Nr actions declined by innovators',
         innovationActionsQuery.iActionsStatusCOMPLETED as 'Nr actions completed',
     
-        ROUND( COALESCE( NULLIF(innovationActionsQuery.iActionsStatusCOMPLETED, 0) * 100.0 / NULLIF(innovationActionsQuery.iActionsStatusREQUESTED, 0), 0 ), 2) as '% of complete requested actions',
+        --ROUND( COALESCE( NULLIF(innovationActionsQuery.iActionsStatusCOMPLETED, 0) * 100.0 / NULLIF(innovationActionsQuery.iActionsStatusREQUESTED, 0), 0 ), 2) as '% of complete requested actions',
     
         -- innovation assessment
         innovationAssessmentsQuery.iAssessmentStartedLessOneWeek as 'Nr innovations needs assessment started within 2 working days after submission',
-        ROUND( COALESCE( NULLIF(innovationAssessmentsQuery.iAssessmentStartedLessOneWeek, 0) * 100.0 / NULLIF(innovationsQuery.innovationsTotal, 0), 0 ), 2) as '% innovations needs assessment started within 2 working after submission' ,
+        --ROUND( COALESCE( NULLIF(innovationAssessmentsQuery.iAssessmentStartedLessOneWeek, 0) * 100.0 / NULLIF(innovationsQuery.innovationsTotal, 0), 0 ), 2) as '% innovations needs assessment started within 2 working after submission' ,
         innovationAssessmentsQuery.iAssessmentNotStartedMoreTwodays as 'Nr innovations needs assessment not started within 2 working days after submission',
         innovationAvgDayNAQuery.iAvgDayBetween as 'Average number of days between account creation and sumbitting for needs assessment',
         
@@ -98,7 +96,6 @@ export class alterSystemStateViewPrimaryCategory1644913749262
             where
             isup.deleted_at is null
         ) innovationSupportsQuery,
-
         (
             select COUNT(CASE WHEN DATEDIFF(minute, i.submitted_at, min_support_start_date) < 30240 then 1 ELSE NULL END) as iSupportStartedLessTwoWeeks
                 from innovation as i join (
@@ -170,8 +167,7 @@ export class alterSystemStateViewPrimaryCategory1644913749262
                 [dbo].[user] u
             where u.deleted_at is null
         ) innovatorsQuery,
-
-    -- deleted user counts query
+        -- deleted user counts query
         (
           select 
               COUNT(CASE WHEN u.type = 'INNOVATOR' then 1 ELSE NULL END) as usersTypeDeletedINNOVATOR
@@ -179,7 +175,6 @@ export class alterSystemStateViewPrimaryCategory1644913749262
                 [dbo].[user] u
             where u.deleted_at is not null
         ) innovatorsDeletedUserQuery,
-
         
         (
             select 
@@ -188,7 +183,6 @@ export class alterSystemStateViewPrimaryCategory1644913749262
             where   i.status = 'IN_PROGRESS' and
             NOT EXISTS(SELECT 1 FROM innovation_support tmp WHERE tmp.innovation_id = i.id and deleted_at is null)
         ) innovationSupportsUAQuery,
-
         --Average number of days between account creation and sumbitting for needs assessment
         (
             select 
@@ -199,7 +193,6 @@ export class alterSystemStateViewPrimaryCategory1644913749262
             where i.status = 'NEEDS_ASSESSMENT' 
             and u.deleted_at is null and i.deleted_at is null
         ) innovationAvgDayNAQuery,
-
         -- count of innovations based on main category
         (
         select 
@@ -214,9 +207,10 @@ export class alterSystemStateViewPrimaryCategory1644913749262
           [dbo].[innovation] as i
         ) innovationsCountBasedOnMainCategory;                  
 
+  
 
-  `
-    );
+      `
+    )
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -230,7 +224,6 @@ export class alterSystemStateViewPrimaryCategory1644913749262
         innovatorsQuery.usersTypeACCESSOR as 'Nr of accessor users',
         innovatorsQuery.usersTypeASSESSMENT as 'Nr of assessment users',
         innovatorsDeletedUserQuery.usersTypeDeletedINNOVATOR as 'Nr of accounts deleted',
-
         -- innovation summary
         innovationsQuery.innovationsTotal as 'Total nr of innovations',
         innovationsQuery.innovationsStatusCREATED as 'Nr innovations to submit to needs assessment',
@@ -250,7 +243,6 @@ export class alterSystemStateViewPrimaryCategory1644913749262
         innovationSupportsQuery.iSupportsStatusCOMPLETE as 'Nr of supports in status complete',
           innovationSupportsUAQuery.iSupportsStatusUNASSIGNED as'Nr of support status in unassigned',
         (innovationSupportsQuery.iSupportsStatusIdlw) + (innovationSupportsUAQuery.iSupportsStatusUNASSIGNED) as 'Number of idle innovations',
-
         innovationSupportHistoryQuery.iSupportStartedLessTwoWeeks as 'Nr innovations with first support started within 15 days after submission',
         ROUND( COALESCE( NULLIF(innovationSupportHistoryQuery.iSupportStartedLessTwoWeeks, 0) * 100.0 / NULLIF(innovationsQuery.innovationsTotal, 0), 0 ), 2) as '% innovations with first support started within 15 days after submission',
         innovationSupportHistQuery.iSupportStartedMoreTwoWeeks as 'Nr innovations without first support started within 15 days after submission',
@@ -306,7 +298,6 @@ export class alterSystemStateViewPrimaryCategory1644913749262
             where
             isup.deleted_at is null
         ) innovationSupportsQuery,
-
         (
             select COUNT(CASE WHEN DATEDIFF(minute, i.submitted_at, min_support_start_date) < 30240 then 1 ELSE NULL END) as iSupportStartedLessTwoWeeks
                 from innovation as i join (
@@ -378,7 +369,6 @@ export class alterSystemStateViewPrimaryCategory1644913749262
                 [dbo].[user] u
             where u.deleted_at is null
         ) innovatorsQuery,
-
     -- deleted user counts query
         (
           select 
@@ -387,7 +377,6 @@ export class alterSystemStateViewPrimaryCategory1644913749262
                 [dbo].[user] u
             where u.deleted_at is not null
         ) innovatorsDeletedUserQuery,
-
         
         (
             select 
@@ -396,7 +385,6 @@ export class alterSystemStateViewPrimaryCategory1644913749262
             where   i.status = 'IN_PROGRESS' and
             NOT EXISTS(SELECT 1 FROM innovation_support tmp WHERE tmp.innovation_id = i.id and deleted_at is null)
         ) innovationSupportsUAQuery,
-
         --Average number of days between account creation and sumbitting for needs assessment
         (
             select 
@@ -407,11 +395,9 @@ export class alterSystemStateViewPrimaryCategory1644913749262
             where i.status = 'NEEDS_ASSESSMENT' 
             and u.deleted_at is null and i.deleted_at is null
         ) innovationAvgDayNAQuery;
-
         
-
-
           `
-    );
+    );    
   }
+
 }
