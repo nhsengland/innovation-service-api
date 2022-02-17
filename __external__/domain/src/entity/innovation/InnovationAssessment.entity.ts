@@ -40,7 +40,7 @@ export class InnovationAssessment extends Base {
     name: "maturity_level_comment",
     type: "nvarchar",
     nullable: true,
-    length: 150,
+    length: 200,
   })
   maturityLevelComment: string;
 
@@ -58,7 +58,7 @@ export class InnovationAssessment extends Base {
   @Column({
     name: "has_regulatory_approvals_comment",
     nullable: true,
-    length: 150,
+    length: 200,
   })
   hasRegulatoryApprovalsComment: string;
 
@@ -70,7 +70,7 @@ export class InnovationAssessment extends Base {
   })
   hasEvidence: YesPartiallyNoCatalogue;
 
-  @Column({ name: "has_evidence_comment", nullable: true })
+  @Column({ name: "has_evidence_comment", nullable: true, length: 200 })
   hasEvidenceComment: string;
 
   @Column({
@@ -81,7 +81,7 @@ export class InnovationAssessment extends Base {
   })
   hasValidation: YesPartiallyNoCatalogue;
 
-  @Column({ name: "has_validation_comment", nullable: true })
+  @Column({ name: "has_validation_comment", nullable: true, length: 200 })
   hasValidationComment: string;
 
   @Column({
@@ -92,7 +92,7 @@ export class InnovationAssessment extends Base {
   })
   hasProposition: YesPartiallyNoCatalogue;
 
-  @Column({ name: "has_proposition_comment", nullable: true })
+  @Column({ name: "has_proposition_comment", nullable: true, length: 200 })
   hasPropositionComment: string;
 
   @Column({
@@ -106,7 +106,7 @@ export class InnovationAssessment extends Base {
   @Column({
     name: "has_competition_knowledge_comment",
     nullable: true,
-    length: 150,
+    length: 200,
   })
   hasCompetitionKnowledgeComment: string;
 
@@ -121,7 +121,7 @@ export class InnovationAssessment extends Base {
   @Column({
     name: "has_implementation_plan_comment",
     nullable: true,
-    length: 150,
+    length: 200,
   })
   hasImplementationPlanComment: string;
 
@@ -133,7 +133,7 @@ export class InnovationAssessment extends Base {
   })
   hasScaleResource: YesPartiallyNoCatalogue;
 
-  @Column({ name: "has_scale_resource_comment", nullable: true })
+  @Column({ name: "has_scale_resource_comment", nullable: true, length: 200 })
   hasScaleResourceComment: string;
 
   // relationships
