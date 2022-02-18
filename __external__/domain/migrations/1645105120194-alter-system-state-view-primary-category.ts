@@ -1,7 +1,7 @@
-import {MigrationInterface, QueryRunner} from "typeorm";
+import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class alterSystemStateViewPrimaryCategory1645105120194 implements MigrationInterface {
-
+export class alterSystemStateViewPrimaryCategory1645105120194
+  implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `
@@ -210,7 +210,7 @@ export class alterSystemStateViewPrimaryCategory1645105120194 implements Migrati
   
 
       `
-    )
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -397,7 +397,6 @@ export class alterSystemStateViewPrimaryCategory1645105120194 implements Migrati
         ) innovationAvgDayNAQuery;
         
           `
-    );    
+    );
   }
-
 }
