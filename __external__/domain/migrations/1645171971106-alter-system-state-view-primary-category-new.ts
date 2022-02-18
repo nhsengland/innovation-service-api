@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class alterSystemStateViewPrimaryCategory1645105120194
+export class alterSystemStateViewPrimaryCategoryNew1645171971106
   implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
@@ -33,7 +33,6 @@ export class alterSystemStateViewPrimaryCategory1645105120194
           innovationSupportsUAQuery.iSupportsStatusUNASSIGNED as'Nr of support status in unassigned',
         (innovationSupportsQuery.iSupportsStatusIdlw) + (innovationSupportsUAQuery.iSupportsStatusUNASSIGNED) as 'Number of idle innovations',
         innovationSupportHistoryQuery.iSupportStartedLessTwoWeeks as 'Nr innovations with first support started within 15 days after submission',
-        --ROUND( COALESCE( NULLIF(innovationSupportHistoryQuery.iSupportStartedLessTwoWeeks, 0) * 100.0 / NULLIF(innovationsQuery.innovationsTotal, 0), 0 ), 2) as '% innovations with first support started within 15 days after submission',
         innovationSupportHistQuery.iSupportStartedMoreTwoWeeks as 'Nr innovations without first support started within 15 days after submission',
         -- innovation actions
         innovationActionsQuery.iActionsTotal as 'Total number of actions',
@@ -44,12 +43,9 @@ export class alterSystemStateViewPrimaryCategory1645105120194
         innovationActionsQuery.iActionsStatusDELETED as 'Nr actions deleted by accessors',
         innovationActionsQuery.iActionsStatusDECLINED as 'Nr actions declined by innovators',
         innovationActionsQuery.iActionsStatusCOMPLETED as 'Nr actions completed',
-    
-        --ROUND( COALESCE( NULLIF(innovationActionsQuery.iActionsStatusCOMPLETED, 0) * 100.0 / NULLIF(innovationActionsQuery.iActionsStatusREQUESTED, 0), 0 ), 2) as '% of complete requested actions',
-    
+        
         -- innovation assessment
         innovationAssessmentsQuery.iAssessmentStartedLessOneWeek as 'Nr innovations needs assessment started within 2 working days after submission',
-        --ROUND( COALESCE( NULLIF(innovationAssessmentsQuery.iAssessmentStartedLessOneWeek, 0) * 100.0 / NULLIF(innovationsQuery.innovationsTotal, 0), 0 ), 2) as '% innovations needs assessment started within 2 working after submission' ,
         innovationAssessmentsQuery.iAssessmentNotStartedMoreTwodays as 'Nr innovations needs assessment not started within 2 working days after submission',
         innovationAvgDayNAQuery.iAvgDayBetween as 'Average number of days between account creation and sumbitting for needs assessment',
         
