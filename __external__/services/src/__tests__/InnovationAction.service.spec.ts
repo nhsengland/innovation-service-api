@@ -514,8 +514,8 @@ describe("Innovation Action Suite", () => {
     expect(item.count).toEqual(2);
   });
 
-  it("should find all open actions if Accessor", async () => {
-    await actionService.create(qAccessorRequestUser, innovation.id, {
+  it("should find all open actions if created Accessor", async () => {
+    await actionService.create(accessorRequestUser, innovation.id, {
       description: "missing good descriptions",
       section: InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
     });
@@ -533,7 +533,7 @@ describe("Innovation Action Suite", () => {
     );
 
     expect(item).toBeDefined();
-    expect(item.count).toEqual(2);
+    expect(item.count).toEqual(1);
   });
 
   it("should find all close actions if Qual. Accessor", async () => {
@@ -570,7 +570,7 @@ describe("Innovation Action Suite", () => {
     expect(item.count).toEqual(1);
   });
 
-  it("should find all close actions if Accessor", async () => {
+  it("should find all close actions if created by Accessor", async () => {
     const action = await actionService.create(
       qAccessorRequestUser,
       innovation.id,
@@ -601,7 +601,7 @@ describe("Innovation Action Suite", () => {
     );
 
     expect(item).toBeDefined();
-    expect(item.count).toEqual(1);
+    expect(item.count).toEqual(0);
   });
 
   it("should find all actions if Accessor and status is COMPLETED", async () => {
@@ -631,7 +631,7 @@ describe("Innovation Action Suite", () => {
     );
 
     expect(item).toBeDefined();
-    expect(item.count).toEqual(1);
+    expect(item.count).toEqual(0);
   });
 
   it("should find all actions if Qual. Accesso and status is IN_REVIEW", async () => {
@@ -664,6 +664,6 @@ describe("Innovation Action Suite", () => {
     );
 
     expect(item).toBeDefined();
-    expect(item.count).toEqual(1);
+    expect(item.count).toEqual(0);
   });
 });
