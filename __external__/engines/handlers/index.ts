@@ -42,7 +42,9 @@ export const accessorsActionToReviewHandler = async (
   const innovation_name = innovation.name;
   const action_url = parseUrl(params, template);
 
-  const recipients = await getRecipients(params.innovationId, connectionName);
+  let recipients = targetUsers;
+  recipients = recipients.filter((r) => r !== requestUser.id);
+
   const filteredRecipients = await filterRecipientsByPreference(
     NotificationContextType.ACTION,
     recipients
