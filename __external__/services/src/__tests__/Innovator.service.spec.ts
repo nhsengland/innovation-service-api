@@ -23,7 +23,6 @@ import { NotificationService } from "@services/services/Notification.service";
 describe("Innovator Service Suite", () => {
   let userService: UserService;
   let innovationService: InnovationService;
-
   beforeAll(async () => {
     //await setupTestsConnection();
     dotenv.config({
@@ -160,7 +159,9 @@ describe("Innovator Service Suite", () => {
       organisations: [],
     });
 
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue();
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockRejectedValue("error");
     // Act
 
     const result = await innovatorService.createFirstTimeSignIn(
