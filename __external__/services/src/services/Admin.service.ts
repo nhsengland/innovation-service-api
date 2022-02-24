@@ -54,7 +54,7 @@ export class AdminService {
           displayName: b2c.displayName,
           email: b2c.email,
           lockedAt: user.lockedAt,
-          userOrganisations: userOrganisations.map((o) => ({
+          userOrganisations: userOrganisations?.map((o) => ({
             id: o.id,
             name: o.organisation.name,
             role: o.role,
