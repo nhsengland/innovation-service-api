@@ -6,6 +6,7 @@ import { closeTestsConnection, setupTestsConnection, UserType } from "..";
 import * as helpers from "../helpers";
 import * as fixtures from "../__fixtures__";
 import { SLSEventType } from "@services/types";
+import { UserEmailNotFound } from "@services/errors";
 
 const dummy = {
   email: "email@email.com",
@@ -30,11 +31,11 @@ describe("Auth Service Suite", () => {
     //await closeTestsConnection();
   });
 
-  it("should instantiate the Email service", () => {
+  it("should instantiate the Auth service", () => {
     expect(authService).toBeDefined();
   });
 
-  it.skip("Should generate a TOTP for a given user", async () => {
+  it("Should generate a TOTP for a given user", async () => {
     jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
     jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       {
@@ -62,6 +63,23 @@ describe("Auth Service Suite", () => {
     }
 
     expect(err).toBeUndefined();
+  });
+
+  it("Should throw error when sending TOTP if user is not found", async () => {
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([]);
+
+    const user = await fixtures.createAdminUser();
+
+    let err;
+    try {
+      await authService.send2LS(user.id, SLSEventType.LOGIN);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(UserEmailNotFound);
   });
 
   it.skip("Should generate a TOTP for a given user and return a 6-digit code", async () => {
@@ -219,7 +237,7 @@ describe("Auth Service Suite", () => {
     expect(actual).toBe(true);
   });
 
-  it.skip("Should return false when a TOTP does not exist on the database for a given user", async () => {
+  it("Should return false when a TOTP does not exist on the database for a given user", async () => {
     jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
     jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       {
@@ -238,7 +256,7 @@ describe("Auth Service Suite", () => {
     jest.spyOn(TTL2ls, "findOneAndUpdate").mockResolvedValue("000000");
     jest.spyOn(TTL2ls.prototype, "save").mockImplementation();
     jest.spyOn(authService, "sendTOTP").mockImplementation();
-    jest.spyOn(TTL2ls, "findOne").mockImplementation();
+    jest.spyOn(TTL2ls, "findOne").mockResolvedValue(false);
 
     const actual = await authService.totpExists(user.id, "ACTION", ":id");
 
