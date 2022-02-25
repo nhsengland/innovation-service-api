@@ -33,6 +33,7 @@ import { UserService } from "../services/User.service";
 import * as fixtures from "../__fixtures__";
 
 const dummy = {
+  email: "email@email.com",
   requestUser: {
     id: ":userId",
     type: UserType.ADMIN,
@@ -340,6 +341,10 @@ describe("User Service Suite", () => {
 
   it("should throw when updateUsers with invalid params", async () => {
     let err;
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+
     try {
       await userService.updateUsers(null, null);
     } catch (error) {
@@ -559,5 +564,74 @@ describe("User Service Suite", () => {
     expect(err).toBeDefined();
     expect(err.message.toLocaleLowerCase()).toBe("error updating user.");
     expect(actual).toBeUndefined();
+  });
+
+  it("Should searchUsersByEmail ", async () => {
+    // Arrange
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
+      id: "user_id_from_b2c",
+      displayName: "Accessor A",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "test_user@example.com",
+        },
+      ],
+      mobilePhone: "+351960000000",
+    });
+    const fakeRequestUser = {
+      requestUser: {
+        id: ":userId",
+        type: UserType.INNOVATOR,
+      },
+    };
+    // Act
+    let err;
+    try {
+      await userService.searchUsersByEmail(fakeRequestUser.requestUser, [
+        dummy.email,
+      ]);
+    } catch (error) {
+      err = error;
+    }
+    // Assert
+    expect(err).toBeDefined();
+  });
+
+  it("Should searchUsersByEmail with invalid parameter", async () => {
+    // Arrange
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
+      id: "user_id_from_b2c",
+      displayName: "Accessor A",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "test_user@example.com",
+        },
+      ],
+      mobilePhone: "+351960000000",
+    });
+    const fakeRequestUser = {
+      requestUser: {
+        id: ":userId",
+        type: UserType.INNOVATOR,
+      },
+    };
+    // Act
+    let err;
+    try {
+      await userService.searchUsersByEmail(null, [dummy.email]);
+    } catch (error) {
+      err = error;
+    }
+    // Assert
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
   });
 });
