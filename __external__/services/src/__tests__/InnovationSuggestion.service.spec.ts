@@ -19,7 +19,7 @@ import {
   User,
   UserRole,
 } from "@domain/index";
-import { InvalidParamsError } from "@services/errors";
+import { InnovationNotFoundError, InvalidParamsError } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
 import { InnovationSuggestionService } from "@services/services/InnovationSuggestion.service";
 import * as dotenv from "dotenv";
@@ -198,5 +198,20 @@ describe("Innovation Suggestion Suite", () => {
 
     expect(err).toBeDefined();
     expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw an error when findAllByInnovation() with innovation not found", async () => {
+    let err;
+    try {
+      await suggestionService.findAllByInnovation(
+        innovatorRequestUser,
+        "62e5c505-afe4-47be-9b46-0f0b79dca954"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationNotFoundError);
   });
 });
