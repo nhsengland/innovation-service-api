@@ -4,6 +4,7 @@ import {
   InnovationStatus,
   Organisation,
   OrganisationUser,
+  OrganisationType,
   User,
   UserRole,
   UserType,
@@ -254,5 +255,17 @@ describe("Innovator Service Suite", () => {
       expect(result).toBeDefined();
       expect(result.status).toBe(InnovationStatus.ARCHIVED);
     });
+  });
+
+  it("should throw error when delete the user ", async () => {
+    const innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
+    const innovatorUser = await fixtures.createInnovatorUser();
+    let err;
+    try {
+      await innovatorService.delete(innovatorUser, "test");
+    } catch (e) {
+      err = e;
+    }
+    expect(err).toBeDefined();
   });
 });
