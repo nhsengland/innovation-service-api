@@ -4,6 +4,7 @@ import {
   InnovationStatus,
   Organisation,
   OrganisationUser,
+  OrganisationType,
   User,
   UserRole,
   UserType,
@@ -23,7 +24,6 @@ import { NotificationService } from "@services/services/Notification.service";
 describe("Innovator Service Suite", () => {
   let userService: UserService;
   let innovationService: InnovationService;
-
   beforeAll(async () => {
     //await setupTestsConnection();
     dotenv.config({
@@ -160,7 +160,9 @@ describe("Innovator Service Suite", () => {
       organisations: [],
     });
 
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue();
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockRejectedValue("error");
     // Act
 
     const result = await innovatorService.createFirstTimeSignIn(
@@ -253,5 +255,17 @@ describe("Innovator Service Suite", () => {
       expect(result).toBeDefined();
       expect(result.status).toBe(InnovationStatus.ARCHIVED);
     });
+  });
+
+  it("should throw error when delete the user ", async () => {
+    const innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
+    const innovatorUser = await fixtures.createInnovatorUser();
+    let err;
+    try {
+      await innovatorService.delete(innovatorUser, "test");
+    } catch (e) {
+      err = e;
+    }
+    expect(err).toBeDefined();
   });
 });

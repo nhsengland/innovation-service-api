@@ -22,7 +22,12 @@ import {
 } from "@domain/index";
 import {
   InvalidParamsError,
+  InnovationNotFoundError,
+  InvalidUserRoleError,
+  MissingUserOrganisationUnitError,
   MissingUserOrganisationError,
+  InnovationSupportNotFoundError,
+  ResourceNotFoundError,
 } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
 import { getConnection } from "typeorm";
@@ -301,6 +306,63 @@ describe("Innovation Support Suite", () => {
     expect(item.accessors.length).toEqual(1);
   });
 
+  it("should throw when innovation not found in find innovation support", async () => {
+    let err;
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
+      { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
+      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
+
+    const supportObj = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [accessorRequestUser.organisationUnitUser.id],
+    };
+
+    const support = await supportService.create(
+      qAccessorRequestUser,
+      innovation.id,
+      supportObj
+    );
+
+    try {
+      await supportService.find(
+        qAccessorRequestUser,
+        support.id,
+        "D58C433E-F36B-1410-80E0-0032FE5B194B"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationNotFoundError);
+    expect(err.message).toContain("Invalid parameters. Innovation not found.");
+  });
+
+  it("should throw when innovation support not found in find innovation support", async () => {
+    let err;
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
+      { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
+      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
+
+    try {
+      await supportService.find(
+        qAccessorRequestUser,
+        "D58C433E-F36B-1410-80E0-0032FE5B194B",
+        innovation.id
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationSupportNotFoundError);
+    expect(err.message).toContain(
+      "Invalid parameters. Innovation Support not found."
+    );
+  });
+
   it("should find an support by accessor", async () => {
     jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
@@ -355,7 +417,73 @@ describe("Innovation Support Suite", () => {
 
     const item = await supportService.findAllByInnovation(
       innovatorRequestUser,
-      innovation.id
+      innovation.id,
+      true
+    );
+
+    expect(item).toBeDefined();
+    expect(item.length).toEqual(1);
+  });
+
+  it("should find all supports by findAllByInnovation when status is complete", async () => {
+    const supportObj = {
+      status: InnovationSupportStatus.COMPLETE,
+      accessors: [accessorRequestUser.organisationUnitUser.id],
+    };
+
+    await supportService.create(
+      qAccessorRequestUser,
+      innovation.id,
+      supportObj
+    );
+
+    const item = await supportService.findAllByInnovation(
+      innovatorRequestUser,
+      innovation.id,
+      true
+    );
+
+    expect(item).toBeDefined();
+    expect(item.length).toEqual(1);
+  });
+
+  it("should find all supports by findAllByInnovationAssessment when status is complete", async () => {
+    const supportObj = {
+      status: InnovationSupportStatus.COMPLETE,
+      accessors: [accessorRequestUser.organisationUnitUser.id],
+    };
+
+    await supportService.create(
+      qAccessorRequestUser,
+      innovation.id,
+      supportObj
+    );
+
+    const item = await supportService.findAllByInnovationAssessment(
+      innovatorRequestUser,
+      innovation.id,
+      true
+    );
+
+    expect(item).toBeDefined();
+    expect(item.length).toEqual(1);
+  });
+  it("should find all supports by findAllByInnovationAssessment when status is Engaging", async () => {
+    const supportObj = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [accessorRequestUser.organisationUnitUser.id],
+    };
+
+    await supportService.create(
+      qAccessorRequestUser,
+      innovation.id,
+      supportObj
+    );
+
+    const item = await supportService.findAllByInnovationAssessment(
+      innovatorRequestUser,
+      innovation.id,
+      true
     );
 
     expect(item).toBeDefined();
@@ -372,6 +500,22 @@ describe("Innovation Support Suite", () => {
 
     expect(err).toBeDefined();
     expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+  it("should throw when innovation not found in findAllByInnovation", async () => {
+    let err;
+
+    try {
+      await supportService.findAllByInnovation(
+        qAccessorRequestUser,
+        "D58C433E-F36B-1410-80E0-0032FE5B194B"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationNotFoundError);
+    expect(err.message).toContain("Invalid parameters. Innovation not found.");
   });
 
   it("should update an support status to add one accessor", async () => {
@@ -459,6 +603,82 @@ describe("Innovation Support Suite", () => {
     expect(item.accessors.length).toEqual(0);
   });
 
+  it("should throw error when resource not found in update support status", async () => {
+    let err;
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
+      { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
+      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
+
+    const supportObj = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [
+        accessorRequestUser.organisationUnitUser.id,
+        qAccessorRequestUser.organisationUnitUser.id,
+      ],
+      comment: "test comment 2",
+    };
+    try {
+      await supportService.update(
+        qAccessorRequestUser,
+        "D58C433E-F36B-1410-80E0-0032FE5B194B",
+        innovation.id,
+        supportObj
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(ResourceNotFoundError);
+    expect(err.message).toContain("Innovation Support not found!");
+  });
+
+  it("should throw error when innovation not found in update support status", async () => {
+    let err;
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
+      { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
+      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
+
+    let supportObj = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [accessorRequestUser.organisationUnitUser.id],
+      comment: "test comment",
+    };
+
+    const support = await supportService.create(
+      qAccessorRequestUser,
+      innovation.id,
+      supportObj
+    );
+
+    supportObj = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [
+        accessorRequestUser.organisationUnitUser.id,
+        qAccessorRequestUser.organisationUnitUser.id,
+      ],
+      comment: "test comment 2",
+    };
+    try {
+      await supportService.update(
+        qAccessorRequestUser,
+        support.id,
+        "D58C433E-F36B-1410-80E0-0032FE5B194B",
+        supportObj
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationNotFoundError);
+    expect(err.message).toContain(
+      "Invalid parameters. Innovation not found for the user."
+    );
+  });
+
   it("should update an support status to a non engaging status without actions", async () => {
     let supportObj = {
       status: InnovationSupportStatus.ENGAGING,
@@ -525,5 +745,244 @@ describe("Innovation Support Suite", () => {
 
     expect(err).toBeDefined();
     expect(err).toBeInstanceOf(MissingUserOrganisationError);
+  });
+
+  it("should throw when innovation not found in findAllByInnovationAssessment()", async () => {
+    let err;
+    try {
+      await supportService.findAllByInnovationAssessment(
+        {
+          id: ":id",
+          type: UserType.INNOVATOR,
+        },
+        "D58C433E-F36B-1410-80E0-0032FE5B194B",
+        true
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationNotFoundError);
+    expect(err.message).toContain("Invalid parameters. Innovation not found.");
+  });
+
+  it("should throw when innovation support not found in findAllByInnovationAssessment()", async () => {
+    const result = await supportService.findAllByInnovationAssessment(
+      {
+        id: ":id",
+        type: UserType.INNOVATOR,
+      },
+      innovation.id,
+      true
+    );
+
+    expect(result).toBeDefined();
+    expect(result.length).toEqual(0);
+  });
+
+  it("should throw when innovation not found in create()", async () => {
+    let err;
+    const supportObj = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [accessorRequestUser.organisationUnitUser.id],
+      comment: "test comment",
+    };
+    try {
+      await supportService.create(
+        qAccessorRequestUser,
+        "D58C433E-F36B-1410-80E0-0032FE5B194B",
+        supportObj
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationNotFoundError);
+    expect(err.message).toContain(
+      "Invalid parameters. Innovation not found for the user."
+    );
+  });
+
+  it("should throw when user id or innovator id are invalid in findAllByInnovationAssessment()", async () => {
+    let err;
+    try {
+      await supportService.findAllByInnovationAssessment(null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+    expect(err.message).toContain("Invalid parameters.");
+  });
+
+  it("should throw when role is invalid in update()", async () => {
+    let err;
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
+      { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
+      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
+
+    let supportObj = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [accessorRequestUser.organisationUnitUser.id],
+      comment: "test comment",
+    };
+
+    const support = await supportService.create(
+      qAccessorRequestUser,
+      innovation.id,
+      supportObj
+    );
+
+    supportObj = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [
+        accessorRequestUser.organisationUnitUser.id,
+        qAccessorRequestUser.organisationUnitUser.id,
+      ],
+      comment: "test comment 2",
+    };
+    try {
+      await supportService.update(
+        accessorRequestUser,
+        support.id,
+        innovation.id,
+        supportObj
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidUserRoleError);
+    expect(err.message).toContain("Invalid user. User has an invalid role.");
+  });
+
+  it("should throw when role is invalid in create()", async () => {
+    let err;
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
+      { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
+      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
+
+    const supportObj = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [accessorRequestUser.organisationUnitUser.id],
+      comment: "test comment",
+    };
+    qAccessorRequestUser.organisationUser.role =
+      AccessorOrganisationRole.ACCESSOR;
+    try {
+      await supportService.create(
+        qAccessorRequestUser,
+        innovation.id,
+        supportObj
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidUserRoleError);
+    expect(err.message).toContain("Invalid user. User has an invalid role.");
+  });
+
+  it("should throw when orgnisation units is invalid in update()", async () => {
+    let err;
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
+      { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
+      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
+
+    let supportObj = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [accessorRequestUser.organisationUnitUser.id],
+      comment: "test comment",
+    };
+    qAccessorRequestUser.organisationUser.role =
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR;
+
+    const support = await supportService.create(
+      qAccessorRequestUser,
+      innovation.id,
+      supportObj
+    );
+
+    supportObj = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [
+        accessorRequestUser.organisationUnitUser.id,
+        qAccessorRequestUser.organisationUnitUser.id,
+      ],
+      comment: "test comment 2",
+    };
+
+    accessorRequestUser.organisationUnitUser = null;
+    try {
+      await supportService.update(
+        accessorRequestUser,
+        support.id,
+        innovation.id,
+        supportObj
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(MissingUserOrganisationUnitError);
+    expect(err.message).toContain(
+      "Invalid user. User has no organisation units."
+    );
+  });
+
+  it("should throw when orgnisation units is missing in create()", async () => {
+    let err;
+    const accessorUser = await fixtures.createAccessorUser();
+    const accessorOrganisation = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
+    );
+    const organisationAccessorUser = await fixtures.addUserToOrganisation(
+      accessorUser,
+      accessorOrganisation,
+      AccessorOrganisationRole.ACCESSOR
+    );
+    const organisationUnit = await fixtures.createOrganisationUnit(
+      accessorOrganisation
+    );
+    const organisationUnitAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
+      organisationAccessorUser,
+      organisationUnit
+    );
+    accessorRequestUser = fixtures.getRequestUser(
+      accessorUser,
+      organisationAccessorUser,
+      organisationUnitAccessorUser
+    );
+
+    const supportObj = {
+      status: InnovationSupportStatus.ENGAGING,
+      accessors: [accessorRequestUser.organisationUnitUser.id],
+      comment: "test comment",
+    };
+
+    qAccessorRequestUser.organisationUnitUser = null;
+    try {
+      await supportService.create(
+        qAccessorRequestUser,
+        innovation.id,
+        supportObj
+      );
+    } catch (error) {
+      err = error;
+    }
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(MissingUserOrganisationUnitError);
+    expect(err.message).toContain(
+      "Invalid user. User has no organisation units."
+    );
   });
 });
