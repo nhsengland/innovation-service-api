@@ -31,6 +31,7 @@ import {
   InvalidSectionStateError,
   InvalidUserRoleError,
   InvalidUserTypeError,
+  MissingUserOrganisationError,
 } from "@services/errors";
 import { InnovationListModel } from "@services/models/InnovationListModel";
 import { RequestUser } from "@services/models/RequestUser";
@@ -47,6 +48,7 @@ import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
 import { InnovationService } from "../services/Innovation.service";
 import * as fixtures from "../__fixtures__";
+import { ActivityLogService } from "@services/services/ActivityLog.service";
 
 describe("Innovator Service Suite", () => {
   let innovationService: InnovationService;
@@ -65,7 +67,7 @@ describe("Innovator Service Suite", () => {
   let assessmentRequestUser: RequestUser;
 
   beforeAll(async () => {
-    //await setupTestsConnection();
+    // await setupTestsConnection();
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
     });
@@ -186,7 +188,7 @@ describe("Innovator Service Suite", () => {
     await query.from(Organisation).execute();
     await query.from(UserRole).execute();
     await query.from(User).execute();
-    //closeTestsConnection();
+    // closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -226,9 +228,6 @@ describe("Innovator Service Suite", () => {
     jest
       .spyOn(innovationService, "hasIncompleteSections")
       .mockResolvedValue(false);
-
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue();
-
     const spy = jest.spyOn(LoggerService.prototype, "error");
 
     const actual = await innovationService.submitInnovation(
@@ -380,7 +379,9 @@ describe("Innovator Service Suite", () => {
       ],
     };
 
-    jest.spyOn(notificationService, "sendEmail");
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockRejectedValue("error");
 
     jest.spyOn(notificationService, "create");
 
@@ -755,6 +756,40 @@ describe("Innovator Service Suite", () => {
     });
   });
 
+  it("should list innovations within the list of statuses getNotificationsGroupedBySupportStatus", async () => {
+    const innovations: Innovation[] = await fixtures.saveInnovationsWithAssessment(
+      fixtures.generateInnovation({
+        owner: { id: innovatorRequestUser.id },
+      })
+    );
+
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue(
+      innovations.map((inno) => ({
+        id: inno.assessments.map((a) => a.assignTo).join(),
+        displayName: "assessement_user_name",
+      }))
+    );
+
+    let result: InnovationListModel;
+    try {
+      result = await innovationService.getInnovationListByState(
+        innovatorRequestUser,
+        [InnovationStatus.NEEDS_ASSESSMENT],
+        0,
+        10
+      );
+    } catch (error) {
+      throw error;
+    }
+
+    expect(result.count).toBe(1);
+    expect(result.data.length).toBe(1);
+    expect(result.data[0].assessment.assignTo).toEqual({
+      name: "assessement_user_name",
+    });
+  });
+
   it("should submit the innovation by innovator Id and innovation Id", async () => {
     const innovationObj = fixtures.generateInnovation({
       owner: { id: innovatorRequestUser.id },
@@ -766,7 +801,9 @@ describe("Innovator Service Suite", () => {
       .spyOn(innovationService, "hasIncompleteSections")
       .mockResolvedValue(false);
 
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue();
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockRejectedValue("error");
 
     await innovationService.submitInnovation(
       innovatorRequestUser,
@@ -788,7 +825,9 @@ describe("Innovator Service Suite", () => {
       .spyOn(innovationService, "hasIncompleteSections")
       .mockResolvedValue(false);
 
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue();
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockRejectedValue("error");
 
     try {
       await innovationService.submitInnovation(undefined, "id");
@@ -1012,6 +1051,10 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should archive the innovation by innovator Id and innovation Id", async () => {
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockRejectedValue("error");
+
     const innovationObj = fixtures.generateInnovation({
       owner: { id: innovatorRequestUser.id },
       surveyId: "abc",
@@ -1030,6 +1073,9 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should throw an error when archiveInnovation() without id", async () => {
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockRejectedValue("error");
     let err;
     try {
       await innovationService.archiveInnovation(undefined, "id", "");
@@ -1042,6 +1088,9 @@ describe("Innovator Service Suite", () => {
   });
 
   it("should throw an error when archiveInnovation() with innovation not found", async () => {
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockRejectedValue("error");
     let err;
     try {
       await innovationService.archiveInnovation(
@@ -1390,5 +1439,349 @@ describe("Innovator Service Suite", () => {
     }
 
     expect(result.count).toBe(1);
+  });
+
+  it("should throw when organisations is null in updateOrganisationShares()", async () => {
+    const fakeInnovation = await fixtures.saveInnovation(
+      fixtures.generateInnovation({
+        owner: { id: innovatorRequestUser.id },
+        status: InnovationStatus.IN_PROGRESS,
+        organisationShares: [{ id: accessorOrganisation.id }],
+      })
+    );
+    let err;
+    try {
+      await innovationService.updateOrganisationShares(
+        innovatorRequestUser,
+        fakeInnovation.id,
+        []
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw when findInnovation() with invalid params", async () => {
+    let err;
+    try {
+      await innovationService.findInnovation(null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw when findInnovation() with invalid user role", async () => {
+    let err;
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ADMIN,
+    };
+
+    const fakeInnovations = await fixtures.saveInnovations(
+      fixtures.generateInnovation({
+        owner: { id: innovatorRequestUser.id },
+        status: InnovationStatus.IN_PROGRESS,
+        organisationShares: [{ id: accessorOrganisation.id }],
+      })
+    );
+
+    try {
+      await innovationService.findInnovation(
+        requestUser,
+        fakeInnovations[0].id
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidUserRoleError);
+  });
+  it("should throw when getAssessmentInnovationSummary() with invalid params", async () => {
+    let err;
+    try {
+      await innovationService.getAssessmentInnovationSummary(null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw when getAccessorInnovationSummary() with invalid params", async () => {
+    let err;
+    try {
+      await innovationService.getAccessorInnovationSummary(null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw when getAccessorInnovationSummary() with MissingUserOrganisation ", async () => {
+    let err;
+
+    const fakeInnovations = await fixtures.saveInnovations(
+      fixtures.generateInnovation({
+        owner: { id: innovatorRequestUser.id },
+        status: InnovationStatus.IN_PROGRESS,
+        organisationShares: [{ id: accessorOrganisation.id }],
+      })
+    );
+
+    try {
+      await innovationService.getAccessorInnovationSummary(
+        {
+          id: ":id",
+          type: UserType.ACCESSOR,
+        },
+        fakeInnovations[0].id
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(MissingUserOrganisationError);
+  });
+
+  it("Should find records when user is of type Accessor and all matching arguments", async () => {
+    jest.spyOn(notificationService, "sendEmail");
+    jest.spyOn(notificationService, "create");
+
+    const innovation = {
+      countryName: "England",
+      mainCategory: "MEDICAL_DEVICES",
+    };
+
+    const setup = await fixtures.setupCompleteInnovation(true, innovation);
+
+    const result = await innovationService.findAllAdvanced(
+      setup.users.qualifyingAccessor,
+      "",
+      false,
+      false,
+      ["MEDICAL_DEVICES"],
+      ["England", "Scotland"],
+      [setup.accessorOrganisation.id],
+      ["ENGAGING", "NOT_YET"],
+      0,
+      1000
+    );
+
+    expect(result.data.length).toEqual(1);
+    expect(result.count).toEqual(1);
+  });
+
+  it("Should throw error when request user does not have an accessor role", async () => {
+    jest.spyOn(notificationService, "sendEmail");
+    jest.spyOn(notificationService, "create");
+
+    const innovation = {
+      countryName: "England",
+      mainCategory: "MEDICAL_DEVICES",
+    };
+
+    const setup = await fixtures.setupCompleteInnovation(true, innovation);
+
+    const innovatorUser = await fixtures.createAssessmentUser();
+
+    const org = await fixtures.createOrganisation(OrganisationType.ACCESSOR);
+    const orgUser = await fixtures.addUserToOrganisation(
+      innovatorUser,
+      org,
+      InnovatorOrganisationRole.INNOVATOR_OWNER
+    );
+    const innovatorRequestUser = fixtures.getRequestUser(
+      innovatorUser,
+      orgUser
+    );
+
+    let err;
+
+    try {
+      await innovationService.findAllAdvanced(
+        innovatorRequestUser,
+        "",
+        false,
+        false,
+        ["MEDICAL_DEVICES"],
+        ["England", "Scotland"],
+        [setup.accessorOrganisation.id],
+        ["ENGAGING", "NOT_YET"],
+        0,
+        1000
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidUserRoleError);
+  });
+
+  it("Should throw error when request user does not have an org", async () => {
+    jest.spyOn(notificationService, "sendEmail");
+    jest.spyOn(notificationService, "create");
+
+    const innovation = {
+      countryName: "England",
+      mainCategory: "MEDICAL_DEVICES",
+    };
+
+    const setup = await fixtures.setupCompleteInnovation(true, innovation);
+
+    const assessmentUser = await fixtures.createAssessmentUser();
+    const assessmentRequestUser = fixtures.getRequestUser(assessmentUser);
+    let err;
+
+    try {
+      await innovationService.findAllAdvanced(
+        assessmentRequestUser,
+        "",
+        false,
+        false,
+        ["MEDICAL_DEVICES"],
+        ["England", "Scotland"],
+        [setup.accessorOrganisation.id],
+        ["ENGAGING", "NOT_YET"],
+        0,
+        1000
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(MissingUserOrganisationError);
+  });
+
+  it("Should throw error when request user is invaild", async () => {
+    jest.spyOn(notificationService, "sendEmail");
+    jest.spyOn(notificationService, "create");
+
+    const innovation = {
+      countryName: "England",
+      mainCategory: "MEDICAL_DEVICES",
+    };
+
+    const setup = await fixtures.setupCompleteInnovation(true, innovation);
+
+    const assessmentUser = await fixtures.createAssessmentUser();
+    const assessmentRequestUser = fixtures.getRequestUser(assessmentUser);
+    let err;
+
+    try {
+      await innovationService.findAllAdvanced(
+        null,
+        "",
+        false,
+        false,
+        ["MEDICAL_DEVICES"],
+        ["England", "Scotland"],
+        [setup.accessorOrganisation.id],
+        ["ENGAGING", "NOT_YET"],
+        0,
+        1000
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw error getOrganisationUnitShares() with invalid parameter", async () => {
+    let err;
+    try {
+      await innovationService.getOrganisationUnitShares(null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw error getOrganisationUnitShares() when innovation not found", async () => {
+    let err;
+    try {
+      await innovationService.getOrganisationUnitShares(
+        innovatorRequestUser,
+        "C435433E-F36B-1410-8105-0032FE5B194B"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationNotFoundError);
+  });
+
+  it("should throw an error when getInnovationOverview() innovation id not present", async () => {
+    let err;
+    try {
+      await innovationService.getInnovationOverview(
+        innovatorRequestUser,
+        "C435433E-F36B-1410-8105-0032FE5B194B"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationNotFoundError);
+  });
+
+  it("should throw an error when getOrganisationShares() with invalid params", async () => {
+    let err;
+    try {
+      await innovationService.getOrganisationShares(undefined, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw an error when getOrganisationShares() with invalid params", async () => {
+    let err;
+    try {
+      await innovationService.getOrganisationShares(
+        accessorRequestUser,
+        "C435433E-F36B-1410-8105-0032FE5B194B"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationNotFoundError);
+  });
+
+  it("should throw when getAccessorInnovationSummary() with InnovationNotFoundError", async () => {
+    let err;
+    try {
+      await innovationService.getAccessorInnovationSummary(
+        accessorRequestUser,
+        "C435433E-F36B-1410-8105-0032FE5B194B"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationNotFoundError);
   });
 });

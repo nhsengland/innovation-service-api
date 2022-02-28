@@ -19,12 +19,14 @@ import * as path from "path";
 import * as helpers from "../helpers";
 import { getConnection } from "typeorm";
 import { AdminService } from "@services/services/Admin.service";
-import { InvalidDataError } from "@services/errors";
+import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
+import { UserSearchResult } from "@services/types";
+import { InvalidParamsError } from "@services/errors";
 
 describe("[User Account Lock suite", () => {
   let adminService: AdminService;
   beforeAll(async () => {
-    // await setupTestsConnection();
+    //await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -46,7 +48,7 @@ describe("[User Account Lock suite", () => {
   });
 
   afterAll(async () => {
-    // await closeTestsConnection();
+    //await closeTestsConnection();
   });
   it("Should not lock User if is last assessment user", async () => {
     jest
@@ -546,5 +548,275 @@ describe("[User Account Lock suite", () => {
     expect(result).toBeDefined();
     expect(result.id).toBeDefined();
     expect(result.status).toBe("OK");
+  });
+
+  it("should search users by type", async () => {
+    //Arrange
+    jest.spyOn(UserService.prototype, "getUsersOfTypePaged").mockResolvedValue([
+      {
+        id: "abc",
+        type: UserType.ASSESSMENT,
+      },
+      {
+        id: "xyz",
+        type: UserType.INNOVATOR,
+      },
+    ] as any);
+
+    jest.spyOn(UserService.prototype, "getListOfUsers").mockResolvedValue([
+      {
+        id: "abc",
+        displayName: "Assessment User",
+      },
+      {
+        id: "xyz",
+        displayName: "Innovator User",
+      },
+    ] as ProfileSlimModel[]);
+
+    //Act
+    const result = await adminService.getUsersOfType(UserType.ASSESSMENT);
+
+    //Assert
+    expect(result).toBeDefined();
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it("should search users with organisations by type", async () => {
+    //Arrange
+    jest.spyOn(UserService.prototype, "getUsersOfTypePaged").mockResolvedValue([
+      {
+        id: "abc",
+        type: UserType.ACCESSOR,
+        userOrganisations: [
+          {
+            id: "org-id",
+            organisation: {
+              name: "org-name",
+            },
+            role: AccessorOrganisationRole.ACCESSOR,
+            userOrganisationUnits: [
+              {
+                id: "unit-id",
+                organisationUnit: {
+                  name: "unit-name",
+                },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "xyz",
+        type: UserType.INNOVATOR,
+      },
+    ] as any);
+
+    jest.spyOn(UserService.prototype, "getListOfUsers").mockResolvedValue([
+      {
+        id: "abc",
+        displayName: "Accessor User",
+      },
+      {
+        id: "xyz",
+        displayName: "Innovator User",
+      },
+    ] as ProfileSlimModel[]);
+
+    //Act
+    const result = await adminService.getUsersOfType(UserType.ACCESSOR);
+
+    //Assert
+    expect(result).toBeDefined();
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it("should search users by email", async () => {
+    //Arrange
+    jest.spyOn(UserService.prototype, "searchUserByEmail").mockResolvedValue({
+      id: "abc",
+      displayName: "UserA",
+      email: "xyz@email.com",
+    } as UserSearchResult);
+
+    //Act
+    const result = await adminService.searchUser("xyz@email.com");
+
+    //Assert
+    expect(result).toBeDefined();
+    expect(result.length).toBe(1);
+  });
+
+  it("should return null if user not found in B2C", async () => {
+    //Arrange
+    jest
+      .spyOn(UserService.prototype, "searchUserByEmail")
+      .mockResolvedValue(null);
+
+    //Act
+    const result = await adminService.searchUser("xyz@email.com");
+
+    //Assert
+    expect(result.length).toBe(0);
+  });
+
+  it("should get user details by id", async () => {
+    //Arrange
+    jest.spyOn(UserService.prototype, "getUserDetails").mockResolvedValue({
+      id: "abc",
+      displayName: "UserA",
+    });
+
+    //Act
+    const result = await adminService.getUserDetails("abc");
+
+    //Assert
+    expect(result).toBeDefined();
+  });
+
+  it("Should unlock users by id", async () => {
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
+      id: "user_id_from_b2c",
+    });
+    jest.spyOn(helpers, "saveB2CUser").mockImplementation();
+
+    const assessmentUser = await fixtures.createAssessmentUser();
+
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ADMIN,
+    };
+
+    const result = await adminService.unlockUsers(requestUser, [
+      assessmentUser.id,
+    ]);
+
+    expect(result).toBeDefined();
+    expect(result[0].status).toBe("OK");
+  });
+
+  it("Should not unlock users if request user is not ADMIN", async () => {
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ACCESSOR,
+    };
+
+    const result = await adminService.unlockUsers(requestUser, ["abc"]);
+
+    expect(result[0].error).toBeDefined();
+  });
+
+  it("Should not unlock users if user not found on B2C", async () => {
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue(null);
+
+    const assessmentUser = await fixtures.createAssessmentUser();
+
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ADMIN,
+    };
+
+    const result = await adminService.unlockUsers(requestUser, [
+      assessmentUser.id,
+    ]);
+
+    expect(result[0].error).toBeDefined();
+  });
+
+  it("Should throw error on unlock users if invalid parameters", async () => {
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ADMIN,
+    };
+
+    let err;
+    try {
+      await adminService.unlockUsers(requestUser, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("Should not lock users if request user is not ADMIN", async () => {
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ACCESSOR,
+    };
+
+    const result = await adminService.lockUsers(requestUser, "test");
+
+    expect(result.error).toBeDefined();
+  });
+
+  it("Should not lock if user not found on B2C", async () => {
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue(null);
+
+    const assessmentUser = await fixtures.createAssessmentUser();
+
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ADMIN,
+    };
+
+    const result = await adminService.lockUsers(requestUser, assessmentUser.id);
+
+    expect(result.error).toBeDefined();
+  });
+
+  it("Should check if user exists on B2C", async () => {
+    jest
+      .spyOn(UserService.prototype, "userExistsAtB2C")
+      .mockResolvedValue(true);
+
+    const result = await adminService.userExistsB2C("xyz@email.com");
+
+    expect(result).toBe(true);
+  });
+
+  it("Should throw error on lock users if invalid parameter - requestUser", async () => {
+    let err;
+    try {
+      await adminService.lockUsers(null, "test");
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("Should throw error on lock users if invalid parameter - userId", async () => {
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ADMIN,
+    };
+
+    const result = await adminService.lockUsers(requestUser, null);
+
+    expect(result.error).toBeDefined();
   });
 });

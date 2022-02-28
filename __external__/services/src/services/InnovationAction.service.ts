@@ -273,7 +273,7 @@ export class InnovationActionService {
     if (!requestUser || !id || !action) {
       throw new InvalidParamsError("Invalid parameters.");
     }
-
+    let targetNotificationUsers: string[] = [];
     const filterOptions = {
       relations: ["innovationSection", "innovationSection.innovation"],
       where: `owner_id = '${requestUser.id}'`,
@@ -290,7 +290,7 @@ export class InnovationActionService {
       innovationId,
       action
     );
-
+    targetNotificationUsers = [innovationAction.createdBy];
     try {
       await this.notificationService.create(
         requestUser,
@@ -298,7 +298,8 @@ export class InnovationActionService {
         innovationId,
         NotificationContextType.ACTION,
         innovationAction.id,
-        `An action was updated by the innovator with id ${requestUser.id} for the innovation with id ${innovationId}`
+        `An action was updated by the innovator with id ${requestUser.id} for the innovation with id ${innovationId}`,
+        targetNotificationUsers
       );
     } catch (error) {
       this.logService.error(
@@ -395,9 +396,13 @@ export class InnovationActionService {
         "innovationSection"
       )
       .innerJoinAndSelect("innovationSection.innovation", "innovation")
-      .where("InnovationAction.status IN (:...statuses)", {
-        statuses: this.getFilterStatusList(openActions),
-      })
+      .where(
+        "InnovationAction.status IN (:...statuses) and InnovationAction.created_by = :created_by",
+        {
+          statuses: this.getFilterStatusList(openActions),
+          created_by: requestUser.id,
+        }
+      )
       .take(take)
       .skip(skip);
 
@@ -670,7 +675,10 @@ export class InnovationActionService {
         "innovationAction.innovationSection",
         "innovationSection"
       )
-      .innerJoinAndSelect("innovationSection.innovation", "innovation");
+      .innerJoinAndSelect("innovationSection.innovation", "innovation")
+      .where("InnovationAction.created_by = :created_by", {
+        created_by: requestUser.id,
+      });
 
     if (
       organisationUser.role === AccessorOrganisationRole.QUALIFYING_ACCESSOR
