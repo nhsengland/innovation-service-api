@@ -196,12 +196,16 @@ export class CommentService {
     }
 
     try {
+      const innovation = await this.innovationService.find(innovationId);
       await this.notificationService.sendEmail(
         requestUser,
         EmailNotificationTemplate.ACCESSORS_COMMENT_RECEIVED,
         innovationId,
         result.id,
-        []
+        [],
+        {
+          innovation_name: innovation.name,
+        }
       );
     } catch (error) {
       this.logService.error(

@@ -15,11 +15,13 @@ import {
   UserType,
 } from "@domain/index";
 import {
+  InnovationNotFoundError,
   InvalidParamsError,
   MissingUserOrganisationError,
 } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
 import { ActivityLogService } from "@services/services/ActivityLog.service";
+import { LoggerService } from "@services/services/Logger.service";
 import { NotificationService } from "@services/services/Notification.service";
 import { OrganisationService } from "@services/services/Organisation.service";
 import { UserService } from "@services/services/User.service";
@@ -78,10 +80,16 @@ describe("Comment Service Suite", () => {
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Q Accessor A",
     });
+    jest
+      .spyOn(NotificationService.prototype, "create")
+      .mockRejectedValue("error");
 
-    // jest
-    //   .spyOn(NotificationService.prototype, "sendEmail")
-    //   .mockResolvedValue([] as any);
+    jest
+      .spyOn(NotificationService.prototype, "sendEmail")
+      .mockRejectedValue("error");
+    // .mockImplementation();
+
+    jest.spyOn(LoggerService.prototype, "error");
 
     innovatorRequestUser = fixtures.getRequestUser(innovatorUser);
     qAccessorRequestUser = fixtures.getRequestUser(
@@ -271,5 +279,53 @@ describe("Comment Service Suite", () => {
 
     expect(result).toBeDefined();
     expect(result.length).toEqual(2);
+  });
+
+  it("should throw when findAllByInnovation() with invalid params", async () => {
+    let err;
+    try {
+      await commentService.findAllByInnovation(null, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw an error when findAllByInnovation() innovation id not present", async () => {
+    let err;
+    try {
+      await commentService.findAllByInnovation(
+        innovatorRequestUser,
+        "C435433E-F36B-1410-8105-0032FE5B194B"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationNotFoundError);
+  });
+
+  it("should throw an error when creat() innovation id not present", async () => {
+    let err;
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
+      { id: innovatorRequestUser.id, displayName: ":INNOVATOR" },
+      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
+
+    try {
+      const result = await commentService.create(
+        innovatorRequestUser,
+        "C435433E-F36B-1410-8105-0032FE5B194B",
+        "My Comment"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationNotFoundError);
   });
 });
