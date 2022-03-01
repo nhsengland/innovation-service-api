@@ -71,14 +71,24 @@ export class AdminService {
     return result;
   }
 
-  async searchUser(email: string): Promise<UserSearchResult[]> {
+  async searchUser(
+    email: string,
+    isAdmin: boolean
+  ): Promise<UserSearchResult[]> {
     const result = await this.userService.searchUserByEmail(email);
+    let response: UserSearchResult[] = [];
     // for now, search user by email only yield 0...1 results
     // frontend is expecting an array
+    if (!result) {
+      return [];
+    }
+    if (isAdmin && result.type === UserType.ADMIN) {
+      response = [result];
+    } else if (!isAdmin && result.type != UserType.ADMIN) {
+      response = [result];
+    }
 
-    if (!result) return [];
-
-    return [result];
+    return response;
   }
 
   async getUserDetails(

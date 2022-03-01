@@ -31,6 +31,9 @@ class AdminsSearchUsers {
   ): Promise<void> {
     const type: UserType = UserType[req.query.type];
     const email: string = req.query.email;
+    const isAdmin: boolean = req.query.isAdmin
+      ? req.query.isAdmin.toLocaleLowerCase() === "true"
+      : false;
 
     let result;
     try {
@@ -48,7 +51,7 @@ class AdminsSearchUsers {
 
       if (email) {
         try {
-          result = await persistence.searchUserByEmail(context, email);
+          result = await persistence.searchUserByEmail(context, email, isAdmin);
           context.res = Responsify.Ok(result);
         } catch (error) {
           context.logger(`[${req.method}] ${req.url}`, Severity.Error, {

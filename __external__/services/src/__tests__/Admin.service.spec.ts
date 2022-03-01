@@ -640,7 +640,7 @@ describe("[User Account Lock suite", () => {
     } as UserSearchResult);
 
     //Act
-    const result = await adminService.searchUser("xyz@email.com");
+    const result = await adminService.searchUser("xyz@email.com", false);
 
     //Assert
     expect(result).toBeDefined();
@@ -654,7 +654,7 @@ describe("[User Account Lock suite", () => {
       .mockResolvedValue(null);
 
     //Act
-    const result = await adminService.searchUser("xyz@email.com");
+    const result = await adminService.searchUser("xyz@email.com", true);
 
     //Assert
     expect(result.length).toBe(0);
