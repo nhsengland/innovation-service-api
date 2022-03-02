@@ -168,7 +168,7 @@ describe("Innovator Service Suite", () => {
 
     const innovatorUser = await fixtures.createInnovatorUser();
 
-    const innovation = await fixtures.saveInnovation(
+    await fixtures.saveInnovation(
       fixtures.generateInnovation({
         owner: innovatorUser,
         surveyId: "abc",
