@@ -152,53 +152,6 @@ describe("Innovator Service Suite", () => {
     expect(err).toBeDefined();
   });
 
-  it("should delete an innovator", async () => {
-    const innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
-
-    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
-      displayName: "Innovator User",
-      identities: [
-        {
-          signInType: "emailAddress",
-          issuerAssignedId: "test_user@example.com",
-        },
-      ],
-      mobilePhone: "+351960000000",
-    });
-
-    const innovatorUser = await fixtures.createInnovatorUser();
-
-    await fixtures.saveInnovation(
-      fixtures.generateInnovation({
-        owner: innovatorUser,
-        surveyId: "abc",
-        organisationShares: [],
-      })
-    );
-
-    const innovatorRequestUser: RequestUser = fixtures.getRequestUser(
-      innovatorUser
-    );
-    jest
-      .spyOn(userService, "deleteAccount")
-      .mockResolvedValue(innovatorUser as any)
-      .mockReturnValue(
-        new Promise((resolve, reject) => {
-          resolve(true);
-        })
-      );
-    jest.spyOn(helpers, "deleteB2CAccount").mockImplementation();
-
-    let err;
-    try {
-      await innovatorService.delete(innovatorRequestUser);
-    } catch (e) {
-      err = e;
-    }
-
-    expect(err).toBeUndefined();
-  });
-
   it("should throw when updating inexistent innovator", async () => {
     const innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
     let err;
