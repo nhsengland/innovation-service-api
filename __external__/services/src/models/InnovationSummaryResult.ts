@@ -29,6 +29,7 @@ export interface AccessorInnovationSummary {
     description: string;
     categories: string[];
     otherCategoryDescription: string;
+    companySize: string;
   };
   contact: {
     name: string;
@@ -53,6 +54,7 @@ export interface AssessmentInnovationSummary {
     description: string;
     categories: string[];
     otherCategoryDescription: string;
+    companySize: string;
   };
   contact: {
     name: string;

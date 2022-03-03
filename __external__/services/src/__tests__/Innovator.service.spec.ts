@@ -211,6 +211,7 @@ describe("Innovator Service Suite", () => {
     const innovator = new User();
     const innovation = new Innovation();
     const organisation = new Organisation();
+    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue();
 
     let err;
 

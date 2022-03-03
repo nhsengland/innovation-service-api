@@ -810,6 +810,7 @@ export class InnovationService extends BaseService<Innovation> {
         name: innovation.name,
         status: innovation.status,
         company: this.getUserOrganisationName(b2cOwnerUser),
+        companySize: this.getUserOrganisationSize(b2cOwnerUser),
         countryName: innovation.countryName,
         postCode: innovation.postcode,
         description: innovation.description,
@@ -863,6 +864,7 @@ export class InnovationService extends BaseService<Innovation> {
         name: innovation.name,
         status: innovation.status,
         company: this.getUserOrganisationName(b2cOwnerUser),
+        companySize: this.getUserOrganisationSize(b2cOwnerUser),
         countryName: innovation.countryName,
         postCode: innovation.postcode,
         description: innovation.description,
@@ -1449,6 +1451,13 @@ export class InnovationService extends BaseService<Innovation> {
     // BUSINESS RULE. One user only belongs to 1 organisation.
     return user.organisations.length > 0 && !user.organisations[0].isShadow
       ? user.organisations[0].name
+      : null;
+  }
+
+  private getUserOrganisationSize(user: ProfileModel) {
+    // BUSINESS RULE. One user only belongs to 1 organisation.
+    return user.organisations.length > 0 && !user.organisations[0].isShadow
+      ? user.organisations[0].size
       : null;
   }
 
