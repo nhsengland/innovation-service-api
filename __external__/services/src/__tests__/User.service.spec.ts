@@ -5,7 +5,6 @@ import {
   AccessorOrganisationRole,
   ActivityLog,
   NotificationPreference,
-  InnovatorOrganisationRole,
   Organisation,
   OrganisationType,
   OrganisationUnit,
@@ -14,13 +13,9 @@ import {
   User,
   UserType,
   UserRole,
-  Role,
+  Innovation,
 } from "@domain/index";
-import {
-  InvalidDataError,
-  InvalidParamsError,
-  InvalidUserTypeError,
-} from "@services/errors";
+import { InvalidParamsError, InvalidUserTypeError } from "@services/errors";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import { getConnection, getRepository } from "typeorm";
@@ -48,7 +43,7 @@ describe("User Service Suite", () => {
   let organisationUnit: OrganisationUnit;
 
   beforeAll(async () => {
-    //await setupTestsConnection();
+    // await setupTestsConnection();
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
     });
@@ -73,10 +68,7 @@ describe("User Service Suite", () => {
       .createQueryBuilder()
       .delete();
 
-    await query.from(OrganisationUnit).execute();
-    await query.from(Organisation).execute();
-
-    //closeTestsConnection();
+    // closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -88,6 +80,7 @@ describe("User Service Suite", () => {
     await query.from(NotificationPreference).execute();
     await query.from(OrganisationUnitUser).execute();
     await query.from(OrganisationUser).execute();
+    await query.from(Innovation).execute();
     await query.from(UserRole).execute();
     await query.from(User).execute();
   });
@@ -633,5 +626,61 @@ describe("User Service Suite", () => {
     // Assert
     expect(err).toBeDefined();
     expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("Should get user full details", async () => {
+    // Arrange
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
+      id: "user_id_from_b2c",
+      displayName: "Innovator",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "test_user@example.com",
+        },
+      ],
+      mobilePhone: "+351960000000",
+    });
+
+    jest
+      .spyOn(getRepository(User, process.env.DB_TESTS_NAME), "findOne")
+      .mockResolvedValue({
+        type: UserType.INNOVATOR,
+        userOrganisations: [
+          {
+            organisation: {
+              id: ":organisationId",
+              name: ":organisationName",
+              isShadow: false,
+            },
+            userOrganisationUnits: [
+              {
+                id: "unit-id",
+                organisationUnit: {
+                  name: "unit-name",
+                },
+              },
+            ],
+          },
+        ],
+      } as any);
+
+    const innovatorUser = await fixtures.createInnovatorUser();
+    const innovation = await fixtures.saveInnovation(
+      fixtures.generateInnovation({
+        owner: innovatorUser,
+        surveyId: "abc",
+      })
+    );
+
+    // Act
+    const result = await userService.getUserDetails(innovatorUser.id, "FULL");
+
+    // Assert
+    expect(result).toBeDefined();
+    expect(result.innovations).toBeDefined();
   });
 });
