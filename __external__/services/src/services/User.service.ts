@@ -153,6 +153,7 @@ export class UserService {
       userOrganisations.push({
         id: userOrg.organisation.id,
         name: userOrg.organisation.name,
+        size: userOrg.organisation.size,
         role: userOrg.role,
         units: unitsSlim,
       });
