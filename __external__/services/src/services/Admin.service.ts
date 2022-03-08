@@ -336,9 +336,10 @@ export class AdminService {
   async updateUserRole(
     requestUser: RequestUser,
     userId: string,
+    role: AccessorOrganisationRole,
     graphAccessToken?: string
-  ): Promise<UserUpdateResult> {
-    if (!requestUser || !userId) {
+  ): Promise<string> {
+    if (!requestUser || !userId || !role) {
       throw new InvalidParamsError("Invalid params.");
     }
 
@@ -357,29 +358,9 @@ export class AdminService {
       throw new Error("Invalid user id.");
     }
 
-    try {
-      await this.connection.transaction(async (transaction) => {
-        await transaction.update(
-          User,
-          { id: userId },
-          {
-            lockedAt: null,
-          }
-        );
-        return await this.userService.updateB2CUser(
-          { accountEnabled: true },
-          userId,
-          graphAccessToken
-        );
-      });
-    } catch {
-      throw new Error("Error locking user at IdP");
-    }
+    var result = await this.userService.updateUserRole(requestUser, userId, role);
 
-    return {
-      id: userId,
-      status: "OK",
-    };
+    return result;
   }
 
 
