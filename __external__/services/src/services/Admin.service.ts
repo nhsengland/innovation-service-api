@@ -370,8 +370,13 @@ export class AdminService {
   private async runUserChangeRoleValidation(
     user: User
   ): Promise<{ [key: string]: any }> {
-    const r = { ...rule };
-    if (user.type === UserType.ACCESSOR) {
+    const userOrganisations = await user.userOrganisations;
+
+    if (
+      user.type === UserType.ACCESSOR &&
+      userOrganisations[0].role === AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    ) {
+      const r = { ...rule };
       const accessorOrgRule = await this.CheckAccessorOrganisationUnit(user);
       if (r[accessorOrgRule?.code.toString()]) {
         r[accessorOrgRule?.code.toString()] = {
@@ -379,9 +384,10 @@ export class AdminService {
           valid: false,
         };
       }
+      return r;
     }
 
-    return r;
+    return null;
   }
   private async CheckAssessmentUser(
     userBeingRemoved: User
