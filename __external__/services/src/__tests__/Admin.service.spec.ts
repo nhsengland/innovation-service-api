@@ -26,7 +26,7 @@ import { InvalidParamsError } from "@services/errors";
 describe("[User Account Lock suite", () => {
   let adminService: AdminService;
   beforeAll(async () => {
-    //await setupTestsConnection();
+    // await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -48,7 +48,7 @@ describe("[User Account Lock suite", () => {
   });
 
   afterAll(async () => {
-    //await closeTestsConnection();
+    // await closeTestsConnection();
   });
   it("Should not lock User if is last assessment user", async () => {
     jest
@@ -651,7 +651,7 @@ describe("[User Account Lock suite", () => {
     //Arrange
     jest
       .spyOn(UserService.prototype, "searchUserByEmail")
-      .mockResolvedValue(null);
+      .mockResolvedValue({ id: ":userId" } as any);
 
     //Act
     const result = await adminService.searchUser("xyz@email.com", true);
@@ -660,6 +660,18 @@ describe("[User Account Lock suite", () => {
     expect(result.length).toBe(0);
   });
 
+  it("should return null if user not found in B2C", async () => {
+    //Arrange
+    jest
+      .spyOn(UserService.prototype, "searchUserByEmail")
+      .mockResolvedValue(null);
+
+    //Act
+    const result = await adminService.searchUser("xyz@email.com", true);
+
+    //Assert
+    expect(result.length).toBe(0);
+  });
   it("should get user details by id", async () => {
     //Arrange
     jest.spyOn(UserService.prototype, "getUserDetails").mockResolvedValue({
@@ -733,23 +745,6 @@ describe("[User Account Lock suite", () => {
     expect(result[0].error).toBeDefined();
   });
 
-  it("Should throw error on unlock users if invalid parameters", async () => {
-    const requestUser = {
-      id: "request_user_id",
-      type: UserType.ADMIN,
-    };
-
-    let err;
-    try {
-      await adminService.unlockUsers(requestUser, null);
-    } catch (error) {
-      err = error;
-    }
-
-    expect(err).toBeDefined();
-    expect(err).toBeInstanceOf(InvalidParamsError);
-  });
-
   it("Should not lock users if request user is not ADMIN", async () => {
     jest
       .spyOn(helpers, "authenticateWitGraphAPI")
@@ -818,5 +813,250 @@ describe("[User Account Lock suite", () => {
     const result = await adminService.lockUsers(requestUser, null);
 
     expect(result.error).toBeDefined();
+  });
+
+  it("Should change accessor role if its NOT the only one on the organisation AND organisation unit", async () => {
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
+      id: "user_id_from_b2c",
+      displayName: "Accessor A",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "test_user@example.com",
+        },
+      ],
+      mobilePhone: "+351960000000",
+    });
+    jest.spyOn(helpers, "saveB2CUser").mockImplementation();
+
+    const innovatorUser = await fixtures.createInnovatorUser();
+    const innovatorOrganisation = await fixtures.createOrganisation(
+      OrganisationType.INNOVATOR
+    );
+    await fixtures.addUserToOrganisation(
+      innovatorUser,
+      innovatorOrganisation,
+      InnovatorOrganisationRole.INNOVATOR_OWNER
+    );
+
+    const accessorUser1 = await fixtures.createAccessorUser();
+    const accessorUser2 = await fixtures.createAccessorUser();
+
+    const accessorOrganisation = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
+    );
+
+    const organisationAccessorUser1 = await fixtures.addUserToOrganisation(
+      accessorUser1,
+      accessorOrganisation,
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    );
+    const organisationAccessorUser2 = await fixtures.addUserToOrganisation(
+      accessorUser2,
+      accessorOrganisation,
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    );
+
+    const organisationUnit1 = await fixtures.createOrganisationUnit(
+      accessorOrganisation
+    );
+
+    const organisationUnitAccessorUser1 = await fixtures.addOrganisationUserToOrganisationUnit(
+      organisationAccessorUser1,
+      organisationUnit1
+    );
+    const organisationUnitAccessorUser2 = await fixtures.addOrganisationUserToOrganisationUnit(
+      organisationAccessorUser2,
+      organisationUnit1
+    );
+
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ADMIN,
+    };
+
+    const result = await adminService.userChangeRoleValidation(
+      accessorUser1.id
+    );
+
+    expect(result).toBeDefined();
+    expect(result.lastAccessorUserOnOrganisationUnit.valid).toBe(true);
+  });
+
+  it("Should not change accessor role if its the only one on the organisation unit", async () => {
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
+      id: "user_id_from_b2c",
+      displayName: "Accessor A",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "test_user@example.com",
+        },
+      ],
+      mobilePhone: "+351960000000",
+    });
+
+    const innovatorUser = await fixtures.createInnovatorUser();
+    const innovatorOrganisation = await fixtures.createOrganisation(
+      OrganisationType.INNOVATOR
+    );
+    await fixtures.addUserToOrganisation(
+      innovatorUser,
+      innovatorOrganisation,
+      InnovatorOrganisationRole.INNOVATOR_OWNER
+    );
+
+    const accessorUser1 = await fixtures.createAccessorUser();
+    const accessorUser2 = await fixtures.createAccessorUser();
+
+    const accessorOrganisation = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
+    );
+
+    const organisationAccessorUser1 = await fixtures.addUserToOrganisation(
+      accessorUser1,
+      accessorOrganisation,
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    );
+    const organisationAccessorUser2 = await fixtures.addUserToOrganisation(
+      accessorUser2,
+      accessorOrganisation,
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    );
+
+    const organisationUnit1 = await fixtures.createOrganisationUnit(
+      accessorOrganisation
+    );
+    const organisationUnit2 = await fixtures.createOrganisationUnit(
+      accessorOrganisation
+    );
+
+    const organisationUnitAccessorUser1 = await fixtures.addOrganisationUserToOrganisationUnit(
+      organisationAccessorUser1,
+      organisationUnit1
+    );
+    const organisationUnitAccessorUser2 = await fixtures.addOrganisationUserToOrganisationUnit(
+      organisationAccessorUser2,
+      organisationUnit2
+    );
+
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ADMIN,
+    };
+
+    jest.spyOn(UserService.prototype, "updateB2CUser").mockResolvedValue(true);
+
+    const result = await adminService.userChangeRoleValidation(
+      accessorUser1.id
+    );
+
+    expect(result).toBeDefined();
+    expect(result.lastAccessorUserOnOrganisationUnit.valid).toBe(false);
+  });
+
+  it("should throw an error when createUser() with invalid params", async () => {
+    let err;
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    try {
+      await adminService.createUser(undefined, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw an error when lockUsers() with invalid params", async () => {
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
+      id: "user_id_from_b2c",
+      displayName: "Accessor A",
+      identities: [
+        {
+          signInType: "emailAddress",
+          issuerAssignedId: "test_user@example.com",
+        },
+      ],
+      mobilePhone: "+351960000000",
+    });
+
+    jest.spyOn(helpers, "saveB2CUser").mockImplementation();
+    const assessmentUser1 = await fixtures.createAssessmentUser();
+    const assessmentUser2 = await fixtures.createAssessmentUser();
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ADMIN,
+    };
+    // Act
+
+    const result = await adminService.lockUsers(
+      requestUser,
+      assessmentUser1.id
+    );
+
+    expect(result.error).toBeUndefined();
+    expect(result.status).toBe("OK");
+  });
+
+  it("Should unlock users by id", async () => {
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
+      id: "user_id_from_b2c",
+    });
+    jest.spyOn(helpers, "saveB2CUser").mockImplementation();
+
+    const assessmentUser = await fixtures.createAssessmentUser();
+
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ADMIN,
+    };
+
+    const result = await adminService.unlockUsers(requestUser, [
+      assessmentUser.id,
+    ]);
+
+    expect(result).toBeDefined();
+    expect(result[0].status).toBe("OK");
+  });
+
+  it("Should throw error on unlock users if invalid parameters", async () => {
+    let err;
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    try {
+      await adminService.unlockUser(undefined, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("Should throw error on unlock users if invalid parameters", async () => {
+    let err;
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    try {
+      await adminService.unlockUsers(undefined, null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
   });
 });

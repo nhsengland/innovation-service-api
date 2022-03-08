@@ -15,13 +15,19 @@ import {
 } from "@services/models/UserLockResult";
 import { UserLockValidationResult } from "@services/models/UserLockValidationResult";
 import { UserUpdateResult } from "@services/models/UserUpdateResult";
-import { UserLockValidationCode, UserSearchResult } from "@services/types";
+import {
+  UserChangeRoleValidationCode,
+  UserLockValidationCode,
+  UserSearchResult,
+} from "@services/types";
 import { Connection, getConnection } from "typeorm";
 import { UserService } from "..";
 import { authenticateWitGraphAPI, getUserFromB2C } from "../helpers";
 import * as rules from "../config/admin-user-lock.config.json";
+import * as rule from "../config/admin-change-role.config.json";
 import { UserCreationModel } from "@services/models/UserCreationModel";
 import { UserCreationResult } from "@services/models/UserCreationResult";
+import { UserChangeRoleValidationResult } from "@services/models/UserChangeRoleValidationResult";
 
 export class AdminService {
   private readonly connection: Connection;
@@ -274,6 +280,21 @@ export class AdminService {
     return await this.runUserValidation(userToBeRemoved);
   }
 
+  async userChangeRoleValidation(
+    userId: string
+  ): Promise<{ [key: string]: any }> {
+    const userToBeChanged = await this.userService.getUser(userId, {
+      relations: [
+        "userOrganisations",
+        "userOrganisations.organisation",
+        "userOrganisations.userOrganisationUnits",
+        "userOrganisations.userOrganisationUnits.organisationUnit",
+      ],
+    });
+
+    return await this.runUserChangeRoleValidation(userToBeChanged);
+  }
+
   async createUser(
     requestUser: RequestUser,
     user: UserCreationModel
@@ -346,6 +367,28 @@ export class AdminService {
     return r;
   }
 
+  private async runUserChangeRoleValidation(
+    user: User
+  ): Promise<{ [key: string]: any }> {
+    const userOrganisations = await user.userOrganisations;
+
+    if (
+      user.type === UserType.ACCESSOR &&
+      userOrganisations[0].role === AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    ) {
+      const r = { ...rule };
+      const accessorOrgRule = await this.CheckAccessorOrganisationUnit(user);
+      if (r[accessorOrgRule?.code.toString()]) {
+        r[accessorOrgRule?.code.toString()] = {
+          ...accessorOrgRule,
+          valid: false,
+        };
+      }
+      return r;
+    }
+
+    return null;
+  }
   private async CheckAssessmentUser(
     userBeingRemoved: User
   ): Promise<UserLockValidationResult> {
@@ -367,6 +410,47 @@ export class AdminService {
         return {
           code: UserLockValidationCode.LastAssessmentUserOnPlatform,
         };
+      }
+    }
+  }
+
+  private async CheckAccessorOrganisationUnit(
+    userToBeRemoved: User
+  ): Promise<UserChangeRoleValidationResult> {
+    const userOrganisations = await userToBeRemoved.userOrganisations;
+    for (const userOrg of userOrganisations) {
+      // Make sure it is also not the last User on the organisation units
+      const userUnits = userOrg.userOrganisationUnits;
+      for (const userUnit of userUnits) {
+        const unitId = userUnit.organisationUnit.id;
+        const unitMembers = await this.connection
+          .createQueryBuilder(OrganisationUnitUser, "unitUser")
+          .innerJoinAndSelect(
+            "organisation_user",
+            "orgUser",
+            "unitUser.organisation_user_id = orgUser.id"
+          )
+          .where("unitUser.organisation_unit_id = :unitId", { unitId })
+          .andWhere("orgUser.user_id != :userId", {
+            userId: userToBeRemoved.id,
+          })
+          .andWhere("orgUser.role = :role", {
+            role: AccessorOrganisationRole.QUALIFYING_ACCESSOR,
+          })
+          .getMany();
+
+        if (unitMembers.length === 0) {
+          return {
+            code:
+              UserChangeRoleValidationCode.LastAccessorUserOnOrganisationUnit,
+            meta: {
+              unit: {
+                id: userUnit.organisationUnit.id,
+                name: userUnit.organisationUnit.name,
+              },
+            },
+          };
+        }
       }
     }
   }
