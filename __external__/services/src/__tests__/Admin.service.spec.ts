@@ -651,7 +651,6 @@ describe("[User Account Lock suite", () => {
     //Arrange
     jest
       .spyOn(UserService.prototype, "searchUserByEmail")
-      //.mockResolvedValue(null);
       .mockResolvedValue({ id: ":userId" } as any);
 
     //Act
