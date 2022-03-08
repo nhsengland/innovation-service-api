@@ -45,3 +45,7 @@ export enum UserLockValidationCode {
   LastAccessorUserOnOrganisationUnit = "lastAccessorUserOnOrganisationUnit",
   LastAccessorFromUnitProvidingSupport = "lastAccessorFromUnitProvidingSupport",
 }
+
+export enum UserChangeRoleValidationCode {
+  LastAccessorUserOnOrganisationUnit = "lastAccessorUserOnOrganisationUnit",
+}

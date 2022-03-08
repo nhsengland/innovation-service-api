@@ -2820,6 +2820,67 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
+  '/user-admin/users/{userId}/change-role':
+    patch:
+      tags:
+        - Admin
+        - User
+        - ChangeRole
+      description: Change Roles
+      operationId: admins-change-role
+      security:
+        - OpenId:
+            - users_write
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: userId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+    get:
+      tags:
+        - Admin
+        - User
+        - ChangeRoleValidation
+      description: Change role validation
+      operationId: admins-change-role-validation
+      security:
+        - OpenId:
+            - users_read
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: userId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
   /notifications:
     patch:
       tags:
