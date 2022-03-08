@@ -742,4 +742,25 @@ export class UserService {
 
     return users;
   }
+
+  async updateUserRole(
+    requestUser: RequestUser,
+    userId: string,
+    role: string
+  ) {
+    if (!requestUser || !userId) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    try {
+      //const organisationId = user.organisation.id;
+      //await this.orgRepo.update(organisationId, role);
+    } catch {
+      throw new Error("Error updating user.");
+    }
+
+    return {
+      id: userId
+    };
+  }
 }

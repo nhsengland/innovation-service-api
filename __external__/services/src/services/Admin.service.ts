@@ -312,6 +312,56 @@ export class AdminService {
     return result;
   }
 
+  async updateUserRole(
+    requestUser: RequestUser,
+    userId: string,
+    graphAccessToken?: string
+  ): Promise<UserUpdateResult> {
+    if (!requestUser || !userId) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    if (requestUser.type !== UserType.ADMIN) {
+      throw new InvalidUserRoleError(
+        "User has no permissions to execute this operation"
+      );
+    }
+
+    if (!graphAccessToken) {
+      graphAccessToken = await authenticateWitGraphAPI();
+    }
+
+    const user = await getUserFromB2C(userId, graphAccessToken);
+    if (!user) {
+      throw new Error("Invalid user id.");
+    }
+
+    try {
+      await this.connection.transaction(async (transaction) => {
+        await transaction.update(
+          User,
+          { id: userId },
+          {
+            lockedAt: null,
+          }
+        );
+        return await this.userService.updateB2CUser(
+          { accountEnabled: true },
+          userId,
+          graphAccessToken
+        );
+      });
+    } catch {
+      throw new Error("Error locking user at IdP");
+    }
+
+    return {
+      id: userId,
+      status: "OK",
+    };
+  }
+
+
   private async runUserValidation(user: User): Promise<{ [key: string]: any }> {
     const r = { ...rules };
     if (user.type === UserType.ASSESSMENT) {
