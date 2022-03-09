@@ -683,4 +683,44 @@ describe("User Service Suite", () => {
     expect(result).toBeDefined();
     expect(result.innovations).toBeDefined();
   });
+
+  it("should update user role", async () => {
+    // Arrange
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue("access_token");
+    jest.spyOn(helpers, "saveB2CUser").mockImplementation();
+
+    const accessorObj = User.new({
+      id: "abc-def-ghi",
+    });
+    const accessor = await accessorService.create(accessorObj);
+
+    const organisationObj = Organisation.new({
+      name: "Accessor Organisation 1",
+      type: OrganisationType.ACCESSOR,
+      size: "1 to 5 Employees",
+      isShadow: false,
+    });
+
+    const organisation = await organisationService.create(organisationObj);
+    let err;
+    try {
+      await organisationService.addUserToOrganisation(
+        accessor,
+        organisation,
+        AccessorOrganisationRole.QUALIFYING_ACCESSOR
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    const result = await userService.updateUserRole(
+      dummy.requestUser,
+      accessorObj.id,
+      AccessorOrganisationRole.ACCESSOR
+    );
+
+    expect(result).toBeDefined();
+  });
 });

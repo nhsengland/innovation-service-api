@@ -333,6 +333,40 @@ export class AdminService {
     return result;
   }
 
+  async updateUserRole(
+    requestUser: RequestUser,
+    userId: string,
+    role: AccessorOrganisationRole,
+    graphAccessToken?: string
+  ): Promise<string> {
+    if (!requestUser || !userId || !role) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    if (requestUser.type !== UserType.ADMIN) {
+      throw new InvalidUserRoleError(
+        "User has no permissions to execute this operation"
+      );
+    }
+
+    if (!graphAccessToken) {
+      graphAccessToken = await authenticateWitGraphAPI();
+    }
+
+    const user = await getUserFromB2C(userId, graphAccessToken);
+    if (!user) {
+      throw new Error("Invalid user id.");
+    }
+
+    const result = await this.userService.updateUserRole(
+      requestUser,
+      userId,
+      role
+    );
+
+    return result;
+  }
+
   private async runUserValidation(user: User): Promise<{ [key: string]: any }> {
     const r = { ...rules };
     if (user.type === UserType.ASSESSMENT) {

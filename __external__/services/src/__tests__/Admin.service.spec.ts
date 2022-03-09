@@ -21,12 +21,12 @@ import { getConnection } from "typeorm";
 import { AdminService } from "@services/services/Admin.service";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
 import { UserSearchResult } from "@services/types";
-import { InvalidParamsError } from "@services/errors";
+import { InvalidParamsError, InvalidUserRoleError } from "@services/errors";
 
 describe("[User Account Lock suite", () => {
   let adminService: AdminService;
   beforeAll(async () => {
-    // await setupTestsConnection();
+    //await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -48,7 +48,7 @@ describe("[User Account Lock suite", () => {
   });
 
   afterAll(async () => {
-    // await closeTestsConnection();
+    //await closeTestsConnection();
   });
   it("Should not lock User if is last assessment user", async () => {
     jest
@@ -1058,5 +1058,64 @@ describe("[User Account Lock suite", () => {
 
     expect(err).toBeDefined();
     expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("Should update user role", async () => {
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
+      id: "user_id_from_b2c",
+    });
+    jest
+      .spyOn(UserService.prototype, "updateUserRole")
+      .mockResolvedValue(":userId");
+
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ADMIN,
+    };
+
+    const result = await adminService.updateUserRole(
+      requestUser,
+      ":userId",
+      AccessorOrganisationRole.ACCESSOR
+    );
+
+    expect(result).toBeDefined();
+  });
+
+  it("Should throw error on change user role if invalid parameters", async () => {
+    let err;
+    try {
+      await adminService.updateUserRole(
+        undefined,
+        ":userId",
+        AccessorOrganisationRole.ACCESSOR
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("Should throw error on chanege user role if invalid requestor", async () => {
+    let err;
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ASSESSMENT,
+    };
+    try {
+      await adminService.updateUserRole(
+        requestUser,
+        ":userId",
+        AccessorOrganisationRole.QUALIFYING_ACCESSOR
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidUserRoleError);
   });
 });

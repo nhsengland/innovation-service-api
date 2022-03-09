@@ -1,4 +1,5 @@
 import {
+  AccessorOrganisationRole,
   Innovation,
   Organisation,
   OrganisationUnit,
@@ -32,6 +33,7 @@ import {
   getRepository,
   Repository,
 } from "typeorm";
+import { NotFound } from "utils/responsify";
 import {
   authenticateWitGraphAPI,
   createB2CUser,
@@ -741,5 +743,38 @@ export class UserService {
     });
 
     return users;
+  }
+
+  async updateUserRole(
+    requestUser: RequestUser,
+    userId: string,
+    role: AccessorOrganisationRole
+  ): Promise<string> {
+    if (!userId || !requestUser || !role) {
+      throw new InvalidParamsError(
+        "Invalid parameters. You must define the id and the request user."
+      );
+    }
+
+    const user = await this.find(userId, {
+      relations: ["userOrganisations"],
+    });
+
+    if (!user) {
+      throw new InvalidDataError("User was not found.");
+    }
+
+    const userOrgs = await user.userOrganisations;
+
+    await this.connection.transaction(async (trs) => {
+      const updatedRole = await trs.update(
+        OrganisationUser,
+        { id: userOrgs[0].id },
+        {
+          role: role,
+        }
+      );
+    });
+    return userId;
   }
 }
