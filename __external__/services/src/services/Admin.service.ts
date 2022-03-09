@@ -387,7 +387,7 @@ export class AdminService {
       return r;
     }
 
-    return null;
+    return [];
   }
   private async CheckAssessmentUser(
     userBeingRemoved: User
