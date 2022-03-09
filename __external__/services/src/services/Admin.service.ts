@@ -358,11 +358,14 @@ export class AdminService {
       throw new Error("Invalid user id.");
     }
 
-    var result = await this.userService.updateUserRole(requestUser, userId, role);
+    const result = await this.userService.updateUserRole(
+      requestUser,
+      userId,
+      role
+    );
 
     return result;
   }
-
 
   private async runUserValidation(user: User): Promise<{ [key: string]: any }> {
     const r = { ...rules };

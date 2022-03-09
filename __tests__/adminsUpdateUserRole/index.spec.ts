@@ -42,6 +42,9 @@ const dummy = {
                 }]
             }),
         },
+        AuthService:{
+            validate2LS: () => true
+        },
     },
     adminUser: 'test_admin_oid',
     accessorId: "test_accessor_id",
@@ -67,18 +70,18 @@ describe("[HttpTrigger] adminsUpdateUserRole Suite", () => {
             );
         });
 
-        // it("Should return 200 when user role is updated", async () => {
-        //     jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
-        //     jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
-        //     jest.spyOn(validation, "ValidatePayload").mockReturnValue({} as any);
-        //     jest.spyOn(authentication, "decodeToken").mockReturnValue({ oid: dummy.adminUser });
+        it("Should return 200 when user role is updated", async () => {
+            jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+            jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
+            jest.spyOn(validation, "ValidatePayload").mockReturnValue({} as any);
+            jest.spyOn(authentication, "decodeToken").mockReturnValue({ oid: dummy.adminUser });
 
-        //     jest.spyOn(persistence, "updateUserRole").mockResolvedValue("test_accessor_id");
+            jest.spyOn(persistence, "updateUserRole").mockResolvedValue("test_accessor_id");
 
-        //     const { res } = await mockedRequestFactory({});
+            const { res } = await mockedRequestFactory({});
 
-        //     expect(res.status).toBe(200);
-        // });
+            expect(res.status).toBe(200);
+        });
 
         it("Should handle error persistence return error", async () => {
             jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);

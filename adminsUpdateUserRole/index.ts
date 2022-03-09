@@ -29,7 +29,7 @@ class AdminsUpdateUserRole {
   ): Promise<void> {
     const body = req.body;
     const userId = req.params.userId;
-    
+
     let result;
     try {
       result = await persistence.updateUserRole(context, userId, body.role);

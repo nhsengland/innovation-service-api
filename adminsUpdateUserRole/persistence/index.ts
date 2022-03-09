@@ -6,6 +6,10 @@ export const updateUserRole = async (
   userId: string,
   role: AccessorOrganisationRole
 ) => {
-  const result = await ctx.services.AdminService.updateUserRole(ctx.auth.requestUser, userId, role);
+  const result = await ctx.services.AdminService.updateUserRole(
+    ctx.auth.requestUser,
+    userId,
+    role
+  );
   return result;
 };

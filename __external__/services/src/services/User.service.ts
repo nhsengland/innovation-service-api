@@ -757,9 +757,7 @@ export class UserService {
     }
 
     const user = await this.find(userId, {
-      relations: [
-        "userOrganisations",
-      ],
+      relations: ["userOrganisations"],
     });
 
     if (!user) {
@@ -767,7 +765,7 @@ export class UserService {
     }
 
     const userOrgs = await user.userOrganisations;
-    
+
     await this.connection.transaction(async (trs) => {
       const updatedRole = await trs.update(
         OrganisationUser,
