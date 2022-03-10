@@ -715,12 +715,16 @@ describe("User Service Suite", () => {
       err = error;
     }
 
-    const result = await userService.updateUserRole(
-      dummy.requestUser,
-      accessorObj.id,
-      AccessorOrganisationRole.ACCESSOR
-    );
-
-    expect(result).toBeDefined();
+    try {
+      await userService.updateUserRole(
+        dummy.requestUser,
+        accessorObj.id,
+        AccessorOrganisationRole.ACCESSOR
+      );
+    } catch (error) {
+      err = error;
+    }
+    // Assert
+    expect(err).toBeUndefined();
   });
 });

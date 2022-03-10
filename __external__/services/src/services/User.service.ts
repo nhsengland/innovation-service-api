@@ -749,7 +749,7 @@ export class UserService {
     requestUser: RequestUser,
     userId: string,
     role: AccessorOrganisationRole
-  ): Promise<string> {
+  ) {
     if (!userId || !requestUser || !role) {
       throw new InvalidParamsError(
         "Invalid parameters. You must define the id and the request user."
@@ -766,15 +766,18 @@ export class UserService {
 
     const userOrgs = await user.userOrganisations;
 
-    await this.connection.transaction(async (trs) => {
-      const updatedRole = await trs.update(
-        OrganisationUser,
-        { id: userOrgs[0].id },
-        {
-          role: role,
-        }
-      );
-    });
-    return userId;
+    try {
+      await this.connection.transaction(async (trs) => {
+        const updatedRole = await trs.update(
+          OrganisationUser,
+          { id: userOrgs[0].id },
+          {
+            role: role,
+          }
+        );
+      });
+    } catch {
+      throw new Error("Error updating user.");
+    }
   }
 }

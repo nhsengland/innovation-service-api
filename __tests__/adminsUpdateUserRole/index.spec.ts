@@ -76,7 +76,9 @@ describe("[HttpTrigger] adminsUpdateUserRole Suite", () => {
             jest.spyOn(validation, "ValidatePayload").mockReturnValue({} as any);
             jest.spyOn(authentication, "decodeToken").mockReturnValue({ oid: dummy.adminUser });
 
-            jest.spyOn(persistence, "updateUserRole").mockResolvedValue("test_accessor_id");
+            jest.spyOn(persistence, "updateUserRole").mockResolvedValue({
+                id:"test_accessor_id"
+            } as any);
 
             const { res } = await mockedRequestFactory({});
 

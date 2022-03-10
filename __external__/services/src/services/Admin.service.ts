@@ -338,7 +338,7 @@ export class AdminService {
     userId: string,
     role: AccessorOrganisationRole,
     graphAccessToken?: string
-  ): Promise<string> {
+  ): Promise<UserUpdateResult> {
     if (!requestUser || !userId || !role) {
       throw new InvalidParamsError("Invalid params.");
     }
@@ -364,7 +364,10 @@ export class AdminService {
       role
     );
 
-    return result;
+    return {
+      id: userId,
+      status: "OK",
+    };
   }
 
   private async runUserValidation(user: User): Promise<{ [key: string]: any }> {
