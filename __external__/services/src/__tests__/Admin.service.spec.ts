@@ -1065,9 +1065,7 @@ describe("[User Account Lock suite", () => {
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       id: "user_id_from_b2c",
     });
-    jest
-      .spyOn(UserService.prototype, "updateUserRole")
-      .mockResolvedValue(":userId");
+    jest.spyOn(UserService.prototype, "updateUserRole").mockImplementation();
 
     const requestUser = {
       id: "request_user_id",

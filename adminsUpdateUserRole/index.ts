@@ -22,7 +22,7 @@ class AdminsUpdateUserRole {
   @JwtDecoder(true)
   @AllowedUserType(UserType.ADMIN)
   @ServiceRoleValidator(ServiceRole.ADMIN, ServiceRole.SERVICE_TEAM)
-  @SLSValidation(SLSEventType.ADMIN_UPDATE_USER_ROLE)
+  @SLSValidation(SLSEventType.ADMIN_UPDATE_USER)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
