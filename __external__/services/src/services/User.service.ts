@@ -1,5 +1,6 @@
 import {
   AccessorOrganisationRole,
+  Innovation,
   Organisation,
   OrganisationUnit,
   OrganisationUnitUser,
@@ -17,6 +18,7 @@ import {
   UserEmailModel,
 } from "@services/models/ProfileSlimModel";
 import { RequestUser } from "@services/models/RequestUser";
+import { SimpleResult } from "@services/models/SimpleResult";
 import { UserCreationModel } from "@services/models/UserCreationModel";
 import { UserCreationResult } from "@services/models/UserCreationResult";
 import { UserProfileUpdateModel } from "@services/models/UserProfileUpdateModel";
@@ -31,7 +33,7 @@ import {
   getRepository,
   Repository,
 } from "typeorm";
-import { OrganisationRoleValidator } from "utils/decorators";
+import { NotFound } from "utils/responsify";
 import {
   authenticateWitGraphAPI,
   createB2CUser,
@@ -48,12 +50,14 @@ export class UserService {
   private readonly userRepo: Repository<User>;
   private readonly orgRepo: Repository<Organisation>;
   private readonly orgUnitRepo: Repository<OrganisationUnit>;
+  private readonly innovationRepo: Repository<Innovation>;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.userRepo = getRepository(User, connectionName);
     this.orgRepo = getRepository(Organisation, connectionName);
     this.orgUnitRepo = getRepository(OrganisationUnit, connectionName);
+    this.innovationRepo = getRepository(Innovation, connectionName);
   }
 
   async find(id: string, options?: FindOneOptions) {
@@ -144,27 +148,45 @@ export class UserService {
         unitsSlim.push({
           id: unit.organisationUnit.id,
           name: unit.organisationUnit.name,
-          supportCount: unit.innovationSupports.length,
+          supportCount: unit.innovationSupports?.length,
         });
       }
 
       userOrganisations.push({
         id: userOrg.organisation.id,
         name: userOrg.organisation.name,
+        size: userOrg.organisation.size,
         role: userOrg.role,
         units: unitsSlim,
       });
+    }
+
+    let innovations: SimpleResult[] = null;
+    if (user.type === UserType.INNOVATOR) {
+      const innovationList = await this.innovationRepo
+        .createQueryBuilder("innovation")
+        .where("owner_id = :userId", {
+          userId: id,
+        })
+        .getMany();
+
+      innovations = innovationList?.map((innovation) => ({
+        id: innovation.id,
+        name: innovation.name,
+      }));
     }
 
     if (userB2C && user) {
       return {
         id: userB2C.id,
         displayName: userB2C.displayName,
+        phone: userB2C.mobilePhone,
         email: userB2C.identities.find((i) => i.signInType === "emailAddress")
           ?.issuerAssignedId,
         type: user.type,
         lockedAt: user.lockedAt,
         userOrganisations,
+        innovations,
       };
     }
 
@@ -721,5 +743,41 @@ export class UserService {
     });
 
     return users;
+  }
+
+  async updateUserRole(
+    requestUser: RequestUser,
+    userId: string,
+    role: AccessorOrganisationRole
+  ) {
+    if (!userId || !requestUser || !role) {
+      throw new InvalidParamsError(
+        "Invalid parameters. You must define the id and the request user."
+      );
+    }
+
+    const user = await this.find(userId, {
+      relations: ["userOrganisations"],
+    });
+
+    if (!user) {
+      throw new InvalidDataError("User was not found.");
+    }
+
+    const userOrgs = await user.userOrganisations;
+
+    try {
+      await this.connection.transaction(async (trs) => {
+        const updatedRole = await trs.update(
+          OrganisationUser,
+          { id: userOrgs[0].id },
+          {
+            role: role,
+          }
+        );
+      });
+    } catch {
+      throw new Error("Error updating user.");
+    }
   }
 }

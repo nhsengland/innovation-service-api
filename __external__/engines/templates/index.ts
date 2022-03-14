@@ -218,6 +218,7 @@ export const getTemplates = (): EmailTemplate[] => [
     props: {
       display_name: "",
       comment_url: "",
+      innovation_name: "",
     },
   },
 ];

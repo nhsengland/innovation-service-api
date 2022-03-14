@@ -37,6 +37,7 @@ export enum SLSEventType {
   ADMIN_UNLOCK_USER = "ADMIN_UNLOCK_USER",
   ADMIN_SEARCH_USER = "ADMIN_SEARCH_USER",
   ADMIN_LOCK_VALIDATION = "ADMIN_LOCK_VALIDATION",
+  ADMIN_UPDATE_USER = "ADMIN_UPDATE_USER",
 }
 
 export enum UserLockValidationCode {
@@ -44,4 +45,8 @@ export enum UserLockValidationCode {
   LastAccessorUserOnOrganisation = "lastAccessorUserOnOrganisation",
   LastAccessorUserOnOrganisationUnit = "lastAccessorUserOnOrganisationUnit",
   LastAccessorFromUnitProvidingSupport = "lastAccessorFromUnitProvidingSupport",
+}
+
+export enum UserChangeRoleValidationCode {
+  LastAccessorUserOnOrganisationUnit = "lastAccessorUserOnOrganisationUnit",
 }
