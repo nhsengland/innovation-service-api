@@ -39,6 +39,7 @@ describe("[assessmentsCreateInnovationComment] Persistence suite", () => {
         ctx as CustomContext,
         "E362433E-F36B-1410-80DE-0032FE5B194B",
         "F362433E-F36B-1410-80DE-0032FE5B194B",
+        true,
         "my comment"
       );
 

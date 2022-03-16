@@ -139,7 +139,7 @@ describe("Comment Service Suite", () => {
   it("should throw when create() with invalid params", async () => {
     let err;
     try {
-      await commentService.create(innovatorRequestUser, "b", "");
+      await commentService.create(innovatorRequestUser, "b", "", true);
     } catch (error) {
       err = error;
     }
@@ -152,7 +152,8 @@ describe("Comment Service Suite", () => {
     const comment = await commentService.create(
       innovatorRequestUser,
       innovation.id,
-      "My Comment"
+      "My Comment",
+      true
     );
 
     expect(comment).toBeDefined();
@@ -169,7 +170,8 @@ describe("Comment Service Suite", () => {
       comment = await commentService.create(
         innovatorRequestUser,
         innovation.id,
-        "My Comment"
+        "My Comment",
+        true
       );
     } catch (error) {
       err = error;
@@ -182,7 +184,7 @@ describe("Comment Service Suite", () => {
   it("should throw when createByAccessor() with invalid params", async () => {
     let err;
     try {
-      await commentService.create(qAccessorRequestUser, "b", null);
+      await commentService.create(qAccessorRequestUser, "b", null, true);
     } catch (error) {
       err = error;
     }
@@ -263,6 +265,7 @@ describe("Comment Service Suite", () => {
       qAccessorRequestUser,
       innovation.id,
       "My Accessor Comment",
+      true,
       comment.id
     );
 

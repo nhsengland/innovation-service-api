@@ -53,6 +53,7 @@ export class CommentService {
     requestUser: RequestUser,
     innovationId: string,
     message: string,
+    iseditable?: boolean,
     replyTo?: string,
     innovationActionId?: string
   ): Promise<Comment> {
@@ -88,6 +89,7 @@ export class CommentService {
       createdBy: requestUser.id,
       updatedBy: requestUser.id,
       organisationUnit,
+      iseditable,
     };
 
     const result = await this.connection.transaction(async (trs) => {
@@ -294,6 +296,8 @@ export class CommentService {
       id: comment.id,
       message: comment.message,
       createdAt: comment.createdAt,
+      updated_at: comment.updatedAt,
+      is_editable: comment.iseditable,
       user: {
         id: comment.user.id,
         type: comment.user.type,
