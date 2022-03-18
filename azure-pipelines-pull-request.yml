@@ -74,6 +74,9 @@ steps:
     npm run test:functions
   displayName: 'Run Azure Functions Tests'
 
+- script: |
+    npm run test:engine
+  displayName: 'Run Email Engine Tests'
 
 - script: |
     npm run build
