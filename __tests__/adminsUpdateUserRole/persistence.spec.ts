@@ -23,7 +23,7 @@ describe("[adminsUpdateUserRole] Persistence suite", () => {
       const spy = jest
         .spyOn(AdminService.prototype, "updateUserRole")
         .mockResolvedValue({
-          id: ":userId"
+          id: ":userId",
         } as any);
 
       const ctx = {
