@@ -8,6 +8,7 @@ import {
 } from "@domain/index";
 import {
   InnovationNotFoundError,
+  InvalidDataError,
   InvalidParamsError,
   MissingUserOrganisationError,
   MissingUserOrganisationUnitError,
@@ -225,7 +226,13 @@ export class CommentService {
     message: string,
     id: string
   ) {
-    if (!requestUser || !innovationId || !message || message.length === 0) {
+    if (
+      !requestUser ||
+      !innovationId ||
+      !message ||
+      message.length === 0 ||
+      !id
+    ) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
@@ -257,7 +264,10 @@ export class CommentService {
     const result = await this.connection.transaction(async (trs) => {
       const comment = await this.commentRepo.findOne(id);
       if (comment) {
-        if (comment.isEditable === true) {
+        if (
+          comment.isEditable === true &&
+          comment.createdBy === requestUser.id
+        ) {
           await trs.update(
             Comment,
             { id: id },
@@ -267,6 +277,10 @@ export class CommentService {
             }
           );
           return { id: comment.id };
+        } else {
+          throw new InvalidDataError(
+            "Invalid Data. Cannot updated this comment"
+          );
         }
       }
     });
