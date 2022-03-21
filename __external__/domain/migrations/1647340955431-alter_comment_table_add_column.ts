@@ -10,6 +10,9 @@ export class alterCommentTableAddColumn1647340955431
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`ALTER TABLE "comment" DROP COLUMN "is_editable"`);
+    await queryRunner.query(
+      `ALTER TABLE [dbo].[comment] DROP CONSTRAINT "df_comment_is_editable";`
+    );
+    await queryRunner.query(`ALTER TABLE "comment" DROP COLUMN "is_editable";`);
   }
 }

@@ -1,9 +1,9 @@
 import { HttpRequest } from "@azure/functions";
-import { AccessorOrganisationRole, UserType } from "@domain/index";
+import { UserType } from "@domain/index";
 import {
+  AllowedUserType,
   AppInsights,
   JwtDecoder,
-  OrganisationRoleValidator,
   SQLConnector,
   Validator,
 } from "../utils/decorators";
@@ -12,16 +12,12 @@ import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
 
-class AccessorsUpdateInnovationComment {
+class InnovatorsUpdateInnovationComment {
   @AppInsights()
   @SQLConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
   @JwtDecoder()
-  @OrganisationRoleValidator(
-    UserType.ACCESSOR,
-    AccessorOrganisationRole.QUALIFYING_ACCESSOR,
-    AccessorOrganisationRole.ACCESSOR
-  )
+  @AllowedUserType(UserType.INNOVATOR)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
@@ -29,7 +25,6 @@ class AccessorsUpdateInnovationComment {
     const body = req.body;
     const innovationId = req.params.innovationId;
     const commentId = req.params.commentId;
-
     let result;
     try {
       result = await persistence.updateInnovationComment(
@@ -49,4 +44,4 @@ class AccessorsUpdateInnovationComment {
   }
 }
 
-export default AccessorsUpdateInnovationComment.httpTrigger;
+export default InnovatorsUpdateInnovationComment.httpTrigger;

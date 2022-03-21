@@ -266,10 +266,10 @@ export class CommentService {
               updatedBy: requestUser.id,
             }
           );
+          return { id: comment.id };
         }
       }
     });
-
     return result;
   }
 
