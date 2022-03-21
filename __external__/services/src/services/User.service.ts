@@ -7,6 +7,9 @@ import {
   OrganisationUser,
   User,
   UserType,
+  Role,
+  ServiceRole,
+  UserRole,
 } from "@domain/index";
 import {
   InvalidDataError,
@@ -51,6 +54,7 @@ export class UserService {
   private readonly orgRepo: Repository<Organisation>;
   private readonly orgUnitRepo: Repository<OrganisationUnit>;
   private readonly innovationRepo: Repository<Innovation>;
+  private readonly roleRepo: Repository<Role>;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -58,6 +62,7 @@ export class UserService {
     this.orgRepo = getRepository(Organisation, connectionName);
     this.orgUnitRepo = getRepository(OrganisationUnit, connectionName);
     this.innovationRepo = getRepository(Innovation, connectionName);
+    this.roleRepo = getRepository(Role, connectionName);
   }
 
   async find(id: string, options?: FindOneOptions) {
@@ -603,6 +608,20 @@ export class UserService {
             updatedBy: requestUser.id,
           });
           await transactionManager.save(User, user);
+        }
+
+        //Check if the user being created is an ADMIN, if it is, create a new UserRole with the User and Role IDs
+        if (user.type == "ADMIN") {
+          const role = await this.roleRepo.findOne({
+            where: {
+              name: ServiceRole.ADMIN,
+            },
+          });
+
+          await transactionManager.save(UserRole, {
+            user: user,
+            role: role,
+          });
         }
 
         if (organisation) {

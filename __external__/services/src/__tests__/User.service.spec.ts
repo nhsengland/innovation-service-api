@@ -14,6 +14,7 @@ import {
   UserType,
   UserRole,
   Innovation,
+  Role,
 } from "@domain/index";
 import { InvalidParamsError, InvalidUserTypeError } from "@services/errors";
 import * as dotenv from "dotenv";
@@ -53,6 +54,7 @@ describe("User Service Suite", () => {
 
     organisation = await fixtures.createOrganisation(OrganisationType.ACCESSOR);
     organisationUnit = await fixtures.createOrganisationUnit(organisation);
+    await fixtures.createAdminRole();
 
     jest
       .spyOn(helpers, "authenticateWitGraphAPI")
@@ -67,6 +69,8 @@ describe("User Service Suite", () => {
     const query = getConnection(process.env.DB_TESTS_NAME)
       .createQueryBuilder()
       .delete();
+
+    await query.from(Role).execute();
 
     // closeTestsConnection();
   });
@@ -726,5 +730,39 @@ describe("User Service Suite", () => {
     }
     // Assert
     expect(err).toBeUndefined();
+  });
+
+  it("should create a new ADMIN user", async () => {
+    //Arrange
+    const user = {
+      type: UserType.ADMIN,
+      name: ":name",
+      email: "email@email.pt",
+      password: "myNewPassword1!",
+    };
+
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ADMIN,
+    };
+
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+
+    jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue(false);
+
+    jest.spyOn(helpers, "createB2CUser").mockResolvedValue({
+      id: "user_id_from_b2c",
+      displayName: "Admin User",
+    });
+
+    //Act
+    const result = await userService.createUser(requestUser, user);
+
+    //Assert
+    expect(result).toBeDefined();
+    expect(result.id).toBeDefined();
+    expect(result.status).toBe("OK");
   });
 });
