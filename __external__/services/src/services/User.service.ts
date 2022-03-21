@@ -156,6 +156,7 @@ export class UserService {
         id: userOrg.organisation.id,
         name: userOrg.organisation.name,
         size: userOrg.organisation.size,
+        isShadow: userOrg.organisation.isShadow,
         role: userOrg.role,
         units: unitsSlim,
       });
