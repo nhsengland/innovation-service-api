@@ -70,6 +70,14 @@ describe("assessmentUsersInnovationRecordSubmitedHandler suite", () => {
       },
     ]);
 
+    jest.spyOn(UserService.prototype, "getListOfUsers").mockResolvedValue([
+      {
+        displayName: "test_user",
+        id: "_id",
+        email: "email_address@example.com",
+      },
+    ]);
+
     jest.spyOn(axios, "post").mockResolvedValue({
       data: {},
     });
