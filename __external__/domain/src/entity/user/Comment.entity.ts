@@ -21,7 +21,7 @@ export class Comment extends Base {
   message: string;
 
   @Column({ name: "is_editable", nullable: false, default: false })
-  iseditable: boolean;
+  isEditable: boolean;
 
   //relationships
   @ManyToOne(() => User, { nullable: false })

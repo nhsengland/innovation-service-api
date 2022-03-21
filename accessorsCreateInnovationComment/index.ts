@@ -28,8 +28,8 @@ class AccessorsCreateInnovationComment {
   ): Promise<void> {
     const body = req.body;
     const innovationId = req.params.innovationId;
-    const iseditable = body.iseditable
-      ? body.iseditable.toLocaleLowerCase() === "true"
+    const isEditable = body.isEditable
+      ? body.isEditable.toLocaleLowerCase() === "true"
       : true;
 
     let result;
@@ -38,7 +38,7 @@ class AccessorsCreateInnovationComment {
         context,
         innovationId,
         body.comment,
-        iseditable,
+        isEditable,
         body.replyTo
       );
     } catch (error) {

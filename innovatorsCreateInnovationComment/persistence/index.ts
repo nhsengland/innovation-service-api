@@ -4,14 +4,14 @@ export const createInnovationComment = async (
   ctx: CustomContext,
   innovationId: string,
   message: string,
-  iseditable?: boolean,
+  isEditable?: boolean,
   replyTo?: string
 ) => {
   const result = await ctx.services.CommentService.create(
     ctx.auth.requestUser,
     innovationId,
     message,
-    iseditable,
+    isEditable,
     replyTo
   );
 

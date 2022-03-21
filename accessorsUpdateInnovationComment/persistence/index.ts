@@ -1,18 +1,16 @@
 import { CustomContext } from "../../utils/types";
 
-export const createInnovationComment = async (
+export const updateInnovationComment = async (
   ctx: CustomContext,
   innovationId: string,
   message: string,
-  isEditable?: boolean,
-  replyTo?: string
+  commentId: string
 ) => {
-  const result = await ctx.services.CommentService.create(
+  const result = await ctx.services.CommentService.update(
     ctx.auth.requestUser,
     innovationId,
     message,
-    isEditable,
-    replyTo
+    commentId
   );
 
   return result;

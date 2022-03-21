@@ -53,7 +53,7 @@ export class CommentService {
     requestUser: RequestUser,
     innovationId: string,
     message: string,
-    iseditable?: boolean,
+    isEditable?: boolean,
     replyTo?: string,
     innovationActionId?: string
   ): Promise<Comment> {
@@ -89,7 +89,7 @@ export class CommentService {
       createdBy: requestUser.id,
       updatedBy: requestUser.id,
       organisationUnit,
-      iseditable,
+      isEditable,
     };
 
     const result = await this.connection.transaction(async (trs) => {
@@ -219,6 +219,60 @@ export class CommentService {
     return result;
   }
 
+  async update(
+    requestUser: RequestUser,
+    innovationId: string,
+    message: string,
+    id: string
+  ) {
+    if (!requestUser || !innovationId || !message || message.length === 0) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+
+    const innovation = await this.innovationService.find(innovationId);
+    if (!innovation) {
+      throw new InnovationNotFoundError(
+        `The Innovation with id ${innovationId} was not found.`
+      );
+    }
+
+    let organisationUnit = null;
+    if (requestUser.type === UserType.ACCESSOR) {
+      if (!requestUser.organisationUser) {
+        throw new MissingUserOrganisationError(
+          "Invalid user. User has no organisations."
+        );
+      }
+
+      if (!requestUser.organisationUnitUser) {
+        throw new MissingUserOrganisationUnitError(
+          "Invalid user. User has no organisation units."
+        );
+      }
+
+      organisationUnit = {
+        id: requestUser.organisationUnitUser.organisationUnit.id,
+      };
+    }
+    const result = await this.connection.transaction(async (trs) => {
+      const comment = await this.commentRepo.findOne(id);
+      if (comment) {
+        if (comment.isEditable === true) {
+          await trs.update(
+            Comment,
+            { id: id },
+            {
+              message: message,
+              updatedBy: requestUser.id,
+            }
+          );
+        }
+      }
+    });
+
+    return result;
+  }
+
   async findAllByInnovation(
     requestUser: RequestUser,
     innovationId: string,
@@ -297,7 +351,7 @@ export class CommentService {
       message: comment.message,
       createdAt: comment.createdAt,
       updated_at: comment.updatedAt,
-      is_editable: comment.iseditable,
+      is_editable: comment.isEditable,
       user: {
         id: comment.user.id,
         type: comment.user.type,
