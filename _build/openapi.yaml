@@ -902,6 +902,11 @@ paths:
           required: true
           schema:
             type: string
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
         - name: Authorization
           in: header
           schema:
@@ -940,6 +945,11 @@ paths:
           required: true
           schema:
             type: string
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
         - name: Authorization
           in: header
           schema:
@@ -974,6 +984,11 @@ paths:
           schema:
             type: string
         - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: commentId
           in: path
           required: true
           schema:
