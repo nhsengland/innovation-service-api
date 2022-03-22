@@ -12,6 +12,7 @@ import {
   InvalidParamsError,
   MissingUserOrganisationError,
   MissingUserOrganisationUnitError,
+  ResourceNotFoundError,
 } from "@services/errors";
 import { checkIfValidUUID } from "@services/helpers";
 import { CommentModel } from "@services/models/CommentModel";
@@ -262,7 +263,12 @@ export class CommentService {
       };
     }
     const result = await this.connection.transaction(async (trs) => {
-      const comment = await this.commentRepo.findOne(id);
+      const filterOptions = {
+        where: { innovation: innovationId },
+        relations: ["innovation"],
+      };
+      const comment = await this.commentRepo.findOne(id, filterOptions);
+
       if (comment) {
         if (
           comment.isEditable === true &&
@@ -282,6 +288,8 @@ export class CommentService {
             "Invalid Data. Cannot updated this comment"
           );
         }
+      } else {
+        throw new ResourceNotFoundError("Comment not found");
       }
     });
     return result;
@@ -364,8 +372,8 @@ export class CommentService {
       id: comment.id,
       message: comment.message,
       createdAt: comment.createdAt,
-      updated_at: comment.updatedAt,
-      is_editable: comment.isEditable,
+      updatedAt: comment.updatedAt,
+      isEditable: comment.isEditable,
       user: {
         id: comment.user.id,
         type: comment.user.type,
