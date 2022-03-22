@@ -24,13 +24,16 @@ class AssessmentsCreateInnovationComment {
   ): Promise<void> {
     const body = req.body;
     const innovationId = req.params.innovationId;
-
+    const isEditable = body.isEditable
+      ? body.isEditable.toLocaleLowerCase() === "true"
+      : true;
     let result;
     try {
       result = await persistence.createInnovationComment(
         context,
         innovationId,
         body.comment,
+        isEditable,
         body.replyTo
       );
     } catch (error) {

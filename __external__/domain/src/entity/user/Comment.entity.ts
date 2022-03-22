@@ -20,6 +20,9 @@ export class Comment extends Base {
   @Column()
   message: string;
 
+  @Column({ name: "is_editable", nullable: false, default: false })
+  isEditable: boolean;
+
   //relationships
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: "user_id" })

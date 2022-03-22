@@ -12,30 +12,27 @@ import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
 
-class InnovatorsCreateInnovationComment {
+class AssessmentsUpdateInnovationComment {
   @AppInsights()
   @SQLConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
   @JwtDecoder()
-  @AllowedUserType(UserType.INNOVATOR)
+  @AllowedUserType(UserType.ASSESSMENT)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
     const body = req.body;
     const innovationId = req.params.innovationId;
-    const isEditable = body.isEditable
-      ? body.isEditable.toLocaleLowerCase() === "true"
-      : true;
+    const commentId = req.params.commentId;
 
     let result;
     try {
-      result = await persistence.createInnovationComment(
+      result = await persistence.updateInnovationComment(
         context,
         innovationId,
         body.comment,
-        isEditable,
-        body.replyTo
+        commentId
       );
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
@@ -44,8 +41,8 @@ class InnovatorsCreateInnovationComment {
       return;
     }
 
-    context.res = Responsify.Created({ id: result.id });
+    context.res = Responsify.Ok({ id: result.id });
   }
 }
 
-export default InnovatorsCreateInnovationComment.httpTrigger;
+export default AssessmentsUpdateInnovationComment.httpTrigger;

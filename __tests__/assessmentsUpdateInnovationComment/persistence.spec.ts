@@ -1,17 +1,17 @@
 import { CommentService } from "@services/index";
 import * as typeorm from "typeorm";
-import * as persistence from "../../accessorsCreateInnovationComment/persistence";
+import * as persistence from "../../assessmentsUpdateInnovationComment/persistence";
 import { CustomContext } from "../../utils/types";
 import * as dotenv from "dotenv";
 import * as path from "path";
-describe("[accessorsCreateInnovationComment] Persistence suite", () => {
+describe("[assessmentsUpdateInnovationComment] Persistence suite", () => {
   beforeAll(() => {
     dotenv.config({
       path: path.resolve(__dirname, "../.environment"),
     });
   });
-  describe("createInnovationComment", () => {
-    it("should create an innovation comment", async () => {
+  describe("updateInnovationComment", () => {
+    it("should update an innovation comment", async () => {
       // Arrange
       jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
       jest.spyOn(typeorm, "getConnection").mockImplementation(
@@ -20,7 +20,7 @@ describe("[accessorsCreateInnovationComment] Persistence suite", () => {
           ({ close: () => {} } as typeorm.Connection)
       );
       const spy = jest
-        .spyOn(CommentService.prototype, "create")
+        .spyOn(CommentService.prototype, "update")
         .mockResolvedValue([{ id: "" }] as any);
 
       const ctx = {
@@ -30,17 +30,16 @@ describe("[accessorsCreateInnovationComment] Persistence suite", () => {
         auth: {
           requestUser: {
             id: ":userId",
-            type: "ACCESSOR",
+            type: "ASSESSMENT",
           },
         },
       };
       // Act
-      await persistence.createInnovationComment(
+      await persistence.updateInnovationComment(
         ctx as CustomContext,
         "E362433E-F36B-1410-80DE-0032FE5B194B",
         "F362433E-F36B-1410-80DE-0032FE5B194B",
-        true,
-        "my comment"
+        "commentID"
       );
 
       expect(spy).toHaveBeenCalled();

@@ -2,6 +2,8 @@ export interface CommentModel {
   id: string;
   message: string;
   createdAt: Date;
+  updatedAt: Date;
+  isEditable: boolean;
   user: {
     id: string;
     type: string;
