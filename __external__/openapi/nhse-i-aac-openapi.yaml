@@ -3368,6 +3368,8 @@ components:
       $ref: "./schemas/innovation-submit-section-payload.yaml"
     innovation-create-comment-payload:
       $ref: "./schemas/innovation-create-comment-payload.yaml"
+    innovation-update-comment-payload:
+      $ref: "./schemas/innovation-update-comment-payload.yaml"
     survey-create-payload:
       $ref: "./schemas/survey-create-payload.yaml"
     assessments-create-assessment-payload:
