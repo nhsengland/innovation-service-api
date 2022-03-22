@@ -529,6 +529,8 @@ export class UserService {
       graphAccessToken = await authenticateWitGraphAPI();
     }
 
+    userModel.email = userModel.email.toLowerCase();
+
     if (!userModel.password) {
       userModel.password = Math.random().toString(36).slice(2) + "0aA!";
     }
