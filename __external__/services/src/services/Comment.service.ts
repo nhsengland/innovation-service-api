@@ -8,9 +8,11 @@ import {
 } from "@domain/index";
 import {
   InnovationNotFoundError,
+  InvalidDataError,
   InvalidParamsError,
   MissingUserOrganisationError,
   MissingUserOrganisationUnitError,
+  ResourceNotFoundError,
 } from "@services/errors";
 import { checkIfValidUUID } from "@services/helpers";
 import { CommentModel } from "@services/models/CommentModel";
@@ -53,6 +55,7 @@ export class CommentService {
     requestUser: RequestUser,
     innovationId: string,
     message: string,
+    isEditable?: boolean,
     replyTo?: string,
     innovationActionId?: string
   ): Promise<Comment> {
@@ -88,6 +91,7 @@ export class CommentService {
       createdBy: requestUser.id,
       updatedBy: requestUser.id,
       organisationUnit,
+      isEditable,
     };
 
     const result = await this.connection.transaction(async (trs) => {
@@ -217,6 +221,80 @@ export class CommentService {
     return result;
   }
 
+  async update(
+    requestUser: RequestUser,
+    innovationId: string,
+    message: string,
+    id: string
+  ) {
+    if (
+      !requestUser ||
+      !innovationId ||
+      !message ||
+      message.length === 0 ||
+      !id
+    ) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+
+    const innovation = await this.innovationService.find(innovationId);
+    if (!innovation) {
+      throw new InnovationNotFoundError(
+        `The Innovation with id ${innovationId} was not found.`
+      );
+    }
+
+    let organisationUnit = null;
+    if (requestUser.type === UserType.ACCESSOR) {
+      if (!requestUser.organisationUser) {
+        throw new MissingUserOrganisationError(
+          "Invalid user. User has no organisations."
+        );
+      }
+
+      if (!requestUser.organisationUnitUser) {
+        throw new MissingUserOrganisationUnitError(
+          "Invalid user. User has no organisation units."
+        );
+      }
+
+      organisationUnit = {
+        id: requestUser.organisationUnitUser.organisationUnit.id,
+      };
+    }
+    const result = await this.connection.transaction(async (trs) => {
+      const filterOptions = {
+        where: { innovation: innovationId },
+        relations: ["innovation"],
+      };
+      const comment = await this.commentRepo.findOne(id, filterOptions);
+
+      if (comment) {
+        if (
+          comment.isEditable === true &&
+          comment.createdBy === requestUser.id
+        ) {
+          await trs.update(
+            Comment,
+            { id: id },
+            {
+              message: message,
+              updatedBy: requestUser.id,
+            }
+          );
+          return { id: comment.id };
+        } else {
+          throw new InvalidDataError(
+            "Invalid Data. Cannot updated this comment"
+          );
+        }
+      } else {
+        throw new ResourceNotFoundError("Comment not found");
+      }
+    });
+    return result;
+  }
+
   async findAllByInnovation(
     requestUser: RequestUser,
     innovationId: string,
@@ -294,6 +372,8 @@ export class CommentService {
       id: comment.id,
       message: comment.message,
       createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
+      isEditable: comment.isEditable,
       user: {
         id: comment.user.id,
         type: comment.user.type,
