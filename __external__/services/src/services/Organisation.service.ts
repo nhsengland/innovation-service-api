@@ -32,6 +32,7 @@ export class OrganisationService extends BaseService<Organisation> {
   private readonly orgUnitUserRepo: Repository<OrganisationUnitUser>;
   private readonly orgUserRepo: Repository<OrganisationUser>;
   private readonly userService: UserService;
+  private readonly orgRepo: Repository<Organisation>;
 
   constructor(connectionName?: string) {
     super(Organisation, connectionName);
@@ -40,6 +41,7 @@ export class OrganisationService extends BaseService<Organisation> {
     this.orgUnitRepo = getRepository(OrganisationUnit, connectionName);
     this.orgUnitUserRepo = getRepository(OrganisationUnitUser, connectionName);
     this.userService = new UserService(connectionName);
+    this.orgRepo = getRepository(Organisation, connectionName);
   }
 
   async create(organisation: Organisation): Promise<Organisation> {
@@ -279,5 +281,9 @@ export class OrganisationService extends BaseService<Organisation> {
 
   async addOrganisationUnit(unit: OrganisationUnit): Promise<OrganisationUnit> {
     return await this.orgUnitRepo.save(unit);
+  }
+
+  async findOrganisationById(organisationId: string): Promise<Organisation> {
+    return this.orgRepo.findOne(organisationId);
   }
 }
