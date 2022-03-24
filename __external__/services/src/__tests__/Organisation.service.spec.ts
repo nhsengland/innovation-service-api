@@ -35,7 +35,7 @@ describe("Organisation Service Suite", () => {
   let accessorService: AccessorService;
 
   beforeAll(async () => {
-    // await setupTestsConnection();
+    //  await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -45,7 +45,7 @@ describe("Organisation Service Suite", () => {
   });
 
   afterAll(async () => {
-    // closeTestsConnection();
+    //  closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -308,5 +308,31 @@ describe("Organisation Service Suite", () => {
     expect(result).toBeDefined();
     expect(result.length).toEqual(1);
     expect(result[0].organisationUnits.length).toEqual(2);
+  });
+  it("should return Organisation by id", async () => {
+    //Arrange
+    const organisationObj = Organisation.new({
+      ...dummy.baseOrganisation,
+      type: OrganisationType.ACCESSOR,
+    });
+    organisationObj.size = "big";
+
+    const organisation = await organisationService.create(organisationObj);
+
+    const requestUser = {
+      id: "request_user_id",
+      type: UserType.ADMIN,
+    };
+
+    //Act
+    const result = await organisationService.findOrganisationById(
+      requestUser,
+      organisation.id
+    );
+
+    //Assert
+    expect(result).toBeDefined();
+    expect(result.size).toBe("big");
+    expect(result.id).toBe(organisation.id);
   });
 });
