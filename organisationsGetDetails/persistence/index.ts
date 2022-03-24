@@ -5,6 +5,7 @@ export const findOrganisation = async (
   organisationId: string
 ) => {
   const result = await context.services.OrganisationService.findOrganisationById(
+    context.auth.requestUser,
     organisationId
   );
 

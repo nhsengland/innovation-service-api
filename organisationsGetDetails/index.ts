@@ -3,11 +3,15 @@ import { CustomContext, Severity } from "utils/types";
 import * as persistence from "./persistence";
 import * as Responsify from "../utils/responsify";
 import * as validation from "./validation";
+import { UserType, ServiceRole } from "@domain/index";
 import {
   AppInsights,
   JwtDecoder,
   SQLConnector,
   Validator,
+  AllowedUserType,
+  ServiceRoleValidator,
+  SLSValidation,
 } from "../utils/decorators";
 
 class OrganisationsGetDetails {
@@ -15,6 +19,8 @@ class OrganisationsGetDetails {
   @SQLConnector()
   @JwtDecoder()
   @Validator(validation.ValidateParams, "params", "Invalid Query Parameters")
+  @AllowedUserType(UserType.ADMIN)
+  @ServiceRoleValidator(ServiceRole.ADMIN)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest

@@ -6,10 +6,12 @@ import {
   OrganisationUnitUser,
   OrganisationUser,
   User,
+  UserType,
 } from "@domain/index";
 import {
   InvalidParamsError,
   InvalidUserRoleError,
+  InvalidUserTypeError,
   MissingUserOrganisationError,
   MissingUserOrganisationUnitError,
 } from "@services/errors";
@@ -283,7 +285,13 @@ export class OrganisationService extends BaseService<Organisation> {
     return await this.orgUnitRepo.save(unit);
   }
 
-  async findOrganisationById(organisationId: string): Promise<Organisation> {
+  async findOrganisationById(
+    requestUser: RequestUser,
+    organisationId: string
+  ): Promise<Organisation> {
+    if (requestUser.type !== UserType.ADMIN) {
+      throw new InvalidUserTypeError("Invalid user type.");
+    }
     return this.orgRepo.findOne(organisationId);
   }
 }
