@@ -6,12 +6,10 @@ import {
   OrganisationUnitUser,
   OrganisationUser,
   User,
-  UserType,
 } from "@domain/index";
 import {
   InvalidParamsError,
   InvalidUserRoleError,
-  InvalidUserTypeError,
   MissingUserOrganisationError,
   MissingUserOrganisationUnitError,
 } from "@services/errors";
