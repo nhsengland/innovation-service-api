@@ -35,7 +35,7 @@ describe("Organisation Service Suite", () => {
   let accessorService: AccessorService;
 
   beforeAll(async () => {
-    //  await setupTestsConnection();
+    // await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -45,7 +45,7 @@ describe("Organisation Service Suite", () => {
   });
 
   afterAll(async () => {
-    //  closeTestsConnection();
+    // closeTestsConnection();
   });
 
   afterEach(async () => {
