@@ -326,7 +326,6 @@ describe("Organisation Service Suite", () => {
 
     //Act
     const result = await organisationService.findOrganisationById(
-      requestUser,
       organisation.id
     );
 

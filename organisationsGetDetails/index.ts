@@ -11,13 +11,12 @@ import {
   Validator,
   AllowedUserType,
   ServiceRoleValidator,
-  SLSValidation,
 } from "../utils/decorators";
 
 class OrganisationsGetDetails {
   @AppInsights()
   @SQLConnector()
-  @JwtDecoder()
+  @JwtDecoder(true)
   @Validator(validation.ValidateParams, "params", "Invalid Query Parameters")
   @AllowedUserType(UserType.ADMIN)
   @ServiceRoleValidator(ServiceRole.ADMIN)

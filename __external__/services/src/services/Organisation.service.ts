@@ -285,13 +285,7 @@ export class OrganisationService extends BaseService<Organisation> {
     return await this.orgUnitRepo.save(unit);
   }
 
-  async findOrganisationById(
-    requestUser: RequestUser,
-    organisationId: string
-  ): Promise<Organisation> {
-    if (requestUser.type !== UserType.ADMIN) {
-      throw new InvalidUserTypeError("Invalid user type.");
-    }
+  async findOrganisationById(organisationId: string): Promise<Organisation> {
     return this.orgRepo.findOne(organisationId);
   }
 }
