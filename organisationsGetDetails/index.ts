@@ -1,5 +1,5 @@
 import { HttpRequest } from "@azure/functions";
-import { CustomContext, Severity } from "utils/types";
+import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 import * as Responsify from "../utils/responsify";
 import * as validation from "./validation";
