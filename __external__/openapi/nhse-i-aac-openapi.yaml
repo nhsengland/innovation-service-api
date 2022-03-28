@@ -2362,6 +2362,35 @@ paths:
         "401":
           description: "Unauthorized"
 
+  "/organisations/{organisationId}":
+    get:
+      tags:
+        - "Organisation"
+        - "GetDetails"
+      description: "Retrieves an Organisation By Id"
+      operationId: "organisation-get-details"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: organisationId
+          in: path
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - organisation_details
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
   "/assessments/{userId}/innovations/{innovationId}":
     get:
       tags:
