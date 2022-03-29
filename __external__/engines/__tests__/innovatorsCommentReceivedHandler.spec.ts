@@ -73,6 +73,14 @@ describe("innovatorsCommentReceivedHandler suite", () => {
       data: {},
     });
 
+    jest.spyOn(UserService.prototype, "getListOfUsers").mockResolvedValue([
+      {
+        displayName: "test_user",
+        id: "_id",
+        email: "email_address@example.com",
+      },
+    ]);
+
     const params = {
       innovationId: "_innovation_id",
       contextId: "_context_id",

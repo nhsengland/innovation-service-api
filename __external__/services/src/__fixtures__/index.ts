@@ -146,14 +146,8 @@ export const createAdminUser = async () => {
   admin.type = UserType.ADMIN;
   admin.id = uuid.v4();
 
-  const roleObj = Role.new({
-    name: "SERVICE_TEAM",
-  });
+  const role = await createAdminRole();
 
-  const roleRepo = getRepository(Role, process.env.DB_TESTS_NAME);
-
-  const role = await roleRepo.save(roleObj);
-  console.log(role);
   const userRole = UserRole.new({
     role,
   });
@@ -164,6 +158,16 @@ export const createAdminUser = async () => {
   } catch (error) {
     throw error;
   }
+};
+
+export const createAdminRole = async () => {
+  const roleObj = Role.new({
+    name: "ADMIN",
+  });
+
+  const roleRepo = getRepository(Role, process.env.DB_TESTS_NAME);
+
+  return await roleRepo.save(roleObj);
 };
 
 // ****************************

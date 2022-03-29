@@ -16,6 +16,7 @@ import {
 } from "@domain/index";
 import {
   InnovationNotFoundError,
+  InvalidDataError,
   InvalidParamsError,
   MissingUserOrganisationError,
 } from "@services/errors";
@@ -41,7 +42,7 @@ describe("Comment Service Suite", () => {
   let qAccessorRequestUser: RequestUser;
 
   beforeAll(async () => {
-    //await setupTestsConnection();
+    // await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -121,7 +122,7 @@ describe("Comment Service Suite", () => {
     await query.from(UserRole).execute();
     await query.from(User).execute();
 
-    //closeTestsConnection();
+    // closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -139,7 +140,7 @@ describe("Comment Service Suite", () => {
   it("should throw when create() with invalid params", async () => {
     let err;
     try {
-      await commentService.create(innovatorRequestUser, "b", "");
+      await commentService.create(innovatorRequestUser, "b", "", true);
     } catch (error) {
       err = error;
     }
@@ -152,7 +153,8 @@ describe("Comment Service Suite", () => {
     const comment = await commentService.create(
       innovatorRequestUser,
       innovation.id,
-      "My Comment"
+      "My Comment",
+      true
     );
 
     expect(comment).toBeDefined();
@@ -169,7 +171,8 @@ describe("Comment Service Suite", () => {
       comment = await commentService.create(
         innovatorRequestUser,
         innovation.id,
-        "My Comment"
+        "My Comment",
+        true
       );
     } catch (error) {
       err = error;
@@ -182,7 +185,7 @@ describe("Comment Service Suite", () => {
   it("should throw when createByAccessor() with invalid params", async () => {
     let err;
     try {
-      await commentService.create(qAccessorRequestUser, "b", null);
+      await commentService.create(qAccessorRequestUser, "b", null, true);
     } catch (error) {
       err = error;
     }
@@ -263,6 +266,7 @@ describe("Comment Service Suite", () => {
       qAccessorRequestUser,
       innovation.id,
       "My Accessor Comment",
+      true,
       comment.id
     );
 
@@ -308,7 +312,7 @@ describe("Comment Service Suite", () => {
     expect(err).toBeInstanceOf(InnovationNotFoundError);
   });
 
-  it("should throw an error when creat() innovation id not present", async () => {
+  it("should throw an error when create() innovation id not present", async () => {
     let err;
     jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: innovatorRequestUser.id, displayName: ":INNOVATOR" },
@@ -327,5 +331,141 @@ describe("Comment Service Suite", () => {
 
     expect(err).toBeDefined();
     expect(err).toBeInstanceOf(InnovationNotFoundError);
+  });
+
+  it("should throw when update() with invalid params", async () => {
+    let err;
+    try {
+      await commentService.update(innovatorRequestUser, "b", "", "");
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("should throw an error when update() with innovation id not present", async () => {
+    let err;
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
+      { id: innovatorRequestUser.id, displayName: ":INNOVATOR" },
+      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+    ]);
+
+    try {
+      const result = await commentService.update(
+        innovatorRequestUser,
+        "C435433E-F36B-1410-8105-0032FE5B194B",
+        "My Comment",
+        "C435433E-F36B-1410-8105-0032FE5B194B"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InnovationNotFoundError);
+  });
+
+  it("should throw when update() by accessor with without organisations", async () => {
+    let err;
+
+    const comment = await commentService.create(
+      qAccessorRequestUser,
+      innovation.id,
+      "My Comment",
+      true
+    );
+
+    try {
+      await commentService.update(
+        { id: ":id", type: UserType.ACCESSOR },
+        innovation.id,
+        "message",
+        comment.id
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(MissingUserOrganisationError);
+  });
+
+  it("should update a comment by innovator", async () => {
+    const comment = await commentService.create(
+      innovatorRequestUser,
+      innovation.id,
+      "My Comment",
+      true
+    );
+
+    const updateComment = await commentService.update(
+      innovatorRequestUser,
+      innovation.id,
+      "My Comment",
+      comment.id
+    );
+    expect(updateComment).toBeDefined();
+  });
+
+  it("should update a comment by accessor", async () => {
+    jest
+      .spyOn(OrganisationService.prototype, "findOrganisationUnitById")
+      .mockResolvedValue({
+        name: "Organisation Unit",
+      } as any);
+
+    jest
+      .spyOn(UserService.prototype, "getProfile")
+      .mockResolvedValue({ displayName: "Accessor Name" } as any);
+
+    const comment = await commentService.create(
+      qAccessorRequestUser,
+      innovation.id,
+      "My Comment",
+      true
+    );
+
+    const updatecomment = await commentService.update(
+      qAccessorRequestUser,
+      innovation.id,
+      "My Comment",
+      comment.id
+    );
+    expect(updatecomment).toBeDefined();
+  });
+
+  it("should throw InvalidDataError when update a comment by accessor", async () => {
+    jest
+      .spyOn(OrganisationService.prototype, "findOrganisationUnitById")
+      .mockResolvedValue({
+        name: "Organisation Unit",
+      } as any);
+
+    jest
+      .spyOn(UserService.prototype, "getProfile")
+      .mockResolvedValue({ displayName: "Accessor Name" } as any);
+
+    const comment = await commentService.create(
+      qAccessorRequestUser,
+      innovation.id,
+      "My Comment"
+    );
+
+    let err;
+    try {
+      const updatecomment = await commentService.update(
+        qAccessorRequestUser,
+        innovation.id,
+        "My Comment",
+        comment.id
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidDataError);
   });
 });

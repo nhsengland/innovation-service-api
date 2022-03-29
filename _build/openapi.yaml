@@ -880,6 +880,135 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
+  '/accessors/{userId}/innovations/{innovationId}/comments/{commentId}':
+    put:
+      tags:
+        - Accessor
+        - Innovation
+        - UpdateInnovationComment
+      description: Update an Innovation Comment associated with the Innovation
+      operationId: accessors-update-innovation-comment
+      security:
+        - OpenId:
+            - comments_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/innovation-update-comment-payload'
+      responses:
+        '201':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/assessments/{userId}/innovations/{innovationId}/comments/{commentId}':
+    put:
+      tags:
+        - Assessment
+        - Innovation
+        - UpdateInnovationComment
+      description: Update an Innovation Comment associated with the Innovation
+      operationId: assessments-update-innovation-comment
+      security:
+        - OpenId:
+            - comments_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/innovation-update-comment-payload'
+      responses:
+        '201':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/innovators/{userId}/innovations/{innovationId}/comments/{commentId}':
+    put:
+      tags:
+        - Innovator
+        - Innovation
+        - UpdateInnovationComment
+      description: Update an Innovation Comment associated with the Innovation
+      operationId: innovators-update-innovation-comment
+      security:
+        - OpenId:
+            - comments_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: innovationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/innovation-update-comment-payload'
+      responses:
+        '201':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
   /innovators:
     post:
       tags:
@@ -2707,6 +2836,64 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
+    head:
+      tags:
+        - Admin
+        - User
+        - HeadUsers
+      description: Head users
+      operationId: admins-head-users
+      security:
+        - OpenId:
+            - users_read
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: email
+          in: query
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /user-admin/user:
+    post:
+      tags:
+        - Admin
+        - User
+        - CreateUser
+      description: Create user
+      operationId: admins-create-user
+      security:
+        - OpenId:
+            - users_write
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/admins-create-user-payload'
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
   '/user-admin/users/{userId}/lock':
     patch:
       tags:
@@ -2768,7 +2955,7 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
-  /user-admin/users/unlock:
+  '/user-admin/users/{userId}/unlock':
     patch:
       tags:
         - Admin
@@ -2785,6 +2972,47 @@ paths:
           schema:
             type: string
           required: true
+        - name: userId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/user-admin/users/{userId}':
+    get:
+      tags:
+        - Admin
+        - User
+        - AdminUserDetails
+      description: Admin User Details
+      operationId: admins-user-details
+      security:
+        - OpenId:
+            - users_read
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: userId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: model
+          in: query
+          schema:
+            type: string
+          required: false
       responses:
         '200':
           description: OK
@@ -3367,6 +3595,20 @@ components:
           type: string
           format: uuid
   requestBodies:
+    admins-create-user-payload:
+      description: Admins Create Users Payload
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+              name:
+                type: string
+              email:
+                type: string
     admins-create-users-payload:
       description: Admins Create Users Payload
       required: true
@@ -3588,6 +3830,16 @@ components:
               comment:
                 type: string
               replyTo:
+                type: string
+    innovation-update-comment-payload:
+      description: Innovation Update Comment Payload
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              comment:
                 type: string
     survey-create-payload:
       description: Survey Create Payload

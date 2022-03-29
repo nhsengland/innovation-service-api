@@ -24,6 +24,9 @@ class InnovatorsCreateInnovationComment {
   ): Promise<void> {
     const body = req.body;
     const innovationId = req.params.innovationId;
+    const isEditable = body.isEditable
+      ? body.isEditable.toLocaleLowerCase() === "true"
+      : true;
 
     let result;
     try {
@@ -31,6 +34,7 @@ class InnovatorsCreateInnovationComment {
         context,
         innovationId,
         body.comment,
+        isEditable,
         body.replyTo
       );
     } catch (error) {
