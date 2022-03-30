@@ -28,14 +28,17 @@ import * as rule from "../config/admin-change-role.config.json";
 import { UserCreationModel } from "@services/models/UserCreationModel";
 import { UserCreationResult } from "@services/models/UserCreationResult";
 import { UserChangeRoleValidationResult } from "@services/models/UserChangeRoleValidationResult";
+import { OrganisationService } from "./Organisation.service";
 
 export class AdminService {
   private readonly connection: Connection;
   private readonly userService: UserService;
+  private readonly organisationService: OrganisationService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.userService = new UserService(connectionName);
+    this.organisationService = new OrganisationService(connectionName);
   }
   async getUsersOfType(
     type: UserType,
@@ -366,6 +369,35 @@ export class AdminService {
 
     return {
       id: userId,
+      status: "OK",
+    };
+  }
+
+  async updateOrganisationNameAcronym(
+    organisationId: string,
+    name: string,
+    acronym: string
+  ): Promise<any> {
+    if (!name || !acronym || !organisationId) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    if (acronym.length > 10) {
+      throw new Error("Acronym has a maximum of 10 characters");
+    }
+
+    if (name.length > 100) {
+      throw new Error("Name has a maximum of 100 characters");
+    }
+
+    const result = await this.organisationService.updateOrganisationNameAcronym(
+      organisationId,
+      name,
+      acronym
+    );
+
+    return {
+      id: organisationId,
       status: "OK",
     };
   }

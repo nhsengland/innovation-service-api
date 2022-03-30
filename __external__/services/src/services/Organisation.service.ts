@@ -12,6 +12,7 @@ import {
   InvalidUserRoleError,
   MissingUserOrganisationError,
   MissingUserOrganisationUnitError,
+  InvalidOrganisationAcronymError,
 } from "@services/errors";
 import { OrganisationModel } from "@services/models/OrganisationModel";
 import { OrganisationUnitUserModel } from "@services/models/OrganisationUnitUserModel";
@@ -21,6 +22,7 @@ import {
   getConnection,
   getRepository,
   In,
+  Not,
   Repository,
 } from "typeorm";
 import { BaseService } from "./Base.service";
@@ -279,5 +281,43 @@ export class OrganisationService extends BaseService<Organisation> {
 
   async addOrganisationUnit(unit: OrganisationUnit): Promise<OrganisationUnit> {
     return await this.orgUnitRepo.save(unit);
+  }
+
+  async updateOrganisationNameAcronym(
+    organisationId: string,
+    name: string,
+    acronym: string
+  ) {
+    const filterAcronyms = {
+      where: {
+        id: Not(organisationId),
+        acronym: acronym,
+      },
+      type: OrganisationType.ACCESSOR,
+    };
+
+    const acronymSearch = await this.findAll(filterAcronyms);
+
+    if (acronymSearch.length == 0) {
+      try {
+        await this.connection.transaction(async (trs) => {
+          const updatedOrgNameAcronym = await trs.update(
+            Organisation,
+            { id: organisationId },
+            {
+              type: OrganisationType.ACCESSOR,
+              acronym: acronym,
+              name: name,
+            }
+          );
+        });
+      } catch {
+        throw new Error("Error updating Organisation.");
+      }
+    } else {
+      throw new InvalidOrganisationAcronymError(
+        "Acronym already exists associated with another Organisation"
+      );
+    }
   }
 }
