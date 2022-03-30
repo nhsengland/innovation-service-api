@@ -4,7 +4,7 @@ export class alterCommentTableAddTemporaryTable1648631884643
   implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `  IF EXISTS (SELECT 1 
+      `  IF NOT EXISTS (SELECT 1 
         FROM INFORMATION_SCHEMA.COLUMNS 
         WHERE table_name = 'comment'
         AND column_name = 'valid_from'
