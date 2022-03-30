@@ -4,7 +4,12 @@ export class alterCommentTableAddTemporaryTable1648631884643
   implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `  IF NOT EXISTS (SELECT valid_from,valid_to FROM comment)
+      `  IF EXISTS (SELECT 1 
+        FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE table_name = 'comment'
+        AND column_name = 'valid_from'
+        AND column_name = 'valid_to'
+      )
             BEGIN
             ALTER TABLE comment ADD
             [valid_from] DATETIME2 GENERATED ALWAYS AS ROW START HIDDEN 
