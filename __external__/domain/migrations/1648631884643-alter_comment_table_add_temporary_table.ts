@@ -4,12 +4,15 @@ export class alterCommentTableAddTemporaryTable1648631884643
   implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `ALTER TABLE comment ADD
+      `  IF NOT EXISTS (SELECT valid_from,valid_to FROM comment)
+            BEGIN
+            ALTER TABLE comment ADD
             [valid_from] DATETIME2 GENERATED ALWAYS AS ROW START HIDDEN 
             CONSTRAINT DF_valid_from DEFAULT SYSUTCDATETIME(), 
             [valid_to] DATETIME2 GENERATED ALWAYS AS ROW END HIDDEN
             CONSTRAINT DF_valid_to DEFAULT CONVERT(DATETIME2, '9999-12-31 23:59:59.9999999'),
             PERIOD FOR SYSTEM_TIME (valid_from, valid_to);
+            END
             `
     );
 
