@@ -309,4 +309,38 @@ describe("Organisation Service Suite", () => {
     expect(result.length).toEqual(1);
     expect(result[0].organisationUnits.length).toEqual(2);
   });
+
+  it("should update organisation name and acronym", async () => {
+    // Arrange
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue("access_token");
+    jest.spyOn(helpers, "saveB2CUser").mockImplementation();
+
+    const organisationObj = Organisation.new({
+      ...dummy.baseOrganisation,
+      type: OrganisationType.ACCESSOR,
+      organisationUnits: [
+        {
+          name: "orgUnitName",
+          acronym: "orgUnitAcronym",
+        },
+      ],
+    });
+    const organisation = await organisationService.create(organisationObj);
+
+    let err;
+    try {
+      await organisationService.updateOrganisationNameAcronym(
+        organisation.id,
+        "NAME",
+        "ACRONYM"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    // Assert
+    expect(err).toBeUndefined();
+  });
 });

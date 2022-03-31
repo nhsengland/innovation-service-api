@@ -4,6 +4,7 @@ import {
   closeTestsConnection,
   InnovatorOrganisationRole,
   Organisation,
+  OrganisationService,
   OrganisationType,
   OrganisationUnit,
   OrganisationUnitUser,
@@ -1115,5 +1116,49 @@ describe("[User Account Lock suite", () => {
 
     expect(err).toBeDefined();
     expect(err).toBeInstanceOf(InvalidUserRoleError);
+  });
+
+  it("Should update Organisation name and acronym", async () => {
+    jest
+      .spyOn(OrganisationService.prototype, "updateOrganisationNameAcronym")
+      .mockImplementation();
+
+    const result = await adminService.updateOrganisationNameAcronym(
+      "organisationId",
+      "name",
+      "acronym"
+    );
+
+    expect(result).toBeDefined();
+    expect(result.status).toBe("OK");
+  });
+
+  it("Should throw error on change organisation name and acronym if invalid parameters", async () => {
+    let err;
+    try {
+      await adminService.updateOrganisationNameAcronym(
+        undefined,
+        "name",
+        "acronym"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
+  it("Should check if acronym is valid", async () => {
+    jest
+      .spyOn(OrganisationService.prototype, "acronymValidForOrganisationUpdate")
+      .mockResolvedValue(true);
+
+    const result = await adminService.acronymValidForOrganisationUpdate(
+      "acronym",
+      "organisationId"
+    );
+
+    expect(result).toBe(true);
   });
 });
