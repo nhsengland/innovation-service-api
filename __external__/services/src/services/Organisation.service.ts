@@ -283,11 +283,10 @@ export class OrganisationService extends BaseService<Organisation> {
     return await this.orgUnitRepo.save(unit);
   }
 
-  async updateOrganisationNameAcronym(
-    organisationId: string,
-    name: string,
-    acronym: string
-  ) {
+  async acronymExistsForOrganisationUpdate(
+    acronym: string,
+    organisationId: string
+  ): Promise<boolean> {
     const filterAcronyms = {
       where: {
         id: Not(organisationId),
@@ -298,7 +297,24 @@ export class OrganisationService extends BaseService<Organisation> {
 
     const acronymSearch = await this.findAll(filterAcronyms);
 
-    if (acronymSearch.length == 0) {
+    if (!acronymSearch) {
+      return true;
+    }
+
+    return false;
+  }
+
+  async updateOrganisationNameAcronym(
+    organisationId: string,
+    name: string,
+    acronym: string
+  ) {
+    const acronymSearch = await this.acronymExistsForOrganisationUpdate(
+      acronym,
+      organisationId
+    );
+
+    if (acronymSearch) {
       try {
         await this.connection.transaction(async (trs) => {
           const updatedOrgNameAcronym = await trs.update(

@@ -2866,6 +2866,37 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
+  'user-admin/organisation/{organisationId}/change-name-acronym':
+    patch:
+      tags:
+        - Admin
+        - Organisation
+        - UpdateNameAcronym
+      description: Update name acronym
+      operationId: admins-update-name-acronym
+      security:
+        - OpenId:
+            - organisations_write
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: organisationId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
   /user-admin/user:
     post:
       tags:
@@ -2885,6 +2916,42 @@ paths:
           required: true
       requestBody:
         $ref: '#/components/requestBodies/admins-create-user-payload'
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  user-admin/organisation-acronym:
+    head:
+      tags:
+        - Admin
+        - Organisation
+        - HeadAcronym
+      description: Head acronym
+      operationId: admins-head-organisation-acronym
+      security:
+        - OpenId:
+            - organisation_acronym_read
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: acronym
+          in: query
+          schema:
+            type: string
+          required: true
+        - name: organisationId
+          in: query
+          schema:
+            type: string
+          required: true
       responses:
         '200':
           description: OK

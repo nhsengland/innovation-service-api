@@ -29,6 +29,7 @@ import { UserCreationModel } from "@services/models/UserCreationModel";
 import { UserCreationResult } from "@services/models/UserCreationResult";
 import { UserChangeRoleValidationResult } from "@services/models/UserChangeRoleValidationResult";
 import { OrganisationService } from "./Organisation.service";
+import { OrganisationUpdateResult } from "@services/models/OrganisationUpdateResult";
 
 export class AdminService {
   private readonly connection: Connection;
@@ -336,6 +337,17 @@ export class AdminService {
     return result;
   }
 
+  async acronymExistsForOrganisationUpdate(
+    acronym: string,
+    organisationId: string
+  ): Promise<boolean> {
+    const result = await this.organisationService.acronymExistsForOrganisationUpdate(
+      acronym,
+      organisationId
+    );
+    return result;
+  }
+
   async updateUserRole(
     requestUser: RequestUser,
     userId: string,
@@ -377,7 +389,7 @@ export class AdminService {
     organisationId: string,
     name: string,
     acronym: string
-  ): Promise<any> {
+  ): Promise<OrganisationUpdateResult> {
     if (!name || !acronym || !organisationId) {
       throw new InvalidParamsError("Invalid params.");
     }
