@@ -5,7 +5,7 @@ export const searchOrganisationByAcronym = async (
   acronym: string,
   organisationId: string
 ) => {
-  const result = await ctx.services.AdminService.acronymExistsForOrganisationUpdate(
+  const result = await ctx.services.AdminService.acronymValidForOrganisationUpdate(
     acronym,
     organisationId
   );

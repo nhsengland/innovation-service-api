@@ -337,11 +337,11 @@ export class AdminService {
     return result;
   }
 
-  async acronymExistsForOrganisationUpdate(
+  async acronymValidForOrganisationUpdate(
     acronym: string,
     organisationId: string
   ): Promise<boolean> {
-    const result = await this.organisationService.acronymExistsForOrganisationUpdate(
+    const result = await this.organisationService.acronymValidForOrganisationUpdate(
       acronym,
       organisationId
     );

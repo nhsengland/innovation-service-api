@@ -283,7 +283,7 @@ export class OrganisationService extends BaseService<Organisation> {
     return await this.orgUnitRepo.save(unit);
   }
 
-  async acronymExistsForOrganisationUpdate(
+  async acronymValidForOrganisationUpdate(
     acronym: string,
     organisationId: string
   ): Promise<boolean> {
@@ -297,7 +297,7 @@ export class OrganisationService extends BaseService<Organisation> {
 
     const acronymSearch = await this.findAll(filterAcronyms);
 
-    if (!acronymSearch) {
+    if (acronymSearch) {
       return true;
     }
 
@@ -309,11 +309,20 @@ export class OrganisationService extends BaseService<Organisation> {
     name: string,
     acronym: string
   ) {
-    const acronymSearch = await this.acronymExistsForOrganisationUpdate(
+    const acronymSearch = await this.acronymValidForOrganisationUpdate(
       acronym,
       organisationId
     );
 
+    const filterOrgUnits = {
+      where: {
+        organisation: organisationId,
+      },
+    };
+
+    const orgUnitSearch = await this.orgUnitRepo.find(filterOrgUnits);
+
+    //If the desired Acronym is available, update the Organisation
     if (acronymSearch) {
       try {
         await this.connection.transaction(async (trs) => {
@@ -329,6 +338,24 @@ export class OrganisationService extends BaseService<Organisation> {
         });
       } catch {
         throw new Error("Error updating Organisation.");
+      }
+
+      //If the Organisation only has 1 Unit, this Unit also needs to have its name and acronym changed
+      if (orgUnitSearch.length == 1) {
+        try {
+          await this.connection.transaction(async (trs) => {
+            const updatedOrgUnitNameAcronym = await trs.update(
+              OrganisationUnit,
+              { id: orgUnitSearch[0].id },
+              {
+                acronym: acronym,
+                name: name,
+              }
+            );
+          });
+        } catch {
+          throw new Error("Error updating Unit");
+        }
       }
     } else {
       throw new InvalidOrganisationAcronymError(
