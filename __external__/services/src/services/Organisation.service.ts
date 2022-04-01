@@ -283,7 +283,54 @@ export class OrganisationService extends BaseService<Organisation> {
     return await this.orgUnitRepo.save(unit);
   }
 
-  async findOrganisationById(organisationId: string): Promise<Organisation> {
-    return this.orgRepo.findOne(organisationId);
+  async findOrganisationById(organisationId: string): Promise<any> {
+    //return this.orgRepo.findOne(organisationId);
+    const data = await this.repository
+      .createQueryBuilder("organisation")
+      .leftJoinAndSelect("organisation.organisationUnits", "organisationUnits")
+      .leftJoinAndSelect(
+        "organisationUnits.organisationUnitUsers",
+        "organisationUnitUsers"
+      )
+      .leftJoinAndSelect(
+        "organisationUnitUsers.organisationUser",
+        "organisationUser"
+      )
+      .leftJoinAndSelect("organisationUser.user", "user")
+      .where("organisation.type = :type", {
+        type: OrganisationType.ACCESSOR,
+      })
+      .andWhere("organisation.id = :id", {
+        id: organisationId,
+      })
+      .orderBy("organisation.name", "ASC")
+      .getMany();
+
+    return await Promise.all(
+      data.map(async (org: any) => {
+        return {
+          id: org.id,
+          name: org.name,
+          acronym: org.acronym,
+          organisationUnits: await Promise.all(
+            org.__organisationUnits__?.map(async (orgUnit: any) => ({
+              id: orgUnit.id,
+              name: orgUnit.name,
+              acronym: orgUnit.acronym,
+              unitUsers: await Promise.all(
+                orgUnit.__organisationUnitUsers__.map(
+                  async (unitUser: any) => ({
+                    role: unitUser.organisationUser.role,
+                    ...(await this.userService.getUserDetails(
+                      unitUser.organisationUser.user.id
+                    )),
+                  })
+                )
+              ),
+            }))
+          ),
+        };
+      })
+    );
   }
 }

@@ -309,7 +309,7 @@ describe("Organisation Service Suite", () => {
     expect(result.length).toEqual(1);
     expect(result[0].organisationUnits.length).toEqual(2);
   });
-  it("should return Organisation by id", async () => {
+  /*it("should return Organisation by id", async () => {
     //Arrange
     const organisationObj = Organisation.new({
       ...dummy.baseOrganisation,
@@ -333,5 +333,5 @@ describe("Organisation Service Suite", () => {
     expect(result).toBeDefined();
     expect(result.size).toBe("big");
     expect(result.id).toBe(organisation.id);
-  });
+  });*/
 });
