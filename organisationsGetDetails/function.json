@@ -1,0 +1,15 @@
+{
+    "bindings": [
+      {
+        "authLevel": "anonymous",
+        "type": "httpTrigger",
+        "direction": "in",
+        "name": "req",
+        "methods": ["get"],
+        "route": "organisations/{organisationId}"
+      },
+      { "type": "http", "direction": "out", "name": "res" }
+    ],
+    "scriptFile": "../dist/organisationsGetDetails/index.js"
+  }
+  
