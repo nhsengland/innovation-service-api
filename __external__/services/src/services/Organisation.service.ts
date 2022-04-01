@@ -299,7 +299,7 @@ export class OrganisationService extends BaseService<Organisation> {
 
     const acronymSearch = await this.findAll(filterAcronyms);
 
-    if (acronymSearch) {
+    if (acronymSearch.length == 0) {
       return true;
     }
 
