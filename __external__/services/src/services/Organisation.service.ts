@@ -16,6 +16,9 @@ import {
 import { OrganisationModel } from "@services/models/OrganisationModel";
 import { OrganisationUnitUserModel } from "@services/models/OrganisationUnitUserModel";
 import { RequestUser } from "@services/models/RequestUser";
+import { OrganisationModelWithUsers } from "@services/models/OrganisationModelWithUsers";
+import { OrganisationUnitsWithUsers } from "@services/models/OrganisationModelWithUsers";
+import { OrganisationUnitUsers } from "@services/models/OrganisationModelWithUsers";
 import {
   Connection,
   getConnection,
@@ -283,7 +286,9 @@ export class OrganisationService extends BaseService<Organisation> {
     return await this.orgUnitRepo.save(unit);
   }
 
-  async findOrganisationById(organisationId: string): Promise<any> {
+  async findOrganisationById(
+    organisationId: string
+  ): Promise<OrganisationModelWithUsers[]> {
     //return this.orgRepo.findOne(organisationId);
     const data = await this.repository
       .createQueryBuilder("organisation")
@@ -306,31 +311,33 @@ export class OrganisationService extends BaseService<Organisation> {
       .orderBy("organisation.name", "ASC")
       .getMany();
 
-    return await Promise.all(
-      data.map(async (org: any) => {
+    const result: OrganisationModelWithUsers[] = await Promise.all(
+      data.map(async (org: OrganisationModel) => {
         return {
           id: org.id,
           name: org.name,
           acronym: org.acronym,
           organisationUnits: await Promise.all(
-            org.__organisationUnits__?.map(async (orgUnit: any) => ({
-              id: orgUnit.id,
-              name: orgUnit.name,
-              acronym: orgUnit.acronym,
-              unitUsers: await Promise.all(
-                orgUnit.__organisationUnitUsers__.map(
-                  async (unitUser: any) => ({
-                    role: unitUser.organisationUser.role,
-                    ...(await this.userService.getUserDetails(
-                      unitUser.organisationUser.user.id
-                    )),
-                  })
-                )
-              ),
-            }))
+            org.organisationUnits?.map(
+              async (orgUnit: OrganisationUnitsWithUsers) => ({
+                id: orgUnit.id,
+                name: orgUnit.name,
+                acronym: orgUnit.acronym,
+                organisationUnitUsers: await Promise.all(
+                  orgUnit.organisationUnitUsers.map(
+                    async (unitUser: OrganisationUnitUsers) => ({
+                      role: unitUser.role,
+                      ...(await this.userService.getUserDetails(unitUser.id)),
+                    })
+                  )
+                ),
+              })
+            )
           ),
         };
       })
     );
+
+    return result;
   }
 }
