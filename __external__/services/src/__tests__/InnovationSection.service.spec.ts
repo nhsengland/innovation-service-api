@@ -531,6 +531,8 @@ describe("Innovation Section Service Suite", () => {
     const innovationObj = fixtures.generateInnovation({
       owner: innovatorRequestUser.id,
       name: "My Innovation",
+      countryName: "Wales",
+      postcode: "000",
       surveyId: "abc",
       hasFinalProduct: YesOrNoCatalogue.NO,
       impactPatients: true,
@@ -546,7 +548,9 @@ describe("Innovation Section Service Suite", () => {
       innovation.id,
       InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
       {
-        name: "should not update name",
+        name: "My Innovation",
+        countryName: "Wales",
+        postcode: "000",
         description: "description save",
         hasFinalProduct: YesOrNoCatalogue.YES,
         categories: [InnovationCategoryCatalogue.OTHER],
@@ -563,6 +567,7 @@ describe("Innovation Section Service Suite", () => {
 
     // Assert
     expect(result.name).toEqual("My Innovation");
+    expect(result.countryName).toEqual("Wales");
     expect(result.hasFinalProduct).toEqual(YesOrNoCatalogue.YES);
     expect(categories.length).toEqual(1);
     expect(areas.length).toEqual(1);
