@@ -527,6 +527,34 @@ export const accessorsCommentReceivedHandler = async (
   return result;
 };
 
+export const userAccountLockedHandler = async (
+  requestUser: RequestUser,
+  params: {
+    contextId: string;
+    emailProps?: EmailProps;
+  },
+  template: EmailNotificationTemplate,
+  targetUsers?: string[],
+  connectionName?: string
+): Promise<EmailResponse[]> => {
+  const emailService = new EmailService(connectionName);
+
+  const recipient = targetUsers[0];
+
+  const props = {
+    ...params.emailProps,
+  };
+  const result = await emailService.sendOne(
+    {
+      email: recipient,
+    },
+    EmailNotificationTemplate.USER_ACCOUNT_LOCKED,
+    props
+  );
+
+  return result;
+};
+
 const parseUrl = (params, templateCode): string => {
   const baseUrl = process.env.CLIENT_WEB_BASE_URL;
   const template = getTemplates().find((t) => t.code === templateCode);
