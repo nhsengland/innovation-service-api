@@ -2958,14 +2958,14 @@ paths:
         "403":
           description: "Forbidden"
 
-  "user-admin/organisation/{organisationId}/change-name-acronym":
+  "user-admin/organisation/{organisationId}":
     patch:
       tags:
         - "Admin"
         - "Organisation"
-        - "UpdateNameAcronym"
-      description: "Update name acronym"
-      operationId: "admins-update-name-acronym"
+        - "UpdateOrganisation"
+      description: "Update Organisation"
+      operationId: "admins-update-organisation"
       security:
         - OpenId:
             - organisations_write

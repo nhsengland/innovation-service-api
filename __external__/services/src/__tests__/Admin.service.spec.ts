@@ -1120,10 +1120,10 @@ describe("[User Account Lock suite", () => {
 
   it("Should update Organisation name and acronym", async () => {
     jest
-      .spyOn(OrganisationService.prototype, "updateOrganisationNameAcronym")
+      .spyOn(OrganisationService.prototype, "updateOrganisation")
       .mockImplementation();
 
-    const result = await adminService.updateOrganisationNameAcronym(
+    const result = await adminService.updateOrganisation(
       "organisationId",
       "name",
       "acronym"
@@ -1136,11 +1136,7 @@ describe("[User Account Lock suite", () => {
   it("Should throw error on change organisation name and acronym if invalid parameters", async () => {
     let err;
     try {
-      await adminService.updateOrganisationNameAcronym(
-        undefined,
-        "name",
-        "acronym"
-      );
+      await adminService.updateOrganisation(undefined, "name", "acronym");
     } catch (error) {
       err = error;
     }

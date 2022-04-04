@@ -1,12 +1,12 @@
 import { CustomContext } from "../../utils/types";
 
-export const updateOrganisationNameAcronym = async (
+export const updateOrganisation = async (
   ctx: CustomContext,
   organisationId: string,
   name: string,
   acronym: string
 ) => {
-  const result = await ctx.services.AdminService.updateOrganisationNameAcronym(
+  const result = await ctx.services.AdminService.updateOrganisation(
     organisationId,
     name,
     acronym

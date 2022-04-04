@@ -6,7 +6,7 @@
         "direction": "in",
         "name": "req",
         "methods": ["patch"],
-        "route": "user-admin/organisation/{organisationId}/change-name-acronym"
+        "route": "user-admin/organisation/{organisationId}"
       },
       {
         "type": "http",

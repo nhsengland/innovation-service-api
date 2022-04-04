@@ -13,7 +13,7 @@ import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
 
-class AdminsUpdateOrganisationNameAcronym {
+class AdminsUpdateOrganisation {
   @AppInsights()
   @SQLConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
@@ -29,7 +29,7 @@ class AdminsUpdateOrganisationNameAcronym {
 
     let result;
     try {
-      result = await persistence.updateOrganisationNameAcronym(
+      result = await persistence.updateOrganisation(
         context,
         organisationId,
         body.name,
@@ -46,4 +46,4 @@ class AdminsUpdateOrganisationNameAcronym {
   }
 }
 
-export default AdminsUpdateOrganisationNameAcronym.httpTrigger;
+export default AdminsUpdateOrganisation.httpTrigger;

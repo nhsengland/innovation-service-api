@@ -3,9 +3,9 @@ import { AccessorOrganisationRole, UserType } from "@services/index";
 import {
     createHttpTrigger, runStubFunctionFromBindings
 } from "stub-azure-function-context";
-import adminsUpdateOrganisationNameAcronym from "../../adminsUpdateOrganisationNameAcronym";
-import * as persistence from "../../adminsUpdateOrganisationNameAcronym/persistence";
-import * as validation from "../../adminsUpdateOrganisationNameAcronym/validation";
+import adminsUpdateOrganisationNameAcronym from "../../adminsUpdateOrganisation";
+import * as persistence from "../../adminsUpdateOrganisation/persistence";
+import * as validation from "../../adminsUpdateOrganisation/validation";
 import * as authentication from "../../utils/authentication";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
@@ -72,7 +72,7 @@ describe("[HttpTrigger] adminsUpdateOrganisationNameAcronym Suite", () => {
             jest.spyOn(validation, "ValidatePayload").mockReturnValue({} as any);
             jest.spyOn(authentication, "decodeToken").mockReturnValue({ oid: dummy.adminUser });
 
-            jest.spyOn(persistence, "updateOrganisationNameAcronym").mockResolvedValue([
+            jest.spyOn(persistence, "updateOrganisation").mockResolvedValue([
                 { 
                     id: "organisationId",
                     name: "name",
@@ -91,7 +91,7 @@ describe("[HttpTrigger] adminsUpdateOrganisationNameAcronym Suite", () => {
             jest.spyOn(authentication, "decodeToken").mockReturnValue({
                 oid: dummy.adminUser,
             });
-            jest.spyOn(persistence, "updateOrganisationNameAcronym").mockRejectedValue(
+            jest.spyOn(persistence, "updateOrganisation").mockRejectedValue(
                 "Error."
             );
 

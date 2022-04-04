@@ -1,5 +1,5 @@
 import * as typeorm from "typeorm";
-import * as persistence from "../../adminsUpdateOrganisationNameAcronym/persistence";
+import * as persistence from "../../adminsUpdateOrganisation/persistence";
 import { CustomContext } from "../../utils/types";
 import * as dotenv from "dotenv";
 import * as path from "path";
@@ -21,7 +21,7 @@ describe("[adminsUpdateOrganisationNameAcronym] Persistence suite", () => {
           ({ close: () => {} } as typeorm.Connection)
       );
       const spy = jest
-        .spyOn(AdminService.prototype, "updateOrganisationNameAcronym")
+        .spyOn(AdminService.prototype, "updateOrganisation")
         .mockResolvedValue({
           organisationId: "organisationId",
           name: "name",
@@ -40,7 +40,7 @@ describe("[adminsUpdateOrganisationNameAcronym] Persistence suite", () => {
         },
       };
       // Act
-      await persistence.updateOrganisationNameAcronym(
+      await persistence.updateOrganisation(
         ctx as CustomContext,
         "organisationId",
         "name",

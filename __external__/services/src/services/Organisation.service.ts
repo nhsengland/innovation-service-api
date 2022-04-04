@@ -306,7 +306,7 @@ export class OrganisationService extends BaseService<Organisation> {
     return true;
   }
 
-  async updateOrganisationNameAcronym(
+  async updateOrganisation(
     organisationId: string,
     name: string,
     acronym: string

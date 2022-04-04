@@ -331,7 +331,7 @@ describe("Organisation Service Suite", () => {
 
     let err;
     try {
-      await organisationService.updateOrganisationNameAcronym(
+      await organisationService.updateOrganisation(
         organisation.id,
         "NAME",
         "ACRONYM"

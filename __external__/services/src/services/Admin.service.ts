@@ -385,7 +385,7 @@ export class AdminService {
     };
   }
 
-  async updateOrganisationNameAcronym(
+  async updateOrganisation(
     organisationId: string,
     name: string,
     acronym: string
@@ -402,7 +402,7 @@ export class AdminService {
       throw new Error("Name has a maximum of 100 characters");
     }
 
-    const result = await this.organisationService.updateOrganisationNameAcronym(
+    const result = await this.organisationService.updateOrganisation(
       organisationId,
       name,
       acronym
