@@ -35,7 +35,7 @@ describe("Organisation Service Suite", () => {
   let accessorService: AccessorService;
 
   beforeAll(async () => {
-    // await setupTestsConnection();
+    //  await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -45,7 +45,7 @@ describe("Organisation Service Suite", () => {
   });
 
   afterAll(async () => {
-    // closeTestsConnection();
+    //  closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -310,7 +310,7 @@ describe("Organisation Service Suite", () => {
     expect(result[0].organisationUnits.length).toEqual(2);
   });
 
-  /* it("should update organisation name and acronym", async () => {
+  it("should update organisation name and acronym", async () => {
     // Arrange
     jest
       .spyOn(helpers, "authenticateWitGraphAPI")
@@ -343,7 +343,7 @@ describe("Organisation Service Suite", () => {
     // Assert
     expect(err).toBeUndefined();
   });
-  */
+
   it("should return Organisation by id", async () => {
     //Arrange
     const organisationObj = Organisation.new({

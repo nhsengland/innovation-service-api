@@ -325,7 +325,7 @@ export class OrganisationService extends BaseService<Organisation> {
     const orgUnitSearch = await this.orgUnitRepo.find(filterOrgUnits);
 
     //If the desired Acronym is available, update the Organisation
-    if (acronymSearch) {
+    if (!acronymSearch) {
       try {
         await this.connection.transaction(async (trs) => {
           const updatedOrgNameAcronym = await trs.update(
