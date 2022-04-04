@@ -300,10 +300,10 @@ export class OrganisationService extends BaseService<Organisation> {
     const acronymSearch = await this.findAll(filterAcronyms);
 
     if (acronymSearch.length == 0) {
-      return true;
+      return false;
     }
 
-    return false;
+    return true;
   }
 
   async updateOrganisationNameAcronym(
