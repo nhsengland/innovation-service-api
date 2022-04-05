@@ -14,6 +14,7 @@ import {
   MissingUserOrganisationUnitError,
 } from "@services/errors";
 import { OrganisationModel } from "@services/models/OrganisationModel";
+import { OrganisationUnitModel } from "@services/models/OrganisationUnitModel";
 import { OrganisationUnitUserModel } from "@services/models/OrganisationUnitUserModel";
 import { RequestUser } from "@services/models/RequestUser";
 import {
@@ -286,9 +287,8 @@ export class OrganisationService extends BaseService<Organisation> {
   async findOrganisationById(
     organisationId: string
   ): Promise<OrganisationModel> {
-    const organisation = await this.repository
+    const org = await this.repository
       .createQueryBuilder("organisation")
-      .leftJoinAndSelect("organisation.organisationUnits", "organisationUnits")
       .where("organisation.type = :type", {
         type: OrganisationType.ACCESSOR,
       })
@@ -297,6 +297,17 @@ export class OrganisationService extends BaseService<Organisation> {
       })
       .getOne();
 
-    return organisation;
+    const orgUnits = await org.organisationUnits;
+
+    return {
+      id: org.id,
+      name: org.name,
+      acronym: org.acronym,
+      organisationUnits: orgUnits?.map((unit) => ({
+        id: unit.id,
+        name: unit.name,
+        acronym: unit.acronym,
+      })),
+    };
   }
 }
