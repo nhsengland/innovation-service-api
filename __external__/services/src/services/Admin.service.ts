@@ -444,6 +444,35 @@ export class AdminService {
     };
   }
 
+  async updateOrganisationUnit(
+    organisationUnitId: string,
+    name: string,
+    acronym: string
+  ): Promise<OrganisationUpdateResult> {
+    if (!name || !acronym || !organisationUnitId) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    if (acronym.length > 10) {
+      throw new Error("Acronym has a maximum of 10 characters");
+    }
+
+    if (name.length > 100) {
+      throw new Error("Name has a maximum of 100 characters");
+    }
+
+    const result = await this.organisationService.updateOrganisationUnit(
+      organisationUnitId,
+      name,
+      acronym
+    );
+
+    return {
+      id: organisationUnitId,
+      status: "OK",
+    };
+  }
+
   private async runUserValidation(user: User): Promise<{ [key: string]: any }> {
     const r = { ...rules };
     if (user.type === UserType.ASSESSMENT) {

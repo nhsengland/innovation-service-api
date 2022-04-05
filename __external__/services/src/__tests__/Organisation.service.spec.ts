@@ -35,7 +35,7 @@ describe("Organisation Service Suite", () => {
   let accessorService: AccessorService;
 
   beforeAll(async () => {
-    //  await setupTestsConnection();
+    // await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -45,7 +45,7 @@ describe("Organisation Service Suite", () => {
   });
 
   afterAll(async () => {
-    //  closeTestsConnection();
+    // closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -312,11 +312,6 @@ describe("Organisation Service Suite", () => {
 
   it("should update organisation name and acronym", async () => {
     // Arrange
-    jest
-      .spyOn(helpers, "authenticateWitGraphAPI")
-      .mockResolvedValue("access_token");
-    jest.spyOn(helpers, "saveB2CUser").mockImplementation();
-
     const organisationObj = Organisation.new({
       ...dummy.baseOrganisation,
       type: OrganisationType.ACCESSOR,
@@ -333,6 +328,37 @@ describe("Organisation Service Suite", () => {
     try {
       await organisationService.updateOrganisation(
         organisation.id,
+        "NAME",
+        "ACRONYM"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    // Assert
+    expect(err).toBeUndefined();
+  });
+
+  it("should update organisation unit name and acronym", async () => {
+    // Arrange
+    const organisationObj = Organisation.new({
+      ...dummy.baseOrganisation,
+      type: OrganisationType.ACCESSOR,
+    });
+    const organisation = await organisationService.create(organisationObj);
+
+    const unitObj = OrganisationUnit.new({
+      id: "F5394E00-86EF-EB11-A7AD-281878026472",
+      name: "newUnit",
+      acronym: "acronym",
+      organisation,
+    });
+    await organisationService.addOrganisationUnit(unitObj);
+
+    let err;
+    try {
+      await organisationService.updateOrganisationUnit(
+        "F5394E00-86EF-EB11-A7AD-281878026472",
         "NAME",
         "ACRONYM"
       );

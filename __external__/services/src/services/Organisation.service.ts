@@ -70,6 +70,18 @@ export class OrganisationService extends BaseService<Organisation> {
     return await this.repository.find(filterOptions);
   }
 
+  async findAllUnits(filter: any): Promise<OrganisationUnit[]> {
+    if (!filter) {
+      throw new InvalidParamsError("Invalid filter.");
+    }
+
+    const filterOptions = {
+      ...filter,
+    };
+
+    return await this.orgUnitRepo.find(filterOptions);
+  }
+
   async findQualifyingAccessorsFromUnits(
     unitIds: string[],
     innovationId: string
@@ -287,17 +299,30 @@ export class OrganisationService extends BaseService<Organisation> {
 
   async acronymValidForOrganisationUpdate(
     acronym: string,
-    organisationId: string
+    organisationId?: string,
+    organisationUnitId?: string
   ): Promise<boolean> {
-    const filterAcronyms = {
-      where: {
-        id: Not(organisationId),
-        acronym: acronym,
-      },
-      type: OrganisationType.ACCESSOR,
-    };
+    let acronymSearch, filterAcronyms;
+    if (organisationId) {
+      filterAcronyms = {
+        where: {
+          id: Not(organisationId),
+          acronym: acronym,
+        },
+        type: OrganisationType.ACCESSOR,
+      };
 
-    const acronymSearch = await this.findAll(filterAcronyms);
+      acronymSearch = await this.findAll(filterAcronyms);
+    } else if (organisationUnitId) {
+      filterAcronyms = {
+        where: {
+          id: Not(organisationUnitId),
+          acronym: acronym,
+        },
+      };
+
+      acronymSearch = await this.findAllUnits(filterAcronyms);
+    }
 
     if (acronymSearch.length == 0) {
       return false;
@@ -313,7 +338,8 @@ export class OrganisationService extends BaseService<Organisation> {
   ) {
     const acronymSearch = await this.acronymValidForOrganisationUpdate(
       acronym,
-      organisationId
+      organisationId,
+      null
     );
 
     const filterOrgUnits = {
@@ -362,6 +388,47 @@ export class OrganisationService extends BaseService<Organisation> {
     } else {
       throw new InvalidOrganisationAcronymError(
         "Acronym already exists associated with another Organisation"
+      );
+    }
+  }
+
+  async updateOrganisationUnit(
+    organisationUnitId: string,
+    name: string,
+    acronym: string
+  ) {
+    const acronymSearch = await this.acronymValidForOrganisationUpdate(
+      acronym,
+      null,
+      organisationUnitId
+    );
+
+    const filterOrgUnits = {
+      where: {
+        id: organisationUnitId,
+      },
+    };
+
+    const orgUnitSearch = await this.orgUnitRepo.find(filterOrgUnits);
+
+    if (!acronymSearch) {
+      try {
+        await this.connection.transaction(async (trs) => {
+          const updatedOrgUnitNameAcronym = await trs.update(
+            OrganisationUnit,
+            { id: orgUnitSearch[0].id },
+            {
+              acronym: acronym,
+              name: name,
+            }
+          );
+        });
+      } catch {
+        throw new Error("Error updating Unit");
+      }
+    } else {
+      throw new InvalidOrganisationAcronymError(
+        "Acronym already exists associated with another Organisation Unit"
       );
     }
   }

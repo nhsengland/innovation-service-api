@@ -1146,6 +1146,33 @@ describe("[User Account Lock suite", () => {
     expect(err).toBeInstanceOf(InvalidParamsError);
   });
 
+  it("Should update Organisation Unit name and acronym", async () => {
+    jest
+      .spyOn(OrganisationService.prototype, "updateOrganisationUnit")
+      .mockImplementation();
+
+    const result = await adminService.updateOrganisationUnit(
+      "organisationUnitId",
+      "name",
+      "acronym"
+    );
+
+    expect(result).toBeDefined();
+    expect(result.status).toBe("OK");
+  });
+
+  it("Should throw error on change organisation unit name and acronym if invalid parameters", async () => {
+    let err;
+    try {
+      await adminService.updateOrganisationUnit(undefined, "name", "acronym");
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
+    expect(err).toBeInstanceOf(InvalidParamsError);
+  });
+
   it("Should check if acronym is valid", async () => {
     jest
       .spyOn(OrganisationService.prototype, "acronymValidForOrganisationUpdate")
