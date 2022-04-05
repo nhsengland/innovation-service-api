@@ -82,13 +82,6 @@ export class InvalidUserRoleError extends Error {
   }
 }
 
-export class InvalidOrganisationAcronymError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "InvalidOrganisationAcronymError";
-  }
-}
-
 export class InvalidUserTypeError extends Error {
   constructor(message: string) {
     super(message);

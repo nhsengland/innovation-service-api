@@ -12,7 +12,6 @@ import {
   InvalidUserRoleError,
   MissingUserOrganisationError,
   MissingUserOrganisationUnitError,
-  InvalidOrganisationAcronymError,
 } from "@services/errors";
 import { OrganisationModel } from "@services/models/OrganisationModel";
 import { OrganisationUnitUserModel } from "@services/models/OrganisationUnitUserModel";
