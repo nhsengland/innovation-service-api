@@ -3,7 +3,7 @@ import { AccessorOrganisationRole, UserType } from "@services/index";
 import {
     createHttpTrigger, runStubFunctionFromBindings
 } from "stub-azure-function-context";
-import adminsUpdateOrganisationNameAcronym from "../../adminsUpdateOrganisation";
+import adminsUpdateOrganisation from "../../adminsUpdateOrganisation";
 import * as persistence from "../../adminsUpdateOrganisation/persistence";
 import * as validation from "../../adminsUpdateOrganisation/validation";
 import * as authentication from "../../utils/authentication";
@@ -42,11 +42,14 @@ const dummy = {
                 }]
             }),
         },
+        AuthService:{
+            validate2LS: () => true
+        },
     },
     adminUser: 'test_admin_oid',
 };
 
-describe("[HttpTrigger] adminsUpdateOrganisationNameAcronym Suite", () => {
+describe("[HttpTrigger] adminsUpdateOrganisation Suite", () => {
     describe("Function Handler", () => {
         afterEach(() => {
             jest.resetAllMocks();
@@ -105,7 +108,7 @@ describe("[HttpTrigger] adminsUpdateOrganisationNameAcronym Suite", () => {
 
 async function mockedRequestFactory(data?: any) {
     return runStubFunctionFromBindings(
-        adminsUpdateOrganisationNameAcronym,
+        adminsUpdateOrganisation,
         [
             {
                 type: "httpTrigger",
@@ -113,7 +116,7 @@ async function mockedRequestFactory(data?: any) {
                 direction: "in",
                 data: createHttpTrigger(
                     "PATCH",
-                    "http://nhse-i-aac/api/user-admin/organisation/{organisationId}/change-name-acronym",
+                    "http://nhse-i-aac/api/user-admin/organisation/{organisationId}",
                     { ...data.headers }, // headers
                     { organisationId: "organisationId" },
                     { 

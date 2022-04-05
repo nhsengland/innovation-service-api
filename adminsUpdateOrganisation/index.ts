@@ -1,10 +1,12 @@
 import { HttpRequest } from "@azure/functions";
 import { ServiceRole, UserType } from "@services/index";
+import { SLSEventType } from "@services/types";
 import {
   AllowedUserType,
   AppInsights,
   JwtDecoder,
   ServiceRoleValidator,
+  SLSValidation,
   SQLConnector,
   Validator,
 } from "../utils/decorators";
@@ -20,6 +22,7 @@ class AdminsUpdateOrganisation {
   @JwtDecoder(true)
   @AllowedUserType(UserType.ADMIN)
   @ServiceRoleValidator(ServiceRole.ADMIN)
+  @SLSValidation(SLSEventType.ADMIN_UPDATE_ORGANISATION)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest

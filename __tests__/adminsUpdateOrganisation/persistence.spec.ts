@@ -5,13 +5,13 @@ import * as dotenv from "dotenv";
 import * as path from "path";
 import { AdminService } from "@services/services/Admin.service";
 import { AccessorOrganisationRole } from "@domain/index";
-describe("[adminsUpdateOrganisationNameAcronym] Persistence suite", () => {
+describe("[adminsUpdateOrganisation] Persistence suite", () => {
   beforeAll(() => {
     dotenv.config({
       path: path.resolve(__dirname, "../.environment"),
     });
   });
-  describe("adminsUpdateOrganisationNameAcronym", () => {
+  describe("adminsUpdateOrganisation", () => {
     it("should update Organisation", async () => {
       // Arrange
       jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
