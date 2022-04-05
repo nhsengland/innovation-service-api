@@ -221,4 +221,11 @@ export const getTemplates = (): EmailTemplate[] => [
       innovation_name: "",
     },
   },
+  {
+    id: "1ad73192-dc28-4606-a4f3-9dd73aedfd42",
+    code: "USER_ACCOUNT_LOCKED",
+    props: {
+      display_name: "",
+    },
+  },
 ];

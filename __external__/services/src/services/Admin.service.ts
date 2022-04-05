@@ -28,14 +28,20 @@ import * as rule from "../config/admin-change-role.config.json";
 import { UserCreationModel } from "@services/models/UserCreationModel";
 import { UserCreationResult } from "@services/models/UserCreationResult";
 import { UserChangeRoleValidationResult } from "@services/models/UserChangeRoleValidationResult";
+import { NotificationService } from "./Notification.service";
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import { LoggerService } from "./Logger.service";
 
 export class AdminService {
   private readonly connection: Connection;
   private readonly userService: UserService;
+  private readonly notificationService: NotificationService;
+  private readonly logService: LoggerService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.userService = new UserService(connectionName);
+    this.notificationService = new NotificationService(connectionName);
   }
   async getUsersOfType(
     type: UserType,
@@ -133,7 +139,11 @@ export class AdminService {
 
     return result;
   }
-
+  private getUserEmail(b2cUser: any) {
+    return b2cUser.identities.find(
+      (identity: any) => identity.signInType === "emailAddress"
+    ).issuerAssignedId;
+  }
   async lockUser(
     requestUser: RequestUser,
     userId: string,
@@ -175,6 +185,26 @@ export class AdminService {
       });
     } catch {
       throw new Error("Error locking user at IdP");
+    }
+
+    const email = this.getUserEmail(user);
+    const display_name = user.display_name;
+    try {
+      await this.notificationService.sendEmail(
+        requestUser,
+        EmailNotificationTemplate.USER_ACCOUNT_LOCKED,
+        null,
+        user.id,
+        [email],
+        {
+          display_name: user.displayName,
+        }
+      );
+    } catch (error) {
+      this.logService.error(
+        `An error has occured while sending an email with the template ${EmailNotificationTemplate.USER_ACCOUNT_LOCKED}.`,
+        error
+      );
     }
 
     return {

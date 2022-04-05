@@ -72,4 +72,8 @@ export const emailEngines = (): { key: string; handler: HandlerFunc }[] => [
     key: EmailNotificationTemplate.ACCESSORS_COMMENT_RECEIVED,
     handler: handlers.accessorsCommentReceivedHandler,
   },
+  {
+    key: EmailNotificationTemplate.USER_ACCOUNT_LOCKED,
+    handler: handlers.userAccountLockedHandler,
+  },
 ];
