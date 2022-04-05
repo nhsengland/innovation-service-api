@@ -16,9 +16,6 @@ import {
 import { OrganisationModel } from "@services/models/OrganisationModel";
 import { OrganisationUnitUserModel } from "@services/models/OrganisationUnitUserModel";
 import { RequestUser } from "@services/models/RequestUser";
-import { OrganisationModelWithUsers } from "@services/models/OrganisationModelWithUsers";
-import { OrganisationUnitsWithUsers } from "@services/models/OrganisationModelWithUsers";
-import { OrganisationUnitUsers } from "@services/models/OrganisationModelWithUsers";
 import {
   Connection,
   getConnection,
@@ -288,56 +285,18 @@ export class OrganisationService extends BaseService<Organisation> {
 
   async findOrganisationById(
     organisationId: string
-  ): Promise<OrganisationModelWithUsers[]> {
-    //return this.orgRepo.findOne(organisationId);
-    const data = await this.repository
+  ): Promise<OrganisationModel> {
+    const organisation = await this.repository
       .createQueryBuilder("organisation")
       .leftJoinAndSelect("organisation.organisationUnits", "organisationUnits")
-      .leftJoinAndSelect(
-        "organisationUnits.organisationUnitUsers",
-        "organisationUnitUsers"
-      )
-      .leftJoinAndSelect(
-        "organisationUnitUsers.organisationUser",
-        "organisationUser"
-      )
-      .leftJoinAndSelect("organisationUser.user", "user")
       .where("organisation.type = :type", {
         type: OrganisationType.ACCESSOR,
       })
       .andWhere("organisation.id = :id", {
         id: organisationId,
       })
-      .orderBy("organisation.name", "ASC")
-      .getMany();
+      .getOne();
 
-    const result: OrganisationModelWithUsers[] = await Promise.all(
-      data.map(async (org: OrganisationModel) => {
-        return {
-          id: org.id,
-          name: org.name,
-          acronym: org.acronym,
-          organisationUnits: await Promise.all(
-            org.organisationUnits?.map(
-              async (orgUnit: OrganisationUnitsWithUsers) => ({
-                id: orgUnit.id,
-                name: orgUnit.name,
-                acronym: orgUnit.acronym,
-                organisationUnitUsers: await Promise.all(
-                  orgUnit.organisationUnitUsers.map(
-                    async (unitUser: OrganisationUnitUsers) => ({
-                      role: unitUser.role,
-                      ...(await this.userService.getUserDetails(unitUser.id)),
-                    })
-                  )
-                ),
-              })
-            )
-          ),
-        };
-      })
-    );
-
-    return result;
+    return organisation;
   }
 }

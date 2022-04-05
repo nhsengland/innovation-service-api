@@ -309,20 +309,19 @@ describe("Organisation Service Suite", () => {
     expect(result.length).toEqual(1);
     expect(result[0].organisationUnits.length).toEqual(2);
   });
-  /*it("should return Organisation by id", async () => {
+  it("should return Organisation by id", async () => {
     //Arrange
     const organisationObj = Organisation.new({
       ...dummy.baseOrganisation,
       type: OrganisationType.ACCESSOR,
     });
-    organisationObj.size = "big";
-
     const organisation = await organisationService.create(organisationObj);
 
-    const requestUser = {
-      id: "request_user_id",
-      type: UserType.ADMIN,
-    };
+    const unitObj = OrganisationUnit.new({
+      name: "newUnit",
+      organisation,
+    });
+    await organisationService.addOrganisationUnit(unitObj);
 
     //Act
     const result = await organisationService.findOrganisationById(
@@ -331,7 +330,6 @@ describe("Organisation Service Suite", () => {
 
     //Assert
     expect(result).toBeDefined();
-    expect(result.size).toBe("big");
     expect(result.id).toBe(organisation.id);
-  });*/
+  });
 });

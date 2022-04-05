@@ -18,8 +18,8 @@ class OrganisationsGetDetails {
   @SQLConnector()
   @JwtDecoder(true)
   @Validator(validation.ValidateParams, "params", "Invalid Query Parameters")
-  //@AllowedUserType(UserType.ADMIN)
-  //@ServiceRoleValidator(ServiceRole.ADMIN)
+  @AllowedUserType(UserType.ADMIN)
+  @ServiceRoleValidator(ServiceRole.ADMIN)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
