@@ -16,6 +16,7 @@ import {
 } from "@services/errors";
 import { OrganisationModel } from "@services/models/OrganisationModel";
 import { OrganisationUnitUserModel } from "@services/models/OrganisationUnitUserModel";
+import { OrganisationUpdateResult } from "@services/models/OrganisationUpdateResult";
 import { RequestUser } from "@services/models/RequestUser";
 import {
   Connection,
@@ -335,7 +336,19 @@ export class OrganisationService extends BaseService<Organisation> {
     organisationId: string,
     name: string,
     acronym: string
-  ) {
+  ): Promise<OrganisationUpdateResult> {
+    if (!name || !acronym || !organisationId) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    if (acronym.length > 10) {
+      throw new Error("Acronym has a maximum of 10 characters");
+    }
+
+    if (name.length > 100) {
+      throw new Error("Name has a maximum of 100 characters");
+    }
+
     const acronymSearch = await this.acronymValidForOrganisationUpdate(
       acronym,
       organisationId,
@@ -365,7 +378,11 @@ export class OrganisationService extends BaseService<Organisation> {
           );
         });
       } catch {
-        throw new Error("Error updating Organisation.");
+        return {
+          id: null,
+          status: "ERROR",
+          error: "Error updating Organisation",
+        };
       }
 
       //If the Organisation only has 1 Unit, this Unit also needs to have its name and acronym changed
@@ -382,13 +399,24 @@ export class OrganisationService extends BaseService<Organisation> {
             );
           });
         } catch {
-          throw new Error("Error updating Unit");
+          return {
+            id: null,
+            status: "ERROR",
+            error:
+              "Error updating Unique Organisation Unit inside this Organisation",
+          };
         }
       }
+      return {
+        id: organisationId,
+        status: "OK",
+      };
     } else {
-      throw new InvalidOrganisationAcronymError(
-        "Acronym already exists associated with another Organisation"
-      );
+      return {
+        id: null,
+        status: "ERROR",
+        error: "Acronym already exists associated with another Organisation",
+      };
     }
   }
 
@@ -396,7 +424,19 @@ export class OrganisationService extends BaseService<Organisation> {
     organisationUnitId: string,
     name: string,
     acronym: string
-  ) {
+  ): Promise<OrganisationUpdateResult> {
+    if (!name || !acronym || !organisationUnitId) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    if (acronym.length > 10) {
+      throw new Error("Acronym has a maximum of 10 characters");
+    }
+
+    if (name.length > 100) {
+      throw new Error("Name has a maximum of 100 characters");
+    }
+
     const acronymSearch = await this.acronymValidForOrganisationUpdate(
       acronym,
       null,
@@ -423,13 +463,24 @@ export class OrganisationService extends BaseService<Organisation> {
             }
           );
         });
+        return {
+          id: organisationUnitId,
+          status: "OK",
+        };
       } catch {
-        throw new Error("Error updating Unit");
+        return {
+          id: null,
+          status: "ERROR",
+          error: "Error updating Organisation Unit",
+        };
       }
     } else {
-      throw new InvalidOrganisationAcronymError(
-        "Acronym already exists associated with another Organisation Unit"
-      );
+      return {
+        id: null,
+        status: "ERROR",
+        error:
+          "Acronym already exists associated with another Organisation Unit",
+      };
     }
   }
 

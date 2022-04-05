@@ -3,7 +3,7 @@ import * as persistence from "../../adminsUpdateOrganisationUnit/persistence";
 import { CustomContext } from "../../utils/types";
 import * as dotenv from "dotenv";
 import * as path from "path";
-import { AdminService } from "@services/services/Admin.service";
+import { OrganisationService } from "@services/services/Organisation.service";
 import { AccessorOrganisationRole } from "@domain/index";
 describe("[adminsUpdateOrganisationUnit] Persistence suite", () => {
   beforeAll(() => {
@@ -21,7 +21,7 @@ describe("[adminsUpdateOrganisationUnit] Persistence suite", () => {
           ({ close: () => {} } as typeorm.Connection)
       );
       const spy = jest
-        .spyOn(AdminService.prototype, "updateOrganisationUnit")
+        .spyOn(OrganisationService.prototype, "updateOrganisationUnit")
         .mockResolvedValue({
           organisationId: "organisationUnitId",
           name: "name",
@@ -30,7 +30,7 @@ describe("[adminsUpdateOrganisationUnit] Persistence suite", () => {
 
       const ctx = {
         services: {
-          AdminService: new AdminService(),
+          OrganisationService: new OrganisationService(),
         },
         auth: {
           requestUser: {

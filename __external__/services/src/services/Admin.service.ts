@@ -367,17 +367,6 @@ export class AdminService {
     return result;
   }
 
-  async acronymValidForOrganisationUpdate(
-    acronym: string,
-    organisationId: string
-  ): Promise<boolean> {
-    const result = await this.organisationService.acronymValidForOrganisationUpdate(
-      acronym,
-      organisationId
-    );
-    return result;
-  }
-
   async updateUserRole(
     requestUser: RequestUser,
     userId: string,
@@ -411,64 +400,6 @@ export class AdminService {
 
     return {
       id: userId,
-      status: "OK",
-    };
-  }
-
-  async updateOrganisation(
-    organisationId: string,
-    name: string,
-    acronym: string
-  ): Promise<OrganisationUpdateResult> {
-    if (!name || !acronym || !organisationId) {
-      throw new InvalidParamsError("Invalid params.");
-    }
-
-    if (acronym.length > 10) {
-      throw new Error("Acronym has a maximum of 10 characters");
-    }
-
-    if (name.length > 100) {
-      throw new Error("Name has a maximum of 100 characters");
-    }
-
-    const result = await this.organisationService.updateOrganisation(
-      organisationId,
-      name,
-      acronym
-    );
-
-    return {
-      id: organisationId,
-      status: "OK",
-    };
-  }
-
-  async updateOrganisationUnit(
-    organisationUnitId: string,
-    name: string,
-    acronym: string
-  ): Promise<OrganisationUpdateResult> {
-    if (!name || !acronym || !organisationUnitId) {
-      throw new InvalidParamsError("Invalid params.");
-    }
-
-    if (acronym.length > 10) {
-      throw new Error("Acronym has a maximum of 10 characters");
-    }
-
-    if (name.length > 100) {
-      throw new Error("Name has a maximum of 100 characters");
-    }
-
-    const result = await this.organisationService.updateOrganisationUnit(
-      organisationUnitId,
-      name,
-      acronym
-    );
-
-    return {
-      id: organisationUnitId,
       status: "OK",
     };
   }

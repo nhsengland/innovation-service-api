@@ -6,7 +6,7 @@ export const updateOrganisationUnit = async (
   name: string,
   acronym: string
 ) => {
-  const result = await ctx.services.AdminService.updateOrganisationUnit(
+  const result = await ctx.services.OrganisationService.updateOrganisationUnit(
     organisationUnitId,
     name,
     acronym
