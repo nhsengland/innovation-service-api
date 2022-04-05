@@ -23,6 +23,7 @@ import { AdminService } from "@services/services/Admin.service";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
 import { UserSearchResult } from "@services/types";
 import { InvalidParamsError, InvalidUserRoleError } from "@services/errors";
+import { NotificationService } from "@services/services/Notification.service";
 
 describe("[User Account Lock suite", () => {
   let adminService: AdminService;
@@ -134,7 +135,7 @@ describe("[User Account Lock suite", () => {
       ],
       mobilePhone: "+351960000000",
     });
-
+    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue();
     jest.spyOn(helpers, "saveB2CUser").mockImplementation();
     const assessmentUser1 = await fixtures.createAssessmentUser();
     const assessmentUser2 = await fixtures.createAssessmentUser();
