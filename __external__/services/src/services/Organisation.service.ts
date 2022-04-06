@@ -286,4 +286,38 @@ export class OrganisationService extends BaseService<Organisation> {
   async findOrganisationById(organisationId: string): Promise<Organisation> {
     return this.orgRepo.findOne(organisationId);
   }
+
+  async findOrganisationUnitUsers(
+    organisationUnitId: string
+  ): Promise<OrganisationUnitUserModel[]> {
+    const filterOptions = {
+      relations: ["organisationUser", "organisationUser.user"],
+      where: { organisationUnit: organisationUnitId },
+    };
+    const orgUnitUsers = await this.orgUnitUserRepo.find(filterOptions);
+
+    const b2cMap = await this.findOrganisationUnitUsersNames(
+      orgUnitUsers,
+      true
+    );
+
+    const result = orgUnitUsers
+      .filter((orgUnitUsers) => {
+        const organisationUser = orgUnitUsers.organisationUser;
+        const name = b2cMap[organisationUser.user.id];
+        if (name) return true;
+        return false;
+      })
+      .map((organisationUnitUser: OrganisationUnitUser) => {
+        const organisationUser = organisationUnitUser.organisationUser;
+
+        return {
+          id: organisationUnitUser.id,
+          name: b2cMap[organisationUser.user.id],
+          role: organisationUser.role,
+        };
+      });
+
+    return result;
+  }
 }
