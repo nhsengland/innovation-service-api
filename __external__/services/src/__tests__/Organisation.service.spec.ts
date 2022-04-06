@@ -309,20 +309,80 @@ describe("Organisation Service Suite", () => {
     expect(result.length).toEqual(1);
     expect(result[0].organisationUnits.length).toEqual(2);
   });
+
+  it("should update organisation name and acronym", async () => {
+    // Arrange
+    const organisationObj = Organisation.new({
+      ...dummy.baseOrganisation,
+      type: OrganisationType.ACCESSOR,
+      organisationUnits: [
+        {
+          name: "orgUnitName",
+          acronym: "orgUnitAcronym",
+        },
+      ],
+    });
+    const organisation = await organisationService.create(organisationObj);
+
+    let err;
+    try {
+      await organisationService.updateOrganisation(
+        organisation.id,
+        "NAME",
+        "ACRONYM"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    // Assert
+    expect(err).toBeUndefined();
+  });
+
+  it("should update organisation unit name and acronym", async () => {
+    // Arrange
+    const organisationObj = Organisation.new({
+      ...dummy.baseOrganisation,
+      type: OrganisationType.ACCESSOR,
+    });
+    const organisation = await organisationService.create(organisationObj);
+
+    const unitObj = OrganisationUnit.new({
+      id: "F5394E00-86EF-EB11-A7AD-281878026472",
+      name: "newUnit",
+      acronym: "acronym",
+      organisation,
+    });
+    await organisationService.addOrganisationUnit(unitObj);
+
+    let err;
+    try {
+      await organisationService.updateOrganisationUnit(
+        "F5394E00-86EF-EB11-A7AD-281878026472",
+        "NAME",
+        "ACRONYM"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    // Assert
+    expect(err).toBeUndefined();
+  });
+
   it("should return Organisation by id", async () => {
     //Arrange
     const organisationObj = Organisation.new({
       ...dummy.baseOrganisation,
       type: OrganisationType.ACCESSOR,
     });
-    organisationObj.size = "big";
-
     const organisation = await organisationService.create(organisationObj);
 
-    const requestUser = {
-      id: "request_user_id",
-      type: UserType.ADMIN,
-    };
+    const unitObj = OrganisationUnit.new({
+      name: "newUnit",
+      organisation,
+    });
+    await organisationService.addOrganisationUnit(unitObj);
 
     //Act
     const result = await organisationService.findOrganisationById(
@@ -331,7 +391,6 @@ describe("Organisation Service Suite", () => {
 
     //Assert
     expect(result).toBeDefined();
-    expect(result.size).toBe("big");
     expect(result.id).toBe(organisation.id);
   });
 
