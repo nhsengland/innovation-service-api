@@ -2958,7 +2958,7 @@ paths:
         "403":
           description: "Forbidden"
 
-  "user-admin/organisation/{organisationId}":
+  "/user-admin/organisation/{organisationId}":
     patch:
       tags:
         - "Admin"
@@ -2970,13 +2970,13 @@ paths:
         - OpenId:
             - organisations_write
       parameters:
-        - name: Authorization
-          in: header
+        - name: organisationId
+          in: path
           schema:
             type: string
           required: true
-        - name: organisationId
-          in: path
+        - name: Authorization
+          in: header
           schema:
             type: string
           required: true
@@ -2990,7 +2990,7 @@ paths:
         "403":
           description: "Forbidden"
 
-  "user-admin/organisation-units/{organisationUnitId}":
+  "/user-admin/organisation-units/{organisationUnitId}":
     patch:
       tags:
         - "Admin"
@@ -3002,13 +3002,13 @@ paths:
         - OpenId:
             - organisations_write
       parameters:
-        - name: Authorization
-          in: header
+        - name: organisationUnitId
+          in: path
           schema:
             type: string
           required: true
-        - name: organisationUnitId
-          in: path
+        - name: Authorization
+          in: header
           schema:
             type: string
           required: true
