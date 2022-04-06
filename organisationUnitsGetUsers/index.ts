@@ -2,13 +2,11 @@ import { HttpRequest } from "@azure/functions";
 import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 import * as Responsify from "../utils/responsify";
-import * as validation from "./validation";
 import { UserType, ServiceRole } from "@domain/index";
 import {
   AppInsights,
   JwtDecoder,
   SQLConnector,
-  Validator,
   AllowedUserType,
   ServiceRoleValidator,
 } from "../utils/decorators";
@@ -16,10 +14,9 @@ import {
 class OrganisationUnitsGetUsers {
   @AppInsights()
   @SQLConnector()
-  /*@JwtDecoder(true)
-  @Validator(validation.ValidateParams, "params", "Invalid Query Parameters")
+  @JwtDecoder(true)
   @AllowedUserType(UserType.ADMIN)
-  @ServiceRoleValidator(ServiceRole.ADMIN)*/
+  @ServiceRoleValidator(ServiceRole.ADMIN)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest

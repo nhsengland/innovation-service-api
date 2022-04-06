@@ -40,6 +40,9 @@ import {
             }]
           }),
         },
+        AuthService:{
+          validate2LS: () => true
+      },
       }
     };
   
@@ -69,10 +72,13 @@ import {
             jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
       
             jest.spyOn(persistence, "findOrganisationUnitUsers").mockResolvedValue([
-              { id: "organisationUnitId" },
+              { id: '0', name: ':accessor_1', role: ":accessor" },
+              { id: '1', name: ':qaccessor_1', role: ":qaccessor" },
             ] as any);
-      
-            const { res } = await mockedRequestFactory({});
+
+            const { res } = await mockedRequestFactory({
+              headers: { authorization: ":access_token" },
+            });
             expect(res.status).toBe(200);
           });
       
