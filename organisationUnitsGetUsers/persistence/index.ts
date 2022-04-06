@@ -4,7 +4,7 @@ export const findOrganisationUnitUsers = async (
   context: CustomContext,
   organisationUnitId: string
 ) => {
-  const result = await context.services.OrganisationService.findOrganisationUnitUsers(
+  const result = await context.services.OrganisationService.findOrganisationUnitUsersById(
     organisationUnitId
   );
 

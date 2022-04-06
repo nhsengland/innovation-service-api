@@ -2338,6 +2338,34 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
+  '/organisations/{organisationUnitId}/users':
+    get:
+      tags:
+        - OrganisationUnit
+        - GetUsers
+      description: Retrieves Users by Organisation Unit Id
+      operationId: organisation-unit-get-users
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: organisationUnitId
+          in: path
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - organisation_details
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
   '/assessments/{userId}/innovations/{innovationId}':
     get:
       tags:

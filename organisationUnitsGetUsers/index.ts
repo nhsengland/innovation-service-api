@@ -13,13 +13,13 @@ import {
   ServiceRoleValidator,
 } from "../utils/decorators";
 
-class OrganisationUnitGetUsers {
+class OrganisationUnitsGetUsers {
   @AppInsights()
   @SQLConnector()
-  @JwtDecoder(true)
+  /*@JwtDecoder(true)
   @Validator(validation.ValidateParams, "params", "Invalid Query Parameters")
   @AllowedUserType(UserType.ADMIN)
-  @ServiceRoleValidator(ServiceRole.ADMIN)
+  @ServiceRoleValidator(ServiceRole.ADMIN)*/
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
@@ -43,4 +43,4 @@ class OrganisationUnitGetUsers {
   }
 }
 
-export default OrganisationUnitGetUsers.httpTrigger;
+export default OrganisationUnitsGetUsers.httpTrigger;

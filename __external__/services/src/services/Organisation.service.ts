@@ -287,9 +287,15 @@ export class OrganisationService extends BaseService<Organisation> {
     return this.orgRepo.findOne(organisationId);
   }
 
-  async findOrganisationUnitUsers(
+  async findOrganisationUnitUsersById(
     organisationUnitId: string
   ): Promise<OrganisationUnitUserModel[]> {
+    if (!organisationUnitId) {
+      throw new InvalidParamsError(
+        "Invalid organisation unit id. You must define the id."
+      );
+    }
+
     const filterOptions = {
       relations: ["organisationUser", "organisationUser.user"],
       where: { organisationUnit: organisationUnitId },
