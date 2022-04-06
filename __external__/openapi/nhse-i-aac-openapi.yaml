@@ -2958,6 +2958,70 @@ paths:
         "403":
           description: "Forbidden"
 
+  "/user-admin/organisation/{organisationId}":
+    patch:
+      tags:
+        - "Admin"
+        - "Organisation"
+        - "UpdateOrganisation"
+      description: "Update Organisation"
+      operationId: "admins-update-organisation"
+      security:
+        - OpenId:
+            - organisations_write
+      parameters:
+        - name: organisationId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/user-admin/organisation-units/{organisationUnitId}":
+    patch:
+      tags:
+        - "Admin"
+        - "OrganisationUnit"
+        - "UpdateOrganisationUnit"
+      description: "Update Organisation Unit"
+      operationId: "admins-update-organisation-unit"
+      security:
+        - OpenId:
+            - organisations_write
+      parameters:
+        - name: organisationUnitId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden" 
+
   "/user-admin/user":
     post:
       tags:

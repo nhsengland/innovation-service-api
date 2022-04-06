@@ -309,6 +309,67 @@ describe("Organisation Service Suite", () => {
     expect(result.length).toEqual(1);
     expect(result[0].organisationUnits.length).toEqual(2);
   });
+
+  it("should update organisation name and acronym", async () => {
+    // Arrange
+    const organisationObj = Organisation.new({
+      ...dummy.baseOrganisation,
+      type: OrganisationType.ACCESSOR,
+      organisationUnits: [
+        {
+          name: "orgUnitName",
+          acronym: "orgUnitAcronym",
+        },
+      ],
+    });
+    const organisation = await organisationService.create(organisationObj);
+
+    let err;
+    try {
+      await organisationService.updateOrganisation(
+        organisation.id,
+        "NAME",
+        "ACRONYM"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    // Assert
+    expect(err).toBeUndefined();
+  });
+
+  it("should update organisation unit name and acronym", async () => {
+    // Arrange
+    const organisationObj = Organisation.new({
+      ...dummy.baseOrganisation,
+      type: OrganisationType.ACCESSOR,
+    });
+    const organisation = await organisationService.create(organisationObj);
+
+    const unitObj = OrganisationUnit.new({
+      id: "F5394E00-86EF-EB11-A7AD-281878026472",
+      name: "newUnit",
+      acronym: "acronym",
+      organisation,
+    });
+    await organisationService.addOrganisationUnit(unitObj);
+
+    let err;
+    try {
+      await organisationService.updateOrganisationUnit(
+        "F5394E00-86EF-EB11-A7AD-281878026472",
+        "NAME",
+        "ACRONYM"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    // Assert
+    expect(err).toBeUndefined();
+  });
+
   it("should return Organisation by id", async () => {
     //Arrange
     const organisationObj = Organisation.new({
