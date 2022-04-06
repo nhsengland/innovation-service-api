@@ -4,7 +4,6 @@ import {
   closeTestsConnection,
   InnovatorOrganisationRole,
   Organisation,
-  OrganisationService,
   OrganisationType,
   OrganisationUnit,
   OrganisationUnitUser,
