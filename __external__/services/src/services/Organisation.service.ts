@@ -14,6 +14,7 @@ import {
   MissingUserOrganisationUnitError,
 } from "@services/errors";
 import { OrganisationModel } from "@services/models/OrganisationModel";
+import { OrganisationUnitModel } from "@services/models/OrganisationUnitModel";
 import { OrganisationUnitUserModel } from "@services/models/OrganisationUnitUserModel";
 import { OrganisationUpdateResult } from "@services/models/OrganisationUpdateResult";
 import { RequestUser } from "@services/models/RequestUser";
@@ -297,6 +298,33 @@ export class OrganisationService extends BaseService<Organisation> {
     return await this.orgUnitRepo.save(unit);
   }
 
+  async findOrganisationById(
+    organisationId: string
+  ): Promise<OrganisationModel> {
+    const org = await this.repository
+      .createQueryBuilder("organisation")
+      .where("organisation.type = :type", {
+        type: OrganisationType.ACCESSOR,
+      })
+      .andWhere("organisation.id = :id", {
+        id: organisationId,
+      })
+      .getOne();
+
+    const orgUnits = await org.organisationUnits;
+
+    return {
+      id: org.id,
+      name: org.name,
+      acronym: org.acronym,
+      organisationUnits: orgUnits?.map((unit) => ({
+        id: unit.id,
+        name: unit.name,
+        acronym: unit.acronym,
+      })),
+    };
+  }
+
   async acronymValidForOrganisationUpdate(
     acronym: string,
     organisationId?: string,
@@ -481,9 +509,5 @@ export class OrganisationService extends BaseService<Organisation> {
           "Acronym already exists associated with another Organisation Unit",
       };
     }
-  }
-
-  async findOrganisationById(organisationId: string): Promise<Organisation> {
-    return this.orgRepo.findOne(organisationId);
   }
 }

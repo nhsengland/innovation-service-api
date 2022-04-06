@@ -376,14 +376,13 @@ describe("Organisation Service Suite", () => {
       ...dummy.baseOrganisation,
       type: OrganisationType.ACCESSOR,
     });
-    organisationObj.size = "big";
-
     const organisation = await organisationService.create(organisationObj);
 
-    const requestUser = {
-      id: "request_user_id",
-      type: UserType.ADMIN,
-    };
+    const unitObj = OrganisationUnit.new({
+      name: "newUnit",
+      organisation,
+    });
+    await organisationService.addOrganisationUnit(unitObj);
 
     //Act
     const result = await organisationService.findOrganisationById(
@@ -392,7 +391,6 @@ describe("Organisation Service Suite", () => {
 
     //Assert
     expect(result).toBeDefined();
-    expect(result.size).toBe("big");
     expect(result.id).toBe(organisation.id);
   });
 });
