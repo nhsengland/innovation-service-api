@@ -19,10 +19,10 @@ class AdminsUpdateOrganisationUnit {
   @AppInsights()
   @SQLConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
-  /*@JwtDecoder(true)
+  @JwtDecoder(true)
   @AllowedUserType(UserType.ADMIN)
   @ServiceRoleValidator(ServiceRole.ADMIN)
-  @SLSValidation(SLSEventType.ADMIN_UPDATE_ORGANISATION_UNIT)*/
+  @SLSValidation(SLSEventType.ADMIN_UPDATE_ORGANISATION_UNIT)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
