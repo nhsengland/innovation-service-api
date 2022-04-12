@@ -55,6 +55,7 @@ export class UserService {
   private readonly orgUnitRepo: Repository<OrganisationUnit>;
   private readonly innovationRepo: Repository<Innovation>;
   private readonly roleRepo: Repository<Role>;
+  private readonly orgUserRepo: Repository<OrganisationUser>;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -63,6 +64,7 @@ export class UserService {
     this.orgUnitRepo = getRepository(OrganisationUnit, connectionName);
     this.innovationRepo = getRepository(Innovation, connectionName);
     this.roleRepo = getRepository(Role, connectionName);
+    this.orgUserRepo = getRepository(OrganisationUser, connectionName);
   }
 
   async find(id: string, options?: FindOneOptions) {
@@ -801,5 +803,33 @@ export class UserService {
     } catch {
       throw new Error("Error updating user.");
     }
+  }
+
+  async updateUserOrganisationUnit(
+    userId: string,
+    newOrganisationUnitId: string
+  ): Promise<any> {
+    if (!userId || !newOrganisationUnitId) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    const filterOrgUser = {
+      where: { user: userId },
+    };
+    const orgUser = await this.orgUserRepo.find(filterOrgUser);
+
+    /*
+    await this.connection.transaction(async (trs) => {
+      const updatedUserOrgUnit = await trs.update(
+        OrganisationUnitUser,
+          { organisationUser: orgUser[0].id },
+          {
+            organisationUnit: {
+              id: newOrganisationUnitId,
+            }
+          }
+      );
+    });
+    */
   }
 }

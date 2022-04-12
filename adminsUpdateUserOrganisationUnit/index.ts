@@ -16,29 +16,28 @@ import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
 
-class AdminsUpdateOrganisationUnit {
+class AdminsUpdateUserOrganisationUnit {
   @AppInsights()
   @SQLConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
   @JwtDecoder(true)
-  @CosmosConnector()
-  @AllowedUserType(UserType.ADMIN)
-  @ServiceRoleValidator(ServiceRole.ADMIN)
-  @SLSValidation(SLSEventType.ADMIN_UPDATE_ORGANISATION_UNIT)
+  //@CosmosConnector()
+  //@AllowedUserType(UserType.ADMIN)
+  //@ServiceRoleValidator(ServiceRole.ADMIN)
+  //@SLSValidation(SLSEventType.ADMIN_UPDATE_ORGANISATION_UNIT)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
     const body = req.body;
-    const organisationUnitId = req.params.organisationUnitId;
+    const userId = req.params.userId;
 
     let result;
     try {
-      result = await persistence.updateOrganisationUnit(
+      result = await persistence.updateUserOrganisationUnit(
         context,
-        organisationUnitId,
-        body.name,
-        body.acronym
+        userId,
+        body.newOrganisationUnitId
       );
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
@@ -51,4 +50,4 @@ class AdminsUpdateOrganisationUnit {
   }
 }
 
-export default AdminsUpdateOrganisationUnit.httpTrigger;
+export default AdminsUpdateUserOrganisationUnit.httpTrigger;
