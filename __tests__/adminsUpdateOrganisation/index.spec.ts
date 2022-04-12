@@ -1,4 +1,5 @@
 /* eslint-disable */
+import * as mongoose from "mongoose";
 import { AccessorOrganisationRole, UserType } from "@services/index";
 import {
     createHttpTrigger, runStubFunctionFromBindings
@@ -73,6 +74,7 @@ describe("[HttpTrigger] adminsUpdateOrganisation Suite", () => {
             jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
             jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
             jest.spyOn(validation, "ValidatePayload").mockReturnValue({} as any);
+            jest.spyOn(mongoose, "connect").mockResolvedValue(null);
             jest.spyOn(authentication, "decodeToken").mockReturnValue({ oid: dummy.adminUser });
 
             jest.spyOn(persistence, "updateOrganisation").mockResolvedValue([
