@@ -9,6 +9,7 @@ import {
   SLSValidation,
   SQLConnector,
   Validator,
+  CosmosConnector,
 } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
@@ -22,6 +23,7 @@ class AdminsUpdateUserRole {
   @JwtDecoder(true)
   @AllowedUserType(UserType.ADMIN)
   @ServiceRoleValidator(ServiceRole.ADMIN, ServiceRole.SERVICE_TEAM)
+  @CosmosConnector()
   @SLSValidation(SLSEventType.ADMIN_UPDATE_USER)
   static async httpTrigger(
     context: CustomContext,

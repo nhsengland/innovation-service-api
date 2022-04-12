@@ -9,6 +9,7 @@ import {
   SLSValidation,
   SQLConnector,
   Validator,
+  CosmosConnector,
 } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
@@ -20,6 +21,7 @@ class AdminsUpdateOrganisationUnit {
   @SQLConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
   @JwtDecoder(true)
+  @CosmosConnector()
   @AllowedUserType(UserType.ADMIN)
   @ServiceRoleValidator(ServiceRole.ADMIN)
   @SLSValidation(SLSEventType.ADMIN_UPDATE_ORGANISATION_UNIT)
