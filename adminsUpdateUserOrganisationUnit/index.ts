@@ -37,7 +37,8 @@ class AdminsUpdateUserOrganisationUnit {
       result = await persistence.updateUserOrganisationUnit(
         context,
         userId,
-        body.newOrganisationUnitId
+        body.newOrganisationUnitId,
+        body.organisationId
       );
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });

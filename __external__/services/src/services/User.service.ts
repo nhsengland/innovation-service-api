@@ -807,7 +807,8 @@ export class UserService {
 
   async updateUserOrganisationUnit(
     userId: string,
-    newOrganisationUnitId: string
+    newOrganisationUnitId: string,
+    organisationId: string
   ): Promise<any> {
     if (!userId || !newOrganisationUnitId) {
       throw new InvalidParamsError("Invalid params.");
