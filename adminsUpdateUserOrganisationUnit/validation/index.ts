@@ -1,7 +1,7 @@
 import Joi = require("joi");
 
 const payloadSchema = Joi.object({
-  newOrganisationUnitId: Joi.string().required(),
+  newOrganisationUnitAcronym: Joi.string().required(),
   organisationId: Joi.string().required(),
 }).unknown(true);
 

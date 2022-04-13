@@ -21,10 +21,10 @@ class AdminsUpdateUserOrganisationUnit {
   @SQLConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
   @JwtDecoder(true)
-  //@CosmosConnector()
-  //@AllowedUserType(UserType.ADMIN)
-  //@ServiceRoleValidator(ServiceRole.ADMIN)
-  //@SLSValidation(SLSEventType.ADMIN_UPDATE_ORGANISATION_UNIT)
+  @CosmosConnector()
+  @AllowedUserType(UserType.ADMIN)
+  @ServiceRoleValidator(ServiceRole.ADMIN)
+  @SLSValidation(SLSEventType.ADMIN_UPDATE_ORGANISATION_UNIT)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
@@ -37,7 +37,7 @@ class AdminsUpdateUserOrganisationUnit {
       result = await persistence.updateUserOrganisationUnit(
         context,
         userId,
-        body.newOrganisationUnitId,
+        body.newOrganisationUnitAcronym,
         body.organisationId
       );
     } catch (error) {

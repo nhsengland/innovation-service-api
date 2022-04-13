@@ -807,30 +807,38 @@ export class UserService {
 
   async updateUserOrganisationUnit(
     userId: string,
-    newOrganisationUnitId: string,
+    newOrganisationUnitAcronym: string,
     organisationId: string
   ): Promise<any> {
-    if (!userId || !newOrganisationUnitId) {
+    if (!userId || !newOrganisationUnitAcronym) {
       throw new InvalidParamsError("Invalid params.");
     }
 
     const filterOrgUser = {
-      where: { user: userId },
+      where: {
+        user: userId,
+      },
     };
     const orgUser = await this.orgUserRepo.find(filterOrgUser);
 
-    /*
-    await this.connection.transaction(async (trs) => {
-      const updatedUserOrgUnit = await trs.update(
-        OrganisationUnitUser,
+    const filterOrgUnit = {
+      where: {
+        acronym: newOrganisationUnitAcronym,
+        organisation: organisationId,
+      },
+    };
+    const orgUnit = await this.orgUnitRepo.find(filterOrgUnit);
+
+    if (orgUnit) {
+      await this.connection.transaction(async (trs) => {
+        const updatedUserOrgUnit = await trs.update(
+          OrganisationUnitUser,
           { organisationUser: orgUser[0].id },
           {
-            organisationUnit: {
-              id: newOrganisationUnitId,
-            }
+            organisationUnit: orgUnit[0],
           }
-      );
-    });
-    */
+        );
+      });
+    }
   }
 }
