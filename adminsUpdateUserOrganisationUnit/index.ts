@@ -24,7 +24,7 @@ class AdminsUpdateUserOrganisationUnit {
   @CosmosConnector()
   @AllowedUserType(UserType.ADMIN)
   @ServiceRoleValidator(ServiceRole.ADMIN)
-  @SLSValidation(SLSEventType.ADMIN_UPDATE_ORGANISATION_UNIT)
+  @SLSValidation(SLSEventType.ADMIN_UPDATE_USER_ORGANISATION_UNIT)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest

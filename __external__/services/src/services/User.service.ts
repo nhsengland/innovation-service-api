@@ -27,6 +27,7 @@ import { UserCreationResult } from "@services/models/UserCreationResult";
 import { UserProfileUpdateModel } from "@services/models/UserProfileUpdateModel";
 import { UserUpdateModel } from "@services/models/UserUpdateModel";
 import { UserUpdateResult } from "@services/models/UserUpdateResult";
+import { UserOrganisationUnitUpdateResult } from "@services/models/UserOrganisationUnitUpdateResult";
 import { UserSearchResult } from "@services/types";
 import {
   Connection,
@@ -809,12 +810,16 @@ export class UserService {
     userId: string,
     newOrganisationUnitAcronym: string,
     organisationId: string
-  ): Promise<any> {
+  ): Promise<UserOrganisationUnitUpdateResult> {
     if (!userId || !newOrganisationUnitAcronym) {
       throw new InvalidParamsError("Invalid params.");
     }
 
     const filterOrgUser = {
+      relations: [
+        "userOrganisationUnits",
+        "userOrganisationUnits.organisationUser",
+      ],
       where: {
         user: userId,
       },
@@ -829,7 +834,7 @@ export class UserService {
     };
     const orgUnit = await this.orgUnitRepo.find(filterOrgUnit);
 
-    if (orgUnit) {
+    if (orgUnit.length > 0) {
       await this.connection.transaction(async (trs) => {
         const updatedUserOrgUnit = await trs.update(
           OrganisationUnitUser,
@@ -839,6 +844,16 @@ export class UserService {
           }
         );
       });
+      return {
+        id: orgUser[0].userOrganisationUnits[0].id,
+        status: "OK",
+      };
+    } else {
+      return {
+        id: null,
+        status: "ERROR",
+        error: "Error updating User's Organisation Unit",
+      };
     }
   }
 }
