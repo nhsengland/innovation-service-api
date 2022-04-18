@@ -541,6 +541,8 @@ export const userAccountLockedHandler = async (
 
   const recipient = targetUsers[0];
 
+  if (recipient.length === 0) return;
+
   const props = {
     ...params.emailProps,
   };
@@ -549,6 +551,96 @@ export const userAccountLockedHandler = async (
       email: recipient,
     },
     EmailNotificationTemplate.USER_ACCOUNT_LOCKED,
+    props
+  );
+
+  return result;
+};
+
+export const accessorsUnitChangeHandler = async (
+  requestUser: RequestUser,
+  params: {
+    contextId: string;
+    emailProps?: EmailProps;
+  },
+  template: EmailNotificationTemplate,
+  targetUsers?: string[],
+  connectionName?: string
+): Promise<EmailResponse[]> => {
+  const emailService = new EmailService(connectionName);
+
+  const recipient = targetUsers[0];
+
+  if (recipient.length === 0) return;
+
+  const props = {
+    ...params.emailProps,
+  };
+  const result = await emailService.sendOne(
+    {
+      email: recipient,
+    },
+    EmailNotificationTemplate.ACCESSORS_UNIT_CHANGE,
+    props
+  );
+
+  return result;
+};
+
+export const newQualifyingAccessorsUnitChangeHandler = async (
+  requestUser: RequestUser,
+  params: {
+    innovationId: string;
+    contextId: string;
+    emailProps?: EmailProps;
+  },
+  template: EmailNotificationTemplate,
+  targetUsers?: string[],
+  connectionName?: string
+): Promise<EmailResponse[]> => {
+  const emailService = new EmailService(connectionName);
+
+  const recipient = targetUsers[0];
+
+  if (recipient.length === 0) return;
+
+  const props = {
+    ...params.emailProps,
+  };
+  const result = await emailService.sendOne(
+    {
+      email: recipient,
+    },
+    EmailNotificationTemplate.NEW_QUALIFYING_ACCESSORS_UNIT_CHANGE,
+    props
+  );
+
+  return result;
+};
+
+export const oldQualifyingAccessorsUnitChangeHandler = async (
+  requestUser: RequestUser,
+  params: {
+    innovationId: string;
+    contextId: string;
+    emailProps?: EmailProps;
+  },
+  template: EmailNotificationTemplate,
+  targetUsers?: string[],
+  connectionName?: string
+): Promise<EmailResponse[]> => {
+  const emailService = new EmailService(connectionName);
+
+  const recipient = targetUsers[0];
+
+  const props = {
+    ...params.emailProps,
+  };
+  const result = await emailService.sendOne(
+    {
+      email: recipient,
+    },
+    EmailNotificationTemplate.OLD_QUALIFYING_ACCESSORS_UNIT_CHANGE,
     props
   );
 

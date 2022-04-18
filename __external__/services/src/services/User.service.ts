@@ -48,6 +48,9 @@ import {
   saveB2CUser,
 } from "../helpers";
 import { ProfileModel } from "../models/ProfileModel";
+import { NotificationService } from "./Notification.service";
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import { LoggerService } from "./Logger.service";
 
 export class UserService {
   private readonly connection: Connection;
@@ -57,6 +60,8 @@ export class UserService {
   private readonly innovationRepo: Repository<Innovation>;
   private readonly roleRepo: Repository<Role>;
   private readonly orgUserRepo: Repository<OrganisationUser>;
+  private readonly notificationService: NotificationService;
+  private readonly logService: LoggerService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -66,6 +71,8 @@ export class UserService {
     this.innovationRepo = getRepository(Innovation, connectionName);
     this.roleRepo = getRepository(Role, connectionName);
     this.orgUserRepo = getRepository(OrganisationUser, connectionName);
+    this.notificationService = new NotificationService(connectionName);
+    this.logService = new LoggerService();
   }
 
   async find(id: string, options?: FindOneOptions) {
@@ -155,6 +162,7 @@ export class UserService {
       for (const unit of userUnits) {
         unitsSlim.push({
           id: unit.organisationUnit.id,
+          acronym: unit.organisationUnit.acronym,
           name: unit.organisationUnit.name,
           supportCount: unit.innovationSupports?.length,
         });
@@ -807,6 +815,7 @@ export class UserService {
   }
 
   async updateUserOrganisationUnit(
+    requestUser: RequestUser,
     userId: string,
     newOrganisationUnitAcronym: string,
     organisationId: string
@@ -844,6 +853,31 @@ export class UserService {
           }
         );
       });
+      const old_unit = orgUser[0].organisation.organisationUnits[0].name;
+      const old_organisation = orgUser[0].organisation.name;
+      const new_organisation = orgUnit[0].organisation.name;
+
+      try {
+        await this.notificationService.sendEmail(
+          requestUser,
+          EmailNotificationTemplate.ACCESSORS_UNIT_CHANGE,
+          "",
+          "",
+          [userId],
+          {
+            old_unit: old_unit,
+            old_organisation: old_organisation,
+            new_unit: newOrganisationUnitAcronym,
+            new_organisation: new_organisation,
+          }
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while sending an email with the template ${EmailNotificationTemplate.ACCESSORS_UNIT_CHANGE}.`,
+          error
+        );
+      }
+
       return {
         id: orgUser[0].userOrganisationUnits[0].id,
         status: "OK",

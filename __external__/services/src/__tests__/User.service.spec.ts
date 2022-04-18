@@ -793,6 +793,7 @@ describe("User Service Suite", () => {
     try {
       //Act
       await userService.updateUserOrganisationUnit(
+        dummy.requestUser,
         user.id,
         "newUnit",
         organisation.id

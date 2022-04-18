@@ -76,4 +76,17 @@ export const emailEngines = (): { key: string; handler: HandlerFunc }[] => [
     key: EmailNotificationTemplate.USER_ACCOUNT_LOCKED,
     handler: handlers.userAccountLockedHandler,
   },
+
+  {
+    key: EmailNotificationTemplate.ACCESSORS_UNIT_CHANGE,
+    handler: handlers.accessorsUnitChangeHandler,
+  },
+  {
+    key: EmailNotificationTemplate.NEW_QUALIFYING_ACCESSORS_UNIT_CHANGE,
+    handler: handlers.newQualifyingAccessorsUnitChangeHandler,
+  },
+  {
+    key: EmailNotificationTemplate.OLD_QUALIFYING_ACCESSORS_UNIT_CHANGE,
+    handler: handlers.oldQualifyingAccessorsUnitChangeHandler,
+  },
 ];

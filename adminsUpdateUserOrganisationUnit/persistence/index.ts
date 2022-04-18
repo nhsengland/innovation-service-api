@@ -7,6 +7,7 @@ export const updateUserOrganisationUnit = async (
   organisationId: string
 ) => {
   const result = await ctx.services.UserService.updateUserOrganisationUnit(
+    ctx.auth.requestUser,
     userId,
     newOrganisationUnitAcronym,
     organisationId
