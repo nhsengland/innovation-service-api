@@ -230,7 +230,7 @@ export const getTemplates = (): EmailTemplate[] => [
   },
   {
     id: "29d6e362-5ecd-4bac-8707-a4d92e9e6762",
-    code: "ACCESSORS_UNIT_CHNAGE",
+    code: "ACCESSORS_UNIT_CHANGE",
     props: {
       display_name: "",
       old_unit: "",

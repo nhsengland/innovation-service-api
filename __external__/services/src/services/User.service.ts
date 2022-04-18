@@ -824,10 +824,21 @@ export class UserService {
       throw new InvalidParamsError("Invalid params.");
     }
 
+    const graphAccessToken = await authenticateWitGraphAPI();
+
+    if (!graphAccessToken) {
+      throw new Error("Invalid Credentials");
+    }
+
+    const user = await getUserFromB2C(userId, graphAccessToken);
+
     const filterOrgUser = {
       relations: [
+        "user",
+        "organisation",
         "userOrganisationUnits",
         "userOrganisationUnits.organisationUser",
+        "userOrganisationUnits.organisationUnit",
       ],
       where: {
         user: userId,
@@ -836,6 +847,7 @@ export class UserService {
     const orgUser = await this.orgUserRepo.find(filterOrgUser);
 
     const filterOrgUnit = {
+      relations: ["organisation"],
       where: {
         acronym: newOrganisationUnitAcronym,
         organisation: organisationId,
@@ -853,21 +865,28 @@ export class UserService {
           }
         );
       });
-      const old_unit = orgUser[0].organisation.organisationUnits[0].name;
+
+      const old_unit =
+        orgUser[0].userOrganisationUnits[0].organisationUnit.name;
       const old_organisation = orgUser[0].organisation.name;
       const new_organisation = orgUnit[0].organisation.name;
+      const new_unit = orgUnit[0].name;
+
+      const displayName = user.displayName;
+      const email = this.getUserEmail(user);
 
       try {
         await this.notificationService.sendEmail(
           requestUser,
           EmailNotificationTemplate.ACCESSORS_UNIT_CHANGE,
           "",
-          "",
-          [userId],
+          userId,
+          [email],
           {
+            display_name: displayName,
             old_unit: old_unit,
             old_organisation: old_organisation,
-            new_unit: newOrganisationUnitAcronym,
+            new_unit: new_unit,
             new_organisation: new_organisation,
           }
         );
@@ -889,5 +908,11 @@ export class UserService {
         error: "Error updating User's Organisation Unit",
       };
     }
+  }
+
+  private getUserEmail(b2cUser: any) {
+    return b2cUser.identities.find(
+      (identity: any) => identity.signInType === "emailAddress"
+    ).issuerAssignedId;
   }
 }
