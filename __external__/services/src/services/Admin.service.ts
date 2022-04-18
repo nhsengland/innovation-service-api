@@ -721,7 +721,6 @@ export class AdminService {
               { id: userId },
               {
                 deletedAt: new Date(),
-                deleteReason: "An Admin deleted this user",
               }
             );
 
