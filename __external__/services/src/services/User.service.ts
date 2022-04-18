@@ -62,6 +62,7 @@ export class UserService {
   private readonly orgUserRepo: Repository<OrganisationUser>;
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
+  private readonly orgUnitUserRepo: Repository<OrganisationUnitUser>;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -73,6 +74,7 @@ export class UserService {
     this.orgUserRepo = getRepository(OrganisationUser, connectionName);
     this.notificationService = new NotificationService(connectionName);
     this.logService = new LoggerService();
+    this.orgUnitUserRepo = getRepository(OrganisationUnitUser, connectionName);
   }
 
   async find(id: string, options?: FindOneOptions) {
@@ -893,6 +895,79 @@ export class UserService {
       } catch (error) {
         this.logService.error(
           `An error has occured while sending an email with the template ${EmailNotificationTemplate.ACCESSORS_UNIT_CHANGE}.`,
+          error
+        );
+      }
+
+      const newQAUsersquery = this.orgUnitUserRepo
+        .createQueryBuilder("unitUser")
+        .select("user.id")
+        .innerJoin("unitUser.organisationUnit", "unit")
+        .innerJoin("unitUser.organisationUser", "orgUser")
+        .innerJoin("orgUser.user", "user")
+        .innerJoin("orgUser.organisation", "organisation")
+        .where("unit.id = :unitId and orgUser.role = :role", {
+          unitId: orgUnit[0].id,
+          role: AccessorOrganisationRole.QUALIFYING_ACCESSOR,
+        });
+      const newQAUsers = await newQAUsersquery.execute();
+
+      const targetUsers = newQAUsers.map((QA) => ({
+        id: QA.user_id,
+      }));
+
+      try {
+        await this.notificationService.sendEmail(
+          requestUser,
+          EmailNotificationTemplate.NEW_QUALIFYING_ACCESSORS_UNIT_CHANGE,
+          "",
+          userId,
+          [targetUsers],
+          {
+            user_name: displayName,
+            new_unit: new_unit,
+          }
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while sending an email with the template ${EmailNotificationTemplate.NEW_QUALIFYING_ACCESSORS_UNIT_CHANGE}.`,
+          error
+        );
+      }
+
+      const oldQAUsersquery = this.orgUnitUserRepo
+        .createQueryBuilder("unitUser")
+        .select("user.id")
+        .innerJoin("unitUser.organisationUnit", "unit")
+        .innerJoin("unitUser.organisationUser", "orgUser")
+        .innerJoin("orgUser.user", "user")
+        .innerJoin("orgUser.organisation", "organisation")
+        .where("unit.id = :unitId and orgUser.role = :role", {
+          unitId: orgUser[0].userOrganisationUnits[0].organisationUnit.id,
+          role: AccessorOrganisationRole.QUALIFYING_ACCESSOR,
+        });
+
+      const oldQAUsers = await oldQAUsersquery.execute();
+
+      const targetUsers_OldQA = oldQAUsers.map((QA) => ({
+        id: QA.user_id,
+      }));
+
+      try {
+        await this.notificationService.sendEmail(
+          requestUser,
+          EmailNotificationTemplate.OLD_QUALIFYING_ACCESSORS_UNIT_CHANGE,
+          "",
+          userId,
+          [targetUsers_OldQA.user_id],
+          {
+            user_name: displayName,
+            old_unit: old_unit,
+          }
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while sending an email with the template ${EmailNotificationTemplate.OLD_QUALIFYING_ACCESSORS_UNIT_CHANGE}.`,
           error
         );
       }

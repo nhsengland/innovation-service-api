@@ -604,15 +604,15 @@ export const newQualifyingAccessorsUnitChangeHandler = async (
 
   if (recipient.length === 0) return;
 
-  const props = {
+  params.emailProps = {
     ...params.emailProps,
   };
-  const result = await emailService.sendOne(
-    {
-      email: recipient,
-    },
-    EmailNotificationTemplate.NEW_QUALIFYING_ACCESSORS_UNIT_CHANGE,
-    props
+
+  const result = await baseEmailExecutor(
+    recipient,
+    params,
+    connectionName,
+    template
   );
 
   return result;
@@ -633,15 +633,15 @@ export const oldQualifyingAccessorsUnitChangeHandler = async (
 
   const recipient = targetUsers[0];
 
-  const props = {
+  params.emailProps = {
     ...params.emailProps,
   };
-  const result = await emailService.sendOne(
-    {
-      email: recipient,
-    },
-    EmailNotificationTemplate.OLD_QUALIFYING_ACCESSORS_UNIT_CHANGE,
-    props
+
+  const result = await baseEmailExecutor(
+    recipient,
+    params,
+    connectionName,
+    template
   );
 
   return result;
