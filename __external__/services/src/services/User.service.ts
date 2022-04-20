@@ -912,9 +912,7 @@ export class UserService {
         });
       const newQAUsers = await newQAUsersquery.execute();
 
-      const targetUsers = newQAUsers.map((QA) => ({
-        id: QA.user_id,
-      }));
+      const targetUsers_NewQA = newQAUsers.map((QA) => QA.user_id);
 
       try {
         await this.notificationService.sendEmail(
@@ -922,7 +920,7 @@ export class UserService {
           EmailNotificationTemplate.NEW_QUALIFYING_ACCESSORS_UNIT_CHANGE,
           "",
           userId,
-          [targetUsers],
+          [targetUsers_NewQA],
           {
             user_name: displayName,
             new_unit: new_unit,
@@ -949,9 +947,7 @@ export class UserService {
 
       const oldQAUsers = await oldQAUsersquery.execute();
 
-      const targetUsers_OldQA = oldQAUsers.map((QA) => ({
-        id: QA.user_id,
-      }));
+      const targetUsers_OldQA = oldQAUsers.map((QA) => QA.user_id);
 
       try {
         await this.notificationService.sendEmail(
