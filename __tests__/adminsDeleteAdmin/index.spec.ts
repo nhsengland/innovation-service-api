@@ -93,9 +93,6 @@ describe("[HttpTrigger] deleteAdminAccount Test Suite", () => {
       });
       jest.spyOn(mongoose, "connect").mockResolvedValue(null);
       jest.spyOn(persistence, "deleteAdminAccount").mockResolvedValue([
-        { 
-            userEmail: "userEmail",
-        },
     ] as any);
 
       const { res } = await mockedRequestFactory({});
@@ -118,10 +115,8 @@ async function mockedRequestFactory(data?: any) {
           "PATCH",
           "http://nhse-i-aac/api/user-admin/{userId}/delete",
           { ...data.headers }, // headers
-          {},
-          {
-            userEmail :":userEmail"
-          }, // payload/body
+          { userId: "userId"},
+          {}, // payload/body
           {} // querystring
         ),
       },

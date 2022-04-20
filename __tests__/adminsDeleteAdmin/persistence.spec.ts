@@ -35,11 +35,7 @@ describe("[adminsDeleteAdmin] Persistence suite", () => {
         },
       };
       // Act
-      await persistence.deleteAdminAccount(
-        ctx as CustomContext,
-        "userId",
-        "userEmail"
-      );
+      await persistence.deleteAdminAccount(ctx as CustomContext, "userId");
 
       expect(spy).toHaveBeenCalled();
     });

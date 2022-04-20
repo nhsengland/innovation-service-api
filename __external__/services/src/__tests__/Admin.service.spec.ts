@@ -1124,15 +1124,18 @@ describe("[User Account Lock suite", () => {
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "deleteB2CAccount").mockImplementation();
-    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
-      id: "admin_user_id_from_b2c_to_delete",
-      type: "INNOVATOR",
-      identities: [
-        {
-          signInType: "emailAddress",
-          issuerAssignedId: "test_admin_delete@example.com",
-        },
-      ],
+    jest.spyOn(UserService.prototype, "getUser").mockResolvedValue({
+      id: "abc",
+      type: UserType.INNOVATOR,
+      deleteReason: null,
+      userOrganisations: null,
+      lockedAt: null,
+      serviceRoles: null,
+      createdAt: null,
+      createdBy: null,
+      updatedAt: null,
+      updatedBy: null,
+      deletedAt: null,
     });
 
     const adminUser = await fixtures.createAdminUser();
@@ -1145,11 +1148,7 @@ describe("[User Account Lock suite", () => {
 
     let err;
     try {
-      await adminService.deleteAdminAccount(
-        fakeRequestUser.requestUser,
-        "admin_user_id_from_b2c_to_delete",
-        "test_admin_delete@example.com"
-      );
+      await adminService.deleteAdminAccount(fakeRequestUser.requestUser, "abc");
     } catch (e) {
       err = e;
     }
@@ -1162,29 +1161,31 @@ describe("[User Account Lock suite", () => {
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "deleteB2CAccount").mockImplementation();
-    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
-      id: "admin_user_id_from_b2c_to_delete",
-      type: "ADMIN",
-      identities: [
-        {
-          signInType: "emailAddress",
-          issuerAssignedId: "test_admin_delete@example.com",
-        },
-      ],
+    jest.spyOn(UserService.prototype, "getUser").mockResolvedValue({
+      id: "abc",
+      type: UserType.ADMIN,
+      deleteReason: null,
+      userOrganisations: null,
+      lockedAt: null,
+      serviceRoles: null,
+      createdAt: null,
+      createdBy: null,
+      updatedAt: null,
+      updatedBy: null,
+      deletedAt: null,
     });
 
-    const adminUser = await fixtures.createAdminUser();
+    const adminRequestUser = await fixtures.createAdminUser();
     const fakeRequestUser = {
       requestUser: {
-        id: adminUser.id,
+        id: adminRequestUser.id,
         type: UserType.ADMIN,
       },
     };
 
     const result = await adminService.deleteAdminAccount(
       fakeRequestUser.requestUser,
-      "admin_user_id_from_b2c_to_delete",
-      "test_admin_delete@example.com"
+      "abc"
     );
     expect(result).toBeDefined();
     expect(result.status).toBe("OK");

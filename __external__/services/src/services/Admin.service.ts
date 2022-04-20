@@ -668,17 +668,16 @@ export class AdminService {
 
   async deleteAdminAccounts(
     requestUser: RequestUser,
-    userId: string,
-    userEmail: string
+    userId: string
   ): Promise<AdminDeletionResult> {
-    if (!requestUser || !userId || !userEmail) {
+    if (!requestUser || !userId) {
       throw new InvalidParamsError("Invalid params.");
     }
 
     let result: AdminDeletionResult;
 
     try {
-      result = await this.deleteAdminAccount(requestUser, userId, userEmail);
+      result = await this.deleteAdminAccount(requestUser, userId);
     } catch (err) {
       result = {
         id: userId,
@@ -696,8 +695,7 @@ export class AdminService {
 
   async deleteAdminAccount(
     requestUser: RequestUser,
-    userId: string,
-    userEmail: string
+    userId: string
   ): Promise<AdminDeletionResult> {
     const graphAccessToken = await authenticateWitGraphAPI();
 
@@ -709,32 +707,28 @@ export class AdminService {
       throw new Error("This action is for Admins only");
     }
 
-    const userToBeDeleted = await getUserFromB2C(userId, graphAccessToken);
+    const userToBeDeleted = await this.userService.getUser(userId);
 
     if (userToBeDeleted.type == "ADMIN") {
-      if (userToBeDeleted.identities[0].issuerAssignedId == userEmail) {
-        return await this.connection.transaction(async (transactionManager) => {
-          try {
-            await deleteB2CAccount(userId);
-            await transactionManager.update(
-              User,
-              { id: userId },
-              {
-                deletedAt: new Date(),
-              }
-            );
+      return await this.connection.transaction(async (transactionManager) => {
+        try {
+          await deleteB2CAccount(userId);
+          await transactionManager.update(
+            User,
+            { id: userId },
+            {
+              deletedAt: new Date(),
+            }
+          );
 
-            return {
-              id: userId,
-              status: "OK",
-            };
-          } catch (error) {
-            throw new Error(error);
-          }
-        });
-      } else {
-        throw new Error("The email provided does not match this user");
-      }
+          return {
+            id: userId,
+            status: "OK",
+          };
+        } catch (error) {
+          throw new Error(error);
+        }
+      });
     } else {
       throw new Error("The user you are trying to delete is not an ADMIN");
     }

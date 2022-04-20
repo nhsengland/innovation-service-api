@@ -2,13 +2,11 @@ import { CustomContext } from "../../utils/types";
 
 export const deleteAdminAccount = async (
   ctx: CustomContext,
-  userId: string,
-  userEmail: string
+  userId: string
 ) => {
   const result = await ctx.services.AdminService.deleteAdminAccounts(
     ctx.auth.requestUser,
-    userId,
-    userEmail
+    userId
   );
 
   return result;

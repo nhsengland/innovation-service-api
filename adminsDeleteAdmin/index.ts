@@ -14,13 +14,11 @@ import {
 import * as Responsify from "../utils/responsify";
 import { CustomContext, ServiceRole, Severity } from "../utils/types";
 import * as persistence from "./persistence";
-import * as validation from "./validation";
 
 class AdminsDeleteAdmin {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder(true)
-  @Validator(validation.ValidatePayload, "body", "Invalid Payload")
   @AllowedUserType(UserType.ADMIN)
   @ServiceRoleValidator(ServiceRole.ADMIN, ServiceRole.SERVICE_TEAM)
   @CosmosConnector()
@@ -31,10 +29,9 @@ class AdminsDeleteAdmin {
   ): Promise<void> {
     let result;
     const userId = req.params.userId;
-    const userEmail = req.body.userEmail;
 
     try {
-      result = await persistence.deleteAdminAccount(context, userId, userEmail);
+      result = await persistence.deleteAdminAccount(context, userId);
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
