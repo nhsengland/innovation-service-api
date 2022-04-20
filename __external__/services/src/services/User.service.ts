@@ -909,7 +909,11 @@ export class UserService {
         .where("unit.id = :unitId and orgUser.role = :role", {
           unitId: orgUnit[0].id,
           role: AccessorOrganisationRole.QUALIFYING_ACCESSOR,
+        })
+        .andWhere("user.id != :userId", {
+          userId: userId,
         });
+
       const newQAUsers = await newQAUsersquery.execute();
 
       const targetUsers_NewQA = newQAUsers.map((QA) => QA.user_id);
