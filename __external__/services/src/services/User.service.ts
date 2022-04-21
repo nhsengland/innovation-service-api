@@ -10,6 +10,7 @@ import {
   Role,
   ServiceRole,
   UserRole,
+  Comment,
 } from "@domain/index";
 import {
   InvalidDataError,
@@ -864,6 +865,13 @@ export class UserService {
           { organisationUser: orgUser[0].id },
           {
             organisationUnit: orgUnit[0],
+          }
+        );
+        await trs.update(
+          Comment,
+          { user: userId },
+          {
+            isEditable: false,
           }
         );
       });
