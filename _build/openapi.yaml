@@ -3227,6 +3227,35 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
+  '/user-admin/{userId}/delete':
+    patch:
+      tags:
+        - Admin_Account_Delete
+      description: Deletes an Admin Account
+      operationId: admin-delete-account
+      security:
+        - OpenId:
+            - admin_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
   '/user-admin/users/{userId}/change-unit':
     patch:
       tags:

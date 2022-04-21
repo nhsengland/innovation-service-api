@@ -18,6 +18,7 @@ const TTL2lsSchema = new mongoose.Schema(
         "ADMIN_UPDATE_USER",
         "ADMIN_UPDATE_ORGANISATION",
         "ADMIN_UPDATE_ORGANISATION_UNIT",
+        "ADMIN_DELETE_ADMIN",
         "ADMIN_UPDATE_USER_ORGANISATION_UNIT",
       ],
       default: "LOGIN",

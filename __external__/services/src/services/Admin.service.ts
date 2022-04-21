@@ -22,13 +22,18 @@ import {
 } from "@services/types";
 import { Connection, getConnection } from "typeorm";
 import { UserService } from "..";
-import { authenticateWitGraphAPI, getUserFromB2C } from "../helpers";
+import {
+  authenticateWitGraphAPI,
+  getUserFromB2C,
+  deleteB2CAccount,
+} from "../helpers";
 import * as rules from "../config/admin-user-lock.config.json";
 import * as rule from "../config/admin-change-role.config.json";
 import * as unitrules from "../config/admin-user-change-unit.config.json";
 import { UserCreationModel } from "@services/models/UserCreationModel";
 import { UserCreationResult } from "@services/models/UserCreationResult";
 import { UserChangeRoleValidationResult } from "@services/models/UserChangeRoleValidationResult";
+import { AdminDeletionResult } from "@services/models/AdminDeletionResult";
 import { OrganisationService } from "./Organisation.service";
 import { NotificationService } from "./Notification.service";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
@@ -700,6 +705,74 @@ export class AdminService {
           supports: { count: innovations.length, innovations },
         },
       };
+    }
+  }
+
+  async deleteAdminAccounts(
+    requestUser: RequestUser,
+    userId: string
+  ): Promise<AdminDeletionResult> {
+    if (!requestUser || !userId) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    let result: AdminDeletionResult;
+
+    try {
+      result = await this.deleteAdminAccount(requestUser, userId);
+    } catch (err) {
+      result = {
+        id: userId,
+        status: "ERROR",
+        error: {
+          code: err.constructor.name,
+          message: err.message,
+          data: err.data,
+        },
+      };
+    }
+
+    return result;
+  }
+
+  async deleteAdminAccount(
+    requestUser: RequestUser,
+    userId: string
+  ): Promise<AdminDeletionResult> {
+    const graphAccessToken = await authenticateWitGraphAPI();
+
+    if (!graphAccessToken) {
+      throw new Error("Invalid Credentials");
+    }
+
+    if (requestUser.type != "ADMIN") {
+      throw new Error("This action is for Admins only");
+    }
+
+    const userToBeDeleted = await this.userService.getUser(userId);
+
+    if (userToBeDeleted.type == "ADMIN") {
+      return await this.connection.transaction(async (transactionManager) => {
+        try {
+          await deleteB2CAccount(userId);
+          await transactionManager.update(
+            User,
+            { id: userId },
+            {
+              deletedAt: new Date(),
+            }
+          );
+
+          return {
+            id: userId,
+            status: "OK",
+          };
+        } catch (error) {
+          throw new Error(error);
+        }
+      });
+    } else {
+      throw new Error("The user you are trying to delete is not an ADMIN");
     }
   }
 }
