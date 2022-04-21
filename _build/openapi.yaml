@@ -3256,6 +3256,67 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
+  '/user-admin/users/{userId}/change-unit':
+    patch:
+      tags:
+        - Admin
+        - User
+        - ChangeUnit
+      description: Change qualifying accessors and accessors organisation unit
+      operationId: admins-change-unit
+      security:
+        - OpenId:
+            - users_write
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: userId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+    get:
+      tags:
+        - Admin
+        - User
+        - ChangeUnitValidation
+      description: Change qualifying accessors and accessors organisation unit validation
+      operationId: admins-change-unit-validation
+      security:
+        - OpenId:
+            - users_read
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: userId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
   /notifications:
     patch:
       tags:

@@ -29,6 +29,7 @@ import {
 } from "../helpers";
 import * as rules from "../config/admin-user-lock.config.json";
 import * as rule from "../config/admin-change-role.config.json";
+import * as unitrules from "../config/admin-user-change-unit.config.json";
 import { UserCreationModel } from "@services/models/UserCreationModel";
 import { UserCreationResult } from "@services/models/UserCreationResult";
 import { UserChangeRoleValidationResult } from "@services/models/UserChangeRoleValidationResult";
@@ -331,6 +332,21 @@ export class AdminService {
     return await this.runUserChangeRoleValidation(userToBeChanged);
   }
 
+  async userChangeUnitValidation(
+    userId: string
+  ): Promise<{ [key: string]: any }> {
+    const userToBeChanged = await this.userService.getUser(userId, {
+      relations: [
+        "userOrganisations",
+        "userOrganisations.organisation",
+        "userOrganisations.userOrganisationUnits",
+        "userOrganisations.userOrganisationUnits.organisationUnit",
+      ],
+    });
+
+    return await this.runUserChangeUnitValidation(userToBeChanged);
+  }
+
   async createUser(
     requestUser: RequestUser,
     user: UserCreationModel
@@ -418,6 +434,32 @@ export class AdminService {
       }
     }
 
+    if (user.type === UserType.ACCESSOR) {
+      const accessorOrgRule = await this.CheckAccessorOrganisation(user);
+      const accessorSupportRule = await this.checkAccessorSupports(user);
+
+      if (r[accessorOrgRule?.code.toString()]) {
+        r[accessorOrgRule?.code.toString()] = {
+          ...accessorOrgRule,
+          valid: false,
+        };
+      }
+
+      if (r[accessorSupportRule?.code.toString()]) {
+        r[accessorSupportRule?.code.toString()] = {
+          ...accessorSupportRule,
+          valid: false,
+        };
+      }
+    }
+
+    return r;
+  }
+
+  private async runUserChangeUnitValidation(
+    user: User
+  ): Promise<{ [key: string]: any }> {
+    const r = { ...unitrules };
     if (user.type === UserType.ACCESSOR) {
       const accessorOrgRule = await this.CheckAccessorOrganisation(user);
       const accessorSupportRule = await this.checkAccessorSupports(user);

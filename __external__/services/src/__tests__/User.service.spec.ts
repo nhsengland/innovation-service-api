@@ -765,4 +765,44 @@ describe("User Service Suite", () => {
     expect(result.id).toBeDefined();
     expect(result.status).toBe("OK");
   });
+
+  it("should update user's organisation unit", async () => {
+    // Arrange
+    const user = await fixtures.createAccessorUser();
+
+    const organisation = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
+    );
+
+    const organisationAccessorUser = await fixtures.addUserToOrganisation(
+      user,
+      organisation,
+      AccessorOrganisationRole.ACCESSOR
+    );
+
+    const organisationUnit = await fixtures.createOrganisationUnit(
+      organisation
+    );
+
+    const organisationUnitAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
+      organisationAccessorUser,
+      organisationUnit
+    );
+
+    let err;
+    try {
+      //Act
+      await userService.updateUserOrganisationUnit(
+        dummy.requestUser,
+        user.id,
+        "newUnit",
+        organisation.id
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    // Assert
+    expect(err).toBeUndefined();
+  });
 });

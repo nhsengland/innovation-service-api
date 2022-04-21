@@ -1,0 +1,14 @@
+{
+  "lastAccessorUserOnOrganisation": {
+    "valid": true,
+    "code":  "lastAccessorUserOnOrganisation"
+  },
+  "lastAccessorUserOnOrganisationUnit": {
+    "valid": true,
+    "code": "lastAccessorUserOnOrganisationUnit"
+  },
+  "lastAccessorFromUnitProvidingSupport": {
+    "valid": true,
+    "code": "lastAccessorFromUnitProvidingSupport"
+  }
+}
