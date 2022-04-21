@@ -541,6 +541,8 @@ export const userAccountLockedHandler = async (
 
   const recipient = targetUsers[0];
 
+  if (recipient.length === 0) return;
+
   const props = {
     ...params.emailProps,
   };
@@ -550,6 +552,96 @@ export const userAccountLockedHandler = async (
     },
     EmailNotificationTemplate.USER_ACCOUNT_LOCKED,
     props
+  );
+
+  return result;
+};
+
+export const accessorsUnitChangeHandler = async (
+  requestUser: RequestUser,
+  params: {
+    contextId: string;
+    emailProps?: EmailProps;
+  },
+  template: EmailNotificationTemplate,
+  targetUsers?: string[],
+  connectionName?: string
+): Promise<EmailResponse[]> => {
+  const emailService = new EmailService(connectionName);
+
+  const recipient = targetUsers[0];
+
+  if (recipient.length === 0) return;
+
+  const props = {
+    ...params.emailProps,
+  };
+  const result = await emailService.sendOne(
+    {
+      email: recipient,
+    },
+    EmailNotificationTemplate.ACCESSORS_UNIT_CHANGE,
+    props
+  );
+
+  return result;
+};
+
+export const newQualifyingAccessorsUnitChangeHandler = async (
+  requestUser: RequestUser,
+  params: {
+    innovationId: string;
+    contextId: string;
+    emailProps?: EmailProps;
+  },
+  template: EmailNotificationTemplate,
+  targetUsers?: string[],
+  connectionName?: string
+): Promise<EmailResponse[]> => {
+  const emailService = new EmailService(connectionName);
+
+  const recipient = targetUsers[0];
+
+  if (recipient.length === 0) return;
+
+  params.emailProps = {
+    ...params.emailProps,
+  };
+
+  const result = await baseEmailExecutor(
+    recipient,
+    params,
+    connectionName,
+    template
+  );
+
+  return result;
+};
+
+export const oldQualifyingAccessorsUnitChangeHandler = async (
+  requestUser: RequestUser,
+  params: {
+    innovationId: string;
+    contextId: string;
+    emailProps?: EmailProps;
+  },
+  template: EmailNotificationTemplate,
+  targetUsers?: string[],
+  connectionName?: string
+): Promise<EmailResponse[]> => {
+  const emailService = new EmailService(connectionName);
+
+  const recipient = targetUsers[0];
+
+  params.emailProps = {
+    ...params.emailProps,
+  };
+
+  const result = await baseEmailExecutor(
+    recipient,
+    params,
+    connectionName,
+    template
   );
 
   return result;

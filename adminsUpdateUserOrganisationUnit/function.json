@@ -1,0 +1,19 @@
+{
+    "bindings": [
+      {
+        "authLevel": "anonymous",
+        "type": "httpTrigger",
+        "direction": "in",
+        "name": "req",
+        "methods": ["patch"],
+        "route": "user-admin/users/{userId}/change-unit"
+      },
+      {
+        "type": "http",
+        "direction": "out",
+        "name": "res"
+      }
+    ],
+    "scriptFile": "../dist/adminsUpdateUserOrganisationUnit/index.js"
+  }
+  

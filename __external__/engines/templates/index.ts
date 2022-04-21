@@ -228,4 +228,33 @@ export const getTemplates = (): EmailTemplate[] => [
       display_name: "",
     },
   },
+  {
+    id: "29d6e362-5ecd-4bac-8707-a4d92e9e6762",
+    code: "ACCESSORS_UNIT_CHANGE",
+    props: {
+      display_name: "",
+      old_unit: "",
+      old_organisation: "",
+      new_unit: "",
+      new_organisation: "",
+    },
+  },
+  {
+    id: "ab928347-750a-4493-b6b2-df070141727a",
+    code: "NEW_QUALIFYING_ACCESSORS_UNIT_CHANGE",
+    props: {
+      display_name: "",
+      user_name: "",
+      new_unit: "",
+    },
+  },
+  {
+    id: "ac1c44d2-f65c-49cf-bbbf-d1263a7666d9",
+    code: "OLD_QUALIFYING_ACCESSORS_UNIT_CHANGE",
+    props: {
+      display_name: "",
+      user_name: "",
+      old_unit: "",
+    },
+  },
 ];
