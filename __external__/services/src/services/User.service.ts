@@ -967,7 +967,7 @@ export class UserService {
           EmailNotificationTemplate.OLD_QUALIFYING_ACCESSORS_UNIT_CHANGE,
           "",
           userId,
-          [targetUsers_OldQA.user_id],
+          [targetUsers_OldQA],
           {
             user_name: displayName,
             old_unit: old_unit,
