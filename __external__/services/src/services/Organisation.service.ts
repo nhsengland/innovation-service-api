@@ -14,13 +14,16 @@ import {
   MissingUserOrganisationUnitError,
 } from "@services/errors";
 import { OrganisationModel } from "@services/models/OrganisationModel";
+import { OrganisationUnitModel } from "@services/models/OrganisationUnitModel";
 import { OrganisationUnitUserModel } from "@services/models/OrganisationUnitUserModel";
+import { OrganisationUpdateResult } from "@services/models/OrganisationUpdateResult";
 import { RequestUser } from "@services/models/RequestUser";
 import {
   Connection,
   getConnection,
   getRepository,
   In,
+  Not,
   Repository,
 } from "typeorm";
 import { BaseService } from "./Base.service";
@@ -32,6 +35,7 @@ export class OrganisationService extends BaseService<Organisation> {
   private readonly orgUnitUserRepo: Repository<OrganisationUnitUser>;
   private readonly orgUserRepo: Repository<OrganisationUser>;
   private readonly userService: UserService;
+  private readonly orgRepo: Repository<Organisation>;
 
   constructor(connectionName?: string) {
     super(Organisation, connectionName);
@@ -40,6 +44,7 @@ export class OrganisationService extends BaseService<Organisation> {
     this.orgUnitRepo = getRepository(OrganisationUnit, connectionName);
     this.orgUnitUserRepo = getRepository(OrganisationUnitUser, connectionName);
     this.userService = new UserService(connectionName);
+    this.orgRepo = getRepository(Organisation, connectionName);
   }
 
   async create(organisation: Organisation): Promise<Organisation> {
@@ -64,6 +69,18 @@ export class OrganisationService extends BaseService<Organisation> {
     };
 
     return await this.repository.find(filterOptions);
+  }
+
+  async findAllUnits(filter: any): Promise<OrganisationUnit[]> {
+    if (!filter) {
+      throw new InvalidParamsError("Invalid filter.");
+    }
+
+    const filterOptions = {
+      ...filter,
+    };
+
+    return await this.orgUnitRepo.find(filterOptions);
   }
 
   async findQualifyingAccessorsFromUnits(
@@ -279,5 +296,258 @@ export class OrganisationService extends BaseService<Organisation> {
 
   async addOrganisationUnit(unit: OrganisationUnit): Promise<OrganisationUnit> {
     return await this.orgUnitRepo.save(unit);
+  }
+
+  async findOrganisationById(
+    organisationId: string
+  ): Promise<OrganisationModel> {
+    const org = await this.repository
+      .createQueryBuilder("organisation")
+      .where("organisation.type = :type", {
+        type: OrganisationType.ACCESSOR,
+      })
+      .andWhere("organisation.id = :id", {
+        id: organisationId,
+      })
+      .getOne();
+
+    const orgUnits = await org.organisationUnits;
+
+    return {
+      id: org.id,
+      name: org.name,
+      acronym: org.acronym,
+      organisationUnits: orgUnits?.map((unit) => ({
+        id: unit.id,
+        name: unit.name,
+        acronym: unit.acronym,
+      })),
+    };
+  }
+
+  async acronymValidForOrganisationUpdate(
+    acronym: string,
+    organisationId?: string,
+    organisationUnitId?: string
+  ): Promise<boolean> {
+    let acronymSearch, filterAcronyms;
+    if (organisationId) {
+      filterAcronyms = {
+        where: {
+          id: Not(organisationId),
+          acronym: acronym,
+        },
+        type: OrganisationType.ACCESSOR,
+      };
+
+      acronymSearch = await this.findAll(filterAcronyms);
+    } else if (organisationUnitId) {
+      filterAcronyms = {
+        where: {
+          id: Not(organisationUnitId),
+          acronym: acronym,
+        },
+      };
+
+      acronymSearch = await this.findAllUnits(filterAcronyms);
+    }
+
+    if (acronymSearch.length == 0) {
+      return false;
+    }
+
+    return true;
+  }
+
+  async updateOrganisation(
+    organisationId: string,
+    name: string,
+    acronym: string
+  ): Promise<OrganisationUpdateResult> {
+    if (!name || !acronym || !organisationId) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    if (acronym.length > 10) {
+      throw new Error("Acronym has a maximum of 10 characters");
+    }
+
+    if (name.length > 100) {
+      throw new Error("Name has a maximum of 100 characters");
+    }
+
+    const acronymSearch = await this.acronymValidForOrganisationUpdate(
+      acronym,
+      organisationId,
+      null
+    );
+
+    const filterOrgUnits = {
+      where: {
+        organisation: organisationId,
+      },
+    };
+
+    const orgUnitSearch = await this.orgUnitRepo.find(filterOrgUnits);
+
+    //If the desired Acronym is available, update the Organisation
+    if (!acronymSearch) {
+      try {
+        await this.connection.transaction(async (trs) => {
+          const updatedOrgNameAcronym = await trs.update(
+            Organisation,
+            { id: organisationId },
+            {
+              type: OrganisationType.ACCESSOR,
+              acronym: acronym,
+              name: name,
+            }
+          );
+        });
+      } catch {
+        return {
+          id: null,
+          status: "ERROR",
+          error: "Error updating Organisation",
+        };
+      }
+
+      //If the Organisation only has 1 Unit, this Unit also needs to have its name and acronym changed
+      if (orgUnitSearch.length == 1) {
+        try {
+          await this.connection.transaction(async (trs) => {
+            const updatedOrgUnitNameAcronym = await trs.update(
+              OrganisationUnit,
+              { id: orgUnitSearch[0].id },
+              {
+                acronym: acronym,
+                name: name,
+              }
+            );
+          });
+        } catch {
+          return {
+            id: null,
+            status: "ERROR",
+            error:
+              "Error updating Unique Organisation Unit inside this Organisation",
+          };
+        }
+      }
+      return {
+        id: organisationId,
+        status: "OK",
+      };
+    } else {
+      return {
+        id: null,
+        status: "ERROR",
+        error: "Acronym already exists associated with another Organisation",
+      };
+    }
+  }
+
+  async updateOrganisationUnit(
+    organisationUnitId: string,
+    name: string,
+    acronym: string
+  ): Promise<OrganisationUpdateResult> {
+    if (!name || !acronym || !organisationUnitId) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    if (acronym.length > 10) {
+      throw new Error("Acronym has a maximum of 10 characters");
+    }
+
+    if (name.length > 100) {
+      throw new Error("Name has a maximum of 100 characters");
+    }
+
+    const acronymSearch = await this.acronymValidForOrganisationUpdate(
+      acronym,
+      null,
+      organisationUnitId
+    );
+
+    const filterOrgUnits = {
+      where: {
+        id: organisationUnitId,
+      },
+    };
+
+    const orgUnitSearch = await this.orgUnitRepo.find(filterOrgUnits);
+
+    if (!acronymSearch) {
+      try {
+        await this.connection.transaction(async (trs) => {
+          const updatedOrgUnitNameAcronym = await trs.update(
+            OrganisationUnit,
+            { id: orgUnitSearch[0].id },
+            {
+              acronym: acronym,
+              name: name,
+            }
+          );
+        });
+        return {
+          id: organisationUnitId,
+          status: "OK",
+        };
+      } catch {
+        return {
+          id: null,
+          status: "ERROR",
+          error: "Error updating Organisation Unit",
+        };
+      }
+    } else {
+      return {
+        id: null,
+        status: "ERROR",
+        error:
+          "Acronym already exists associated with another Organisation Unit",
+      };
+    }
+  }
+
+  async findOrganisationUnitUsersById(
+    organisationUnitId: string
+  ): Promise<OrganisationUnitUserModel[]> {
+    if (!organisationUnitId) {
+      throw new InvalidParamsError(
+        "Invalid organisation unit id. You must define the id."
+      );
+    }
+
+    const filterOptions = {
+      relations: ["organisationUser", "organisationUser.user"],
+      where: { organisationUnit: organisationUnitId },
+    };
+    const orgUnitUsers = await this.orgUnitUserRepo.find(filterOptions);
+
+    const b2cMap = await this.findOrganisationUnitUsersNames(
+      orgUnitUsers,
+      true
+    );
+
+    const result = orgUnitUsers
+      .filter((orgUnitUsers) => {
+        const organisationUser = orgUnitUsers.organisationUser;
+        const name = b2cMap[organisationUser.user.id];
+        if (name) return true;
+        return false;
+      })
+      .map((organisationUnitUser: OrganisationUnitUser) => {
+        const organisationUser = organisationUnitUser.organisationUser;
+
+        return {
+          id: organisationUnitUser.id,
+          name: b2cMap[organisationUser.user.id],
+          role: organisationUser.role,
+        };
+      });
+
+    return result;
   }
 }

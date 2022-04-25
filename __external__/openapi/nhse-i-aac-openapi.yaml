@@ -2362,6 +2362,64 @@ paths:
         "401":
           description: "Unauthorized"
 
+  "/organisations/{organisationId}":
+    get:
+      tags:
+        - "Organisation"
+        - "GetDetails"
+      description: "Retrieves an Organisation By Id"
+      operationId: "organisation-get-details"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: organisationId
+          in: path
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - organisation_details
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
+  "/organisations/{organisationUnitId}/users":
+    get:
+      tags:
+        - "OrganisationUnit"
+        - "GetUsers"
+      description: "Retrieves Users by Organisation Unit Id"
+      operationId: "organisation-unit-get-users"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: organisationUnitId
+          in: path
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - organisation_details
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
   "/assessments/{userId}/innovations/{innovationId}":
     get:
       tags:
@@ -2929,6 +2987,70 @@ paths:
         "403":
           description: "Forbidden"
 
+  "/user-admin/organisation/{organisationId}":
+    patch:
+      tags:
+        - "Admin"
+        - "Organisation"
+        - "UpdateOrganisation"
+      description: "Update Organisation"
+      operationId: "admins-update-organisation"
+      security:
+        - OpenId:
+            - organisations_write
+      parameters:
+        - name: organisationId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/user-admin/organisation-units/{organisationUnitId}":
+    patch:
+      tags:
+        - "Admin"
+        - "OrganisationUnit"
+        - "UpdateOrganisationUnit"
+      description: "Update Organisation Unit"
+      operationId: "admins-update-organisation-unit"
+      security:
+        - OpenId:
+            - organisations_write
+      parameters:
+        - name: organisationUnitId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden" 
+
   "/user-admin/user":
     post:
       tags:
@@ -3153,6 +3275,98 @@ paths:
         - "ChangeRoleValidation"
       description: "Change role validation"
       operationId: "admins-change-role-validation"
+      security:
+        - OpenId:
+            - users_read
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: userId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "404":
+          description: "Not Found"
+
+  "/user-admin/{userId}/delete":
+    patch:
+      tags:
+        - "Admin_Account_Delete"
+      description: "Deletes an Admin Account"
+      operationId: "admin-delete-account"
+      security:
+        - OpenId:
+            - admin_write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/user-admin/users/{userId}/change-unit":
+    patch:
+      tags:
+        - "Admin"
+        - "User"
+        - "ChangeUnit"
+      description: "Change qualifying accessors and accessors organisation unit"
+      operationId: "admins-change-unit"
+      security:
+        - OpenId:
+            - users_write
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: userId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "404":
+          description: "Not Found"
+    get:
+      tags:
+        - "Admin"
+        - "User"
+        - "ChangeUnitValidation"
+      description: "Change qualifying accessors and accessors organisation unit validation"
+      operationId: "admins-change-unit-validation"
       security:
         - OpenId:
             - users_read

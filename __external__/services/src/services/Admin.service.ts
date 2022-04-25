@@ -22,20 +22,33 @@ import {
 } from "@services/types";
 import { Connection, getConnection } from "typeorm";
 import { UserService } from "..";
-import { authenticateWitGraphAPI, getUserFromB2C } from "../helpers";
+import {
+  authenticateWitGraphAPI,
+  getUserFromB2C,
+  deleteB2CAccount,
+} from "../helpers";
 import * as rules from "../config/admin-user-lock.config.json";
 import * as rule from "../config/admin-change-role.config.json";
+import * as unitrules from "../config/admin-user-change-unit.config.json";
 import { UserCreationModel } from "@services/models/UserCreationModel";
 import { UserCreationResult } from "@services/models/UserCreationResult";
 import { UserChangeRoleValidationResult } from "@services/models/UserChangeRoleValidationResult";
+import { AdminDeletionResult } from "@services/models/AdminDeletionResult";
+import { OrganisationService } from "./Organisation.service";
+import { NotificationService } from "./Notification.service";
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import { LoggerService } from "./Logger.service";
 
 export class AdminService {
   private readonly connection: Connection;
   private readonly userService: UserService;
+  private readonly notificationService: NotificationService;
+  private readonly logService: LoggerService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.userService = new UserService(connectionName);
+    this.notificationService = new NotificationService(connectionName);
   }
   async getUsersOfType(
     type: UserType,
@@ -133,7 +146,11 @@ export class AdminService {
 
     return result;
   }
-
+  private getUserEmail(b2cUser: any) {
+    return b2cUser.identities.find(
+      (identity: any) => identity.signInType === "emailAddress"
+    ).issuerAssignedId;
+  }
   async lockUser(
     requestUser: RequestUser,
     userId: string,
@@ -175,6 +192,26 @@ export class AdminService {
       });
     } catch {
       throw new Error("Error locking user at IdP");
+    }
+
+    const email = this.getUserEmail(user);
+    const display_name = user.display_name;
+    try {
+      await this.notificationService.sendEmail(
+        requestUser,
+        EmailNotificationTemplate.USER_ACCOUNT_LOCKED,
+        null,
+        user.id,
+        [email],
+        {
+          display_name: user.displayName,
+        }
+      );
+    } catch (error) {
+      this.logService.error(
+        `An error has occured while sending an email with the template ${EmailNotificationTemplate.USER_ACCOUNT_LOCKED}.`,
+        error
+      );
     }
 
     return {
@@ -295,6 +332,21 @@ export class AdminService {
     return await this.runUserChangeRoleValidation(userToBeChanged);
   }
 
+  async userChangeUnitValidation(
+    userId: string
+  ): Promise<{ [key: string]: any }> {
+    const userToBeChanged = await this.userService.getUser(userId, {
+      relations: [
+        "userOrganisations",
+        "userOrganisations.organisation",
+        "userOrganisations.userOrganisationUnits",
+        "userOrganisations.userOrganisationUnits.organisationUnit",
+      ],
+    });
+
+    return await this.runUserChangeUnitValidation(userToBeChanged);
+  }
+
   async createUser(
     requestUser: RequestUser,
     user: UserCreationModel
@@ -382,6 +434,32 @@ export class AdminService {
       }
     }
 
+    if (user.type === UserType.ACCESSOR) {
+      const accessorOrgRule = await this.CheckAccessorOrganisation(user);
+      const accessorSupportRule = await this.checkAccessorSupports(user);
+
+      if (r[accessorOrgRule?.code.toString()]) {
+        r[accessorOrgRule?.code.toString()] = {
+          ...accessorOrgRule,
+          valid: false,
+        };
+      }
+
+      if (r[accessorSupportRule?.code.toString()]) {
+        r[accessorSupportRule?.code.toString()] = {
+          ...accessorSupportRule,
+          valid: false,
+        };
+      }
+    }
+
+    return r;
+  }
+
+  private async runUserChangeUnitValidation(
+    user: User
+  ): Promise<{ [key: string]: any }> {
+    const r = { ...unitrules };
     if (user.type === UserType.ACCESSOR) {
       const accessorOrgRule = await this.CheckAccessorOrganisation(user);
       const accessorSupportRule = await this.checkAccessorSupports(user);
@@ -627,6 +705,74 @@ export class AdminService {
           supports: { count: innovations.length, innovations },
         },
       };
+    }
+  }
+
+  async deleteAdminAccounts(
+    requestUser: RequestUser,
+    userId: string
+  ): Promise<AdminDeletionResult> {
+    if (!requestUser || !userId) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    let result: AdminDeletionResult;
+
+    try {
+      result = await this.deleteAdminAccount(requestUser, userId);
+    } catch (err) {
+      result = {
+        id: userId,
+        status: "ERROR",
+        error: {
+          code: err.constructor.name,
+          message: err.message,
+          data: err.data,
+        },
+      };
+    }
+
+    return result;
+  }
+
+  async deleteAdminAccount(
+    requestUser: RequestUser,
+    userId: string
+  ): Promise<AdminDeletionResult> {
+    const graphAccessToken = await authenticateWitGraphAPI();
+
+    if (!graphAccessToken) {
+      throw new Error("Invalid Credentials");
+    }
+
+    if (requestUser.type != "ADMIN") {
+      throw new Error("This action is for Admins only");
+    }
+
+    const userToBeDeleted = await this.userService.getUser(userId);
+
+    if (userToBeDeleted.type == "ADMIN") {
+      return await this.connection.transaction(async (transactionManager) => {
+        try {
+          await deleteB2CAccount(userId);
+          await transactionManager.update(
+            User,
+            { id: userId },
+            {
+              deletedAt: new Date(),
+            }
+          );
+
+          return {
+            id: userId,
+            status: "OK",
+          };
+        } catch (error) {
+          throw new Error(error);
+        }
+      });
+    } else {
+      throw new Error("The user you are trying to delete is not an ADMIN");
     }
   }
 }

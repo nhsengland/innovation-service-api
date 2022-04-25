@@ -35,7 +35,7 @@ describe("Organisation Service Suite", () => {
   let accessorService: AccessorService;
 
   beforeAll(async () => {
-    // await setupTestsConnection();
+    //  await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -45,7 +45,7 @@ describe("Organisation Service Suite", () => {
   });
 
   afterAll(async () => {
-    // closeTestsConnection();
+    //  closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -308,5 +308,149 @@ describe("Organisation Service Suite", () => {
     expect(result).toBeDefined();
     expect(result.length).toEqual(1);
     expect(result[0].organisationUnits.length).toEqual(2);
+  });
+
+  it("should update organisation name and acronym", async () => {
+    // Arrange
+    const organisationObj = Organisation.new({
+      ...dummy.baseOrganisation,
+      type: OrganisationType.ACCESSOR,
+      organisationUnits: [
+        {
+          name: "orgUnitName",
+          acronym: "orgUnitAcronym",
+        },
+      ],
+    });
+    const organisation = await organisationService.create(organisationObj);
+
+    let err;
+    try {
+      await organisationService.updateOrganisation(
+        organisation.id,
+        "NAME",
+        "ACRONYM"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    // Assert
+    expect(err).toBeUndefined();
+  });
+
+  it("should update organisation unit name and acronym", async () => {
+    // Arrange
+    const organisationObj = Organisation.new({
+      ...dummy.baseOrganisation,
+      type: OrganisationType.ACCESSOR,
+    });
+    const organisation = await organisationService.create(organisationObj);
+
+    const unitObj = OrganisationUnit.new({
+      id: "F5394E00-86EF-EB11-A7AD-281878026472",
+      name: "newUnit",
+      acronym: "acronym",
+      organisation,
+    });
+    await organisationService.addOrganisationUnit(unitObj);
+
+    let err;
+    try {
+      await organisationService.updateOrganisationUnit(
+        "F5394E00-86EF-EB11-A7AD-281878026472",
+        "NAME",
+        "ACRONYM"
+      );
+    } catch (error) {
+      err = error;
+    }
+
+    // Assert
+    expect(err).toBeUndefined();
+  });
+
+  it("should return Organisation by id", async () => {
+    //Arrange
+    const organisationObj = Organisation.new({
+      ...dummy.baseOrganisation,
+      type: OrganisationType.ACCESSOR,
+    });
+    const organisation = await organisationService.create(organisationObj);
+
+    const unitObj = OrganisationUnit.new({
+      name: "newUnit",
+      organisation,
+    });
+    await organisationService.addOrganisationUnit(unitObj);
+
+    //Act
+    const result = await organisationService.findOrganisationById(
+      organisation.id
+    );
+
+    //Assert
+    expect(result).toBeDefined();
+    expect(result.id).toBe(organisation.id);
+  });
+
+  it("should return Organisation Unit Users by id", async () => {
+    //Arrange
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest
+      .spyOn(helpers, "getUsersFromB2C")
+      .mockResolvedValue([{ id: "abc-def-ghi", displayName: ":ACCESSOR" }]);
+
+    const organisationObj = Organisation.new({
+      ...dummy.baseOrganisation,
+      type: OrganisationType.ACCESSOR,
+    });
+
+    const organisation = await organisationService.create(organisationObj);
+
+    const unitObj = OrganisationUnit.new({
+      name: "newUnit",
+      organisation,
+    });
+    const organisationUnit = await organisationService.addOrganisationUnit(
+      unitObj
+    );
+
+    const accessor = await accessorService.create(
+      User.new({
+        id: "abc-def-ghi",
+        type: UserType.ACCESSOR,
+      })
+    );
+
+    const orgUserObj = await organisationService.addUserToOrganisation(
+      accessor,
+      organisation,
+      AccessorOrganisationRole.ACCESSOR
+    );
+    await organisationService.addUserToOrganisationUnit(
+      orgUserObj,
+      organisationUnit
+    );
+
+    //Act
+    const result = await organisationService.findOrganisationUnitUsersById(
+      organisationUnit.id
+    );
+
+    //Assert
+    expect(result).toBeDefined();
+    expect(result.length).toEqual(1);
+  });
+
+  it("should throw when findOrganisationUnitUsersById() without id", async () => {
+    let err;
+    try {
+      await organisationService.findOrganisationUnitUsersById(null);
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeDefined();
   });
 });

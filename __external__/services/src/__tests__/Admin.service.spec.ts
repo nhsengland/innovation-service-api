@@ -22,6 +22,8 @@ import { AdminService } from "@services/services/Admin.service";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
 import { UserSearchResult } from "@services/types";
 import { InvalidParamsError, InvalidUserRoleError } from "@services/errors";
+import { NotificationService } from "@services/services/Notification.service";
+import { RequestUser } from "@services/models/RequestUser";
 
 describe("[User Account Lock suite", () => {
   let adminService: AdminService;
@@ -133,7 +135,7 @@ describe("[User Account Lock suite", () => {
       ],
       mobilePhone: "+351960000000",
     });
-
+    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue();
     jest.spyOn(helpers, "saveB2CUser").mockImplementation();
     const assessmentUser1 = await fixtures.createAssessmentUser();
     const assessmentUser2 = await fixtures.createAssessmentUser();
@@ -1115,5 +1117,77 @@ describe("[User Account Lock suite", () => {
 
     expect(err).toBeDefined();
     expect(err).toBeInstanceOf(InvalidUserRoleError);
+  });
+
+  it("should throw error when deleting the admin user ", async () => {
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "deleteB2CAccount").mockImplementation();
+    jest.spyOn(UserService.prototype, "getUser").mockResolvedValue({
+      id: "abc",
+      type: UserType.INNOVATOR,
+      deleteReason: null,
+      userOrganisations: null,
+      lockedAt: null,
+      serviceRoles: null,
+      createdAt: null,
+      createdBy: null,
+      updatedAt: null,
+      updatedBy: null,
+      deletedAt: null,
+    });
+
+    const adminUser = await fixtures.createAdminUser();
+    const fakeRequestUser = {
+      requestUser: {
+        id: adminUser.id,
+        type: UserType.ADMIN,
+      },
+    };
+
+    let err;
+    try {
+      await adminService.deleteAdminAccount(fakeRequestUser.requestUser, "abc");
+    } catch (e) {
+      err = e;
+    }
+
+    expect(err).toBeDefined();
+  });
+
+  it("should delete the admin user", async () => {
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+    jest.spyOn(helpers, "deleteB2CAccount").mockImplementation();
+    jest.spyOn(UserService.prototype, "getUser").mockResolvedValue({
+      id: "abc",
+      type: UserType.ADMIN,
+      deleteReason: null,
+      userOrganisations: null,
+      lockedAt: null,
+      serviceRoles: null,
+      createdAt: null,
+      createdBy: null,
+      updatedAt: null,
+      updatedBy: null,
+      deletedAt: null,
+    });
+
+    const adminRequestUser = await fixtures.createAdminUser();
+    const fakeRequestUser = {
+      requestUser: {
+        id: adminRequestUser.id,
+        type: UserType.ADMIN,
+      },
+    };
+
+    const result = await adminService.deleteAdminAccount(
+      fakeRequestUser.requestUser,
+      "abc"
+    );
+    expect(result).toBeDefined();
+    expect(result.status).toBe("OK");
   });
 });
