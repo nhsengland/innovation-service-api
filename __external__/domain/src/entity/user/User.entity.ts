@@ -24,6 +24,9 @@ export class User extends Base {
   })
   lockedAt: Date;
 
+  @Column({ name: "external_id", type: "nvarchar", nullable: true })
+  externalId: string;
+
   @Column({ name: "delete_reason", type: "nvarchar", nullable: true })
   deleteReason: string;
 

@@ -52,7 +52,7 @@ describe("OrganisationUnitUser Test Suite", () => {
     organisationUnit = await organisationUnitRepo.save(organisationUnitObj);
 
     const userObj = User.new({
-      id: "abc",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ACCESSOR,
     });
     const user = await userRepo.save(userObj);

@@ -751,7 +751,7 @@ export class AdminService {
 
     const userToBeDeleted = await this.userService.getUser(userId);
 
-    if (userToBeDeleted.type == "ADMIN") {
+    if (userToBeDeleted.type === "ADMIN") {
       return await this.connection.transaction(async (transactionManager) => {
         try {
           await deleteB2CAccount(userId);

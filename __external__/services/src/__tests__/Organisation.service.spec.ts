@@ -35,7 +35,7 @@ describe("Organisation Service Suite", () => {
   let accessorService: AccessorService;
 
   beforeAll(async () => {
-    //  await setupTestsConnection();
+    //await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -45,7 +45,7 @@ describe("Organisation Service Suite", () => {
   });
 
   afterAll(async () => {
-    //  closeTestsConnection();
+    //closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -130,7 +130,7 @@ describe("Organisation Service Suite", () => {
     const organisation = await organisationService.create(organisationObj);
 
     const accessorObj = User.new({
-      id: "abc-def-ghi",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
     });
     const accessor = await accessorService.create(accessorObj);
     await organisationService.addUserToOrganisation(
@@ -179,7 +179,7 @@ describe("Organisation Service Suite", () => {
     let err;
     try {
       await organisationService.findUserOrganisationUnitUsers({
-        id: ":id",
+        id: "C7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.ACCESSOR,
       });
     } catch (error) {
@@ -194,7 +194,7 @@ describe("Organisation Service Suite", () => {
     let err;
     try {
       await organisationService.findUserOrganisationUnitUsers({
-        id: ":id",
+        id: "C7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.ACCESSOR,
         organisationUser: {
           id: ":orgUId",
@@ -223,8 +223,11 @@ describe("Organisation Service Suite", () => {
   it("should return organisation unit users by q. accessor units", async () => {
     jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
     jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
-      { id: "abc-def-ghi", displayName: ":ACCESSOR" },
-      { id: "ttt-aaa-ddd", displayName: ":QUALIFYING_ACCESSOR" },
+      { id: "C7095D87-C3DF-46F6-A503-001B083F4630", displayName: ":ACCESSOR" },
+      {
+        id: "D7095D87-C3DF-46F6-A503-001B083F4630",
+        displayName: ":QUALIFYING_ACCESSOR",
+      },
     ]);
 
     const organisationObj = Organisation.new({
@@ -241,14 +244,14 @@ describe("Organisation Service Suite", () => {
 
     const accessor = await accessorService.create(
       User.new({
-        id: "abc-def-ghi",
+        id: "C7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.ACCESSOR,
       })
     );
 
     const qaccessor = await accessorService.create(
       User.new({
-        id: "ttt-aaa-ddd",
+        id: "D7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.ACCESSOR,
       })
     );
@@ -281,8 +284,11 @@ describe("Organisation Service Suite", () => {
   it("should return organisation unit users", async () => {
     jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
     jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
-      { id: "abc-def-ghi", displayName: ":ACCESSOR" },
-      { id: "ttt-aaa-ddd", displayName: ":QUALIFYING_ACCESSOR" },
+      { id: "C7095D87-C3DF-46F6-A503-001B083F4630", displayName: ":ACCESSOR" },
+      {
+        id: "D7095D87-C3DF-46F6-A503-001B083F4630",
+        displayName: ":QUALIFYING_ACCESSOR",
+      },
     ]);
 
     const organisationObj = Organisation.new({
@@ -397,9 +403,12 @@ describe("Organisation Service Suite", () => {
   it("should return Organisation Unit Users by id", async () => {
     //Arrange
     jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
-    jest
-      .spyOn(helpers, "getUsersFromB2C")
-      .mockResolvedValue([{ id: "abc-def-ghi", displayName: ":ACCESSOR" }]);
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
+      {
+        id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        displayName: ":ACCESSOR",
+      },
+    ]);
 
     const organisationObj = Organisation.new({
       ...dummy.baseOrganisation,
@@ -418,7 +427,7 @@ describe("Organisation Service Suite", () => {
 
     const accessor = await accessorService.create(
       User.new({
-        id: "abc-def-ghi",
+        id: "C7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.ACCESSOR,
       })
     );

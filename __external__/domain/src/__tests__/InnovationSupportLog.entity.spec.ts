@@ -39,7 +39,7 @@ describe("InnovationSupportLog Test Suite", () => {
     );
 
     const userObj = User.new({
-      id: "abc",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.INNOVATOR,
     });
     const user = await userRepo.save(userObj);

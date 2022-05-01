@@ -120,21 +120,21 @@ export const createAccessorUser = async () => {
   const qAccessor = new User();
   const accessorService = new AccessorService(process.env.DB_TESTS_NAME);
   qAccessor.type = UserType.ACCESSOR;
-  qAccessor.id = uuid.v4();
+  qAccessor.id = uuid.v4().toUpperCase();
   return await accessorService.create(qAccessor);
 };
 
 export const createInnovatorUser = async () => {
   const innovator = new User();
   const innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
-  innovator.id = uuid.v4();
+  innovator.id = uuid.v4().toUpperCase();
   return await innovatorService.create(innovator);
 };
 
 export const createAssessmentUser = async (lockedAt?: Date) => {
   const usr = new User();
   const userService = new UserService(process.env.DB_TESTS_NAME);
-  usr.id = uuid.v4();
+  usr.id = uuid.v4().toUpperCase();
   usr.type = UserType.ASSESSMENT;
   usr.lockedAt = lockedAt;
   return await userService.create(usr);
@@ -144,7 +144,7 @@ export const createAdminUser = async () => {
   const admin = new User();
   const userService = new UserService(process.env.DB_TESTS_NAME);
   admin.type = UserType.ADMIN;
-  admin.id = uuid.v4();
+  admin.id = uuid.v4().toUpperCase();
 
   const role = await createAdminRole();
 

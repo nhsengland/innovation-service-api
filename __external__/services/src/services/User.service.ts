@@ -627,7 +627,7 @@ export class UserService {
         }
 
         //Check if the user being created is an ADMIN, if it is, create a new UserRole with the User and Role IDs
-        if (user.type == "ADMIN") {
+        if (user.type === "ADMIN") {
           const role = await this.roleRepo.findOne({
             where: {
               name: ServiceRole.ADMIN,
