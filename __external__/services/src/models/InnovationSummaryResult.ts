@@ -43,7 +43,7 @@ export interface AccessorInnovationSummary {
   };
   lockedInnovatorValidation: {
     displayIsInnovatorLocked: boolean;
-    innovatorName?: string;
+    innovatorName: string;
   };
 }
 
@@ -71,6 +71,6 @@ export interface AssessmentInnovationSummary {
   };
   lockedInnovatorValidation: {
     displayIsInnovatorLocked: boolean;
-    innovatorName?: string;
+    innovatorName: string;
   };
 }
