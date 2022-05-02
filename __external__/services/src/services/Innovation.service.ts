@@ -806,7 +806,7 @@ export class InnovationService extends BaseService<Innovation> {
 
     //Create object to show warning message in case innovation owner is locked
     let isUserLocked = false;
-    let userName: string = null;
+    let userName: string;
     const userDetails = await this.userService.getUserDetails(
       innovation.owner.id,
       "FULL"
@@ -879,7 +879,7 @@ export class InnovationService extends BaseService<Innovation> {
 
     //Create object to show warning message in case innovation owner is locked
     let isUserLocked = false;
-    let userName: string = null;
+    let userName: string;
     const userDetails = await this.userService.getUserDetails(
       innovation.owner.id,
       "FULL"
