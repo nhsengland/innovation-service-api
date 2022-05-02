@@ -675,7 +675,7 @@ const getRecipientsEngaging = async (
     connectionName
   );
   const supports = await innovationSupportRepo.find({
-    where: `innovation_id = '${innovationId}' 
+    where: `innovation_id = '${innovationId}'
             and status in('${InnovationSupportStatus.ENGAGING}')`,
     relations: [
       "organisationUnitUsers",
@@ -697,7 +697,7 @@ const getRecipients = async (innovationId: string, connectionName?: string) => {
     connectionName
   );
   const supports = await innovationSupportRepo.find({
-    where: `innovation_id = '${innovationId}' 
+    where: `innovation_id = '${innovationId}'
             and status in('${InnovationSupportStatus.ENGAGING}', '${InnovationSupportStatus.COMPLETE}')
            `,
     relations: [
