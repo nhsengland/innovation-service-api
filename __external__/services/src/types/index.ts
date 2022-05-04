@@ -48,6 +48,7 @@ export enum UserLockValidationCode {
   LastAssessmentUserOnPlatform = "lastAssessmentUserOnPlatform",
   LastAccessorUserOnOrganisation = "lastAccessorUserOnOrganisation",
   LastAccessorUserOnOrganisationUnit = "lastAccessorUserOnOrganisationUnit",
+  LastAccessorFromOrganisationProvidingSupport = "lastAccessorFromOrganisationProvidingSupport",
   LastAccessorFromUnitProvidingSupport = "lastAccessorFromUnitProvidingSupport",
 }
 

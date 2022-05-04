@@ -27,7 +27,9 @@ import {
   getUserFromB2C,
   deleteB2CAccount,
 } from "../helpers";
-import * as rules from "../config/admin-user-lock.config.json";
+import * as qaRules from "../config/admin-qa-user-lock.config.json";
+import * as accessorRules from "../config/admin-accessor-user-lock.config.json";
+import * as assessmentRules from "../config/admin-needs-assessment-user-lock.config.json";
 import * as rule from "../config/admin-change-role.config.json";
 import * as unitrules from "../config/admin-user-change-unit.config.json";
 import { UserCreationModel } from "@services/models/UserCreationModel";
@@ -314,7 +316,25 @@ export class AdminService {
       ],
     });
 
-    return await this.runUserValidation(userToBeRemoved);
+    const userOrganisations = await userToBeRemoved.userOrganisations;
+
+    if (
+      userToBeRemoved.type === "ACCESSOR" &&
+      userOrganisations[0].role === AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    ) {
+      return await this.runQualifyingAccessorUserValidation(userToBeRemoved);
+    }
+
+    if (
+      userToBeRemoved.type === "ACCESSOR" &&
+      userOrganisations[0].role === AccessorOrganisationRole.ACCESSOR
+    ) {
+      return await this.runAccessorUserValidation(userToBeRemoved);
+    }
+
+    if (userToBeRemoved.type === "ASSESSMENT") {
+      return await this.runNeedsAssessmentUserValidation(userToBeRemoved);
+    }
   }
 
   async userChangeRoleValidation(
@@ -422,35 +442,58 @@ export class AdminService {
     };
   }
 
-  private async runUserValidation(user: User): Promise<{ [key: string]: any }> {
-    const r = { ...rules };
-    if (user.type === UserType.ASSESSMENT) {
-      const checkAssessmentUser = await this.CheckAssessmentUser(user);
-      if (r[checkAssessmentUser?.code.toString()]) {
-        r[checkAssessmentUser?.code.toString()] = {
-          ...checkAssessmentUser,
-          valid: false,
-        };
-      }
+  private async runNeedsAssessmentUserValidation(
+    user: User
+  ): Promise<{ [key: string]: any }> {
+    const r = { ...assessmentRules };
+    const checkAssessmentUser = await this.CheckAssessmentUser(user);
+    if (r[checkAssessmentUser?.code.toString()]) {
+      r[checkAssessmentUser?.code.toString()] = {
+        ...checkAssessmentUser,
+        valid: false,
+      };
     }
 
-    if (user.type === UserType.ACCESSOR) {
-      const accessorOrgRule = await this.CheckAccessorOrganisation(user);
-      const accessorSupportRule = await this.checkAccessorSupports(user);
+    return r;
+  }
 
-      if (r[accessorOrgRule?.code.toString()]) {
-        r[accessorOrgRule?.code.toString()] = {
-          ...accessorOrgRule,
-          valid: false,
-        };
-      }
+  private async runQualifyingAccessorUserValidation(
+    user: User
+  ): Promise<{ [key: string]: any }> {
+    const r = { ...qaRules };
 
-      if (r[accessorSupportRule?.code.toString()]) {
-        r[accessorSupportRule?.code.toString()] = {
-          ...accessorSupportRule,
-          valid: false,
-        };
-      }
+    const accessorOrgRule = await this.CheckAccessorOrganisation(user);
+    const accessorSupportRule = await this.checkAccessorSupports(user);
+
+    if (r[accessorOrgRule?.code.toString()]) {
+      r[accessorOrgRule?.code.toString()] = {
+        ...accessorOrgRule,
+        valid: false,
+      };
+    }
+
+    if (r[accessorSupportRule?.code.toString()]) {
+      r[accessorSupportRule?.code.toString()] = {
+        ...accessorSupportRule,
+        valid: false,
+      };
+    }
+
+    return r;
+  }
+
+  private async runAccessorUserValidation(
+    user: User
+  ): Promise<{ [key: string]: any }> {
+    const r = { ...accessorRules };
+
+    const accessorSupportRule = await this.checkAccessorSupports(user);
+
+    if (r[accessorSupportRule?.code.toString()]) {
+      r[accessorSupportRule?.code.toString()] = {
+        ...accessorSupportRule,
+        valid: false,
+      };
     }
 
     return r;
@@ -576,6 +619,7 @@ export class AdminService {
     const userOrganisations = await userToBeRemoved.userOrganisations;
     for (const userOrg of userOrganisations) {
       const organisationId = userOrg.organisation.id;
+
       const orgMembers = await this.connection
         .createQueryBuilder(OrganisationUser, "orgUser")
         .innerJoin(
