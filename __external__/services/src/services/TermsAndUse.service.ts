@@ -1,6 +1,10 @@
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import { User, UserType, TouType, TermsAndUse } from "@domain/index";
-import { InvalidParamsError, InvalidUserTypeError, UniqueKeyError } from "@services/errors";
+import {
+  InvalidParamsError,
+  InvalidUserTypeError,
+  UniqueKeyError,
+} from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection } from "typeorm";
 import { BaseService } from "./Base.service";
@@ -60,6 +64,45 @@ export class TermsAndUseService extends BaseService<TermsAndUse> {
       id: result.id,
       name: result.name,
       touType: result.touType,
+      createdAt: result.createdAt,
+    };
+  }
+
+  async updateTermsandUse(
+    requestUser: RequestUser,
+    touPaylod: TermsAndUseResultCreationModel,
+    touId: string
+  ): Promise<TermsAndUseResult> {
+    let result;
+    if (!requestUser || !touPaylod.name) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+
+    if (requestUser.type !== UserType.ADMIN) {
+      throw new InvalidUserTypeError("Invalid user type.");
+    }
+
+    try {
+      await this.connection.transaction(async (transaction) => {
+        await transaction.update(
+          TermsAndUse,
+          { id: touId },
+          {
+            name: touPaylod.name,
+            summary: touPaylod.summary || "",
+            touType: touPaylod.touType,
+            releasedAt: touPaylod.releasedAt || null,
+          }
+        );
+      });
+    } catch {
+      throw new Error("Error updating TersOfUse");
+    }
+    return {
+      id: result.id,
+      name: result.name,
+      touType: result.touType,
+      releasedAt: result.releasedAt,
       createdAt: result.createdAt,
     };
   }
