@@ -41,6 +41,10 @@ export interface AccessorInnovationSummary {
     id: string;
     status: InnovationSupportStatus;
   };
+  lockedInnovatorValidation: {
+    displayIsInnovatorLocked: boolean;
+    innovatorName?: string;
+  };
 }
 
 export interface AssessmentInnovationSummary {
@@ -64,5 +68,9 @@ export interface AssessmentInnovationSummary {
   assessment: {
     id: string;
     assignToName: string;
+  };
+  lockedInnovatorValidation: {
+    displayIsInnovatorLocked: boolean;
+    innovatorName?: string;
   };
 }

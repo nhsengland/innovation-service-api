@@ -2,6 +2,8 @@ import {
   AccessorOrganisationRole,
   Innovation,
   InnovationSupportStatus,
+  NotificationAudience,
+  NotificationContextType,
   OrganisationUnitUser,
   OrganisationUser,
   User,
@@ -40,17 +42,24 @@ import { OrganisationService } from "./Organisation.service";
 import { NotificationService } from "./Notification.service";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import { LoggerService } from "./Logger.service";
+import { InnovationSupportService } from "./InnovationSupport.service";
 
 export class AdminService {
   private readonly connection: Connection;
   private readonly userService: UserService;
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
+  private readonly innovationSupportService: InnovationSupportService;
+  private readonly organisationService: OrganisationService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.userService = new UserService(connectionName);
     this.notificationService = new NotificationService(connectionName);
+    this.innovationSupportService = new InnovationSupportService(
+      connectionName
+    );
+    this.organisationService = new OrganisationService(connectionName);
   }
   async getUsersOfType(
     type: UserType,
@@ -177,8 +186,9 @@ export class AdminService {
       throw new Error("Invalid user id.");
     }
 
+    let result;
     try {
-      await this.connection.transaction(async (transaction) => {
+      result = await this.connection.transaction(async (transaction) => {
         await transaction.update(
           User,
           { id: userId },
@@ -194,6 +204,76 @@ export class AdminService {
       });
     } catch {
       throw new Error("Error locking user at IdP");
+    }
+
+    //When the user is locked, trigger an inservice notification for Qualifying Accessors if the innovation support status is "further info",
+    //"waiting" or "engaging" and for Accessors when the status = "engaging".
+    const userDetails = await this.userService.getUserDetails(userId, "FULL");
+    if (userDetails.type === "INNOVATOR") {
+      let users: string[];
+      const orgUnitUsersList: string[] = [];
+      const userToRequestUser: RequestUser = {
+        id: userId,
+        type: UserType.INNOVATOR,
+      };
+
+      for (let i = 0; i < userDetails.innovations.length; i++) {
+        const innovationSupports = await this.innovationSupportService.findAllByInnovation(
+          userToRequestUser,
+          userDetails.innovations[i].id
+        );
+
+        for (let j = 0; j < innovationSupports.length; j++) {
+          const organisationUnitUsers = await this.organisationService.findOrganisationUnitUsersById(
+            innovationSupports[j].organisationUnit.id
+          );
+
+          for (let k = 0; k < organisationUnitUsers.length; k++) {
+            if (
+              innovationSupports[j].status ===
+                InnovationSupportStatus.FURTHER_INFO_REQUIRED ||
+              innovationSupports[j].status === InnovationSupportStatus.WAITING
+            ) {
+              if (organisationUnitUsers[k].role === "QUALIFYING_ACCESSOR") {
+                orgUnitUsersList.push(organisationUnitUsers[k].id);
+              }
+            }
+            if (
+              innovationSupports[j].status === InnovationSupportStatus.ENGAGING
+            ) {
+              if (
+                organisationUnitUsers[k].role === "QUALIFYING_ACCESSOR" ||
+                organisationUnitUsers[k].role === "ACCESSOR"
+              ) {
+                orgUnitUsersList.push(organisationUnitUsers[k].id);
+              }
+            }
+          }
+        }
+        if (orgUnitUsersList.length != 0) {
+          users = await this.organisationService.findUserFromUnitUsers(
+            orgUnitUsersList
+          );
+
+          try {
+            await this.notificationService.create(
+              requestUser,
+              NotificationAudience.ACCESSORS,
+              userDetails.innovations[i].id,
+              NotificationContextType.INNOVATION,
+
+              result.id,
+              `Please Note that the Innovator ${userDetails.displayName} account has been locked by the Admin`,
+              users
+            );
+          } catch (error) {
+            this.logService.error(
+              `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
+              error
+            );
+          }
+        }
+      }
     }
 
     const email = this.getUserEmail(user);
