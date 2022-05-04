@@ -60,7 +60,7 @@ describe("[HttpTrigger] usersUpdateProfile Test Suite", () => {
       );
     });
 
-    it("Should return 403 when innovator has an invalid user type", async () => {
+    it("Should return 200 when user has an Admin user type", async () => {
       const services = {
         UserService: {
           getUser: () => ({
@@ -82,7 +82,7 @@ describe("[HttpTrigger] usersUpdateProfile Test Suite", () => {
       const { res } = await mockedRequestFactory({
         headers: { authorization: ":access_token" },
       });
-      expect(res.status).toBe(403);
+      expect(res.status).toBe(200);
     });
 
     it("Should return 200 when User Profile is found", async () => {
