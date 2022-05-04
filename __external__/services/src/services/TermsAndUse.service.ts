@@ -43,7 +43,7 @@ export class TermsAndUseService extends BaseService<TermsAndUse> {
       touType: touPaylod.touType,
       createdBy: requestUser.id,
       updatedBy: requestUser.id,
-      releaseAt: touPaylod.releaseAt || null,
+      releasedAt: touPaylod.releasedAt || null,
     };
     try {
       result = await this.connection.transaction(async (trs) => {
@@ -88,7 +88,7 @@ export class TermsAndUseService extends BaseService<TermsAndUse> {
       name: tou.name,
       touType: tou.touType,
       summary: tou.summary,
-      releaseAt: tou.releasedAt,
+      releasedAt: tou.releasedAt,
     };
   }
 
@@ -123,7 +123,7 @@ export class TermsAndUseService extends BaseService<TermsAndUse> {
           name: tu.name,
           touType: tu.TouType,
           summary: tu.summary,
-          releaseAt: tu.releaseAt,
+          releasedAt: tu.releasedAt,
         };
       }),
       count: tou.length as number,

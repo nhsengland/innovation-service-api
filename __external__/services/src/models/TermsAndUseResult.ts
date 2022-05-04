@@ -5,7 +5,7 @@ export interface TermsAndUseResult {
   name: string;
   touType: TouType;
   summary?: string;
-  releaseAt?: Date;
+  releasedAt?: Date;
   error?: TouCreateError;
 }
 
@@ -18,7 +18,7 @@ export interface TermsAndUseResultCreationModel {
   name: string;
   touType: TouType;
   summary?: string;
-  releaseAt?: Date;
+  releasedAt?: Date;
 }
 
 interface TouCreateError {
