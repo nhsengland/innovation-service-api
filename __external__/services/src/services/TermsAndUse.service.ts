@@ -84,7 +84,7 @@ export class TermsAndUseService extends BaseService<TermsAndUse> {
 
     try {
       await this.connection.transaction(async (transaction) => {
-        await transaction.update(
+        result = await transaction.update(
           TermsAndUse,
           { id: touId },
           {
