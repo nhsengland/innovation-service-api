@@ -66,6 +66,7 @@ export class TermsAndUseService extends BaseService<TermsAndUse> {
       id: result.id,
       name: result.name,
       touType: result.touType,
+      createdAt: result.createdAt,
     };
   }
 
@@ -89,6 +90,7 @@ export class TermsAndUseService extends BaseService<TermsAndUse> {
       touType: tou.touType,
       summary: tou.summary,
       releasedAt: tou.releasedAt,
+      createdAt: tou.createdAt,
     };
   }
 
@@ -124,6 +126,7 @@ export class TermsAndUseService extends BaseService<TermsAndUse> {
           touType: tu.TouType,
           summary: tu.summary,
           releasedAt: tu.releasedAt,
+          createdAt: tu.createdAt,
         };
       }),
       count: tou.length as number,

@@ -7,6 +7,7 @@ export interface TermsAndUseResult {
   summary?: string;
   releasedAt?: Date;
   error?: TouCreateError;
+  createdAt?: Date;
 }
 
 export interface TermsAndUseModel {
