@@ -13,7 +13,9 @@ export class createTableTermsAndUse1651056597270 implements MigrationInterface {
               "tou_type" nvarchar(100) CHECK( tou_type IN ('INNOVATOR', 'SUPPORT_ORGANISATION') ) NOT NULL, 
               "summary" nvarchar(2000),
               "released_at" datetime2,
-              CONSTRAINT "pk_terms_and_use_id" PRIMARY KEY ("id"))`
+              "deleted_at" datetime2,
+              CONSTRAINT "pk_terms_and_use_id" PRIMARY KEY ("id"),
+              CONSTRAINT "unique_name" UNIQUE (name))`
     );
   }
 

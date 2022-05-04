@@ -3317,7 +3317,7 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
-  /user-admin/termsanduse:
+  /user-admin/tou:
     post:
       tags:
         - Admin
@@ -3345,7 +3345,32 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
-  '/user-admin/{touID}/termsanduse':
+    get:
+      tags:
+        - Admin
+        - TermsAndUse
+        - GetTermsAndUse
+      description: Admins get terms and use
+      operationId: admins-get-terms-and-use
+      security:
+        - OpenId:
+            - users_read
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/user-admin/tou/{touId}':
     put:
       tags:
         - Admin
@@ -3362,7 +3387,7 @@ paths:
           schema:
             type: string
           required: true
-        - name: touID
+        - name: touId
           in: path
           schema:
             type: string
@@ -3380,9 +3405,9 @@ paths:
       tags:
         - Admin
         - TermsAndUse
-        - GetTermsAndUse
-      description: Admins get terms and use
-      operationId: admins-get-terms-and-use
+        - GetTermsAndUseById
+      description: Admins get terms and use by id
+      operationId: admins-get-terms-and-use-id
       security:
         - OpenId:
             - users_read
@@ -3392,7 +3417,7 @@ paths:
           schema:
             type: string
           required: true
-        - name: touID
+        - name: touId
           in: path
           schema:
             type: string

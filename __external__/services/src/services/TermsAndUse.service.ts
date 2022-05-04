@@ -57,7 +57,10 @@ export class TermsAndUseService extends BaseService<TermsAndUse> {
     };
   }
 
-  async findTermsAndUseById(Id: string): Promise<TermsAndUseResult> {
+  async findTermsAndUseById(
+    requestUser: RequestUser,
+    Id: string
+  ): Promise<TermsAndUseResult> {
     if (!Id) {
       throw new InvalidParamsError("Invalid parameters.");
     }
@@ -78,6 +81,7 @@ export class TermsAndUseService extends BaseService<TermsAndUse> {
   }
 
   async findAllTermsAndUse(
+    requestUser: RequestUser,
     skip: number,
     take: number,
     order?: { [key: string]: string }
