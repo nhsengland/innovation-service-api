@@ -11,11 +11,8 @@ export class copyIdToExternalId1651054262772 extends BaseSeed {
   public async up(queryRunner: QueryRunner): Promise<any> {
     await queryRunner.query(
       `
-        update u set u.external_id = u2.id
-        FROM [user] u
-        inner join [user] u2
-        on u.id = u2.id
-        where u.id != u2.external_id
+        update [user] set external_id = id
+        where  id != external_id
       `
     );
   }
