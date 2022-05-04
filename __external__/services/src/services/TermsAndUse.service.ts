@@ -138,7 +138,6 @@ export class TermsAndUseService extends BaseService<TermsAndUse> {
     order?: { [key: string]: string }
   ): Promise<TermsAndUseModel> {
     const filterOptions = {
-      relations: ["terms_and_use"],
       where: {},
       skip,
       take,
