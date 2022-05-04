@@ -1,8 +1,4 @@
 {
-  "lastAssessmentUserOnPlatform": {
-    "valid": true,
-    "code" : "lastAssessmentUserOnPlatform"
-  },
   "lastAccessorUserOnOrganisation": {
     "valid": true,
     "code":  "lastAccessorUserOnOrganisation"
