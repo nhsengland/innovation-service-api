@@ -36,6 +36,9 @@ const dummy = {
       getUser: () => ({
         type: UserType.ASSESSMENT,
       }),
+      getUserByOptions: () => ({
+        type: UserType.ASSESSMENT,
+      })
     },
   },
 };
@@ -75,7 +78,7 @@ describe("[HttpTrigger] assessmentsGetInnovationActivities Suite", () => {
             params:
               {
                 id: ':value'
-              }  
+              }
           },
         ],
         1,
@@ -94,6 +97,9 @@ describe("[HttpTrigger] assessmentsGetInnovationActivities Suite", () => {
         ...dummy.services,
         UserService: {
           getUser: () => ({
+            type: UserType.ACCESSOR,
+          }),
+          getUserByOptions: () => ({
             type: UserType.ACCESSOR,
           }),
         },

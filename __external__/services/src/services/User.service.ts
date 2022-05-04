@@ -91,6 +91,11 @@ export class UserService {
     return await this.userRepo.findOne(id, options);
   }
 
+  async getUserByOptions(options: FindOneOptions<User>): Promise<User> {
+    const res = await this.userRepo.findOne(options);
+    return res;
+  }
+
   async updateB2CUser(
     payload: any,
     oid: string,

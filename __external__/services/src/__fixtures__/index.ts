@@ -128,6 +128,7 @@ export const createInnovatorUser = async () => {
   const innovator = new User();
   const innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
   innovator.id = uuid.v4().toUpperCase();
+  innovator.externalId = uuid.v4();
   return await innovatorService.create(innovator);
 };
 

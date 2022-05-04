@@ -35,6 +35,9 @@ const dummy = {
       getUser: () => ({
         type: UserType.INNOVATOR,
       }),
+      getUserByOptions: () => ({
+        type: UserType.INNOVATOR,
+      }),
     },
   },
   innovatorId: 'test_innovator_id'

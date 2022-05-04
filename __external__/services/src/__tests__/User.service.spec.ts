@@ -44,7 +44,7 @@ describe("User Service Suite", () => {
   let organisationUnit: OrganisationUnit;
 
   beforeAll(async () => {
-    // await setupTestsConnection();
+    //await setupTestsConnection();
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
     });
@@ -72,7 +72,7 @@ describe("User Service Suite", () => {
 
     await query.from(Role).execute();
 
-    // closeTestsConnection();
+    //closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -804,5 +804,23 @@ describe("User Service Suite", () => {
 
     // Assert
     expect(err).toBeUndefined();
+  });
+
+  it("It should get User by external id", async () => {
+    // Arrange
+    const dbUser = await fixtures.createInnovatorUser();
+    // Act
+    let err;
+    let actual;
+    try {
+      actual = await userService.getUserByOptions({
+        where: { externalId: dbUser.externalId },
+      });
+    } catch (error) {
+      err = error;
+    }
+    // Assert
+    expect(err).not.toBeDefined();
+    expect(actual).toBeDefined();
   });
 });
