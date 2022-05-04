@@ -1,6 +1,6 @@
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import { User, UserType, TouType, TermsAndUse } from "@domain/index";
-import { InvalidParamsError, InvalidUserTypeError } from "@services/errors";
+import { InvalidParamsError, InvalidUserTypeError, UniqueKeyError } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection } from "typeorm";
 import { BaseService } from "./Base.service";
@@ -51,15 +51,9 @@ export class TermsAndUseService extends BaseService<TermsAndUse> {
         return tou;
       });
     } catch (error) {
-      return {
-        id: null,
-        name: null,
-        touType: null,
-        error: {
-          code: error.constructor.name,
-          message: error.message,
-        },
-      };
+      if (error.number === 2627) {
+        throw new UniqueKeyError("Violation of UNIQUE KEY constraint");
+      }
     }
 
     return {
