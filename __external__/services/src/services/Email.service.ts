@@ -77,6 +77,15 @@ export class EmailService {
     templateCode: string,
     props?: EmailProps
   ) {
+    const checkIfUserIsLocked = await (
+      await this.userService.searchUserByEmail(recipient.email)
+    ).lockedAt;
+    if (checkIfUserIsLocked != null) {
+      throw new Error(
+        "The user you are trying to send an email to is currently locked"
+      );
+    }
+
     const template = getTemplates().find((t) => t.code === templateCode);
     if (!template) {
       throw new EmailTemplateNotFound(
