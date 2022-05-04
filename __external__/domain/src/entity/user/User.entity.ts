@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { UserType } from "../../enums/user.enums";
 
 import { Base } from "../Base.entity";
@@ -8,7 +8,7 @@ import { UserRole } from "./UserRole.entity";
 @Entity("user")
 export class User extends Base {
   //columns
-  @PrimaryColumn({ nullable: false })
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column({
