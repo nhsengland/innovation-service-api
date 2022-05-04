@@ -34,7 +34,7 @@ class AdminsGetTermsAndUses {
 
     let result;
     try {
-      result = await persistence.createTermsAndUses(context, skip, take, order);
+      result = await persistence.createTermsAndUses(context, take, skip, order);
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);

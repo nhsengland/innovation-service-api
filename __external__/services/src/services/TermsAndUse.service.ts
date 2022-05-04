@@ -19,7 +19,7 @@ export class TermsAndUseService extends BaseService<TermsAndUse> {
   private readonly logService: LoggerService;
 
   constructor(connectionName?: string) {
-    super(User, connectionName);
+    super(TermsAndUse, connectionName);
     this.connection = getConnection(connectionName);
     this.logService = new LoggerService();
   }
@@ -119,7 +119,7 @@ export class TermsAndUseService extends BaseService<TermsAndUse> {
     }
 
     return {
-      data: tou?.map((tu: any) => {
+      data: tou[0]?.map((tu: any) => {
         return {
           id: tu.id,
           name: tu.name,
