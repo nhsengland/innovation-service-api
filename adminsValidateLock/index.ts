@@ -14,9 +14,9 @@ import * as persistence from "./persistence";
 class AdminsValidateLock {
   @AppInsights()
   @SQLConnector()
-  /*@JwtDecoder(true)
+  @JwtDecoder(true)
   @AllowedUserType(UserType.ADMIN)
-  @ServiceRoleValidator(ServiceRole.ADMIN, ServiceRole.SERVICE_TEAM)*/
+  @ServiceRoleValidator(ServiceRole.ADMIN, ServiceRole.SERVICE_TEAM)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
