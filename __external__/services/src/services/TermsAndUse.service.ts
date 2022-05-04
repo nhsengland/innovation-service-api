@@ -28,6 +28,7 @@ export class TermsAndUseService extends BaseService<TermsAndUse> {
     requestUser: RequestUser,
     touPaylod: TermsAndUseResultCreationModel
   ): Promise<TermsAndUseResult> {
+    let result;
     if (!requestUser || !touPaylod.name) {
       throw new InvalidParamsError("Invalid parameters.");
     }
@@ -44,11 +45,22 @@ export class TermsAndUseService extends BaseService<TermsAndUse> {
       updatedBy: requestUser.id,
       releaseAt: touPaylod.releaseAt || null,
     };
-
-    const result = await this.connection.transaction(async (trs) => {
-      const tou = await trs.save(TermsAndUse, touObj);
-      return tou;
-    });
+    try {
+      result = await this.connection.transaction(async (trs) => {
+        const tou = await trs.save(TermsAndUse, touObj);
+        return tou;
+      });
+    } catch (error) {
+      return {
+        id: null,
+        name: null,
+        touType: null,
+        error: {
+          code: error.constructor.name,
+          message: error.message,
+        },
+      };
+    }
 
     return {
       id: result.id,

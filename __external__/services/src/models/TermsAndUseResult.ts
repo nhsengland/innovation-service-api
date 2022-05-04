@@ -6,6 +6,7 @@ export interface TermsAndUseResult {
   touType: TouType;
   summary?: string;
   releaseAt?: Date;
+  error?: TouCreateError;
 }
 
 export interface TermsAndUseModel {
@@ -18,4 +19,9 @@ export interface TermsAndUseResultCreationModel {
   touType: TouType;
   summary?: string;
   releaseAt?: Date;
+}
+
+interface TouCreateError {
+  code: string;
+  message: string;
 }
