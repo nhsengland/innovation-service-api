@@ -352,7 +352,7 @@ export class OrganisationService extends BaseService<Organisation> {
       acronymSearch = await this.findAllUnits(filterAcronyms);
     }
 
-    if (acronymSearch.length == 0) {
+    if (acronymSearch.length === 0) {
       return false;
     }
 

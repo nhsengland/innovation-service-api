@@ -31,7 +31,7 @@ import * as fixtures from "../__fixtures__";
 const dummy = {
   email: "email@email.com",
   requestUser: {
-    id: ":userId",
+    id: "C7095D87-C3DF-46F6-A503-001B083F4630",
     type: UserType.ADMIN,
   },
 };
@@ -44,7 +44,7 @@ describe("User Service Suite", () => {
   let organisationUnit: OrganisationUnit;
 
   beforeAll(async () => {
-    // await setupTestsConnection();
+    //await setupTestsConnection();
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
     });
@@ -60,7 +60,7 @@ describe("User Service Suite", () => {
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue({
-      id: ":userOid",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: ":userName",
     });
   });
@@ -72,7 +72,7 @@ describe("User Service Suite", () => {
 
     await query.from(Role).execute();
 
-    // closeTestsConnection();
+    //closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -145,7 +145,8 @@ describe("User Service Suite", () => {
     let err;
 
     const accessorObj = User.new({
-      id: "abc-def-ghi",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
     });
     const accessor = await accessorService.create(accessorObj);
 
@@ -205,7 +206,7 @@ describe("User Service Suite", () => {
 
     try {
       actual = await userService.getProfile(
-        "8c179628-100d-4f95-bae4-2ccc64de77fe"
+        "8C179628-100D-4F95-BAE4-2CCC64DE77FE"
       );
     } catch (error) {
       err = error;
@@ -290,7 +291,7 @@ describe("User Service Suite", () => {
 
   it("should throw when createUser with invalid requestUser type params", async () => {
     const requestUser = {
-      id: ":user_id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ASSESSMENT,
     };
 
@@ -474,7 +475,7 @@ describe("User Service Suite", () => {
       .mockRejectedValue(new Error("User Not found"));
     const fakeRequestUser = {
       requestUser: {
-        id: ":userId",
+        id: "C7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.INNOVATOR,
       },
     };
@@ -508,7 +509,7 @@ describe("User Service Suite", () => {
     jest.spyOn(helpers, "deleteB2CAccount");
     const fakeRequestUser = {
       requestUser: {
-        id: ":userId",
+        id: "C7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.INNOVATOR,
       },
     };
@@ -545,7 +546,7 @@ describe("User Service Suite", () => {
       .mockRejectedValue("delete user failed");
     const fakeRequestUser = {
       requestUser: {
-        id: ":userId",
+        id: "C7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.INNOVATOR,
       },
     };
@@ -569,7 +570,7 @@ describe("User Service Suite", () => {
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
-      id: "user_id_from_b2c",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: "Accessor A",
       identities: [
         {
@@ -581,7 +582,7 @@ describe("User Service Suite", () => {
     });
     const fakeRequestUser = {
       requestUser: {
-        id: ":userId",
+        id: "C7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.INNOVATOR,
       },
     };
@@ -604,7 +605,7 @@ describe("User Service Suite", () => {
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
-      id: "user_id_from_b2c",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: "Accessor A",
       identities: [
         {
@@ -616,7 +617,7 @@ describe("User Service Suite", () => {
     });
     const fakeRequestUser = {
       requestUser: {
-        id: ":userId",
+        id: "C7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.INNOVATOR,
       },
     };
@@ -638,7 +639,7 @@ describe("User Service Suite", () => {
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
-      id: "user_id_from_b2c",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: "Innovator",
       identities: [
         {
@@ -696,7 +697,8 @@ describe("User Service Suite", () => {
     jest.spyOn(helpers, "saveB2CUser").mockImplementation();
 
     const accessorObj = User.new({
-      id: "abc-def-ghi",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
     });
     const accessor = await accessorService.create(accessorObj);
 
@@ -742,7 +744,7 @@ describe("User Service Suite", () => {
     };
 
     const requestUser = {
-      id: "request_user_id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -753,7 +755,7 @@ describe("User Service Suite", () => {
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue(false);
 
     jest.spyOn(helpers, "createB2CUser").mockResolvedValue({
-      id: "user_id_from_b2c",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: "Admin User",
     });
 
@@ -804,5 +806,23 @@ describe("User Service Suite", () => {
 
     // Assert
     expect(err).toBeUndefined();
+  });
+
+  it("It should get User by external id", async () => {
+    // Arrange
+    const dbUser = await fixtures.createInnovatorUser();
+    // Act
+    let err;
+    let actual;
+    try {
+      actual = await userService.getUserByOptions({
+        where: { externalId: dbUser.externalId },
+      });
+    } catch (error) {
+      err = error;
+    }
+    // Assert
+    expect(err).not.toBeDefined();
+    expect(actual).toBeDefined();
   });
 });

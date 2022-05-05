@@ -306,7 +306,9 @@ export function AllowedUserType(...type: UserType[]) {
     descriptor.value = async function (...args: any[]) {
       const context: CustomContext = args[0];
       const oid = context.auth.decodedJwt.oid;
-      const user = await context.services.UserService.getUser(oid);
+      const user = await context.services.UserService.getUserByOptions({
+        where: { externalId: oid },
+      });
 
       if (!user || !type.includes(user.type)) {
         context.log.error(
@@ -327,7 +329,7 @@ export function AllowedUserType(...type: UserType[]) {
 
       if (user.type === UserType.ACCESSOR) {
         const userOrganisations: OrganisationUser[] = await context.services.OrganisationService.findUserOrganisations(
-          oid
+          user.id
         );
 
         let organisationUnitUser = null;
@@ -344,7 +346,8 @@ export function AllowedUserType(...type: UserType[]) {
         }
 
         requestUser = {
-          id: oid,
+          id: user.id,
+          identityId: oid,
           type: user.type,
           organisationUser: {
             id: userOrganisations[0].id,
@@ -358,7 +361,8 @@ export function AllowedUserType(...type: UserType[]) {
         };
       } else {
         requestUser = {
-          id: oid,
+          id: user.id,
+          identityId: oid,
           type: user.type,
         };
       }
@@ -444,7 +448,8 @@ export function ServiceRoleValidator(...roles: ServiceRole[]) {
     descriptor.value = async function (...args: any[]) {
       const context: CustomContext = args[0];
       const oid = context.auth.decodedJwt.oid;
-      const user = await context.services.UserService.getUser(oid, {
+      const user = await context.services.UserService.getUserByOptions({
+        where: { externalId: oid },
         relations: ["serviceRoles", "serviceRoles.role"],
       });
 

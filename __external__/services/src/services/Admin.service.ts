@@ -262,7 +262,7 @@ export class AdminService {
               userDetails.innovations[i].id,
               NotificationContextType.INNOVATION,
 
-              result.id,
+              userDetails.innovations[i].id,
               `Please Note that the Innovator ${userDetails.displayName} account has been locked by the Admin`,
               users
             );
@@ -414,6 +414,10 @@ export class AdminService {
 
     if (userToBeRemoved.type === "ASSESSMENT") {
       return await this.runNeedsAssessmentUserValidation(userToBeRemoved);
+    }
+
+    if (userToBeRemoved.type === "INNOVATOR") {
+      return {};
     }
   }
 
@@ -875,7 +879,7 @@ export class AdminService {
 
     const userToBeDeleted = await this.userService.getUser(userId);
 
-    if (userToBeDeleted.type == "ADMIN") {
+    if (userToBeDeleted.type === "ADMIN") {
       return await this.connection.transaction(async (transactionManager) => {
         try {
           await deleteB2CAccount(userId);

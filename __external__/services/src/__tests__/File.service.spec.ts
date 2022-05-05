@@ -49,7 +49,7 @@ describe("File Service Suite", () => {
 
   it("should delete a file", async () => {
     const innovator = new User();
-    innovator.id = ":user_id";
+    innovator.id = "C7095D87-C3DF-46F6-A503-001B083F4630";
     const innovatorUser = await innovatorService.create(innovator);
 
     const innovationObj: Innovation = Innovation.new({

@@ -36,6 +36,9 @@ const dummy = {
       getUser: () => ({
         type: UserType.INNOVATOR,
       }),
+      getUserByOptions: () => ({
+        type: UserType.INNOVATOR,
+      }),
     },
   }
 };
@@ -64,6 +67,9 @@ describe("[HttpTrigger] usersUpdateProfile Test Suite", () => {
       const services = {
         UserService: {
           getUser: () => ({
+            type: UserType.ADMIN,
+          }),
+          getUserByOptions: () => ({
             type: UserType.ADMIN,
           }),
         },
