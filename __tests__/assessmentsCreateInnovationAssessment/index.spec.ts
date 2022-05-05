@@ -35,10 +35,13 @@ const dummy = {
       getUser: () => ({
         type: UserType.ASSESSMENT,
       }),
+      getUserByOptions: () => ({
+        type: UserType.ASSESSMENT,
+      })
     },
   },
   innovationId: "test_innovation_id",
-  assessmentUserId: "test_assessment_user_id"
+  assessmentUserId: "C7095D87-C3DF-46F6-A503-001B083F4630"
 };
 
 describe("[HttpTrigger] assessmentsCreateInnovationAssessment Suite", () => {
@@ -85,6 +88,9 @@ describe("[HttpTrigger] assessmentsCreateInnovationAssessment Suite", () => {
           getUser: () => ({
             type: UserType.ACCESSOR,
           }),
+          getUserByOptions: () => ({
+            type: UserType.ACCESSOR,
+          }),
         },
       };
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(
@@ -105,7 +111,7 @@ describe("[HttpTrigger] assessmentsCreateInnovationAssessment Suite", () => {
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
       jest.spyOn(authentication, "decodeToken").mockReturnValue({
-        oid: "test",
+        oid: "D7095D87-C3DF-46F6-A503-001B083F4630",
       });
 
       const { res } = await mockedRequestFactory({

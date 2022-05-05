@@ -29,7 +29,7 @@ describe("Accessor Service Suite", () => {
 
   it("should create an accessor", async () => {
     const accessor = new User();
-    accessor.id = "abc-def-ghi";
+    accessor.id = "C7095D87-C3DF-46F6-A503-001B083F4630";
 
     const item = await accessorService.create(accessor);
 

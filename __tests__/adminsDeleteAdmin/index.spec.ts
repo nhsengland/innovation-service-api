@@ -41,7 +41,15 @@ const dummy = {
             }
         }]
       }),
-      
+      getUserByOptions: () => ({
+        type: UserType.ADMIN,
+        serviceRoles: [{
+          role: {
+              name: "ADMIN"
+          }
+        }]
+      }),
+
     },
     AuthService:{
         validate2LS: () => true

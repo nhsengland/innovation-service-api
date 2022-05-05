@@ -50,7 +50,7 @@ describe("Notification Service Suite", () => {
   let supportService: InnovationSupportService;
 
   beforeAll(async () => {
-    // await setupTestsConnection();
+    //await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -92,7 +92,7 @@ describe("Notification Service Suite", () => {
   });
 
   afterAll(async () => {
-    // closeTestsConnection();
+    //closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -159,7 +159,7 @@ describe("Notification Service Suite", () => {
 
     expect(notification).toBeDefined();
     expect(notificationUsers.length).toBe(1);
-    expect(notificationUsers[0].user).toEqual(innovator.id);
+    expect(notificationUsers[0].user).toEqual(innovator.id.toLocaleUpperCase());
   });
 
   it("should create a notification to an accessor", async () => {
@@ -226,7 +226,7 @@ describe("Notification Service Suite", () => {
 
     expect(notification).toBeDefined();
     expect(notificationUsers.length).toBe(1);
-    expect(notificationUsers[0].user).toEqual(accessor.id);
+    expect(notificationUsers[0].user).toEqual(accessor.id.toUpperCase());
   });
 
   it("should create a notification for multiple accessors", async () => {
@@ -382,7 +382,7 @@ describe("Notification Service Suite", () => {
 
     expect(notification).toBeDefined();
     expect(notificationUsers.length).toBe(1);
-    expect(notificationUsers[0].user).toBe(accessor2.id);
+    expect(notificationUsers[0].user).toBe(accessor2.id.toUpperCase());
   });
 
   it("should create a notification to a qualifying accessor", async () => {
@@ -520,7 +520,9 @@ describe("Notification Service Suite", () => {
 
     expect(notification).toBeDefined();
     expect(notificationUsers.length).toBe(1);
-    expect(notificationUsers[0].user).toEqual(assessmentUser.id);
+    expect(notificationUsers[0].user).toEqual(
+      assessmentUser.id.toLocaleUpperCase()
+    );
   });
 
   it("should throw error when dismiss with invalid contextId", async () => {
