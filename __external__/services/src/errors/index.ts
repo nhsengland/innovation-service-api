@@ -153,3 +153,10 @@ export class UserEmailNotFound extends Error {
     this.name = "UserEmailNotFound";
   }
 }
+
+export class UniqueKeyError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "UniqueKeyError";
+  }
+}
