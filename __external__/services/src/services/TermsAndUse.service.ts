@@ -57,6 +57,8 @@ export class TermsAndUseService extends BaseService<TermsAndUse> {
     } catch (error) {
       if (error.number === 2627) {
         throw new UniqueKeyError("Violation of UNIQUE KEY constraint");
+      } else {
+        throw new Error("Error creating TersOfUse");
       }
     }
 
@@ -95,8 +97,12 @@ export class TermsAndUseService extends BaseService<TermsAndUse> {
           }
         );
       });
-    } catch {
-      throw new Error("Error updating TersOfUse");
+    } catch (error) {
+      if (error.number === 2627) {
+        throw new UniqueKeyError("Violation of UNIQUE KEY constraint");
+      } else {
+        throw new Error("Error updating TersOfUse");
+      }
     }
     return {
       id: result.id,
