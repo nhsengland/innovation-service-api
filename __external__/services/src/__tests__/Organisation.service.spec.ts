@@ -224,9 +224,14 @@ describe("Organisation Service Suite", () => {
   it("should return organisation unit users by q. accessor units", async () => {
     jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
     jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
-      { id: "C7095D87-C3DF-46F6-A503-001B083F4630", displayName: ":ACCESSOR" },
+      {
+        id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        displayName: ":ACCESSOR",
+      },
       {
         id: "D7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "D7095D87-C3DF-46F6-A503-001B083F4630",
         displayName: ":QUALIFYING_ACCESSOR",
       },
     ]);
@@ -246,6 +251,7 @@ describe("Organisation Service Suite", () => {
     const accessor = await accessorService.create(
       User.new({
         id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.ACCESSOR,
       })
     );
@@ -253,6 +259,7 @@ describe("Organisation Service Suite", () => {
     const qaccessor = await accessorService.create(
       User.new({
         id: "D7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "D7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.ACCESSOR,
       })
     );
@@ -285,9 +292,14 @@ describe("Organisation Service Suite", () => {
   it("should return organisation unit users", async () => {
     jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
     jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
-      { id: "C7095D87-C3DF-46F6-A503-001B083F4630", displayName: ":ACCESSOR" },
+      {
+        id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        displayName: ":ACCESSOR",
+      },
       {
         id: "D7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "D7095D87-C3DF-46F6-A503-001B083F4630",
         displayName: ":QUALIFYING_ACCESSOR",
       },
     ]);
@@ -407,6 +419,7 @@ describe("Organisation Service Suite", () => {
     jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       {
         id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
         displayName: ":ACCESSOR",
       },
     ]);
@@ -429,6 +442,7 @@ describe("Organisation Service Suite", () => {
     const accessor = await accessorService.create(
       User.new({
         id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.ACCESSOR,
       })
     );
