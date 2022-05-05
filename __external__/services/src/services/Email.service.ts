@@ -80,7 +80,7 @@ export class EmailService {
     const checkIfUserIsLocked = await (
       await this.userService.searchUserByEmail(recipient.email)
     ).lockedAt;
-    if (checkIfUserIsLocked != null) {
+    if (checkIfUserIsLocked != null && templateCode != "USER_ACCOUNT_LOCKED") {
       throw new Error(
         "The user you are trying to send an email to is currently locked"
       );
