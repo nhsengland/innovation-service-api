@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { UserType } from "../../enums/user.enums";
 
 import { Base } from "../Base.entity";
@@ -8,7 +8,7 @@ import { UserRole } from "./UserRole.entity";
 @Entity("user")
 export class User extends Base {
   //columns
-  @PrimaryColumn({ nullable: false })
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column({
@@ -23,6 +23,9 @@ export class User extends Base {
     nullable: true,
   })
   lockedAt: Date;
+
+  @Column({ name: "external_id", type: "nvarchar", nullable: false })
+  externalId: string;
 
   @Column({ name: "delete_reason", type: "nvarchar", nullable: true })
   deleteReason: string;

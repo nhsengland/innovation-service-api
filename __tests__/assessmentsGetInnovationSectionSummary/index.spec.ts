@@ -34,6 +34,9 @@ const dummy = {
       getUser: () => ({
         type: UserType.ASSESSMENT,
       }),
+      getUserByOptions: () => ({
+        type: UserType.ASSESSMENT,
+      }),
     },
   },
 };
@@ -62,7 +65,7 @@ describe("[HttpTrigger] assessmentsGetInnovation Suite", () => {
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
       jest.spyOn(authentication, "decodeToken").mockReturnValue({
-        oid: "test_assessment_id",
+        oid: "C7095D87-C3DF-46F6-A503-001B083F4630",
       });
       jest.spyOn(
         persistence,
@@ -79,13 +82,16 @@ describe("[HttpTrigger] assessmentsGetInnovation Suite", () => {
           getUser: () => ({
             type: UserType.ACCESSOR,
           }),
+          getUserByOptions: () => ({
+            type: UserType.ACCESSOR,
+          }),
         },
       };
 
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(services as any);
       jest.spyOn(authentication, "decodeToken").mockReturnValue({
-        oid: "test_assessment_id",
+        oid: "C7095D87-C3DF-46F6-A503-001B083F4630",
       });
       jest.spyOn(persistence, "findAllInnovationSectionsByAssessment").mockResolvedValue([
         { id: "innovation_id" },
@@ -101,7 +107,7 @@ describe("[HttpTrigger] assessmentsGetInnovation Suite", () => {
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
       jest.spyOn(authentication, "decodeToken").mockReturnValue({
-        oid: "test",
+        oid: "D7095D87-C3DF-46F6-A503-001B083F4630",
       });
       jest.spyOn(
         persistence,
@@ -118,7 +124,7 @@ describe("[HttpTrigger] assessmentsGetInnovation Suite", () => {
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
       jest.spyOn(authentication, "decodeToken").mockReturnValue({
-        oid: "test_assessment_id",
+        oid: "C7095D87-C3DF-46F6-A503-001B083F4630",
       });
       jest.spyOn(persistence, "findAllInnovationSectionsByAssessment").mockRejectedValue(
         "Error."
@@ -145,7 +151,7 @@ async function mockedRequestFactory(data?: any) {
           "http://nhse-i-aac/api/assessments/{userId}/innovations/{innovationId}/section-summary",
           { ...data.headers }, // headers
           {
-            userId: "test_assessment_id",
+            userId: "C7095D87-C3DF-46F6-A503-001B083F4630",
             innovationId: "test_innovation_id",
           }, // ?
           {}, // payload/body

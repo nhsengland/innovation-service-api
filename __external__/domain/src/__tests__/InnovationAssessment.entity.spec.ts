@@ -35,8 +35,9 @@ describe("Innovation Action Test Suite", () => {
     organisationRepo = getRepository(Organisation, process.env.DB_TESTS_NAME);
 
     let userObj = User.new({
-      id: "abc",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.INNOVATOR,
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
     });
     const user = await userRepo.save(userObj);
 
@@ -52,9 +53,11 @@ describe("Innovation Action Test Suite", () => {
     innovation = await innovationRepo.save(innovationObj);
 
     userObj = User.new({
-      id: "assessmentId",
+      id: "D7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ASSESSMENT,
+      externalId: "D7095D87-C3DF-46F6-A503-001B083F4630",
     });
+
     assessmentUser = await userRepo.save(userObj);
 
     const organisationObj = Organisation.new({

@@ -68,14 +68,14 @@ describe("Innovator Service Suite", () => {
   it("should create an innovator", async () => {
     const innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
     const innovator = new User();
-    innovator.id = "abc-def-ghi";
+    innovator.id = "C7095D87-C3DF-46F6-A503-001B083F4630";
 
     const item = await innovatorService.create(innovator);
 
     expect(item.id).toEqual(innovator.id);
   });
 
-  it("should fail to create an innovator without oid", async () => {
+  it("should not fail to create an innovator without oid", async () => {
     let err;
     const innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
     const innovator = new User();
@@ -86,13 +86,13 @@ describe("Innovator Service Suite", () => {
       err = error;
     }
 
-    expect(err).toBeDefined();
+    expect(err).toBeUndefined();
   });
 
   it("should find one innovator", async () => {
     const innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
     const innovator = new User();
-    innovator.id = "abc-def-ghi";
+    innovator.id = "C7095D87-C3DF-46F6-A503-001B083F4630";
 
     const item = await innovatorService.create(innovator);
 
@@ -104,7 +104,7 @@ describe("Innovator Service Suite", () => {
   it("should find all innovators", async () => {
     const innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
     const innovator = new User();
-    innovator.id = "abc-def-ghi";
+    innovator.id = "C7095D87-C3DF-46F6-A503-001B083F4630";
 
     await innovatorService.create(innovator);
 
@@ -116,7 +116,8 @@ describe("Innovator Service Suite", () => {
   it("should update an innovator", async () => {
     const innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
     const innovator = new User();
-    innovator.id = "abc-def-ghi";
+    innovator.id = "C7095D87-C3DF-46F6-A503-001B083F4630";
+    innovator.externalId = "C7095D87-C3DF-46F6-A503-001B083F4630";
 
     const item = await innovatorService.create(innovator);
 
@@ -172,7 +173,7 @@ describe("Innovator Service Suite", () => {
     const innovator = new User();
     const innovation = new Innovation();
     const organisation = new Organisation();
-    innovator.id = "abcdefghijkl";
+    innovator.id = "C7095D87-C3DF-46F6-A503-001B083F4630";
 
     organisation.name = "Test Org #1";
     organisation.size = "1 to 5 employees";
@@ -183,7 +184,7 @@ describe("Innovator Service Suite", () => {
     innovation.countryName = "UK";
 
     jest.spyOn(UserService.prototype, "getProfile").mockResolvedValue({
-      id: ":id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       email: "test@example.com",
       displayName: ":displayName",
       type: UserType.INNOVATOR,
@@ -233,11 +234,13 @@ describe("Innovator Service Suite", () => {
   it("should find innovator by id", async () => {
     const innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
     const innovator = new User();
-    innovator.id = "abc-def-ghi";
+    innovator.id = "C7095D87-C3DF-46F6-A503-001B083F4630";
 
     await innovatorService.create(innovator);
 
-    const result = await innovatorService.find("abc-def-ghi");
+    const result = await innovatorService.find(
+      "C7095D87-C3DF-46F6-A503-001B083F4630"
+    );
 
     expect(result).toBeDefined();
   });
@@ -245,11 +248,14 @@ describe("Innovator Service Suite", () => {
   it("should not find innovator by inexisting id", async () => {
     const innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
     const innovator = new User();
-    innovator.id = "abc-def-ghi";
+    innovator.id = "C7095D87-C3DF-46F6-A503-001B083F4630";
+    innovator.externalId = "C7095D87-C3DF-46F6-A503-001B083F4630";
 
     await innovatorService.create(innovator);
 
-    const result = await innovatorService.find("random--oid");
+    const result = await innovatorService.find(
+      "D7095D87-C3DF-46F6-A503-001B083F4630"
+    );
 
     expect(result).toBeUndefined();
   });
@@ -257,7 +263,8 @@ describe("Innovator Service Suite", () => {
   it("should not find innovator by inexisting id", async () => {
     const innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
     const innovator = new User();
-    innovator.id = "abc-def-ghi";
+    innovator.id = "C7095D87-C3DF-46F6-A503-001B083F4630";
+    innovator.externalId = "C7095D87-C3DF-46F6-A503-001B083F4630";
 
     await innovatorService.create(innovator);
 
@@ -269,7 +276,7 @@ describe("Innovator Service Suite", () => {
   it("should not find innovator by inexisting id", async () => {
     const innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
     const innovator = new User();
-    innovator.id = "abc-def-ghi";
+    innovator.id = "C7095D87-C3DF-46F6-A503-001B083F4630";
 
     await innovatorService.create(innovator);
 

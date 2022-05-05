@@ -40,6 +40,14 @@ const dummy = {
                     }
                 }]
             }),
+            getUserByOptions: () => ({
+                type: UserType.ADMIN,
+                serviceRoles: [{
+                  role: {
+                      name: "ADMIN"
+                  }
+                }]
+              }),
         }
     },
     adminUser: 'test_admin_oid',

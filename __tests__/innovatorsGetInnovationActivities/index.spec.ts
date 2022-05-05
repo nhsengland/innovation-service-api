@@ -34,6 +34,9 @@ const dummy = {
       getUser: () => ({
         type: UserType.INNOVATOR,
       }),
+      getUserByOptions: () => ({
+        type: UserType.INNOVATOR,
+      }),
     },
   },
   innovatorId: "test_innovator_id"
@@ -74,12 +77,12 @@ describe("[HttpTrigger] innovatorsGetInnovationActivities Suite", () => {
             params:
               {
                 id: ':value'
-              }  
+              }
           },
         ],
         1,
       ] as any);
-      
+
       const { res } = await mockedRequestFactory({});
       expect(res.status).toBe(200);
     });
@@ -88,6 +91,9 @@ describe("[HttpTrigger] innovatorsGetInnovationActivities Suite", () => {
       const services = {
         UserService: {
           getUser: () => ({
+            type: UserType.ACCESSOR,
+          }),
+          getUserByOptions: () => ({
             type: UserType.ACCESSOR,
           }),
         },
