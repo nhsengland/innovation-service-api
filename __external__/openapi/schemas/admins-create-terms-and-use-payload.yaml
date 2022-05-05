@@ -1,0 +1,11 @@
+description:  Admins Create TermsandUse Payload
+required: true
+content:
+  application/json:
+    schema:
+      type: object
+      properties:
+        name:
+          type: string
+        summary:
+          type: string
