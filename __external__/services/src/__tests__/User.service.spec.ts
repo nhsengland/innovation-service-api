@@ -146,6 +146,7 @@ describe("User Service Suite", () => {
 
     const accessorObj = User.new({
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
     });
     const accessor = await accessorService.create(accessorObj);
 
@@ -697,6 +698,7 @@ describe("User Service Suite", () => {
 
     const accessorObj = User.new({
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
     });
     const accessor = await accessorService.create(accessorObj);
 

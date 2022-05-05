@@ -39,6 +39,7 @@ describe("InnovationSupport Test Suite", () => {
     const userObj = User.new({
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.INNOVATOR,
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
     });
     const user = await userRepo.save(userObj);
 
