@@ -76,8 +76,9 @@ describe("Innovation Test Suite", () => {
     userRepo = getRepository(User, process.env.DB_TESTS_NAME);
 
     const userObj = User.new({
-      id: "abc",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.INNOVATOR,
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
     });
     user = await userRepo.save(userObj);
   });

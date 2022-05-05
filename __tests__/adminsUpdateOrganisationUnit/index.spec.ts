@@ -42,6 +42,14 @@ const dummy = {
                     }
                 }]
             }),
+            getUserByOptions: () => ({
+                type: UserType.ADMIN,
+                serviceRoles: [{
+                    role: {
+                        name: "ADMIN"
+                    }
+                }]
+              }),
         },
         AuthService:{
             validate2LS: () => true
@@ -78,10 +86,10 @@ describe("[HttpTrigger] adminsUpdateOrganisationUnit Suite", () => {
             jest.spyOn(authentication, "decodeToken").mockReturnValue({ oid: dummy.adminUser });
 
             jest.spyOn(persistence, "updateOrganisationUnit").mockResolvedValue([
-                { 
+                {
                     id: "organisationUnitId",
                     name: "name",
-                    acronym: "acronym" 
+                    acronym: "acronym"
                 },
             ] as any);
 
@@ -121,8 +129,8 @@ async function mockedRequestFactory(data?: any) {
                     "http://nhse-i-aac/api/user-admin/organisation-units/{organisationUnitId}",
                     { ...data.headers }, // headers
                     { organisationId: "organisationId" },
-                    { 
-                        name: "name", 
+                    {
+                        name: "name",
                         acronym: "acronym"
                     }, // payload/body
                     {}, // querystring

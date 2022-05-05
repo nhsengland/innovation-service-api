@@ -16,7 +16,7 @@ describe("innovatorsCommentReceivedHandler suite", () => {
   });
   it("should throw InvalidEmailTemplateProps", async () => {
     const reqUser: RequestUser = {
-      id: ":id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.INNOVATOR,
     };
 
@@ -45,7 +45,7 @@ describe("innovatorsCommentReceivedHandler suite", () => {
         reqUser,
         params,
         template,
-        ["user_id"],
+        ["C7095D87-C3DF-46F6-A503-001B083F4630"],
         process.env.DB_TESTS_NAME
       );
     } catch (error) {
@@ -58,7 +58,7 @@ describe("innovatorsCommentReceivedHandler suite", () => {
 
   it("should Send email with the correct handler", async () => {
     const reqUser: RequestUser = {
-      id: ":id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.INNOVATOR,
     };
 
@@ -76,7 +76,7 @@ describe("innovatorsCommentReceivedHandler suite", () => {
     jest.spyOn(UserService.prototype, "getListOfUsers").mockResolvedValue([
       {
         displayName: "test_user",
-        id: "_id",
+        id: "D7095D87-C3DF-46F6-A503-001B083F4630",
         email: "email_address@example.com",
       },
     ]);
@@ -99,7 +99,7 @@ describe("innovatorsCommentReceivedHandler suite", () => {
         reqUser,
         params,
         template,
-        ["user_id"],
+        ["C7095D87-C3DF-46F6-A503-001B083F4630"],
         process.env.DB_TESTS_NAME
       );
     } catch (error) {

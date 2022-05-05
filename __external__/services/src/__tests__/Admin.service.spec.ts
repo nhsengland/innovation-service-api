@@ -57,7 +57,7 @@ describe("[User Account Lock suite", () => {
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
-      id: "user_id_from_b2c",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: "Accessor A",
       identities: [
         {
@@ -71,7 +71,7 @@ describe("[User Account Lock suite", () => {
     jest.spyOn(helpers, "saveB2CUser").mockImplementation();
     const assessmentUser = await fixtures.createAssessmentUser();
     const requestUser = {
-      id: "request_user_id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
     // Act
@@ -87,7 +87,7 @@ describe("[User Account Lock suite", () => {
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
-      id: "user_id_from_b2c",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: "Accessor A",
       identities: [
         {
@@ -103,7 +103,7 @@ describe("[User Account Lock suite", () => {
     await fixtures.createAssessmentUser(new Date());
     const assessmentUser = await fixtures.createAssessmentUser();
     const requestUser = {
-      id: "request_user_id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
     // Act
@@ -119,7 +119,7 @@ describe("[User Account Lock suite", () => {
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
-      id: "user_id_from_b2c",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: "Accessor A",
       identities: [
         {
@@ -134,7 +134,7 @@ describe("[User Account Lock suite", () => {
     const assessmentUser1 = await fixtures.createAssessmentUser();
     const assessmentUser2 = await fixtures.createAssessmentUser();
     const requestUser = {
-      id: "request_user_id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
     // Act
@@ -153,7 +153,7 @@ describe("[User Account Lock suite", () => {
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
-      id: "user_id_from_b2c",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: "Accessor A",
       identities: [
         {
@@ -196,7 +196,7 @@ describe("[User Account Lock suite", () => {
     );
 
     const requestUser = {
-      id: "request_user_id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -213,7 +213,7 @@ describe("[User Account Lock suite", () => {
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
-      id: "user_id_from_b2c",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: "Accessor A",
       identities: [
         {
@@ -269,7 +269,7 @@ describe("[User Account Lock suite", () => {
     );
 
     const requestUser = {
-      id: "request_user_id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -288,7 +288,7 @@ describe("[User Account Lock suite", () => {
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
-      id: "user_id_from_b2c",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: "Accessor A",
       identities: [
         {
@@ -342,7 +342,7 @@ describe("[User Account Lock suite", () => {
     );
 
     const requestUser = {
-      id: "request_user_id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -377,10 +377,13 @@ describe("[User Account Lock suite", () => {
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
 
-    jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue(true);
+    jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue({
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      displayName: "Admin user",
+    });
 
     jest.spyOn(helpers, "createB2CUser").mockResolvedValue({
-      id: "user_id_from_b2c",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: "New Assessment User",
     });
 
@@ -411,7 +414,7 @@ describe("[User Account Lock suite", () => {
     };
 
     const requestUser = {
-      id: "request_user_id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -486,7 +489,7 @@ describe("[User Account Lock suite", () => {
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue(false);
 
     jest.spyOn(helpers, "createB2CUser").mockResolvedValue({
-      id: "user_id_from_b2c",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: "New Assessment User",
     });
 
@@ -519,7 +522,7 @@ describe("[User Account Lock suite", () => {
     };
 
     const requestUser = {
-      id: "request_user_id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -530,7 +533,7 @@ describe("[User Account Lock suite", () => {
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue(false);
 
     jest.spyOn(helpers, "createB2CUser").mockResolvedValue({
-      id: "user_id_from_b2c",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: "Accessor User",
     });
 
@@ -547,22 +550,22 @@ describe("[User Account Lock suite", () => {
     //Arrange
     jest.spyOn(UserService.prototype, "getUsersOfTypePaged").mockResolvedValue([
       {
-        id: "abc",
+        id: "C7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.ASSESSMENT,
       },
       {
-        id: "xyz",
+        id: "D7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.INNOVATOR,
       },
     ] as any);
 
     jest.spyOn(UserService.prototype, "getListOfUsers").mockResolvedValue([
       {
-        id: "abc",
+        id: "C7095D87-C3DF-46F6-A503-001B083F4630",
         displayName: "Assessment User",
       },
       {
-        id: "xyz",
+        id: "D7095D87-C3DF-46F6-A503-001B083F4630",
         displayName: "Innovator User",
       },
     ] as ProfileSlimModel[]);
@@ -579,7 +582,7 @@ describe("[User Account Lock suite", () => {
     //Arrange
     jest.spyOn(UserService.prototype, "getUsersOfTypePaged").mockResolvedValue([
       {
-        id: "abc",
+        id: "C7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.ACCESSOR,
         userOrganisations: [
           {
@@ -600,18 +603,18 @@ describe("[User Account Lock suite", () => {
         ],
       },
       {
-        id: "xyz",
+        id: "D7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.INNOVATOR,
       },
     ] as any);
 
     jest.spyOn(UserService.prototype, "getListOfUsers").mockResolvedValue([
       {
-        id: "abc",
+        id: "C7095D87-C3DF-46F6-A503-001B083F4630",
         displayName: "Accessor User",
       },
       {
-        id: "xyz",
+        id: "D7095D87-C3DF-46F6-A503-001B083F4630",
         displayName: "Innovator User",
       },
     ] as ProfileSlimModel[]);
@@ -627,7 +630,7 @@ describe("[User Account Lock suite", () => {
   it("should search users by email", async () => {
     //Arrange
     jest.spyOn(UserService.prototype, "searchUserByEmail").mockResolvedValue({
-      id: "abc",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: "UserA",
       email: "xyz@email.com",
     } as UserSearchResult);
@@ -668,7 +671,7 @@ describe("[User Account Lock suite", () => {
   it("should get user details by id", async () => {
     //Arrange
     jest.spyOn(UserService.prototype, "getUserDetails").mockResolvedValue({
-      id: "abc",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: "UserA",
     });
 
@@ -684,14 +687,14 @@ describe("[User Account Lock suite", () => {
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
-      id: "user_id_from_b2c",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
     });
     jest.spyOn(helpers, "saveB2CUser").mockImplementation();
 
     const assessmentUser = await fixtures.createAssessmentUser();
 
     const requestUser = {
-      id: "request_user_id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -709,7 +712,7 @@ describe("[User Account Lock suite", () => {
       .mockResolvedValue(":access_token");
 
     const requestUser = {
-      id: "request_user_id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ACCESSOR,
     };
 
@@ -727,7 +730,7 @@ describe("[User Account Lock suite", () => {
     const assessmentUser = await fixtures.createAssessmentUser();
 
     const requestUser = {
-      id: "request_user_id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -744,7 +747,7 @@ describe("[User Account Lock suite", () => {
       .mockResolvedValue(":access_token");
 
     const requestUser = {
-      id: "request_user_id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ACCESSOR,
     };
 
@@ -762,7 +765,7 @@ describe("[User Account Lock suite", () => {
     const assessmentUser = await fixtures.createAssessmentUser();
 
     const requestUser = {
-      id: "request_user_id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -799,7 +802,7 @@ describe("[User Account Lock suite", () => {
       .mockResolvedValue(":access_token");
 
     const requestUser = {
-      id: "request_user_id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -813,7 +816,7 @@ describe("[User Account Lock suite", () => {
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
-      id: "user_id_from_b2c",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: "Accessor A",
       identities: [
         {
@@ -867,7 +870,7 @@ describe("[User Account Lock suite", () => {
     );
 
     const requestUser = {
-      id: "request_user_id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -884,7 +887,7 @@ describe("[User Account Lock suite", () => {
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
-      id: "user_id_from_b2c",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: "Accessor A",
       identities: [
         {
@@ -940,7 +943,7 @@ describe("[User Account Lock suite", () => {
     );
 
     const requestUser = {
-      id: "request_user_id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -972,7 +975,7 @@ describe("[User Account Lock suite", () => {
   it("should throw an error when lockUsers() with invalid params", async () => {
     jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
-      id: "user_id_from_b2c",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: "Accessor A",
       identities: [
         {
@@ -987,7 +990,7 @@ describe("[User Account Lock suite", () => {
     const assessmentUser1 = await fixtures.createAssessmentUser();
     const assessmentUser2 = await fixtures.createAssessmentUser();
     const requestUser = {
-      id: "request_user_id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
     // Act
@@ -1004,14 +1007,14 @@ describe("[User Account Lock suite", () => {
   it("Should unlock users by id", async () => {
     jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
-      id: "user_id_from_b2c",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
     });
     jest.spyOn(helpers, "saveB2CUser").mockImplementation();
 
     const assessmentUser = await fixtures.createAssessmentUser();
 
     const requestUser = {
-      id: "request_user_id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -1056,12 +1059,12 @@ describe("[User Account Lock suite", () => {
   it("Should update user role", async () => {
     jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
-      id: "user_id_from_b2c",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
     });
     jest.spyOn(UserService.prototype, "updateUserRole").mockImplementation();
 
     const requestUser = {
-      id: "request_user_id",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -1116,7 +1119,8 @@ describe("[User Account Lock suite", () => {
       .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "deleteB2CAccount").mockImplementation();
     jest.spyOn(UserService.prototype, "getUser").mockResolvedValue({
-      id: "abc",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.INNOVATOR,
       deleteReason: null,
       userOrganisations: null,
@@ -1153,7 +1157,8 @@ describe("[User Account Lock suite", () => {
       .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "deleteB2CAccount").mockImplementation();
     jest.spyOn(UserService.prototype, "getUser").mockResolvedValue({
-      id: "abc",
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
       deleteReason: null,
       userOrganisations: null,
@@ -1176,7 +1181,7 @@ describe("[User Account Lock suite", () => {
 
     const result = await adminService.deleteAdminAccount(
       fakeRequestUser.requestUser,
-      "abc"
+      "C7095D87-C3DF-46F6-A503-001B083F4630"
     );
     expect(result).toBeDefined();
     expect(result.status).toBe("OK");

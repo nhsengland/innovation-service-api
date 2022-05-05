@@ -27,7 +27,7 @@ jest.mock("../../utils/logging/insights", () => ({
       },
     }),
   }));
-  
+
   const dummy = {
     services: {
       UserService: {
@@ -36,6 +36,14 @@ jest.mock("../../utils/logging/insights", () => ({
           serviceRoles: [{
             role: {
               name: "ADMIN"
+            }
+          }]
+        }),
+        getUserByOptions: () => ({
+          type: UserType.ADMIN,
+          serviceRoles: [{
+            role: {
+                name: "ADMIN"
             }
           }]
         }),
@@ -48,13 +56,13 @@ describe("[HttpTrigger] organisationsGetDetails Suite", () => {
         afterEach(() => {
           jest.resetAllMocks();
         });
-    
+
         it("fails when connection is not established", async () => {
           jest.spyOn(authentication, 'decodeToken').mockReturnValue({ oid: ':oid' });
           jest.spyOn(connection, "setupSQLConnection").mockRejectedValue(
             "Error establishing connection with the datasource."
           );
-    
+
           const { res } = await mockedRequestFactory({});
           expect(res.status).toBe(500);
           expect(res.body.error).toBeDefined();
@@ -62,29 +70,29 @@ describe("[HttpTrigger] organisationsGetDetails Suite", () => {
             "Error establishing connection with the datasource."
           );
         });
-    
+
         it("Should return 200 when Organisation is found", async () => {
           jest.spyOn(authentication, 'decodeToken').mockReturnValue({ oid: ':oid' });
           jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
           jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
-    
+
           jest.spyOn(persistence, "findOrganisation").mockResolvedValue([
             { id: "organisationId" },
           ] as any);
-    
+
           const { res } = await mockedRequestFactory({});
           expect(res.status).toBe(200);
         });
-    
+
         it("Should return 500 when an uncontrolled error occurs", async () => {
           jest.spyOn(authentication, 'decodeToken').mockReturnValue({ oid: ':oid' });
           jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
           jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
-    
+
           jest.spyOn(persistence, "findOrganisation").mockRejectedValue(
             "Error"
           );
-    
+
           const { res } = await mockedRequestFactory({});
           expect(res.status).toBe(500);
         });

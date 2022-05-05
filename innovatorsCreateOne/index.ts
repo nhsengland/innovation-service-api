@@ -129,7 +129,7 @@ class InnovatorsCreateOne {
     }
 
     try {
-      const innovator: User = User.new({ id: oid });
+      const innovator: User = User.new({ externalId: oid });
       const organisation: Organisation = Organisation.new({
         ...payload.organisation,
       });
