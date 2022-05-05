@@ -37,6 +37,7 @@ describe("Innovation Action Test Suite", () => {
     let userObj = User.new({
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.INNOVATOR,
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
     });
     const user = await userRepo.save(userObj);
 
@@ -54,7 +55,9 @@ describe("Innovation Action Test Suite", () => {
     userObj = User.new({
       id: "D7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ASSESSMENT,
+      externalId: "D7095D87-C3DF-46F6-A503-001B083F4630",
     });
+
     assessmentUser = await userRepo.save(userObj);
 
     const organisationObj = Organisation.new({
