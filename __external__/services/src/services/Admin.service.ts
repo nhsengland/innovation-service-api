@@ -262,7 +262,7 @@ export class AdminService {
               userDetails.innovations[i].id,
               NotificationContextType.INNOVATION,
 
-              result.id,
+              userDetails.innovations[i].id,
               `Please Note that the Innovator ${userDetails.displayName} account has been locked by the Admin`,
               users
             );
