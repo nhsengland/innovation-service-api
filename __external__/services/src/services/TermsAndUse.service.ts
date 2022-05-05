@@ -111,7 +111,7 @@ export class TermsAndUseService extends BaseService<TermsAndUse> {
     requestUser: RequestUser,
     Id: string
   ): Promise<TermsAndUseResult> {
-    if (!Id) {
+    if (!requestUser || !Id) {
       throw new InvalidParamsError("Invalid parameters.");
     }
     const tou = await this.repository
