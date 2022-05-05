@@ -415,6 +415,10 @@ export class AdminService {
     if (userToBeRemoved.type === "ASSESSMENT") {
       return await this.runNeedsAssessmentUserValidation(userToBeRemoved);
     }
+
+    if (userToBeRemoved.type === "INNOVATOR") {
+      return {};
+    }
   }
 
   async userChangeRoleValidation(
