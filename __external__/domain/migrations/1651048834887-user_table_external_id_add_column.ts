@@ -13,8 +13,6 @@ export class userTableExternalIdAddColumn1651048834887
       `
       update [user] set external_id = id
 
-      ALTER TABLE "user" ALTER COLUMN external_id nvarchar(255) NOT NULL
-
       CREATE UNIQUE INDEX "idx_user_unique_external_id" on "user" ("external_id")
 
       `
