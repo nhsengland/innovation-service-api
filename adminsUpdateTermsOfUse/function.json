@@ -5,10 +5,10 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": ["post"],
-      "route": "user-admin/tou"
+      "methods": ["put"],
+      "route": "user-admin/tou/{touId}"
     },
     { "type": "http", "direction": "out", "name": "res" }
   ],
-  "scriptFile": "../dist/adminsCreateTermsAndUse/index.js"
+  "scriptFile": "../dist/adminsUpdateTermsOfUse/index.js"
 }

@@ -6,9 +6,9 @@
       "direction": "in",
       "name": "req",
       "methods": ["get"],
-      "route": "user-admin/tou/{touId}"
+      "route": "user-admin/tou"
     },
     { "type": "http", "direction": "out", "name": "res" }
   ],
-  "scriptFile": "../dist/adminsGetTermsAndUse/index.js"
+  "scriptFile": "../dist/adminsGetTermsOfUses/index.js"
 }

@@ -7,17 +7,17 @@ import {
   Index,
   UpdateDateColumn,
 } from "typeorm";
-import { TouType } from "../../enums/terms-and-use.enums";
+import { TouType } from "../../enums/terms-of-use.enums";
 import { Base } from "../Base.entity";
 
-@Entity("terms_and_use")
+@Entity("terms_of_use")
 @Index(["name"], { unique: true })
-export class TermsAndUse extends Base {
+export class TermsOfUse extends Base {
   // columns
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ name: "name", length: 100 })
+  @Column({ name: "name", length: 500 })
   name: string;
 
   @Column({
@@ -38,7 +38,7 @@ export class TermsAndUse extends Base {
 
   // static constructor
   static new(data) {
-    const newObj = new TermsAndUse();
+    const newObj = new TermsOfUse();
     Object.keys(data).forEach((key) => {
       newObj[key] = data[key];
     });
