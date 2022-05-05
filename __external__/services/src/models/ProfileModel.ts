@@ -10,4 +10,7 @@ export interface ProfileModel {
   phone?: string;
   passwordResetOn?: string;
   roles?: string[];
+  surveyId?: string;
+  externalId?: string;
+  firstTimeSignInAt?: Date;
 }
