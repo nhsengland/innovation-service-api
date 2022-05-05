@@ -804,6 +804,24 @@ export class InnovationService extends BaseService<Innovation> {
       support.status = innovationSupport.status;
     }
 
+    //Create object to show warning message in case innovation owner is locked
+    let isUserLocked = false;
+    let userName: string;
+    const userDetails = await this.userService.getUserDetails(
+      innovation.owner.id,
+      "FULL"
+    );
+
+    if (userDetails.lockedAt != null) {
+      isUserLocked = true;
+      userName = userDetails.displayName;
+    }
+
+    const lockedInnovatorValidation = {
+      displayIsInnovatorLocked: isUserLocked,
+      innovatorName: userName,
+    };
+
     return {
       summary: {
         id: innovation.id,
@@ -822,6 +840,7 @@ export class InnovationService extends BaseService<Innovation> {
       },
       assessment,
       support,
+      lockedInnovatorValidation,
     };
   }
 
@@ -858,6 +877,24 @@ export class InnovationService extends BaseService<Innovation> {
       assessment.assignToName = b2cAssessmentUser.displayName;
     }
 
+    //Create object to show warning message in case innovation owner is locked
+    let isUserLocked = false;
+    let userName: string;
+    const userDetails = await this.userService.getUserDetails(
+      innovation.owner.id,
+      "FULL"
+    );
+
+    if (userDetails.lockedAt != null) {
+      isUserLocked = true;
+      userName = userDetails.displayName;
+    }
+
+    const lockedInnovatorValidation = {
+      displayIsInnovatorLocked: isUserLocked,
+      innovatorName: userName,
+    };
+
     return {
       summary: {
         id: innovation.id,
@@ -877,6 +914,7 @@ export class InnovationService extends BaseService<Innovation> {
         phone: b2cOwnerUser.phone,
       },
       assessment,
+      lockedInnovatorValidation,
     };
   }
 
