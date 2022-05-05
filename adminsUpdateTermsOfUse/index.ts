@@ -16,7 +16,7 @@ import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
 
-class AdminsUpdateTermsAndUse {
+class AdminsUpdateTermsOfUse {
   @AppInsights()
   @SQLConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
@@ -31,7 +31,7 @@ class AdminsUpdateTermsAndUse {
     const touId = req.params.touId;
     let result;
     try {
-      result = await persistence.updateTermsAndUSe(context, tou, touId);
+      result = await persistence.updateTermsOfUse(context, tou, touId);
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
@@ -43,4 +43,4 @@ class AdminsUpdateTermsAndUse {
   }
 }
 
-export default AdminsUpdateTermsAndUse.httpTrigger;
+export default AdminsUpdateTermsOfUse.httpTrigger;

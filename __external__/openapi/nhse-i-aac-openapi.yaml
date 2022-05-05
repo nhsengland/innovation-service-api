@@ -3395,10 +3395,10 @@ paths:
     post:
       tags:
         - "Admin"
-        - "TermsAndUse"
-        - "CreateTermsAndUse"
-      description: "Create TermsAndUse"
-      operationId: "admins-create-terms-and-use"
+        - "TermsOfUse"
+        - "CreateTermsOfUse"
+      description: "Create TermsOfUse"
+      operationId: "admins-create-terms-of-use"
       security:
         - OpenId:
             - users_write
@@ -3409,7 +3409,7 @@ paths:
             type: string
           required: true
       requestBody:
-        $ref: "#/components/requestBodies/admins-create-terms-and-use-payload"
+        $ref: "#/components/requestBodies/admins-create-terms-of-use-payload"
       responses:
         "200":
           description: "OK"
@@ -3422,10 +3422,10 @@ paths:
     get:
       tags:
         - "Admin"
-        - "TermsAndUse"
-        - "GetTermsAndUse"
+        - "TermsOfUse"
+        - "GetTermsOfUse"
       description: "Admins get terms and use"
-      operationId: "admins-get-terms-and-use"
+      operationId: "admins-get-terms-of-use"
       security:
         - OpenId:
             - users_read
@@ -3449,10 +3449,10 @@ paths:
     put:
       tags:
         - "Admin"
-        - "TermsAndUse"
-        - "ChangeTermsAndUse"
-      description: "Change TermsAndUse detials"
-      operationId: "admins-change-terms-and-use"
+        - "TermsOfUse"
+        - "ChangeTermsOfUse"
+      description: "Change TermsOfUse detials"
+      operationId: "admins-change-terms-of-use"
       security:
         - OpenId:
             - users_write
@@ -3479,10 +3479,10 @@ paths:
     get:
       tags:
         - "Admin"
-        - "TermsAndUse"
-        - "GetTermsAndUseById"
+        - "TermsOfUse"
+        - "GetTermsOfUseById"
       description: "Admins get terms and use by id"
-      operationId: "admins-get-terms-and-use-id"
+      operationId: "admins-get-terms-of-use-id"
       security:
         - OpenId:
             - users_read
@@ -3717,8 +3717,8 @@ components:
       $ref: "./schemas/innovation-create-comment-payload.yaml"
     innovation-update-comment-payload:
       $ref: "./schemas/innovation-update-comment-payload.yaml"
-    admins-create-terms-and-use-payload:
-      $ref: "./schemas/admins-create-terms-and-use-payload.yaml"
+    admins-create-terms-of-use-payload:
+      $ref: "./schemas/admins-create-terms-of-use-payload.yaml"
     survey-create-payload:
       $ref: "./schemas/survey-create-payload.yaml"
     assessments-create-assessment-payload:

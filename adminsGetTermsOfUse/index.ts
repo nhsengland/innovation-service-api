@@ -13,7 +13,7 @@ import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 
-class AdminsGetTermsAndUses {
+class AdminsGetTermsOfUse {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder(true)
@@ -23,18 +23,10 @@ class AdminsGetTermsAndUses {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const query: any = req.query;
-    const skip = parseInt(query.skip);
-    const take = parseInt(query.take);
-
-    let order;
-    if (query.order) {
-      order = JSON.parse(query.order);
-    }
-
+    const touId = req.params.touId;
     let result;
     try {
-      result = await persistence.createTermsAndUses(context, take, skip, order);
+      result = await persistence.createTermsOfUse(context, touId);
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
@@ -46,4 +38,4 @@ class AdminsGetTermsAndUses {
   }
 }
 
-export default AdminsGetTermsAndUses.httpTrigger;
+export default AdminsGetTermsOfUse.httpTrigger;

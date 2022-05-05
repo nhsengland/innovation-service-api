@@ -5,10 +5,10 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": ["get"],
+      "methods": ["post"],
       "route": "user-admin/tou"
     },
     { "type": "http", "direction": "out", "name": "res" }
   ],
-  "scriptFile": "../dist/adminsGetTermsAndUses/index.js"
+  "scriptFile": "../dist/adminsCreateTermsOfUse/index.js"
 }
