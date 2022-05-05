@@ -12,7 +12,6 @@ export class copyIdToExternalId1651054262772 extends BaseSeed {
     await queryRunner.query(
       `
         update [user] set external_id = id
-        where  id != external_id
       `
     );
   }
