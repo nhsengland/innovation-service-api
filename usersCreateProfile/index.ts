@@ -20,8 +20,8 @@ class UsersGetProfile {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const externalId = context.auth.decodedJwt.oid;
-    const surveyId = req.query.surveyId;
+    const externalId = req.body.externalId;
+    const surveyId = req.body.surveyId;
 
     let result;
 

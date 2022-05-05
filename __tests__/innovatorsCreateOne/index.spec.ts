@@ -95,6 +95,7 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(null);
       jest.spyOn(persistence, "createFirstTimeSignIn").mockResolvedValue({} as any);
       jest.spyOn(persistence, "updateB2CUser").mockResolvedValue({} as any);
+      jest.spyOn(persistence, "getUserByExternalId").mockResolvedValue({} as any);
       const data = {
         payload: dummy.validPayload,
         headers: {
@@ -114,6 +115,7 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
       jest.spyOn(persistence, "createFirstTimeSignIn").mockResolvedValue({} as any);
       jest.spyOn(persistence, "updateB2CUser").mockRejectedValue(null);
       jest.spyOn(persistence, "getSurvey").mockResolvedValue({ answers: new Map() });
+      jest.spyOn(persistence, "getUserByExternalId").mockResolvedValue({} as any);
 
 
       const data = {
@@ -136,6 +138,7 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
       jest.spyOn(persistence, "createFirstTimeSignIn").mockResolvedValue({} as any);
       jest.spyOn(persistence, "updateB2CUser").mockRejectedValue(null);
       jest.spyOn(persistence, "getSurvey").mockResolvedValue({ answers: new Map() });
+      jest.spyOn(persistence, "getUserByExternalId").mockResolvedValue({} as any);
 
       const data = {
         payload: dummy.validPayload,
@@ -157,6 +160,7 @@ describe("[HttpTrigger] innovatorsCreateOne Suite", () => {
       jest.spyOn(persistence, "createFirstTimeSignIn").mockRejectedValue(null);
       jest.spyOn(persistence, "updateB2CUser").mockResolvedValue(null);
       jest.spyOn(persistence, "getSurvey").mockResolvedValue({ answers: new Map() });
+      jest.spyOn(persistence, "getUserByExternalId").mockResolvedValue({} as any);
 
       const data = {
         payload: dummy.validPayload,
