@@ -3390,6 +3390,124 @@ paths:
           description: "Forbidden"
         "404":
           description: "Not Found"
+
+  "/user-admin/tou":
+    post:
+      tags:
+        - "Admin"
+        - "TermsAndUse"
+        - "CreateTermsAndUse"
+      description: "Create TermsAndUse"
+      operationId: "admins-create-terms-and-use"
+      security:
+        - OpenId:
+            - users_write
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: "#/components/requestBodies/admins-create-terms-and-use-payload"
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+    get:
+      tags:
+        - "Admin"
+        - "TermsAndUse"
+        - "GetTermsAndUse"
+      description: "Admins get terms and use"
+      operationId: "admins-get-terms-and-use"
+      security:
+        - OpenId:
+            - users_read
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "404":
+          description: "Not Found"
+
+  "/user-admin/tou/{touId}":
+    put:
+      tags:
+        - "Admin"
+        - "TermsAndUse"
+        - "ChangeTermsAndUse"
+      description: "Change TermsAndUse detials"
+      operationId: "admins-change-terms-and-use"
+      security:
+        - OpenId:
+            - users_write
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: touId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "404":
+          description: "Not Found"
+    get:
+      tags:
+        - "Admin"
+        - "TermsAndUse"
+        - "GetTermsAndUseById"
+      description: "Admins get terms and use by id"
+      operationId: "admins-get-terms-and-use-id"
+      security:
+        - OpenId:
+            - users_read
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: touId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+        "404":
+          description: "Not Found"
+
+
   "/notifications":
     patch:
       tags:
@@ -3599,6 +3717,8 @@ components:
       $ref: "./schemas/innovation-create-comment-payload.yaml"
     innovation-update-comment-payload:
       $ref: "./schemas/innovation-update-comment-payload.yaml"
+    admins-create-terms-and-use-payload:
+      $ref: "./schemas/admins-create-terms-and-use-payload.yaml"
     survey-create-payload:
       $ref: "./schemas/survey-create-payload.yaml"
     assessments-create-assessment-payload:

@@ -12,6 +12,7 @@ import {
   MissingUserOrganisationUnitError,
   ResourceNotFoundError,
   SectionNotFoundError,
+  UniqueKeyError,
 } from "@services/errors";
 
 /* internal */
@@ -89,7 +90,8 @@ export const ErroHandling = (error: Error) => {
     error instanceof InnovationSupportNotFoundError ||
     error instanceof InnovationTransferNotFoundError ||
     error instanceof SectionNotFoundError ||
-    error instanceof InvalidDataError
+    error instanceof InvalidDataError ||
+    error instanceof UniqueKeyError
   ) {
     return BadRequest({
       error: error.name,
