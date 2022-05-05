@@ -171,7 +171,7 @@ export class TermsAndUseService extends BaseService<TermsAndUse> {
           createdAt: tu.createdAt,
         };
       }),
-      count: tou.length as number,
+      count: tou[1] as number,
     };
   }
 }
