@@ -11,19 +11,12 @@ export class userTableExternalIdAddColumn1651048834887
 
     await queryRunner.query(
       `
-      update [user] set external_id = id
-
-      CREATE UNIQUE INDEX "idx_user_unique_external_id" on "user" ("external_id")
-
+        update [user] set external_id = id
       `
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `DROP INDEX "idx_user_unique_external_id" on "user"`
-    );
-
     await queryRunner.query(`ALTER TABLE "user" DROP COLUMN external_id`);
   }
 }
