@@ -1,6 +1,5 @@
 import { HttpRequest } from "@azure/functions";
 import { ServiceRole, UserType } from "@services/index";
-import { SLSEventType } from "@services/types";
 import {
   AllowedUserType,
   AppInsights,
@@ -8,18 +7,15 @@ import {
   ServiceRoleValidator,
   // SLSValidation,
   SQLConnector,
-  Validator,
   // CosmosConnector,
 } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
-import * as validation from "./validation";
 
-class AdminsCreateTermsAndUse {
+class AdminsGetTermsOfUses {
   @AppInsights()
   @SQLConnector()
-  @Validator(validation.ValidatePayload, "body", "Invalid Payload")
   @JwtDecoder(true)
   @AllowedUserType(UserType.ADMIN)
   @ServiceRoleValidator(ServiceRole.ADMIN, ServiceRole.SERVICE_TEAM)
@@ -27,10 +23,18 @@ class AdminsCreateTermsAndUse {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const tou = req.body;
+    const query: any = req.query;
+    const skip = parseInt(query.skip);
+    const take = parseInt(query.take);
+
+    let order;
+    if (query.order) {
+      order = JSON.parse(query.order);
+    }
+
     let result;
     try {
-      result = await persistence.createTermsAndUSe(context, tou);
+      result = await persistence.createTermsOfUses(context, take, skip, order);
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
@@ -42,4 +46,4 @@ class AdminsCreateTermsAndUse {
   }
 }
 
-export default AdminsCreateTermsAndUse.httpTrigger;
+export default AdminsGetTermsOfUses.httpTrigger;

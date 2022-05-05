@@ -33,7 +33,7 @@ import {
   ActivityLog,
   UserRole,
   Role,
-  TermsAndUse,
+  TermsOfUse,
 } from "@domain/index";
 
 export const entities = [
@@ -71,5 +71,5 @@ export const entities = [
   ActivityLog,
   Role,
   UserRole,
-  TermsAndUse,
+  TermsOfUse,
 ];

@@ -1,6 +1,6 @@
 import { TouType } from "@domain/index";
 
-export interface TermsAndUseResult {
+export interface TermsOfUseResult {
   id: string;
   name: string;
   touType: TouType;
@@ -10,12 +10,12 @@ export interface TermsAndUseResult {
   createdAt?: Date;
 }
 
-export interface TermsAndUseModel {
-  data: TermsAndUseResult[];
+export interface TermsOfUseModel {
+  data: TermsOfUseResult[];
   count: number;
 }
 
-export interface TermsAndUseResultCreationModel {
+export interface TermsOfUseResultCreationModel {
   name: string;
   touType: TouType;
   summary?: string;
