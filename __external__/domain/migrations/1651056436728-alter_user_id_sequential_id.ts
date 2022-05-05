@@ -51,7 +51,7 @@ export class alterUserIdSequentialId1651056436728
         ALTER COLUMN user_id uniqueidentifier NOT NULL
 
         ALTER TABLE [notification_preference]
-            ADD CONSTRAINT pk_notification_preference_id PRIMARY KEY(user_id)
+        ADD CONSTRAINT pk_notification_preference_id PRIMARY KEY(user_id, notification_id)
 
         ALTER TABLE organisation_user
         ALTER COLUMN user_id uniqueidentifier NOT NULL
