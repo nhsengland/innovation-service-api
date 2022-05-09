@@ -301,6 +301,20 @@ export function AllowedUserType(...type: UserType[]) {
         where: { externalId: oid },
       });
 
+      /// TODO:  REMOVE AFTER FTSI REFACTOR
+      if (!user) {
+        context.auth.requestUser = {
+          id: oid.toUpperCase(),
+          externalId: oid,
+          type: UserType.INNOVATOR,
+        };
+
+        await original.apply(this, args);
+        return;
+      }
+
+      /// END REMOVE
+
       if (!user || !type.includes(user.type)) {
         context.log.error(
           `Invalid user. User is of wrong type for this endpoint. {oid: ${oid}}`
