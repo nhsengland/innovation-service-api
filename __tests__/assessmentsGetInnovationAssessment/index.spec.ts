@@ -9,7 +9,7 @@ import * as persistence from "../../assessmentsGetInnovationAssessment/persisten
 import * as authentication from "../../utils/authentication";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
-
+import * as decorators from "../../utils/decorators";
 jest.mock("../../utils/logging/insights", () => ({
   start: () => { },
   getInstance: () => ({
@@ -47,6 +47,11 @@ const dummy = {
 
 describe("[HttpTrigger] innovatorsGetInnovationAssessment Suite", () => {
   describe("Function Handler", () => {
+
+    beforeAll(()=> {
+      jest.spyOn(decorators, "AllowedUserType").mockImplementation();
+    });
+
     afterEach(() => {
       jest.resetAllMocks();
     });
@@ -97,22 +102,6 @@ describe("[HttpTrigger] innovatorsGetInnovationAssessment Suite", () => {
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(services as any);
       jest.spyOn(authentication, "decodeToken").mockReturnValue({
         oid: dummy.assessmentUserId,
-      });
-      jest.spyOn(persistence, "findInnovationAssessmentById").mockResolvedValue([
-        { id: "innovation_id" },
-      ] as any);
-
-      const { res } = await mockedRequestFactory({
-        headers: { authorization: ":access_token" },
-      });
-      expect(res.status).toBe(403);
-    });
-
-    it("Should throw error when oid is different from innovatorId", async () => {
-      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
-      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
-      jest.spyOn(authentication, "decodeToken").mockReturnValue({
-        oid: "test",
       });
       jest.spyOn(persistence, "findInnovationAssessmentById").mockResolvedValue([
         { id: "innovation_id" },

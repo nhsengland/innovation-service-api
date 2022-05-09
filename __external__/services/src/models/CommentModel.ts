@@ -6,6 +6,7 @@ export interface CommentModel {
   isEditable: boolean;
   user: {
     id: string;
+    externalId: string;
     type: string;
     name: string;
     organisationUnit?: {

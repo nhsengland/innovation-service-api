@@ -89,6 +89,7 @@ export const createInnovationWithSupportStatus = async () => {
   await createSupportInInnovation(
     {
       id: qAccessor.id,
+      externalId: qAccessor.externalId,
       type: UserType.ACCESSOR,
       organisationUser: {
         id: organisationUser.id,
@@ -424,6 +425,7 @@ export const saveInnovationsWithAssessment = async (
     const assessment = await createAssessment(
       {
         id: assessmentUser.id,
+        externalId: assessmentUser.externalId,
         type: UserType.ASSESSMENT,
       },
       innovation
@@ -473,6 +475,7 @@ export const getRequestUser = (
 
   return {
     id: user.id,
+    externalId: user.externalId,
     type: user.type,
     organisationUser,
     organisationUnitUser,

@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { AccessorOrganisationRole } from "@services/index";
+import { AccessorOrganisationRole, UserType } from "@services/index";
 import {
   createHttpTrigger, runStubFunctionFromBindings
 } from "stub-azure-function-context";
@@ -8,6 +8,7 @@ import * as persistence from "../../accessorsGetAll/persistence";
 import * as authentication from "../../utils/authentication";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
+import * as decorators from "../../utils/decorators";
 
 
 jest.mock("../../utils/logging/insights", () => ({
@@ -30,12 +31,15 @@ jest.mock("../../utils/logging/insights", () => ({
 }));
 
 const dummy = {
-  services: {
+    services: {
     OrganisationService: {
       findUserOrganisations: () => [
         { role: AccessorOrganisationRole.QUALIFYING_ACCESSOR, organisation: { id: ':orgId' } },
       ],
     },
+    UserService: {
+      getUserByOptions: () => ({ type: UserType.ACCESSOR }),
+    }
   },
 };
 
@@ -43,6 +47,9 @@ describe("[HttpTrigger] accessorsGetAll Suite", () => {
   describe("Function Handler", () => {
     afterEach(() => {
       jest.resetAllMocks();
+    });
+    beforeAll(()=> {
+      jest.spyOn(decorators, "AllowedUserType").mockImplementation();
     });
 
     it("fails when connection is not established", async () => {
@@ -80,9 +87,12 @@ describe("[HttpTrigger] accessorsGetAll Suite", () => {
       const services = {
         OrganisationService: {
           findUserOrganisations: () => [
-            { role: AccessorOrganisationRole.ACCESSOR },
+            { role: AccessorOrganisationRole.ACCESSOR, organisation: { id: "id", name: "name" } },
           ],
         },
+        UserService: {
+          getUserByOptions: () => ({ type: UserType.ACCESSOR }),
+        }
       };
 
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);

@@ -49,6 +49,7 @@ import * as helpers from "../helpers";
 import { InnovationService } from "../services/Innovation.service";
 import * as fixtures from "../__fixtures__";
 import { ActivityLogService } from "@services/services/ActivityLog.service";
+import axios from "axios";
 
 describe("Innovator Service Suite", () => {
   let innovationService: InnovationService;
@@ -65,9 +66,10 @@ describe("Innovator Service Suite", () => {
   let qAccessorRequestUser: RequestUser;
   let qAccessorRequestUser2: RequestUser;
   let assessmentRequestUser: RequestUser;
+  let assessmentUser: User;
 
   beforeAll(async () => {
-    // await setupTestsConnection();
+    //await setupTestsConnection();
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
     });
@@ -94,7 +96,7 @@ describe("Innovator Service Suite", () => {
     const qualAccessorUser = await fixtures.createAccessorUser();
     const qualAccessorUser2 = await fixtures.createAccessorUser();
     const accessorUser = await fixtures.createAccessorUser();
-    const assessmentUser = await fixtures.createAssessmentUser();
+    assessmentUser = await fixtures.createAssessmentUser();
 
     accessorOrganisation = await fixtures.createOrganisation(
       OrganisationType.ACCESSOR
@@ -188,7 +190,7 @@ describe("Innovator Service Suite", () => {
     await query.from(Organisation).execute();
     await query.from(UserRole).execute();
     await query.from(User).execute();
-    // closeTestsConnection();
+    //closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -556,6 +558,7 @@ describe("Innovator Service Suite", () => {
       await innovationService.findAllByAccessorAndSupportStatus(
         {
           id: ":user_id",
+          externalId: ":user_id",
           type: UserType.ACCESSOR,
         },
         null,
@@ -578,6 +581,7 @@ describe("Innovator Service Suite", () => {
       await innovationService.findAllByAccessorAndSupportStatus(
         {
           id: ":user_id",
+          externalId: ":user_id",
           type: UserType.ACCESSOR,
           organisationUser: {
             id: ":organisation_user_id",
@@ -766,10 +770,26 @@ describe("Innovator Service Suite", () => {
     jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
     jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue(
       innovations.map((inno) => ({
-        id: inno.assessments.map((a) => a.assignTo).join(),
+        id: inno.assessments
+          .map((a) => {
+            return a.assignTo;
+          })
+          .join(),
         displayName: "assessement_user_name",
       }))
     );
+
+    // jest.spyOn(axios, "get").mockResolvedValue({
+    //   data: {
+    //     value: [
+    //       {
+    //         id: assessmentUser.externalId,
+    //         displayName: "assessment_user_name",
+    //         accountEnabled: true,
+    //       },
+    //     ],
+    //   },
+    // });
 
     let result: InnovationListModel;
     try {
@@ -1117,6 +1137,7 @@ describe("Innovator Service Suite", () => {
 
     const requestUser: RequestUser = {
       id: ":requestUser",
+      externalId: ":requestUser",
       type: UserType.ASSESSMENT,
     };
 
@@ -1145,7 +1166,7 @@ describe("Innovator Service Suite", () => {
     let err;
     try {
       await innovationService.createInnovation(
-        { id: ":id", type: UserType.ACCESSOR },
+        { id: ":id", externalId: ":id", type: UserType.ACCESSOR },
         {
           name: ":innovation_name",
           description: ":innovation_desc",
@@ -1419,7 +1440,11 @@ describe("Innovator Service Suite", () => {
     jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
     jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue(
       innovations.map((inno) => ({
-        id: inno.assessments.map((a) => a.assignTo).join(),
+        id: inno.assessments
+          .map((a) => {
+            return a.assignTo;
+          })
+          .join(),
         displayName: "assessement_user_name",
       }))
     );
@@ -1480,6 +1505,7 @@ describe("Innovator Service Suite", () => {
     let err;
     const requestUser = {
       id: "request_user_id",
+      externalId: "request_user_id",
       type: UserType.ADMIN,
     };
 
@@ -1542,6 +1568,7 @@ describe("Innovator Service Suite", () => {
       await innovationService.getAccessorInnovationSummary(
         {
           id: ":id",
+          externalId: ":id",
           type: UserType.ACCESSOR,
         },
         fakeInnovations[0].id

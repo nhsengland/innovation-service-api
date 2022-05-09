@@ -290,6 +290,7 @@ describe("Innovator Service Suite", () => {
     const fakeRequestUser = {
       requestUser: {
         id: innovatorUser.id,
+        externalId: innovatorUser.id,
         type: UserType.INNOVATOR,
       },
     };

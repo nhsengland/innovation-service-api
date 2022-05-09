@@ -17,6 +17,7 @@ describe("innovatorsAccountCreatedHandler suite", () => {
   it("should throw InvalidEmailTemplateProps", async () => {
     const reqUser: RequestUser = {
       id: ":id",
+      externalId: ":id",
       type: UserType.INNOVATOR,
     };
 
@@ -31,6 +32,7 @@ describe("innovatorsAccountCreatedHandler suite", () => {
       {
         displayName: "test_user",
         id: "_id",
+        externalId: "_id",
         email: "email_address@example.com",
       },
     ]);
@@ -67,6 +69,7 @@ describe("innovatorsAccountCreatedHandler suite", () => {
   it("should Send email with the correct handler", async () => {
     const reqUser: RequestUser = {
       id: ":id",
+      externalId: ":id",
       type: UserType.INNOVATOR,
     };
 
