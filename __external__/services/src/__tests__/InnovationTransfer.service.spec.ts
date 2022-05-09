@@ -221,7 +221,7 @@ describe("Innovation Transfer Suite", () => {
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue({
-      id: innovatorRequestUser.id,
+      id: innovatorRequestUser.externalId,
       displayName: ":userName",
     });
     jest

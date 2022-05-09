@@ -115,7 +115,7 @@ describe("User (Service Roles) Service Suite", () => {
 
     // Act
     try {
-      actual = await userService.getProfile(adminUser.id);
+      actual = await userService.getProfile(adminUser.id, adminUser.externalId);
       console.log(JSON.stringify(actual));
     } catch (error) {
       err = error;

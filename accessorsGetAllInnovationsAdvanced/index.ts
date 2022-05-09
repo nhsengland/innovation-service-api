@@ -1,6 +1,7 @@
 import { HttpRequest } from "@azure/functions";
 import { AccessorOrganisationRole, UserType } from "@services/index";
 import {
+  AllowedUserType,
   AppInsights,
   JwtDecoder,
   OrganisationRoleValidator,
@@ -21,6 +22,7 @@ class AccessorsGetAllInnovationsAdvanced {
     "Invalid querystring parameters."
   )
   @JwtDecoder()
+  @AllowedUserType(UserType.ACCESSOR)
   @OrganisationRoleValidator(
     UserType.ACCESSOR,
     AccessorOrganisationRole.QUALIFYING_ACCESSOR,

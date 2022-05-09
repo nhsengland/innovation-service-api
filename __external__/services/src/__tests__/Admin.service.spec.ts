@@ -135,6 +135,7 @@ describe("[User Account Lock suite", () => {
     const assessmentUser2 = await fixtures.createAssessmentUser();
     const requestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
     // Act
@@ -370,6 +371,7 @@ describe("[User Account Lock suite", () => {
 
     const requestUser = {
       id: "request_user_id",
+      externalId: "request_user_id",
       type: UserType.ADMIN,
     };
 
@@ -415,6 +417,7 @@ describe("[User Account Lock suite", () => {
 
     const requestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -454,6 +457,7 @@ describe("[User Account Lock suite", () => {
 
     const requestUser = {
       id: "request_user_id",
+      externalId: "request_user_id",
       type: UserType.ASSESSMENT,
     };
 
@@ -479,6 +483,7 @@ describe("[User Account Lock suite", () => {
 
     const requestUser = {
       id: "request_user_id",
+      externalId: "request_user_id",
       type: UserType.ADMIN,
     };
 
@@ -523,6 +528,7 @@ describe("[User Account Lock suite", () => {
 
     const requestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -551,10 +557,12 @@ describe("[User Account Lock suite", () => {
     jest.spyOn(UserService.prototype, "getUsersOfTypePaged").mockResolvedValue([
       {
         id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.ASSESSMENT,
       },
       {
         id: "D7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "D7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.INNOVATOR,
       },
     ] as any);
@@ -562,10 +570,12 @@ describe("[User Account Lock suite", () => {
     jest.spyOn(UserService.prototype, "getListOfUsers").mockResolvedValue([
       {
         id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
         displayName: "Assessment User",
       },
       {
         id: "D7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "D7095D87-C3DF-46F6-A503-001B083F4630",
         displayName: "Innovator User",
       },
     ] as ProfileSlimModel[]);
@@ -583,6 +593,7 @@ describe("[User Account Lock suite", () => {
     jest.spyOn(UserService.prototype, "getUsersOfTypePaged").mockResolvedValue([
       {
         id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.ACCESSOR,
         userOrganisations: [
           {
@@ -604,6 +615,7 @@ describe("[User Account Lock suite", () => {
       },
       {
         id: "D7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "D7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.INNOVATOR,
       },
     ] as any);
@@ -611,10 +623,12 @@ describe("[User Account Lock suite", () => {
     jest.spyOn(UserService.prototype, "getListOfUsers").mockResolvedValue([
       {
         id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
         displayName: "Accessor User",
       },
       {
         id: "D7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "D7095D87-C3DF-46F6-A503-001B083F4630",
         displayName: "Innovator User",
       },
     ] as ProfileSlimModel[]);
@@ -631,6 +645,7 @@ describe("[User Account Lock suite", () => {
     //Arrange
     jest.spyOn(UserService.prototype, "searchUserByEmail").mockResolvedValue({
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: "UserA",
       email: "xyz@email.com",
     } as UserSearchResult);
@@ -672,6 +687,7 @@ describe("[User Account Lock suite", () => {
     //Arrange
     jest.spyOn(UserService.prototype, "getUserDetails").mockResolvedValue({
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: "UserA",
     });
 
@@ -695,6 +711,7 @@ describe("[User Account Lock suite", () => {
 
     const requestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -713,6 +730,7 @@ describe("[User Account Lock suite", () => {
 
     const requestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ACCESSOR,
     };
 
@@ -731,6 +749,7 @@ describe("[User Account Lock suite", () => {
 
     const requestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -748,6 +767,7 @@ describe("[User Account Lock suite", () => {
 
     const requestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ACCESSOR,
     };
 
@@ -766,6 +786,7 @@ describe("[User Account Lock suite", () => {
 
     const requestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -803,6 +824,7 @@ describe("[User Account Lock suite", () => {
 
     const requestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -944,6 +966,7 @@ describe("[User Account Lock suite", () => {
 
     const requestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -991,6 +1014,7 @@ describe("[User Account Lock suite", () => {
     const assessmentUser2 = await fixtures.createAssessmentUser();
     const requestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
     // Act
@@ -1015,6 +1039,7 @@ describe("[User Account Lock suite", () => {
 
     const requestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -1065,6 +1090,7 @@ describe("[User Account Lock suite", () => {
 
     const requestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -1097,6 +1123,7 @@ describe("[User Account Lock suite", () => {
     let err;
     const requestUser = {
       id: "request_user_id",
+      externalId: "request_user_id",
       type: UserType.ASSESSMENT,
     };
     try {
@@ -1139,6 +1166,7 @@ describe("[User Account Lock suite", () => {
     const fakeRequestUser = {
       requestUser: {
         id: adminUser.id,
+        externalId: adminUser.externalId,
         type: UserType.ADMIN,
       },
     };
@@ -1179,6 +1207,7 @@ describe("[User Account Lock suite", () => {
     const fakeRequestUser = {
       requestUser: {
         id: adminRequestUser.id,
+        externalId: adminRequestUser.externalId,
         type: UserType.ADMIN,
       },
     };

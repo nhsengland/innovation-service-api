@@ -309,7 +309,7 @@ export class InnovationService extends BaseService<Innovation> {
         );
 
         return innovationSupport.organisationUnitUsers.map(
-          (ouu: OrganisationUnitUser) => ouu.organisationUser.user.id
+          (ouu: OrganisationUnitUser) => ouu.organisationUser.user.externalId
         );
       });
 
@@ -355,7 +355,7 @@ export class InnovationService extends BaseService<Innovation> {
               accessors: innovationSupport.organisationUnitUsers?.map(
                 (oou: OrganisationUnitUser) => ({
                   id: oou.organisationUser.id,
-                  name: b2cUserNames[oou.organisationUser.user.id],
+                  name: b2cUserNames[oou.organisationUser.user.externalId],
                 })
               ),
             }
@@ -777,7 +777,10 @@ export class InnovationService extends BaseService<Innovation> {
       throw new InnovationNotFoundError("Innovation not found for the user.");
     }
 
-    const b2cOwnerUser = await this.userService.getProfile(innovation.owner.id);
+    const b2cOwnerUser = await this.userService.getProfile(
+      innovation.owner.id,
+      innovation.owner.externalId
+    );
     const categories = await innovation.categories;
 
     // BUSINESS RULE: One innovation only has 1 assessment
@@ -859,7 +862,10 @@ export class InnovationService extends BaseService<Innovation> {
     };
 
     const innovation = await super.find(id, innovationFilterOptions);
-    const b2cOwnerUser = await this.userService.getProfile(innovation.owner.id);
+    const b2cOwnerUser = await this.userService.getProfile(
+      innovation.owner.id,
+      innovation.owner.externalId
+    );
     const categories = await innovation.categories;
 
     const assessment = {
@@ -870,7 +876,8 @@ export class InnovationService extends BaseService<Innovation> {
     // BUSINESS RULE: One innovation only has 1 assessment
     if (innovation.assessments.length > 0) {
       const b2cAssessmentUser = await this.userService.getProfile(
-        innovation.assessments[0].assignTo.id
+        innovation.assessments[0].assignTo.id,
+        innovation.assessments[0].assignTo.externalId
       );
 
       assessment.id = innovation.assessments[0].id;
@@ -966,7 +973,7 @@ export class InnovationService extends BaseService<Innovation> {
           innovation.assessments && innovation.assessments.length > 0
       )
       .map((innovation) => {
-        return innovation.assessments.map((a) => a.assignTo.id);
+        return innovation.assessments.map((a) => a.assignTo.externalId);
       });
 
     let res = [];

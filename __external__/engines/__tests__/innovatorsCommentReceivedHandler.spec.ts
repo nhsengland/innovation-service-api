@@ -17,6 +17,7 @@ describe("innovatorsCommentReceivedHandler suite", () => {
   it("should throw InvalidEmailTemplateProps", async () => {
     const reqUser: RequestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.INNOVATOR,
     };
 
@@ -59,6 +60,7 @@ describe("innovatorsCommentReceivedHandler suite", () => {
   it("should Send email with the correct handler", async () => {
     const reqUser: RequestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.INNOVATOR,
     };
 
@@ -77,6 +79,7 @@ describe("innovatorsCommentReceivedHandler suite", () => {
       {
         displayName: "test_user",
         id: "D7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "D7095D87-C3DF-46F6-A503-001B083F4630",
         email: "email_address@example.com",
       },
     ]);

@@ -344,7 +344,8 @@ export class InnovationActionService {
     }
 
     const b2cCreatorUser = await this.userService.getProfile(
-      innovationAction.createdBy
+      innovationAction.createdBy,
+      requestUser.externalId
     );
     const organisationUnit =
       innovationAction.innovationSupport.organisationUnit;

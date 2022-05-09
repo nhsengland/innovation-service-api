@@ -5,6 +5,7 @@ import * as connection from "../../utils/connection";
 import * as validation from "../../usersGetProfile/validation";
 import * as decodejwt from "../../utils/authentication";
 import * as service_loader from "../../utils/serviceLoader";
+import * as decorators from "../../utils/decorators";
 
 import {
   runStubFunctionFromBindings,
@@ -36,6 +37,9 @@ describe("[HttpTrigger] usersGetProfile Test Suite", () => {
     afterEach(() => {
       jest.resetAllMocks();
     });
+    beforeAll(()=> {
+      jest.spyOn(decorators, "AllowedUserType").mockImplementation();
+    });
 
     it("fails when connection is not established", async () => {
       jest.spyOn(decodejwt, 'decodeToken').mockResolvedValue({oid: ':oid'});
@@ -63,8 +67,16 @@ describe("[HttpTrigger] usersGetProfile Test Suite", () => {
     });
 
     it("Should return 200 when User Profile is found", async () => {
+      const services = {
+        OrganisationService: {
+          findUserOrganisations: () => [{ id: ":id", organisation: { id: ":id", name: ":name" }, role: "other" }],
+        },
+        UserService: {
+          getUserByOptions: () => ({ type: UserType.ACCESSOR }),
+        }
+      };
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
-      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(services as any);
       jest.spyOn(validation, "ValidateHeaders").mockResolvedValue({} as any);
       jest.spyOn(persistence, "getProfile").mockResolvedValue([
         {
@@ -92,8 +104,16 @@ describe("[HttpTrigger] usersGetProfile Test Suite", () => {
     });
 
     it("Should return 404 when User Profile is not found", async () => {
+      const services = {
+        OrganisationService: {
+          findUserOrganisations: () => [{ id: ":id", organisation: { id: ":id", name: ":name" }, role: "other" }],
+        },
+        UserService: {
+          getUserByOptions: () => ({ type: UserType.ACCESSOR }),
+        }
+      };
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
-      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(services as any);
       jest.spyOn(validation, "ValidateHeaders").mockResolvedValue({} as any);
       jest.spyOn(persistence, "getProfile").mockResolvedValue(null);
 
@@ -108,8 +128,16 @@ describe("[HttpTrigger] usersGetProfile Test Suite", () => {
     });
 
     it("Should return 500 when User Profile fetch fails", async () => {
+      const services = {
+        OrganisationService: {
+          findUserOrganisations: () => [{ id: ":id", organisation: { id: ":id", name: ":name" }, role: "other" }],
+        },
+        UserService: {
+          getUserByOptions: () => ({ type: UserType.ACCESSOR }),
+        }
+      };
       jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
-      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(services as any);
       jest.spyOn(validation, "ValidateHeaders").mockResolvedValue({} as any);
       jest.spyOn(persistence, "getProfile").mockRejectedValue("");
 

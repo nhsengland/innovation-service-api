@@ -235,7 +235,7 @@ describe("Innovation Action Suite", () => {
     let err;
     try {
       await actionService.create(
-        { id: ":id", type: UserType.ACCESSOR },
+        { id: ":id", externalId: ":id", type: UserType.ACCESSOR },
         "a",
         {}
       );
@@ -291,7 +291,7 @@ describe("Innovation Action Suite", () => {
     let err;
     try {
       await actionService.updateByAccessor(
-        { id: ":id", type: UserType.ACCESSOR },
+        { id: ":id", externalId: ":id", type: UserType.ACCESSOR },
         "a",
         "a",
         {}
