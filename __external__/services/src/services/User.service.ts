@@ -91,6 +91,11 @@ export class UserService {
     return await this.userRepo.findOne(id, options);
   }
 
+  async getUserByOptions(options: FindOneOptions<User>): Promise<User> {
+    const res = await this.userRepo.findOne(options);
+    return res;
+  }
+
   async updateB2CUser(
     payload: any,
     oid: string,
@@ -627,7 +632,7 @@ export class UserService {
         }
 
         //Check if the user being created is an ADMIN, if it is, create a new UserRole with the User and Role IDs
-        if (user.type == "ADMIN") {
+        if (user.type === "ADMIN") {
           const role = await this.roleRepo.findOne({
             where: {
               name: ServiceRole.ADMIN,

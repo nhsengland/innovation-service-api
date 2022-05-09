@@ -42,7 +42,7 @@ describe("OrganisationUser Test Suite", () => {
       const expectedProps = await getEntityColumnList(OrganisationUser);
 
       const userObj = User.new({
-        id: "oid",
+        id: "C7095D87-C3DF-46F6-A503-001B083F4630",
         name: "userDummy",
         type: UserType.INNOVATOR,
       });

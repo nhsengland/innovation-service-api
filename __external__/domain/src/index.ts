@@ -34,11 +34,13 @@ export { NotificationPreference } from "./entity/user/NotificationPreference.ent
 export { User } from "./entity/user/User.entity";
 export { Role } from "./entity/user/Role.entity";
 export { UserRole } from "./entity/user/UserRole.entity";
+export { TermsOfUse as TermsOfUse } from "./entity/tou/TermsOfUse.entity";
 
 export * from "./enums/catalog.enums";
 export * from "./enums/innovation.enums";
 export * from "./enums/organisation.enums";
 export * from "./enums/user.enums";
 export * from "./enums/activity.enums";
+export * from "./enums/terms-of-use.enums";
 
 export { connection } from "./connections";

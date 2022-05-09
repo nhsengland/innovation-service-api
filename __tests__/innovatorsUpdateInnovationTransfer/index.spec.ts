@@ -36,6 +36,9 @@ const dummy = {
       getUser: () => ({
         type: UserType.INNOVATOR,
       }),
+      getUserByOptions: () => ({
+        type: UserType.INNOVATOR,
+      }),
     },
   },
   innovationId: ":innovationId",
@@ -82,6 +85,9 @@ describe("[HttpTrigger] innovatorsUpdateInnovationTransfer Suite", () => {
       const services = {
         UserService: {
           getUser: () => ({
+            type: UserType.ACCESSOR,
+          }),
+          getUserByOptions: () => ({
             type: UserType.ACCESSOR,
           }),
         },

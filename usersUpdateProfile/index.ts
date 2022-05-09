@@ -17,7 +17,12 @@ class UsersUpdateProfile {
   @SQLConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
   @JwtDecoder()
-  @AllowedUserType(UserType.INNOVATOR, UserType.ACCESSOR, UserType.ASSESSMENT)
+  @AllowedUserType(
+    UserType.INNOVATOR,
+    UserType.ACCESSOR,
+    UserType.ASSESSMENT,
+    UserType.ADMIN
+  )
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest

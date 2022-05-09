@@ -240,7 +240,7 @@ export class OrganisationService extends BaseService<Organisation> {
   ) {
     const userIds = organisationUnitUsers.map(
       (organisationUnitUser: OrganisationUnitUser) =>
-        organisationUnitUser.organisationUser.user.id
+        organisationUnitUser.organisationUser.user.externalId
     );
     const b2cUsers = await this.userService.getListOfUsers(
       userIds,
@@ -352,7 +352,7 @@ export class OrganisationService extends BaseService<Organisation> {
       acronymSearch = await this.findAllUnits(filterAcronyms);
     }
 
-    if (acronymSearch.length == 0) {
+    if (acronymSearch.length === 0) {
       return false;
     }
 
@@ -534,7 +534,7 @@ export class OrganisationService extends BaseService<Organisation> {
     const result = orgUnitUsers
       .filter((orgUnitUsers) => {
         const organisationUser = orgUnitUsers.organisationUser;
-        const name = b2cMap[organisationUser.user.id];
+        const name = b2cMap[organisationUser.user.externalId];
         if (name) return true;
         return false;
       })

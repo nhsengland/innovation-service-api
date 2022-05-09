@@ -2,6 +2,8 @@ import {
   AccessorOrganisationRole,
   Innovation,
   InnovationSupportStatus,
+  NotificationAudience,
+  NotificationContextType,
   OrganisationUnitUser,
   OrganisationUser,
   User,
@@ -27,7 +29,9 @@ import {
   getUserFromB2C,
   deleteB2CAccount,
 } from "../helpers";
-import * as rules from "../config/admin-user-lock.config.json";
+import * as qaRules from "../config/admin-qa-user-lock.config.json";
+import * as accessorRules from "../config/admin-accessor-user-lock.config.json";
+import * as assessmentRules from "../config/admin-needs-assessment-user-lock.config.json";
 import * as rule from "../config/admin-change-role.config.json";
 import * as unitrules from "../config/admin-user-change-unit.config.json";
 import { UserCreationModel } from "@services/models/UserCreationModel";
@@ -38,17 +42,24 @@ import { OrganisationService } from "./Organisation.service";
 import { NotificationService } from "./Notification.service";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import { LoggerService } from "./Logger.service";
+import { InnovationSupportService } from "./InnovationSupport.service";
 
 export class AdminService {
   private readonly connection: Connection;
   private readonly userService: UserService;
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
+  private readonly innovationSupportService: InnovationSupportService;
+  private readonly organisationService: OrganisationService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.userService = new UserService(connectionName);
     this.notificationService = new NotificationService(connectionName);
+    this.innovationSupportService = new InnovationSupportService(
+      connectionName
+    );
+    this.organisationService = new OrganisationService(connectionName);
   }
   async getUsersOfType(
     type: UserType,
@@ -175,8 +186,9 @@ export class AdminService {
       throw new Error("Invalid user id.");
     }
 
+    let result;
     try {
-      await this.connection.transaction(async (transaction) => {
+      result = await this.connection.transaction(async (transaction) => {
         await transaction.update(
           User,
           { id: userId },
@@ -192,6 +204,76 @@ export class AdminService {
       });
     } catch {
       throw new Error("Error locking user at IdP");
+    }
+
+    //When the user is locked, trigger an inservice notification for Qualifying Accessors if the innovation support status is "further info",
+    //"waiting" or "engaging" and for Accessors when the status = "engaging".
+    const userDetails = await this.userService.getUserDetails(userId, "FULL");
+    if (userDetails.type === "INNOVATOR") {
+      let users: string[];
+      const orgUnitUsersList: string[] = [];
+      const userToRequestUser: RequestUser = {
+        id: userId,
+        type: UserType.INNOVATOR,
+      };
+
+      for (let i = 0; i < userDetails.innovations.length; i++) {
+        const innovationSupports = await this.innovationSupportService.findAllByInnovation(
+          userToRequestUser,
+          userDetails.innovations[i].id
+        );
+
+        for (let j = 0; j < innovationSupports.length; j++) {
+          const organisationUnitUsers = await this.organisationService.findOrganisationUnitUsersById(
+            innovationSupports[j].organisationUnit.id
+          );
+
+          for (let k = 0; k < organisationUnitUsers.length; k++) {
+            if (
+              innovationSupports[j].status ===
+                InnovationSupportStatus.FURTHER_INFO_REQUIRED ||
+              innovationSupports[j].status === InnovationSupportStatus.WAITING
+            ) {
+              if (organisationUnitUsers[k].role === "QUALIFYING_ACCESSOR") {
+                orgUnitUsersList.push(organisationUnitUsers[k].id);
+              }
+            }
+            if (
+              innovationSupports[j].status === InnovationSupportStatus.ENGAGING
+            ) {
+              if (
+                organisationUnitUsers[k].role === "QUALIFYING_ACCESSOR" ||
+                organisationUnitUsers[k].role === "ACCESSOR"
+              ) {
+                orgUnitUsersList.push(organisationUnitUsers[k].id);
+              }
+            }
+          }
+        }
+        if (orgUnitUsersList.length != 0) {
+          users = await this.organisationService.findUserFromUnitUsers(
+            orgUnitUsersList
+          );
+
+          try {
+            await this.notificationService.create(
+              requestUser,
+              NotificationAudience.ACCESSORS,
+              userDetails.innovations[i].id,
+              NotificationContextType.INNOVATION,
+
+              userDetails.innovations[i].id,
+              `Please Note that the Innovator ${userDetails.displayName} account has been locked by the Admin`,
+              users
+            );
+          } catch (error) {
+            this.logService.error(
+              `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
+              error
+            );
+          }
+        }
+      }
     }
 
     const email = this.getUserEmail(user);
@@ -314,7 +396,29 @@ export class AdminService {
       ],
     });
 
-    return await this.runUserValidation(userToBeRemoved);
+    const userOrganisations = await userToBeRemoved.userOrganisations;
+
+    if (
+      userToBeRemoved.type === "ACCESSOR" &&
+      userOrganisations[0].role === AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    ) {
+      return await this.runQualifyingAccessorUserValidation(userToBeRemoved);
+    }
+
+    if (
+      userToBeRemoved.type === "ACCESSOR" &&
+      userOrganisations[0].role === AccessorOrganisationRole.ACCESSOR
+    ) {
+      return await this.runAccessorUserValidation(userToBeRemoved);
+    }
+
+    if (userToBeRemoved.type === "ASSESSMENT") {
+      return await this.runNeedsAssessmentUserValidation(userToBeRemoved);
+    }
+
+    if (userToBeRemoved.type === "INNOVATOR") {
+      return {};
+    }
   }
 
   async userChangeRoleValidation(
@@ -422,35 +526,58 @@ export class AdminService {
     };
   }
 
-  private async runUserValidation(user: User): Promise<{ [key: string]: any }> {
-    const r = { ...rules };
-    if (user.type === UserType.ASSESSMENT) {
-      const checkAssessmentUser = await this.CheckAssessmentUser(user);
-      if (r[checkAssessmentUser?.code.toString()]) {
-        r[checkAssessmentUser?.code.toString()] = {
-          ...checkAssessmentUser,
-          valid: false,
-        };
-      }
+  private async runNeedsAssessmentUserValidation(
+    user: User
+  ): Promise<{ [key: string]: any }> {
+    const r = { ...assessmentRules };
+    const checkAssessmentUser = await this.CheckAssessmentUser(user);
+    if (r[checkAssessmentUser?.code.toString()]) {
+      r[checkAssessmentUser?.code.toString()] = {
+        ...checkAssessmentUser,
+        valid: false,
+      };
     }
 
-    if (user.type === UserType.ACCESSOR) {
-      const accessorOrgRule = await this.CheckAccessorOrganisation(user);
-      const accessorSupportRule = await this.checkAccessorSupports(user);
+    return r;
+  }
 
-      if (r[accessorOrgRule?.code.toString()]) {
-        r[accessorOrgRule?.code.toString()] = {
-          ...accessorOrgRule,
-          valid: false,
-        };
-      }
+  private async runQualifyingAccessorUserValidation(
+    user: User
+  ): Promise<{ [key: string]: any }> {
+    const r = { ...qaRules };
 
-      if (r[accessorSupportRule?.code.toString()]) {
-        r[accessorSupportRule?.code.toString()] = {
-          ...accessorSupportRule,
-          valid: false,
-        };
-      }
+    const accessorOrgRule = await this.CheckAccessorOrganisation(user);
+    const accessorSupportRule = await this.checkAccessorSupports(user);
+
+    if (r[accessorOrgRule?.code.toString()]) {
+      r[accessorOrgRule?.code.toString()] = {
+        ...accessorOrgRule,
+        valid: false,
+      };
+    }
+
+    if (r[accessorSupportRule?.code.toString()]) {
+      r[accessorSupportRule?.code.toString()] = {
+        ...accessorSupportRule,
+        valid: false,
+      };
+    }
+
+    return r;
+  }
+
+  private async runAccessorUserValidation(
+    user: User
+  ): Promise<{ [key: string]: any }> {
+    const r = { ...accessorRules };
+
+    const accessorSupportRule = await this.checkAccessorSupports(user);
+
+    if (r[accessorSupportRule?.code.toString()]) {
+      r[accessorSupportRule?.code.toString()] = {
+        ...accessorSupportRule,
+        valid: false,
+      };
     }
 
     return r;
@@ -576,6 +703,7 @@ export class AdminService {
     const userOrganisations = await userToBeRemoved.userOrganisations;
     for (const userOrg of userOrganisations) {
       const organisationId = userOrg.organisation.id;
+
       const orgMembers = await this.connection
         .createQueryBuilder(OrganisationUser, "orgUser")
         .innerJoin(
@@ -751,7 +879,7 @@ export class AdminService {
 
     const userToBeDeleted = await this.userService.getUser(userId);
 
-    if (userToBeDeleted.type == "ADMIN") {
+    if (userToBeDeleted.type === "ADMIN") {
       return await this.connection.transaction(async (transactionManager) => {
         try {
           await deleteB2CAccount(userId);
