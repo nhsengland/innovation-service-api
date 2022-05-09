@@ -161,6 +161,7 @@ export class InnovationTransferService {
     const transfers = await this.getMany(
       {
         id: userId,
+        externalId: userId,
         type: UserType.INNOVATOR,
       },
       {
@@ -225,11 +226,11 @@ export class InnovationTransferService {
 
     const graphAccessToken = await authenticateWitGraphAPI();
     const destB2cUser = await getUserFromB2CByEmail(email);
-    if (destB2cUser && destB2cUser.id === requestUser.id) {
+    if (destB2cUser && destB2cUser.id === requestUser.externalId) {
       throw new InvalidParamsError("Invalid parameters.");
     }
     const originB2cUser = await getUserFromB2C(
-      requestUser.id,
+      requestUser.externalId,
       graphAccessToken
     );
 
@@ -315,7 +316,10 @@ export class InnovationTransferService {
       case InnovationTransferStatus.DECLINED:
       case InnovationTransferStatus.COMPLETED:
         graphAccessToken = await authenticateWitGraphAPI();
-        destB2cUser = await getUserFromB2C(requestUser.id, graphAccessToken);
+        destB2cUser = await getUserFromB2C(
+          requestUser.externalId,
+          graphAccessToken
+        );
 
         filter.email = this.getUserEmail(destB2cUser);
         break;

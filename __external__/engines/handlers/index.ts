@@ -34,7 +34,7 @@ export const accessorsActionToReviewHandler = async (
 
   const innovationRepo = getRepository(Innovation, connectionName);
 
-  const b2cUser = await helpers.getUserFromB2C(requestUser.id);
+  const b2cUser = await helpers.getUserFromB2C(requestUser.externalId);
   const innovation = await innovationRepo.findOne(params.innovationId);
 
   const innovator_name = b2cUser.displayName;
@@ -77,7 +77,7 @@ export const accessorsAssignedToInnovationHandler = async (
   connectionName?: string
 ): Promise<EmailResponse[]> => {
   const emailService = new EmailService(connectionName);
-  const b2cUser = await helpers.getUserFromB2C(requestUser.id);
+  const b2cUser = await helpers.getUserFromB2C(requestUser.externalId);
   const qa_name = b2cUser.displayName;
   const innovation_url = parseUrl(params, template);
   const props = {
@@ -115,7 +115,7 @@ export const innovatorActionRequested = async (
 ): Promise<EmailResponse[]> => {
   const innovationRepo = getRepository(Innovation, connectionName);
   const emailService = new EmailService(connectionName);
-  const b2cUser = await helpers.getUserFromB2C(requestUser.id);
+  const b2cUser = await helpers.getUserFromB2C(requestUser.externalId);
   const innovation = await innovationRepo.findOne(params.innovationId, {
     relations: ["owner"],
   });

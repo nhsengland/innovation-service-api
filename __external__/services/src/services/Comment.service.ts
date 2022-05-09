@@ -175,7 +175,10 @@ export class CommentService {
         });
 
         const owner = innovation.owner.id;
-        const sender = await this.userService.getProfile(requestUser.id);
+        const sender = await this.userService.getProfile(
+          requestUser.id,
+          requestUser.externalId
+        );
         const senderUnit = await this.organisationService.findOrganisationUnitById(
           requestUser.organisationUnitUser.organisationUnit.id
         );
@@ -328,7 +331,7 @@ export class CommentService {
     };
     const comments = await this.commentRepo.find(filterOptions);
 
-    const userIds = comments.map((comment: Comment) => comment.user.id);
+    const userIds = comments.map((comment: Comment) => comment.user.externalId);
 
     const b2cUsers = await this.userService.getListOfUsers(userIds);
     const b2cUserNames = b2cUsers.reduce((map, obj) => {
@@ -376,8 +379,9 @@ export class CommentService {
       isEditable: comment.isEditable,
       user: {
         id: comment.user.id,
+        externalId: comment.user.externalId,
         type: comment.user.type,
-        name: b2cUserNames[comment.user.id],
+        name: b2cUserNames[comment.user.externalId],
       },
       notifications: {
         count: unread?.length || 0,

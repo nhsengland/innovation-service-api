@@ -68,18 +68,19 @@ export class AdminService {
   ): Promise<UserSearchResult[]> {
     const users = await this.userService.getUsersOfTypePaged(type, skip, take);
     const b2cUsers = await this.userService.getListOfUsers(
-      users.map((u) => u.id),
+      users.map((u) => u.externalId),
       false
     );
 
     const result: UserSearchResult[] = [];
 
     for (const user of users) {
-      const b2c = b2cUsers.find((u) => u.id === user.id);
+      const b2c = b2cUsers.find((u) => u.id === user.externalId);
       const userOrganisations = await user.userOrganisations;
       if (b2c) {
         result.push({
           id: user.id,
+          externalId: b2c.id,
           type: user.type,
           displayName: b2c.displayName,
           email: b2c.email,
@@ -214,6 +215,7 @@ export class AdminService {
       const orgUnitUsersList: string[] = [];
       const userToRequestUser: RequestUser = {
         id: userId,
+        externalId: userDetails.externalId,
         type: UserType.INNOVATOR,
       };
 

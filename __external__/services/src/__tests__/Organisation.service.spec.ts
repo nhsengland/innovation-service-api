@@ -181,6 +181,7 @@ describe("Organisation Service Suite", () => {
     try {
       await organisationService.findUserOrganisationUnitUsers({
         id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.ACCESSOR,
       });
     } catch (error) {
@@ -196,6 +197,7 @@ describe("Organisation Service Suite", () => {
     try {
       await organisationService.findUserOrganisationUnitUsers({
         id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.ACCESSOR,
         organisationUser: {
           id: ":orgUId",

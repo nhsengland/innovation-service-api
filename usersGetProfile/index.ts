@@ -4,28 +4,37 @@ import * as validation from "./validation";
 import { decodeToken } from "../utils/authentication";
 import * as persistence from "./persistence";
 import {
+  AllowedUserType,
   AppInsights,
   JwtDecoder,
   SQLConnector,
   Validator,
 } from "../utils/decorators";
 import { CustomContext, Severity } from "../utils/types";
+import { UserType } from "@domain/index";
 
 class UsersGetProfile {
   @AppInsights()
   @SQLConnector()
   @Validator(validation.ValidateHeaders, "headers", "Invalid Headers")
   @JwtDecoder()
+  @AllowedUserType(
+    UserType.ACCESSOR,
+    UserType.ADMIN,
+    UserType.ASSESSMENT,
+    UserType.INNOVATOR
+  )
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const id = context.auth.decodedJwt.oid;
+    const externalId = context.auth.requestUser.externalId;
+    const id = context.auth.requestUser.id;
 
     let result;
 
     try {
-      result = await persistence.getProfile(context, id);
+      result = await persistence.getProfile(context, id, externalId);
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);

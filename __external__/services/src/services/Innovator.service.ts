@@ -113,6 +113,7 @@ export class InnovatorService extends BaseService<User> {
   async sendEmail(innovator: User): Promise<void> {
     const requestUser: RequestUser = {
       id: innovator.id,
+      externalId: innovator.externalId,
       type: UserType.INNOVATOR,
     };
 
@@ -188,6 +189,7 @@ export class InnovatorService extends BaseService<User> {
     await this.innovationTransferService.updateStatus(
       {
         id: innovator.id,
+        externalId: innovator.externalId,
         type: UserType.INNOVATOR,
       },
       transferId,

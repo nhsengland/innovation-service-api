@@ -1,6 +1,7 @@
 import { HttpRequest } from "@azure/functions";
 import { AccessorOrganisationRole, UserType } from "@domain/index";
 import {
+  AllowedUserType,
   AppInsights,
   JwtDecoder,
   OrganisationRoleValidator,
@@ -17,6 +18,7 @@ class AccessorsGetAllActions {
   @Validator(ValidateQueryParams, "query", "Missing query fields")
   @SQLConnector()
   @JwtDecoder()
+  @AllowedUserType(UserType.ACCESSOR)
   @OrganisationRoleValidator(
     UserType.ACCESSOR,
     AccessorOrganisationRole.QUALIFYING_ACCESSOR,
