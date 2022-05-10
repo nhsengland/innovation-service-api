@@ -30,6 +30,7 @@ describe("[adminsUserDetails] Persistence suite", () => {
       const ctx = {
         services: {
           AdminService: new AdminService(),
+          UserService: new UserService(),
         },
         auth: {
           requestUser: {
