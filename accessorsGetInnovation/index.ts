@@ -1,6 +1,7 @@
 import { HttpRequest } from "@azure/functions";
 import { AccessorOrganisationRole, UserType } from "@domain/index";
 import {
+  AllowedUserType,
   AppInsights,
   JwtDecoder,
   OrganisationRoleValidator,
@@ -14,6 +15,7 @@ class AccessorsGetInnovation {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder()
+  @AllowedUserType(UserType.ACCESSOR)
   @OrganisationRoleValidator(
     UserType.ACCESSOR,
     AccessorOrganisationRole.ACCESSOR,

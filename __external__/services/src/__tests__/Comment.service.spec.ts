@@ -198,7 +198,7 @@ describe("Comment Service Suite", () => {
     let err;
     try {
       await commentService.create(
-        { id: ":id", type: UserType.ACCESSOR },
+        { id: ":id", externalId: ":id", type: UserType.ACCESSOR },
         "b",
         "message"
       );
@@ -379,7 +379,7 @@ describe("Comment Service Suite", () => {
 
     try {
       await commentService.update(
-        { id: ":id", type: UserType.ACCESSOR },
+        { id: ":id", externalId: ":id", type: UserType.ACCESSOR },
         innovation.id,
         "message",
         comment.id

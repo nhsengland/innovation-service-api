@@ -15,6 +15,7 @@ class AccessorsGetInnovationAssessment {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder()
+  @AllowedUserType(UserType.ACCESSOR)
   @OrganisationRoleValidator(
     UserType.ACCESSOR,
     AccessorOrganisationRole.QUALIFYING_ACCESSOR,

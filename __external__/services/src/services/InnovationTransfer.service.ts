@@ -1,3 +1,4 @@
+import { User } from "@domain/entity/user/User.entity";
 import { InnovationTransfer } from "@domain/entity/innovation/InnovationTransfer.entity";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
@@ -44,6 +45,7 @@ interface QueryFilter {
 export class InnovationTransferService {
   private readonly connection: Connection;
   private readonly transferRepo: Repository<InnovationTransfer>;
+  private readonly userRepo: Repository<User>;
   private readonly innovationService: InnovationService;
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
@@ -53,6 +55,7 @@ export class InnovationTransferService {
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.transferRepo = getRepository(InnovationTransfer, connectionName);
+    this.userRepo = getRepository(User, connectionName);
     this.innovationService = new InnovationService(connectionName);
     this.notificationService = new NotificationService(connectionName);
     this.userService = new UserService(connectionName);
@@ -87,7 +90,13 @@ export class InnovationTransferService {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
-    const innovator = await this.userService.find(userId);
+    const innovator = await this.userRepo
+      .createQueryBuilder("user")
+      .where("external_id = :oid", {
+        oid: userId.toLocaleLowerCase(),
+      })
+      .getOne();
+      
     const b2cUser = await getUserFromB2C(userId);
     if (!b2cUser || (innovator && innovator.type !== UserType.INNOVATOR)) {
     }
@@ -100,7 +109,7 @@ export class InnovationTransferService {
 
     return {
       hasInvites: !!transfer,
-      userExists: !!innovator,
+      userExists: !!innovator
     };
   }
 
@@ -161,6 +170,7 @@ export class InnovationTransferService {
     const transfers = await this.getMany(
       {
         id: userId,
+        externalId: userId,
         type: UserType.INNOVATOR,
       },
       {
@@ -225,11 +235,11 @@ export class InnovationTransferService {
 
     const graphAccessToken = await authenticateWitGraphAPI();
     const destB2cUser = await getUserFromB2CByEmail(email);
-    if (destB2cUser && destB2cUser.id === requestUser.id) {
+    if (destB2cUser && destB2cUser.id === requestUser.externalId) {
       throw new InvalidParamsError("Invalid parameters.");
     }
     const originB2cUser = await getUserFromB2C(
-      requestUser.id,
+      requestUser.externalId,
       graphAccessToken
     );
 
@@ -315,7 +325,10 @@ export class InnovationTransferService {
       case InnovationTransferStatus.DECLINED:
       case InnovationTransferStatus.COMPLETED:
         graphAccessToken = await authenticateWitGraphAPI();
-        destB2cUser = await getUserFromB2C(requestUser.id, graphAccessToken);
+        destB2cUser = await getUserFromB2C(
+          requestUser.externalId,
+          graphAccessToken
+        );
 
         filter.email = this.getUserEmail(destB2cUser);
         break;

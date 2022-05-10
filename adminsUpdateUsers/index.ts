@@ -22,11 +22,12 @@ class AdminsUpdateUsers {
   ): Promise<void> {
     const users = req.body;
     const adminId = process.env.ADMIN_OID;
-    const oid = context.auth.decodedJwt.oid;
+    const externalId = context.auth.requestUser.externalId;
+    const id = context.auth.requestUser.id;
 
-    if (oid !== adminId) {
+    if (externalId !== adminId) {
       context.logger(
-        `[${req.method}]${req.url} Operation denied. ${oid} !== adminId`,
+        `[${req.method}]${req.url} Operation denied. ${externalId} !== adminId`,
         Severity.Information
       );
       context.res = Responsify.Forbidden({ error: "Operation denied." });
@@ -36,7 +37,8 @@ class AdminsUpdateUsers {
     let result;
     try {
       context.auth.requestUser = {
-        id: oid,
+        id,
+        externalId,
         type: UserType.ADMIN,
       };
 

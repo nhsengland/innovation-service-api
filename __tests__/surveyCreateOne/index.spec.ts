@@ -6,6 +6,7 @@ import {
 import surveyCreateOne from "../../surveyCreateOne/index";
 import * as persistence from "../../surveyCreateOne/persistence";
 import * as validation from "../../surveyCreateOne/validation";
+import * as decorators from "../../utils/decorators/index";
 
 jest.mock("../../utils/logging/insights", () => ({
   start: () => { },
@@ -31,6 +32,9 @@ describe.skip("[HttpTrigger] SurveyCreateOne Suite", () => {
   describe("Function Handler", () => {
     afterEach(() => {
       jest.resetAllMocks();
+    });
+    beforeAll(()=> {
+      jest.spyOn(decorators, "AllowedUserType").mockImplementation();
     });
 
     it("fails when connection is not established", async () => {

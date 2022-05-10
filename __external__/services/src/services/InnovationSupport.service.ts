@@ -107,13 +107,13 @@ export class InnovationSupportService {
       accessors: organisationUnitUsers
         ?.filter((organisationUnitUser: OrganisationUnitUser) => {
           const organisationUser = organisationUnitUser.organisationUser;
-          const name = b2cMap[organisationUser.user.id];
+          const name = b2cMap[organisationUser.user.externalId];
           if (name) return true;
           return false;
         })
         .map((organisationUnitUser: OrganisationUnitUser) => ({
           id: organisationUnitUser.id,
-          name: b2cMap[organisationUnitUser.organisationUser.user.id],
+          name: b2cMap[organisationUnitUser.organisationUser.user.externalId],
         })),
     };
   }
@@ -155,16 +155,19 @@ export class InnovationSupportService {
 
     let b2cUserNames;
     if (full) {
-      const userIds = innovationSupports.flatMap((sup: InnovationSupport) => {
-        if (sup.status === InnovationSupportStatus.ENGAGING) {
-          return sup.organisationUnitUsers.map(
-            (ouu: OrganisationUnitUser) => ouu.organisationUser.user.id
-          );
-        } else {
-          return [];
+      const externalIds = innovationSupports.flatMap(
+        (sup: InnovationSupport) => {
+          if (sup.status === InnovationSupportStatus.ENGAGING) {
+            return sup.organisationUnitUsers.map(
+              (ouu: OrganisationUnitUser) =>
+                ouu.organisationUser.user.externalId
+            );
+          } else {
+            return [];
+          }
         }
-      });
-      const b2cUsers = await this.userService.getListOfUsers(userIds);
+      );
+      const b2cUsers = await this.userService.getListOfUsers(externalIds);
       b2cUserNames = b2cUsers.reduce((map, obj) => {
         map[obj.id] = obj.displayName;
         return map;
@@ -193,7 +196,10 @@ export class InnovationSupportService {
         response.accessors = sup.organisationUnitUsers?.map(
           (organisationUnitUser: OrganisationUnitUser) => ({
             id: organisationUnitUser.id,
-            name: b2cUserNames[organisationUnitUser.organisationUser.user.id],
+            name:
+              b2cUserNames[
+                organisationUnitUser.organisationUser.user.externalId
+              ],
           })
         );
       }
@@ -238,16 +244,19 @@ export class InnovationSupportService {
 
     let b2cUserNames;
     if (full) {
-      const userIds = innovationSupports.flatMap((sup: InnovationSupport) => {
-        if (sup.status === InnovationSupportStatus.ENGAGING) {
-          return sup.organisationUnitUsers.map(
-            (ouu: OrganisationUnitUser) => ouu.organisationUser.user.id
-          );
-        } else {
-          return [];
+      const externalIds = innovationSupports.flatMap(
+        (sup: InnovationSupport) => {
+          if (sup.status === InnovationSupportStatus.ENGAGING) {
+            return sup.organisationUnitUsers.map(
+              (ouu: OrganisationUnitUser) =>
+                ouu.organisationUser.user.externalId
+            );
+          } else {
+            return [];
+          }
         }
-      });
-      const b2cUsers = await this.userService.getListOfUsers(userIds);
+      );
+      const b2cUsers = await this.userService.getListOfUsers(externalIds);
       b2cUserNames = b2cUsers.reduce((map, obj) => {
         map[obj.id] = obj.displayName;
         return map;
@@ -276,7 +285,10 @@ export class InnovationSupportService {
         response.accessors = sup.organisationUnitUsers?.map(
           (organisationUnitUser: OrganisationUnitUser) => ({
             id: organisationUnitUser.id,
-            name: b2cUserNames[organisationUnitUser.organisationUser.user.id],
+            name:
+              b2cUserNames[
+                organisationUnitUser.organisationUser.user.externalId
+              ],
           })
         );
       }

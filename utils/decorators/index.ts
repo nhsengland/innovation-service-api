@@ -149,17 +149,6 @@ export function JwtDecoder(admin?: boolean) {
       const token = req.headers.authorization;
       const jwt = decodeToken(token);
 
-      const userId = req.params.userId;
-
-      if (!admin && userId && userId !== jwt.oid) {
-        context.logger(
-          `[${req.method}]${req.url} Operation denied. ${userId} !== ${jwt.oid}`,
-          Severity.Information
-        );
-        context.res = Responsify.Forbidden({ error: "Operation denied." });
-        return;
-      }
-
       context.auth = {
         decodedJwt: {
           oid: jwt.oid,
@@ -184,10 +173,11 @@ export function OrganisationRoleValidator(userType: UserType, ...roles: any[]) {
 
     descriptor.value = async function (...args: any[]) {
       const context: CustomContext = args[0];
-      const oid = context.auth.decodedJwt.oid;
+      const externalId = context.auth.requestUser.externalId;
+      const id = context.auth.requestUser.id;
 
       const userOrganisations: OrganisationUser[] = await context.services.OrganisationService.findUserOrganisations(
-        oid
+        externalId
       );
       const filteredOrganisations = userOrganisations.filter((uo) =>
         roles.includes(uo.role)
@@ -195,13 +185,13 @@ export function OrganisationRoleValidator(userType: UserType, ...roles: any[]) {
 
       if (filteredOrganisations.length === 0) {
         context.log.error(
-          `Invalid user. User has no valid roles. {oid: ${oid}}`
+          `Invalid user. User has no valid roles. {oid: ${externalId}}`
         );
         context.logger(
           `${decoratorId}: an error has occurred. Check details.`,
           Severity.Error,
           {
-            error: `Invalid user. User has no valid roles. {oid: ${oid}}`,
+            error: `Invalid user. User has no valid roles. {oid: ${externalId}}`,
           }
         );
         context.res = Responsify.Forbidden();
@@ -224,7 +214,8 @@ export function OrganisationRoleValidator(userType: UserType, ...roles: any[]) {
       }
 
       context.auth.requestUser = {
-        id: oid,
+        id,
+        externalId,
         type: userType,
         organisationUser: {
           id: filteredOrganisations[0].id,
@@ -310,6 +301,20 @@ export function AllowedUserType(...type: UserType[]) {
         where: { externalId: oid },
       });
 
+      /// TODO:  REMOVE AFTER FTSI REFACTOR
+      if (!user) {
+        context.auth.requestUser = {
+          id: oid.toUpperCase(),
+          externalId: oid,
+          type: UserType.INNOVATOR,
+        };
+
+        await original.apply(this, args);
+        return;
+      }
+
+      /// END REMOVE
+
       if (!user || !type.includes(user.type)) {
         context.log.error(
           `Invalid user. User is of wrong type for this endpoint. {oid: ${oid}}`
@@ -347,7 +352,7 @@ export function AllowedUserType(...type: UserType[]) {
 
         requestUser = {
           id: user.id,
-          identityId: oid,
+          externalId: oid,
           type: user.type,
           organisationUser: {
             id: userOrganisations[0].id,
@@ -362,7 +367,7 @@ export function AllowedUserType(...type: UserType[]) {
       } else {
         requestUser = {
           id: user.id,
-          identityId: oid,
+          externalId: oid,
           type: user.type,
         };
       }

@@ -143,6 +143,7 @@ describe("Notification Service Suite", () => {
 
     const requestUser: RequestUser = {
       id: accessor.id,
+      externalId: accessor.id,
       type: UserType.ACCESSOR,
     };
 
@@ -200,6 +201,7 @@ describe("Notification Service Suite", () => {
     const support = await fixtures.createSupportInInnovation(
       {
         id: qaccessor.id,
+        externalId: qaccessor.id,
         type: UserType.ACCESSOR,
         organisationUser: qOrgUser,
         organisationUnitUser: qUnitUser,
@@ -210,6 +212,7 @@ describe("Notification Service Suite", () => {
 
     const requestUser: RequestUser = {
       id: innovator.id,
+      externalId: innovator.id,
       type: UserType.INNOVATOR,
     };
 
@@ -277,6 +280,7 @@ describe("Notification Service Suite", () => {
     await fixtures.createSupportInInnovationMultipleAccessors(
       {
         id: qaccessor.id,
+        externalId: qaccessor.externalId,
         type: UserType.ACCESSOR,
         organisationUser: qOrgUser,
         organisationUnitUser: qUnitUser,
@@ -287,6 +291,7 @@ describe("Notification Service Suite", () => {
 
     const requestUser: RequestUser = {
       id: innovator.id,
+      externalId: innovator.id,
       type: UserType.INNOVATOR,
     };
 
@@ -355,6 +360,7 @@ describe("Notification Service Suite", () => {
     await fixtures.createSupportInInnovation(
       {
         id: qaccessor.id,
+        externalId: qaccessor.id,
         type: UserType.ACCESSOR,
         organisationUser: qOrgUser,
         organisationUnitUser: qUnitUser,
@@ -365,6 +371,7 @@ describe("Notification Service Suite", () => {
 
     const requestUser: RequestUser = {
       id: innovator.id,
+      externalId: innovator.id,
       type: UserType.INNOVATOR,
     };
 
@@ -410,12 +417,17 @@ describe("Notification Service Suite", () => {
     const innovation = await fixtures.saveInnovation(innovationObj);
 
     const assessment = await fixtures.createAssessment(
-      { id: assessmentUser.id, type: UserType.ASSESSMENT },
+      {
+        id: assessmentUser.id,
+        externalId: assessmentUser.id,
+        type: UserType.ASSESSMENT,
+      },
       innovation
     );
 
     const requestUser: RequestUser = {
       id: assessmentUser.id,
+      externalId: assessmentUser.id,
       type: UserType.ASSESSMENT,
     };
 
@@ -468,12 +480,17 @@ describe("Notification Service Suite", () => {
     const innovation = await fixtures.saveInnovation(innovationObj);
 
     const assessment = await fixtures.createAssessment(
-      { id: assessmentUser.id, type: UserType.ASSESSMENT },
+      {
+        id: assessmentUser.id,
+        externalId: assessmentUser.id,
+        type: UserType.ASSESSMENT,
+      },
       innovation
     );
 
     const requestUser: RequestUser = {
       id: assessmentUser.id,
+      externalId: assessmentUser.id,
       type: UserType.ASSESSMENT,
     };
 
@@ -503,6 +520,7 @@ describe("Notification Service Suite", () => {
 
     const requestUser: RequestUser = {
       id: innovator.id,
+      externalId: innovator.id,
       type: UserType.INNOVATOR,
     };
 
@@ -528,6 +546,7 @@ describe("Notification Service Suite", () => {
   it("should throw error when dismiss with invalid contextId", async () => {
     const dismisssRequestUser: RequestUser = {
       id: ":innovatorId",
+      externalId: ":innovatorId",
       type: UserType.INNOVATOR,
     };
 
@@ -566,6 +585,7 @@ describe("Notification Service Suite", () => {
 
     const requestUser: RequestUser = {
       id: accessor.id,
+      externalId: accessor.id,
       type: UserType.ACCESSOR,
     };
 
@@ -591,6 +611,7 @@ describe("Notification Service Suite", () => {
 
     const dismisssRequestUser: RequestUser = {
       id: innovator.id,
+      externalId: innovator.id,
       type: UserType.INNOVATOR,
     };
 
@@ -623,6 +644,7 @@ describe("Notification Service Suite", () => {
 
     const requestUser: RequestUser = {
       id: accessor.id,
+      externalId: accessor.id,
       type: UserType.ACCESSOR,
     };
 
@@ -638,6 +660,7 @@ describe("Notification Service Suite", () => {
 
     const innovatorUser: RequestUser = {
       id: innovator.id,
+      externalId: innovator.id,
       type: UserType.INNOVATOR,
     };
 
@@ -674,6 +697,7 @@ describe("Notification Service Suite", () => {
 
     const requestUser: RequestUser = {
       id: accessor.id,
+      externalId: accessor.id,
       type: UserType.ACCESSOR,
     };
 
@@ -719,6 +743,7 @@ describe("Notification Service Suite", () => {
 
     const innovatorUser: RequestUser = {
       id: innovator.id,
+      externalId: innovator.id,
       type: UserType.INNOVATOR,
     };
 
@@ -751,6 +776,7 @@ describe("Notification Service Suite", () => {
 
     const requestUser: RequestUser = {
       id: accessor.id,
+      externalId: accessor.id,
       type: UserType.ACCESSOR,
     };
 
@@ -796,6 +822,7 @@ describe("Notification Service Suite", () => {
 
     const innovatorUser: RequestUser = {
       id: innovator.id,
+      externalId: innovator.id,
       type: UserType.INNOVATOR,
     };
 
@@ -828,6 +855,7 @@ describe("Notification Service Suite", () => {
 
     const requestUser: RequestUser = {
       id: accessor.id,
+      externalId: accessor.id,
       type: UserType.ACCESSOR,
     };
 
@@ -873,6 +901,7 @@ describe("Notification Service Suite", () => {
 
     const innovatorUser: RequestUser = {
       id: innovator.id,
+      externalId: innovator.id,
       type: UserType.INNOVATOR,
     };
 
@@ -888,6 +917,7 @@ describe("Notification Service Suite", () => {
   it("should throw error when getUnreadNotifications with invalid innovationId", async () => {
     const requestUser: RequestUser = {
       id: ":innovatorId",
+      externalId: ":innovatorId",
       type: UserType.INNOVATOR,
     };
 
@@ -922,6 +952,7 @@ describe("Notification Service Suite", () => {
 
     const requestUser: RequestUser = {
       id: accessor.id,
+      externalId: accessor.id,
       type: UserType.ACCESSOR,
     };
 
@@ -967,6 +998,7 @@ describe("Notification Service Suite", () => {
 
     const innovatorUser: RequestUser = {
       id: innovator.id,
+      externalId: innovator.id,
       type: UserType.INNOVATOR,
     };
 
@@ -1137,6 +1169,7 @@ describe("Notification Service Suite", () => {
   it("should throw error when dismiss with invalid contextId", async () => {
     const dismisssRequestUser: RequestUser = {
       id: ":innovatorId",
+      externalId: ":innovatorId",
       type: UserType.INNOVATOR,
     };
 
@@ -1160,6 +1193,7 @@ describe("Notification Service Suite", () => {
 
     const requestUser: RequestUser = {
       id: innovator.id,
+      externalId: innovator.id,
       type: UserType.INNOVATOR,
     };
 
@@ -1184,6 +1218,7 @@ describe("Notification Service Suite", () => {
 
     const requestUser: RequestUser = {
       id: innovator.id,
+      externalId: innovator.id,
       type: UserType.INNOVATOR,
     };
 

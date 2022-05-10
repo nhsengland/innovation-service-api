@@ -13,6 +13,7 @@ export enum SupportFilter {
 }
 export type UserSearchResult = {
   id: string;
+  externalId: string;
   displayName: string;
   type: UserType;
   email: string;

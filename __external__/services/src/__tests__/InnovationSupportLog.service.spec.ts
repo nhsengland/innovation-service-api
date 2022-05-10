@@ -207,7 +207,7 @@ describe("Innovation Support Suite", () => {
     let err;
     try {
       await supportLogService.create(
-        { id: ":id", type: UserType.ACCESSOR },
+        { id: ":id", externalId: ":id", type: UserType.ACCESSOR },
         "a",
         {}
       );
@@ -223,7 +223,7 @@ describe("Innovation Support Suite", () => {
     let err;
     try {
       await supportLogService.create(
-        { id: ":id", type: UserType.ACCESSOR },
+        { id: ":id", externalId: ":id", type: UserType.ACCESSOR },
         "a",
         {
           type: InnovationSupportLogType.ACCESSOR_SUGGESTION,

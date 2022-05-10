@@ -3,6 +3,7 @@ import * as persistence from "../../notificationsGetEmailTypes/persistence";
 import notificationsGetEmailNotificationPreferences from '../../notificationsGetEmailTypes'
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
+import * as decorators from "../../utils/decorators";
 import * as authentication from "../../utils/authentication";
 
 import {
@@ -45,6 +46,9 @@ describe("[HttpTrigger] notificationsGetEmailNotificationPreferences Suite", () 
   describe("Function Handler", () => {
     afterEach(() => {
       jest.resetAllMocks();
+    });
+    beforeAll(()=> {
+      jest.spyOn(decorators, "AllowedUserType").mockImplementation();
     });
 
     it("fails when connection is not established", async () => {
