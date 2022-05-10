@@ -7,27 +7,33 @@ const payloadSchema = Joi.object({
     problemsTackled: Joi.string()
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
-      .allow(""),
+      .allow("")
+      .optional(),
     problemsConsequences: Joi.string()
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
-      .allow(""),
+      .allow("")
+      .optional(),
     intervention: Joi.string()
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
-      .allow(""),
+      .allow("")
+      .optional(),
     interventionImpact: Joi.string()
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
-      .allow(""),
+      .allow("")
+      .optional(),
     cliniciansImpactDetails: Joi.string()
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
-      .allow(""),
+      .allow("")
+      .optional(),
     accessibilityImpactDetails: Joi.string()
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
-      .allow(""),
+      .allow("")
+      .optional(),
     accessibilityStepsDetails: Joi.string()
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
@@ -35,33 +41,38 @@ const payloadSchema = Joi.object({
     marketResearch: Joi.string()
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
-      .allow(""),
+      .allow("")
+      .optional(),
     potentialPathway: Joi.string()
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
-      .allow(""),
+      .allow("")
+      .optional(),
     userTests: Joi.array().items(
       Joi.object({
-        id: Joi.string().allow(null).allow(""),
-        kind: Joi.string().allow(null).allow(""),
+        id: Joi.string().allow(null).allow("").optional(),
+        kind: Joi.string().allow(null).allow("").optional(),
         feedback: Joi.string()
           .max(constants.mediumFieldCharacterLimit)
           .allow(null)
-          .allow(""),
+          .allow("")
+          .optional(),
       })
     ),
     deploymentPlans: Joi.array().items(
       Joi.object({
-        id: Joi.string().allow(null).allow(""),
-        name: Joi.string().allow(null).allow(""),
+        id: Joi.string().allow(null).allow("").optional(),
+        name: Joi.string().allow(null).allow("").optional(),
         commercialBasis: Joi.string()
           .max(constants.mediumFieldCharacterLimit)
           .allow(null)
-          .allow(""),
+          .allow("")
+          .optional(),
         orgDeploymentAffect: Joi.string()
           .max(constants.mediumFieldCharacterLimit)
           .allow(null)
-          .allow(""),
+          .allow("")
+          .optional(),
       })
     ),
     subgroups: Joi.array().items(
@@ -101,39 +112,48 @@ const payloadSchema = Joi.object({
     costDescription: Joi.string()
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
-      .allow(""),
+      .allow("")
+      .optional(),
     sellExpectations: Joi.string()
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
-      .allow(""),
+      .allow("")
+      .optional(),
     usageExpectations: Joi.string()
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
-      .allow(""),
+      .allow("")
+      .optional(),
     subGroupCostDescription: Joi.string()
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
-      .allow(""),
+      .allow("")
+      .optional(),
     subGroupSellExpectations: Joi.string()
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
-      .allow(""),
+      .allow("")
+      .optional(),
     subGroupUsageExpectations: Joi.string()
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
-      .allow(""),
+      .allow("")
+      .optional(),
     payingOrganisations: Joi.string()
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
-      .allow(""),
+      .allow("")
+      .optional(),
     benefittingOrganisations: Joi.string()
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
-      .allow(""),
+      .allow("")
+      .optional(),
     fundingDescription: Joi.string()
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
-      .allow(""),
+      .allow("")
+      .optional(),
     moreSupportDescription: Joi.string()
       .max(constants.mediumFieldCharacterLimit)
       .allow(null)
