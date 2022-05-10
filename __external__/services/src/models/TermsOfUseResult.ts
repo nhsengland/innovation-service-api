@@ -22,6 +22,14 @@ export interface TermsOfUseResultCreationModel {
   releasedAt?: Date;
 }
 
+export interface AcceptTermsOfUseResult {
+  id: string;
+  name: string;
+  summary: string;
+  releasedAt: Date;
+  isAccepted: boolean;
+}
+
 interface TouCreateError {
   code: string;
   message: string;

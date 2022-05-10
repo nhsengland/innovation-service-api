@@ -1,12 +1,18 @@
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
-import { User, UserType, TouType, TermsOfUse } from "@domain/index";
+import {
+  User,
+  UserType,
+  TouType,
+  TermsOfUse,
+  TermsOfUseUser,
+} from "@domain/index";
 import {
   InvalidParamsError,
   InvalidUserTypeError,
   UniqueKeyError,
 } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
-import { Connection, getConnection } from "typeorm";
+import { Connection, EntityManager, getConnection } from "typeorm";
 import { BaseService } from "./Base.service";
 import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
@@ -173,5 +179,58 @@ export class TermsOfUseService extends BaseService<TermsOfUse> {
       }),
       count: tou[1] as number,
     };
+  }
+
+  async acceptTermsOfUse(
+    requestUser: RequestUser,
+    touId: string
+  ): Promise<any> {
+    if (!requestUser || !touId) {
+      throw new Error("Invalid parameters");
+    }
+
+    const touType = await this.findTermsOfUseById(requestUser, touId);
+
+    if (
+      requestUser.type === UserType.ACCESSOR ||
+      requestUser.type === UserType.ASSESSMENT
+    ) {
+      if (touType.touType !== "SUPPORT_ORGANISATION") {
+        throw new Error("Invalid Terms of Use for this user");
+      }
+    }
+
+    if (requestUser.type === UserType.INNOVATOR) {
+      if (touType.touType !== "INNOVATOR") {
+        throw new Error("Invalid Terms of Use for this user");
+      }
+    }
+
+    try {
+      return await this.connection.transaction(
+        async (transactionManager: EntityManager) => {
+          const termsOfUseUser = TermsOfUseUser.new({
+            touId: touId,
+            user: requestUser.externalId,
+            acceptedAt: new Date(),
+            //createdBy: requestUser.id,
+            //updatedBy: requestUser.id,
+          });
+
+          await transactionManager.save(TermsOfUseUser, termsOfUseUser);
+
+          /*const result: UserCreationResult = {
+            id: oid,
+            status: "OK",
+          };*/
+        }
+      );
+    } catch {
+      return {
+        id: null,
+        status: "ERROR",
+        error: "Error accepting the terms of use",
+      };
+    }
   }
 }

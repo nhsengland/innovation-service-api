@@ -13,6 +13,13 @@ import { TermsOfUse } from "./TermsOfUse.entity";
 @Entity("terms_of_use_user")
 @Unique("uc_termsOfUse_user_idx", ["termsOfUse", "user"])
 export class TermsOfUseUser extends Base {
+  // columns
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
+
+  @UpdateDateColumn({ name: "accepted_at", nullable: false })
+  acceptedAt: Date;
+
   // relationships
   @ManyToOne(() => TermsOfUse, { nullable: false })
   @JoinColumn({ name: "tou_id" })
@@ -21,13 +28,6 @@ export class TermsOfUseUser extends Base {
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: "user_id" })
   user: User;
-
-  // columns
-  @PrimaryGeneratedColumn("uuid")
-  id: string;
-
-  @UpdateDateColumn({ name: "accepted_at", nullable: false })
-  acceptedAt: Date;
 
   // static constructor
   static new(data) {
