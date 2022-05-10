@@ -35,6 +35,7 @@ export { User } from "./entity/user/User.entity";
 export { Role } from "./entity/user/Role.entity";
 export { UserRole } from "./entity/user/UserRole.entity";
 export { TermsOfUse as TermsOfUse } from "./entity/tou/TermsOfUse.entity";
+export { TermsOfUseUser as TermsOfUseUser } from "./entity/tou/TermsOfUseUser.entity";
 
 export * from "./enums/catalog.enums";
 export * from "./enums/innovation.enums";
