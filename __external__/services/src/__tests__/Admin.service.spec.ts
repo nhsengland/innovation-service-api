@@ -114,7 +114,7 @@ describe("[User Account Lock suite", () => {
     expect(result.lastAssessmentUserOnPlatform.valid).toBe(false);
   });
 
-  it.skip("Should lock Assessment User if is not last assessment user", async () => {
+  it("Should lock Assessment User if is not last assessment user", async () => {
     jest
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
@@ -142,7 +142,7 @@ describe("[User Account Lock suite", () => {
 
     const result = await adminService.lockUsers(
       requestUser,
-      assessmentUser1.id
+      assessmentUser1.externalId
     );
 
     expect(result.error).toBeUndefined();
@@ -1021,7 +1021,7 @@ describe("[User Account Lock suite", () => {
 
     const result = await adminService.lockUsers(
       requestUser,
-      assessmentUser1.id
+      assessmentUser1.externalId
     );
 
     expect(result.error).toBeUndefined();
