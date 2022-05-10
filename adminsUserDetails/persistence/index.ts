@@ -6,6 +6,11 @@ export const getUser = async (
   userId: string,
   model: "MINIMAL" | "FULL"
 ) => {
-  const result = await ctx.services.AdminService.getUserDetails(userId, model);
+  const dbUser = await ctx.services.UserService.getUser(userId);
+
+  const result = await ctx.services.AdminService.getUserDetails(
+    dbUser.externalId,
+    model
+  );
   return result;
 };

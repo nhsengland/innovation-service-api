@@ -690,7 +690,10 @@ describe("User Service Suite", () => {
     );
 
     // Act
-    const result = await userService.getUserDetails(innovatorUser.id, "FULL");
+    const result = await userService.getUserDetails(
+      innovatorUser.externalId,
+      "FULL"
+    );
 
     // Assert
     expect(result).toBeDefined();

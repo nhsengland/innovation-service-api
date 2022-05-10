@@ -811,7 +811,7 @@ export class InnovationService extends BaseService<Innovation> {
     let isUserLocked = false;
     let userName: string;
     const userDetails = await this.userService.getUserDetails(
-      innovation.owner.id,
+      innovation.owner.externalId,
       "FULL"
     );
 
@@ -888,7 +888,7 @@ export class InnovationService extends BaseService<Innovation> {
     let isUserLocked = false;
     let userName: string;
     const userDetails = await this.userService.getUserDetails(
-      innovation.owner.id,
+      innovation.owner.externalId,
       "FULL"
     );
 
