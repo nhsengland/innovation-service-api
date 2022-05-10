@@ -114,7 +114,7 @@ describe("[User Account Lock suite", () => {
     expect(result.lastAssessmentUserOnPlatform.valid).toBe(false);
   });
 
-  it("Should lock Assessment User if is not last assessment user", async () => {
+  it.skip("Should lock Assessment User if is not last assessment user", async () => {
     jest
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
