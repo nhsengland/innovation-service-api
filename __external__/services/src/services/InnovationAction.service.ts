@@ -563,6 +563,9 @@ export class InnovationActionService {
 
       if (action.status === InnovationActionStatus.DECLINED) {
         try {
+          const actionCreatedBy = await this.userService.getUser(
+            innovationAction.createdBy
+          );
           await this.activityLogService.createLog(
             requestUser,
             innovation,
@@ -570,7 +573,7 @@ export class InnovationActionService {
             transactionManager,
             {
               actionId: innovationAction.id,
-              interveningUserId: innovationAction.createdBy,
+              interveningUserId: actionCreatedBy.externalId,
               commentId: comment?.id,
               commentValue: comment?.message,
             }
