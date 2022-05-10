@@ -148,7 +148,7 @@ export class UserService {
       };
     }
 
-    const user = await this.find(id, {
+    const user = await this.getUserByOptions({
       relations: [
         "userOrganisations",
         "userOrganisations.organisation",
@@ -157,6 +157,9 @@ export class UserService {
         "userOrganisations.userOrganisationUnits.innovationSupports.innovation",
         "userOrganisations.userOrganisationUnits.organisationUnit",
       ],
+      where: {
+        externalId: id,
+      },
     });
 
     const userOrgs = await user.userOrganisations;
