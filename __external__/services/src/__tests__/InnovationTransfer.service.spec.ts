@@ -221,7 +221,7 @@ describe("Innovation Transfer Suite", () => {
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue({
-      id: innovatorRequestUser.id,
+      id: innovatorRequestUser.externalId,
       displayName: ":userName",
     });
     jest
@@ -674,7 +674,7 @@ describe("Innovation Transfer Suite", () => {
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
     jest.spyOn(helpers, "getUserFromB2CByEmail").mockResolvedValue({
-      id: newInnovatorRequestUser.id,
+      id: newInnovatorRequestUser.externalId,
       displayName: ":userName",
     });
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
@@ -697,7 +697,7 @@ describe("Innovation Transfer Suite", () => {
     );
 
     const result = await transferService.checkUserPendingTransfers(
-      newInnovatorRequestUser.id
+      newInnovatorRequestUser.externalId
     );
 
     expect(result).toBeDefined();

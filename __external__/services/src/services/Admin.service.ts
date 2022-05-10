@@ -68,18 +68,19 @@ export class AdminService {
   ): Promise<UserSearchResult[]> {
     const users = await this.userService.getUsersOfTypePaged(type, skip, take);
     const b2cUsers = await this.userService.getListOfUsers(
-      users.map((u) => u.id),
+      users.map((u) => u.externalId),
       false
     );
 
     const result: UserSearchResult[] = [];
 
     for (const user of users) {
-      const b2c = b2cUsers.find((u) => u.id === user.id);
+      const b2c = b2cUsers.find((u) => u.id === user.externalId);
       const userOrganisations = await user.userOrganisations;
       if (b2c) {
         result.push({
           id: user.id,
+          externalId: b2c.id,
           type: user.type,
           displayName: b2c.displayName,
           email: b2c.email,
@@ -214,38 +215,62 @@ export class AdminService {
       const orgUnitUsersList: string[] = [];
       const userToRequestUser: RequestUser = {
         id: userId,
+        externalId: userDetails.externalId,
         type: UserType.INNOVATOR,
       };
 
-      for (let i = 0; i < userDetails.innovations.length; i++) {
+      for (
+        let innovationIdx = 0;
+        innovationIdx < userDetails.innovations.length;
+        innovationIdx++
+      ) {
         const innovationSupports = await this.innovationSupportService.findAllByInnovation(
           userToRequestUser,
-          userDetails.innovations[i].id
+          userDetails.innovations[innovationIdx].id
         );
 
-        for (let j = 0; j < innovationSupports.length; j++) {
+        for (
+          let innovationSupportIdx = 0;
+          innovationSupportIdx < innovationSupports.length;
+          innovationSupportIdx++
+        ) {
           const organisationUnitUsers = await this.organisationService.findOrganisationUnitUsersById(
-            innovationSupports[j].organisationUnit.id
+            innovationSupports[innovationSupportIdx].organisationUnit.id
           );
 
-          for (let k = 0; k < organisationUnitUsers.length; k++) {
+          for (
+            let organisationUnitUserIdx = 0;
+            organisationUnitUserIdx < organisationUnitUsers.length;
+            organisationUnitUserIdx++
+          ) {
             if (
-              innovationSupports[j].status ===
+              innovationSupports[innovationSupportIdx].status ===
                 InnovationSupportStatus.FURTHER_INFO_REQUIRED ||
-              innovationSupports[j].status === InnovationSupportStatus.WAITING
+              innovationSupports[innovationSupportIdx].status ===
+                InnovationSupportStatus.WAITING
             ) {
-              if (organisationUnitUsers[k].role === "QUALIFYING_ACCESSOR") {
-                orgUnitUsersList.push(organisationUnitUsers[k].id);
+              if (
+                organisationUnitUsers[organisationUnitUserIdx].role ===
+                "QUALIFYING_ACCESSOR"
+              ) {
+                orgUnitUsersList.push(
+                  organisationUnitUsers[organisationUnitUserIdx].id
+                );
               }
             }
             if (
-              innovationSupports[j].status === InnovationSupportStatus.ENGAGING
+              innovationSupports[innovationSupportIdx].status ===
+              InnovationSupportStatus.ENGAGING
             ) {
               if (
-                organisationUnitUsers[k].role === "QUALIFYING_ACCESSOR" ||
-                organisationUnitUsers[k].role === "ACCESSOR"
+                organisationUnitUsers[organisationUnitUserIdx].role ===
+                  "QUALIFYING_ACCESSOR" ||
+                organisationUnitUsers[organisationUnitUserIdx].role ===
+                  "ACCESSOR"
               ) {
-                orgUnitUsersList.push(organisationUnitUsers[k].id);
+                orgUnitUsersList.push(
+                  organisationUnitUsers[organisationUnitUserIdx].id
+                );
               }
             }
           }
@@ -259,10 +284,10 @@ export class AdminService {
             await this.notificationService.create(
               requestUser,
               NotificationAudience.ACCESSORS,
-              userDetails.innovations[i].id,
+              userDetails.innovations[innovationIdx].id,
               NotificationContextType.INNOVATION,
 
-              userDetails.innovations[i].id,
+              userDetails.innovations[innovationIdx].id,
               `Please Note that the Innovator ${userDetails.displayName} account has been locked by the Admin`,
               users
             );

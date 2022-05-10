@@ -29,7 +29,7 @@ describe("[usersGetProfile] Persistence suite", () => {
         },
       };
       // Act
-      await persistence.getProfile(ctx as CustomContext, ":id");
+      await persistence.getProfile(ctx as CustomContext, ":id", ":id");
 
       expect(spy).toHaveBeenCalled();
     });

@@ -1,6 +1,7 @@
 import { HttpRequest } from "@azure/functions";
 import { AccessorOrganisationRole, UserType } from "@domain/index";
 import {
+  AllowedUserType,
   AppInsights,
   JwtDecoder,
   OrganisationRoleValidator,
@@ -17,6 +18,7 @@ class AccessorsCreateInnovationSupport {
   @SQLConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
   @JwtDecoder()
+  @AllowedUserType(UserType.ACCESSOR)
   @OrganisationRoleValidator(
     UserType.ACCESSOR,
     AccessorOrganisationRole.QUALIFYING_ACCESSOR

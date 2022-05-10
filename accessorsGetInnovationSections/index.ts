@@ -3,6 +3,7 @@ import * as persistence from "./persistence";
 import * as Responsify from "../utils/responsify";
 import * as validation from "./validation";
 import {
+  AllowedUserType,
   AppInsights,
   JwtDecoder,
   OrganisationRoleValidator,
@@ -21,6 +22,7 @@ class AccessorsGetInnovationSections {
     "Invalid querystring parameters."
   )
   @JwtDecoder()
+  @AllowedUserType(UserType.ACCESSOR)
   @OrganisationRoleValidator(
     UserType.ACCESSOR,
     AccessorOrganisationRole.ACCESSOR,

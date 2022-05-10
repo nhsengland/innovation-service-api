@@ -27,12 +27,14 @@ class AdminsLockUsers {
     req: HttpRequest
   ): Promise<void> {
     const user = req.params.userId;
-    const oid = context.auth.decodedJwt.oid;
+    const externalId = context.auth.requestUser.externalId;
+    const id = context.auth.requestUser.id;
 
     let result;
     try {
       context.auth.requestUser = {
-        id: oid,
+        id,
+        externalId,
         type: UserType.ADMIN,
       };
 

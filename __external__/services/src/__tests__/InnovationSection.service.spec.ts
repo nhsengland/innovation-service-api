@@ -204,6 +204,7 @@ describe("Innovation Section Service Suite", () => {
       await innovationSectionService.findAllInnovationSectionsMetadata(
         {
           id: ":id",
+          externalId: ":id",
           type: UserType.INNOVATOR,
         },
         "D58C433E-F36B-1410-80E0-0032FE5B194B"
@@ -751,6 +752,7 @@ describe("Innovation Section Service Suite", () => {
 
     const qAccessorRequestUser: RequestUser = {
       id: qualAccessorUser.id,
+      externalId: qualAccessorUser.externalId,
       type: UserType.ACCESSOR,
       organisationUser: {
         id: qAccessorUserOrganisation.id,
@@ -857,6 +859,7 @@ describe("Innovation Section Service Suite", () => {
 
     const qAccessorRequestUser: RequestUser = {
       id: qualAccessorUser.id,
+      externalId: qualAccessorUser.externalId,
       type: UserType.ACCESSOR,
       organisationUser: {
         id: qAccessorUserOrganisation.id,

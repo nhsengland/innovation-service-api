@@ -218,7 +218,7 @@ export class OrganisationService extends BaseService<Organisation> {
     const result = organisationUnitUsers
       .filter((organisationUnitUser) => {
         const organisationUser = organisationUnitUser.organisationUser;
-        const name = b2cMap[organisationUser.user.id];
+        const name = b2cMap[organisationUser.user.externalId];
         if (name) return true;
         return false;
       })
@@ -227,7 +227,7 @@ export class OrganisationService extends BaseService<Organisation> {
 
         return {
           id: organisationUnitUser.id,
-          name: b2cMap[organisationUser.user.id],
+          name: b2cMap[organisationUser.user.externalId],
         };
       });
 
@@ -238,12 +238,12 @@ export class OrganisationService extends BaseService<Organisation> {
     organisationUnitUsers: OrganisationUnitUser[],
     excludeLocked?: boolean
   ) {
-    const userIds = organisationUnitUsers.map(
+    const externalIds = organisationUnitUsers.map(
       (organisationUnitUser: OrganisationUnitUser) =>
         organisationUnitUser.organisationUser.user.externalId
     );
     const b2cUsers = await this.userService.getListOfUsers(
-      userIds,
+      externalIds,
       excludeLocked
     );
     if (!b2cUsers) return [];
@@ -543,7 +543,7 @@ export class OrganisationService extends BaseService<Organisation> {
 
         return {
           id: organisationUnitUser.id,
-          name: b2cMap[organisationUser.user.id],
+          name: b2cMap[organisationUser.user.externalId],
           role: organisationUser.role,
         };
       });

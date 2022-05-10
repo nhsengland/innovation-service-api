@@ -9,6 +9,7 @@ import * as persistence from "../../innovatorsGetInnovationTransfers/persistence
 import * as authentication from "../../utils/authentication";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
+import * as decorators from "../../utils/decorators";
 
 jest.mock("../../utils/logging/insights", () => ({
   start: () => { },
@@ -47,6 +48,9 @@ describe("[HttpTrigger] innovatorsGetInnovationTransfers Suite", () => {
   describe("Function Handler", () => {
     afterEach(() => {
       jest.resetAllMocks();
+    });
+    beforeAll(()=> {
+      jest.spyOn(decorators, "AllowedUserType").mockImplementation();
     });
 
     it("fails when connection is not established", async () => {

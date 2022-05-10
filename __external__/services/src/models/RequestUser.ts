@@ -2,6 +2,7 @@ import { OrganisationUserRole, UserType } from "@domain/index";
 
 export interface RequestUser {
   id: string;
+  externalId: string;
   type: UserType;
   organisationUser?: {
     id: string;

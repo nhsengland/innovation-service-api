@@ -32,6 +32,7 @@ const dummy = {
   email: "email@email.com",
   requestUser: {
     id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+    externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
     type: UserType.ADMIN,
   },
 };
@@ -171,7 +172,7 @@ describe("User Service Suite", () => {
 
     // Act
     try {
-      actual = await userService.getProfile(accessor.id);
+      actual = await userService.getProfile(accessor.id, accessor.externalId);
     } catch (error) {
       err = error;
     }
@@ -206,6 +207,7 @@ describe("User Service Suite", () => {
 
     try {
       actual = await userService.getProfile(
+        "8C179628-100D-4F95-BAE4-2CCC64DE77FE",
         "8C179628-100D-4F95-BAE4-2CCC64DE77FE"
       );
     } catch (error) {
@@ -292,6 +294,7 @@ describe("User Service Suite", () => {
   it("should throw when createUser with invalid requestUser type params", async () => {
     const requestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ASSESSMENT,
     };
 
@@ -451,6 +454,7 @@ describe("User Service Suite", () => {
     const fakeRequestUser = {
       requestUser: {
         id: innovatorUser.id,
+        externalId: innovatorUser.id,
         type: UserType.INNOVATOR,
       },
     };
@@ -476,6 +480,7 @@ describe("User Service Suite", () => {
     const fakeRequestUser = {
       requestUser: {
         id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.INNOVATOR,
       },
     };
@@ -510,6 +515,7 @@ describe("User Service Suite", () => {
     const fakeRequestUser = {
       requestUser: {
         id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.INNOVATOR,
       },
     };
@@ -547,6 +553,7 @@ describe("User Service Suite", () => {
     const fakeRequestUser = {
       requestUser: {
         id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.INNOVATOR,
       },
     };
@@ -583,6 +590,7 @@ describe("User Service Suite", () => {
     const fakeRequestUser = {
       requestUser: {
         id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
         type: UserType.INNOVATOR,
       },
     };
@@ -745,6 +753,7 @@ describe("User Service Suite", () => {
 
     const requestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
@@ -756,6 +765,7 @@ describe("User Service Suite", () => {
 
     jest.spyOn(helpers, "createB2CUser").mockResolvedValue({
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       displayName: "Admin User",
     });
 

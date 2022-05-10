@@ -116,14 +116,14 @@ export class UserService {
       throw new Error("Invalid Credentials");
     }
 
-    const user = await getUserFromB2C(requestUser.id, graphAccessToken);
+    const user = await getUserFromB2C(requestUser.externalId, graphAccessToken);
 
     if (!user) {
       throw new Error("Invalid user id.");
     }
 
     try {
-      await deleteB2CAccount(requestUser.id);
+      await deleteB2CAccount(requestUser.externalId);
     } catch {
       throw new Error("Error updating user.");
     }
@@ -218,12 +218,16 @@ export class UserService {
     return null;
   }
 
-  async getProfile(id: string, accessToken?: string): Promise<ProfileModel> {
+  async getProfile(
+    id: string,
+    externalId: string,
+    accessToken?: string
+  ): Promise<ProfileModel> {
     if (!accessToken) {
       accessToken = await authenticateWitGraphAPI();
     }
 
-    const user = await getUserFromB2C(id, accessToken);
+    const user = await getUserFromB2C(externalId, accessToken);
 
     if (!user) {
       throw new Error("Invalid user.");
@@ -350,7 +354,8 @@ export class UserService {
 
     if (userB2C && user) {
       return {
-        id: userB2C.id,
+        id: user.id,
+        externalId: userB2C.id,
         displayName: userB2C.displayName,
         email: userB2C.identities.find((i) => i.signInType === "emailAddress")
           ?.issuerAssignedId,
@@ -466,14 +471,18 @@ export class UserService {
     }
 
     const accessToken = await authenticateWitGraphAPI();
-    const currentProfile = await this.getProfile(requestUser.id, accessToken);
+    const currentProfile = await this.getProfile(
+      requestUser.id,
+      requestUser.externalId,
+      accessToken
+    );
     if (
       user.displayName !== currentProfile.displayName ||
       user.mobilePhone !== currentProfile.phone
     ) {
       await this.updateB2CUser(
         { displayName: user.displayName, mobilePhone: user.mobilePhone },
-        requestUser.id,
+        requestUser.externalId,
         accessToken
       );
     }
@@ -598,7 +607,7 @@ export class UserService {
       // If user exists in B2C, check if exists in the DB
       user = await this.userRepo
         .createQueryBuilder("user")
-        .where("id = :oid", {
+        .where("external_id = :oid", {
           oid,
         })
         .getOne();
@@ -623,7 +632,7 @@ export class UserService {
         if (!user) {
           // If the user does not exist in the DB, create user
           user = User.new({
-            id: oid,
+            externalId: oid,
             type: userModel.type,
             createdBy: requestUser.id,
             updatedBy: requestUser.id,
@@ -731,7 +740,9 @@ export class UserService {
       graphAccessToken = await authenticateWitGraphAPI();
     }
 
-    const user = await getUserFromB2C(userModel.id, graphAccessToken);
+    const dbUser = await this.getUser(userModel.id);
+
+    const user = await getUserFromB2C(dbUser.externalId, graphAccessToken);
     if (!user) {
       throw new Error("Invalid user id.");
     }
@@ -739,7 +750,7 @@ export class UserService {
     try {
       await this.updateB2CUser(
         userModel.properties,
-        userModel.id,
+        dbUser.externalId,
         graphAccessToken
       );
     } catch {

@@ -238,7 +238,7 @@ describe("Innovation Support Suite", () => {
     let err;
     try {
       await supportService.create(
-        { id: ":id", type: UserType.ACCESSOR },
+        { id: ":id", externalId: ":id", type: UserType.ACCESSOR },
         "a",
         {}
       );
@@ -252,8 +252,11 @@ describe("Innovation Support Suite", () => {
 
   it("should find an support by innovator", async () => {
     jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
-      { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
-      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+      { id: accessorRequestUser.externalId, displayName: ":ACCESSOR" },
+      {
+        id: qAccessorRequestUser.externalId,
+        displayName: ":QUALIFYING_ACCESSOR",
+      },
     ]);
 
     const supportObj = {
@@ -280,8 +283,11 @@ describe("Innovation Support Suite", () => {
 
   it("should find an support by q. accessor", async () => {
     jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
-      { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
-      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+      { id: accessorRequestUser.externalId, displayName: ":ACCESSOR" },
+      {
+        id: qAccessorRequestUser.externalId,
+        displayName: ":QUALIFYING_ACCESSOR",
+      },
     ]);
 
     const supportObj = {
@@ -309,8 +315,11 @@ describe("Innovation Support Suite", () => {
   it("should throw when innovation not found in find innovation support", async () => {
     let err;
     jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
-      { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
-      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+      { id: accessorRequestUser.externalId, displayName: ":ACCESSOR" },
+      {
+        id: qAccessorRequestUser.externalId,
+        displayName: ":QUALIFYING_ACCESSOR",
+      },
     ]);
 
     const supportObj = {
@@ -342,8 +351,11 @@ describe("Innovation Support Suite", () => {
   it("should throw when innovation support not found in find innovation support", async () => {
     let err;
     jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
-      { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
-      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+      { id: accessorRequestUser.externalId, displayName: ":ACCESSOR" },
+      {
+        id: qAccessorRequestUser.externalId,
+        displayName: ":QUALIFYING_ACCESSOR",
+      },
     ]);
 
     try {
@@ -365,8 +377,11 @@ describe("Innovation Support Suite", () => {
 
   it("should find an support by accessor", async () => {
     jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
-      { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
-      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+      { id: accessorRequestUser.externalId, displayName: ":ACCESSOR" },
+      {
+        id: qAccessorRequestUser.externalId,
+        displayName: ":QUALIFYING_ACCESSOR",
+      },
     ]);
 
     const supportObj = {
@@ -520,8 +535,11 @@ describe("Innovation Support Suite", () => {
 
   it("should update an support status to add one accessor", async () => {
     jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
-      { id: accessorRequestUser.id, displayName: ":ACCESSOR" },
-      { id: qAccessorRequestUser.id, displayName: ":QUALIFYING_ACCESSOR" },
+      { id: accessorRequestUser.externalId, displayName: ":ACCESSOR" },
+      {
+        id: qAccessorRequestUser.externalId,
+        displayName: ":QUALIFYING_ACCESSOR",
+      },
     ]);
 
     let supportObj = {
@@ -734,7 +752,7 @@ describe("Innovation Support Suite", () => {
     let err;
     try {
       await supportService.update(
-        { id: ":id", type: UserType.ACCESSOR },
+        { id: ":id", externalId: ":id", type: UserType.ACCESSOR },
         "a",
         "a",
         {}
@@ -753,6 +771,7 @@ describe("Innovation Support Suite", () => {
       await supportService.findAllByInnovationAssessment(
         {
           id: ":id",
+          externalId: ":id",
           type: UserType.INNOVATOR,
         },
         "D58C433E-F36B-1410-80E0-0032FE5B194B",
@@ -771,6 +790,7 @@ describe("Innovation Support Suite", () => {
     const result = await supportService.findAllByInnovationAssessment(
       {
         id: ":id",
+        externalId: ":id",
         type: UserType.INNOVATOR,
       },
       innovation.id,

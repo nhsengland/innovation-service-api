@@ -10,6 +10,7 @@ import * as validation from "../../adminsUpdateUserOrganisationUnit/validation";
 import * as authentication from "../../utils/authentication";
 import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
+import * as decorators from "../../utils/decorators";
 
 
 jest.mock("../../utils/logging/insights", () => ({
