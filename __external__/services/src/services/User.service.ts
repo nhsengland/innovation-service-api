@@ -351,7 +351,7 @@ export class UserService {
 
     if (!userB2C) return null;
 
-    const user = await this.find(userB2C.id, {
+    const user = await this.getUserByOptions({
       relations: [
         "userOrganisations",
         "userOrganisations.organisation",
@@ -360,9 +360,10 @@ export class UserService {
         "userOrganisations.userOrganisationUnits.innovationSupports.innovation",
         "userOrganisations.userOrganisationUnits.organisationUnit",
       ],
+      where: { externalId: userB2C.id },
     });
 
-    const userOrgs = await user.userOrganisations;
+    const userOrgs: OrganisationUser[] = await user.userOrganisations;
 
     const userOrganisations = [];
 
