@@ -23,6 +23,7 @@ import { BaseService } from "./Base.service";
 import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
 import {
+  CheckIfAcceptedTermsOfUseResult,
   TermsOfUseModel,
   TermsOfUseResult,
   TermsOfUseResultCreationModel,
@@ -242,5 +243,61 @@ export class TermsOfUseService extends BaseService<TermsOfUse> {
     }
 
     return "Terms Accepted";
+  }
+
+  async checkIfUserAccepted(
+    requestUser: RequestUser
+  ): Promise<CheckIfAcceptedTermsOfUseResult> {
+    if (!requestUser) {
+      throw new Error("Invalid parameters");
+    }
+
+    let touType;
+    let isAccepted = false;
+
+    if (
+      requestUser.type === UserType.ACCESSOR ||
+      requestUser.type === UserType.ASSESSMENT
+    ) {
+      touType = "SUPPORT_ORGANISATION";
+    }
+
+    if (requestUser.type === UserType.INNOVATOR) {
+      touType = "INNOVATOR";
+    }
+
+    try {
+      //Get latest released Terms of Use
+      const lastTermsOfUse = await this.repository.findOne({
+        where: {
+          touType: touType,
+        },
+        order: {
+          releasedAt: "DESC",
+        },
+      });
+
+      //Check if user has already accepted the latest Terms of Use
+      if (
+        await this.termsOfUseUserRepo.findOne({
+          where: {
+            termsOfUse: lastTermsOfUse,
+            user: requestUser.id,
+          },
+        })
+      ) {
+        isAccepted = true;
+      }
+
+      return {
+        id: lastTermsOfUse.id,
+        name: lastTermsOfUse.name,
+        summary: lastTermsOfUse.summary,
+        releasedAt: lastTermsOfUse.releasedAt,
+        isAccepted: isAccepted,
+      };
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 }

@@ -22,7 +22,7 @@ export interface TermsOfUseResultCreationModel {
   releasedAt?: Date;
 }
 
-export interface AcceptTermsOfUseResult {
+export interface CheckIfAcceptedTermsOfUseResult {
   id: string;
   name: string;
   summary: string;
