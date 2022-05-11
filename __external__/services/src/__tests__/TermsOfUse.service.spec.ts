@@ -13,6 +13,7 @@ const dummy = {
   email: "email@email.com",
   requestUser: {
     id: "test",
+    externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
     type: UserType.ADMIN,
   },
 };
@@ -51,6 +52,7 @@ describe("[Terms Of Use suite", () => {
   it("should throw when createUser with invalid requestUser type params", async () => {
     const requestUser = {
       id: ":user_id",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ASSESSMENT,
     };
     let err: InvalidUserTypeError;
@@ -113,6 +115,7 @@ describe("[Terms Of Use suite", () => {
   it("should throw when updating with invalid requestUser type params", async () => {
     const requestUser = {
       id: ":user_id",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ASSESSMENT,
     };
     let err: InvalidUserTypeError;

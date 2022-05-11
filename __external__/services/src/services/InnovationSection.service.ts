@@ -264,6 +264,8 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
       sectionFields.innovationFields
     );
 
+    // TODO> Optimize when no sections needed
+
     // CHANGE SECTION STATUS
     const sections = await innovation.sections;
     const innovationSectionIdx = sections.findIndex(
@@ -309,6 +311,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     if (sectionFields.innovationTypes) {
       for (let i = 0; i < sectionFields.innovationTypes.length; i++) {
         const type = sectionFields.innovationTypes[i];
+        if (!data[type]) continue;
 
         updatedInnovation[type] = await this.getUpdatedParentTypeArray(
           requestUser,
@@ -322,6 +325,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     if (sectionFields.innovationDependencies) {
       for (let i = 0; i < sectionFields.innovationDependencies.length; i++) {
         const dependency = sectionFields.innovationDependencies[i];
+        if (!data[dependency.type]) continue;
 
         updatedInnovation[
           dependency.type
@@ -703,6 +707,8 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     const newValues: any = data[dependency.type];
     const filter: string[] = dependency.fields;
     const subtypes: string[] = dependency.subtypes;
+
+    if (!newValues) return original;
 
     original
       .filter((obj) => !newValues.some((e: any) => e.id === obj.id))

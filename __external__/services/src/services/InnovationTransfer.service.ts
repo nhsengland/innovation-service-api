@@ -96,7 +96,7 @@ export class InnovationTransferService {
         oid: userId.toLocaleLowerCase(),
       })
       .getOne();
-      
+
     const b2cUser = await getUserFromB2C(userId);
     if (!b2cUser || (innovator && innovator.type !== UserType.INNOVATOR)) {
     }
@@ -109,7 +109,7 @@ export class InnovationTransferService {
 
     return {
       hasInvites: !!transfer,
-      userExists: !!innovator
+      userExists: !!innovator,
     };
   }
 
