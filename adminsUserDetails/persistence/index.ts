@@ -1,4 +1,4 @@
-import { UserType } from "@domain/index";
+import { User, UserType } from "@domain/index";
 import { CustomContext } from "../../utils/types";
 
 export const getUser = async (
@@ -6,7 +6,14 @@ export const getUser = async (
   userId: string,
   model: "MINIMAL" | "FULL"
 ) => {
-  const dbUser = await ctx.services.UserService.getUser(userId);
+  let dbUser: User;
+  dbUser = await ctx.services.UserService.getUser(userId);
+
+  if (!dbUser) {
+    dbUser = await ctx.services.UserService.getUserByOptions({
+      where: { externalId: userId },
+    });
+  }
 
   const result = await ctx.services.AdminService.getUserDetails(
     dbUser.externalId,
