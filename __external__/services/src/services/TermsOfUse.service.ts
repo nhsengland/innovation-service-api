@@ -12,7 +12,13 @@ import {
   UniqueKeyError,
 } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
-import { Connection, EntityManager, getConnection } from "typeorm";
+import {
+  Connection,
+  EntityManager,
+  getConnection,
+  getRepository,
+  Repository,
+} from "typeorm";
 import { BaseService } from "./Base.service";
 import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
@@ -21,17 +27,17 @@ import {
   TermsOfUseResult,
   TermsOfUseResultCreationModel,
 } from "@services/models/TermsOfUseResult";
-import { id } from "inversify";
-import { name } from "faker";
 
 export class TermsOfUseService extends BaseService<TermsOfUse> {
   private readonly connection: Connection;
   private readonly logService: LoggerService;
+  readonly termsOfUseUserRepo: Repository<TermsOfUseUser>;
 
   constructor(connectionName?: string) {
     super(TermsOfUse, connectionName);
     this.connection = getConnection(connectionName);
     this.logService = new LoggerService();
+    this.termsOfUseUserRepo = getRepository(TermsOfUseUser, connectionName);
   }
 
   async createTermsOfUse(
@@ -181,56 +187,60 @@ export class TermsOfUseService extends BaseService<TermsOfUse> {
     };
   }
 
-  async acceptTermsOfUse(
-    requestUser: RequestUser,
-    touId: string
-  ): Promise<any> {
+  async acceptTermsOfUse(requestUser: RequestUser, touId: string) {
     if (!requestUser || !touId) {
       throw new Error("Invalid parameters");
     }
 
-    const touType = await this.findTermsOfUseById(requestUser, touId);
+    const tou = await this.findTermsOfUseById(requestUser, touId);
+
+    if (tou.releasedAt === null) {
+      throw new Error("This Terms of Use have not been released yet");
+    }
 
     if (
       requestUser.type === UserType.ACCESSOR ||
       requestUser.type === UserType.ASSESSMENT
     ) {
-      if (touType.touType !== "SUPPORT_ORGANISATION") {
+      if (tou.touType !== "SUPPORT_ORGANISATION") {
         throw new Error("Invalid Terms of Use for this user");
       }
     }
 
     if (requestUser.type === UserType.INNOVATOR) {
-      if (touType.touType !== "INNOVATOR") {
+      if (tou.touType !== "INNOVATOR") {
         throw new Error("Invalid Terms of Use for this user");
       }
     }
 
     try {
-      return await this.connection.transaction(
+      //Check if User has already accepted this Terms of Use
+      if (
+        await this.termsOfUseUserRepo.findOne({
+          where: {
+            termsOfUse: touId,
+            user: requestUser.id,
+          },
+        })
+      ) {
+        return;
+      }
+
+      await this.connection.transaction(
         async (transactionManager: EntityManager) => {
           const termsOfUseUser = TermsOfUseUser.new({
-            touId: touId,
-            user: requestUser.externalId,
+            termsOfUse: touId,
+            user: requestUser.id,
             acceptedAt: new Date(),
-            //createdBy: requestUser.id,
-            //updatedBy: requestUser.id,
           });
 
           await transactionManager.save(TermsOfUseUser, termsOfUseUser);
-
-          /*const result: UserCreationResult = {
-            id: oid,
-            status: "OK",
-          };*/
         }
       );
-    } catch {
-      return {
-        id: null,
-        status: "ERROR",
-        error: "Error accepting the terms of use",
-      };
+    } catch (error) {
+      throw new Error(error);
     }
+
+    return "Terms Accepted";
   }
 }

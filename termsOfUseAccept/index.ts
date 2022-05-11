@@ -17,17 +17,13 @@ import * as persistence from "./persistence";
 class termsOfUseAccept {
   @AppInsights()
   @SQLConnector()
-  @CosmosConnector()
   @JwtDecoder()
   @AllowedUserType(UserType.ASSESSMENT, UserType.ACCESSOR, UserType.INNOVATOR)
-  @SLSValidation(SLSEventType.ADMIN_LOCK_USER)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
     const touId = req.params.touId;
-    const externalId = context.auth.requestUser.externalId;
-    const id = context.auth.requestUser.id;
 
     let result;
     try {
@@ -39,7 +35,12 @@ class termsOfUseAccept {
       return;
     }
 
-    context.res = Responsify.Ok(result);
+    if (result) {
+      context.res = Responsify.Ok();
+      return;
+    }
+
+    context.res = Responsify.NotFound();
   }
 }
 
