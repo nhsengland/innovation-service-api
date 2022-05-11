@@ -32,7 +32,7 @@ jest.mock("../../utils/logging/insights", () => ({
   const dummy = {
     services: {
       UserService: {
-        getUser: () => ({
+        getUserByOptions: () => ({
           type: UserType.INNOVATOR,
         }),
       },

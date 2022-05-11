@@ -14,7 +14,7 @@ class termsOfUseAccept {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder()
-  // @AllowedUserType(UserType.ASSESSMENT, UserType.ACCESSOR, UserType.INNOVATOR)
+  @AllowedUserType(UserType.ASSESSMENT, UserType.ACCESSOR, UserType.INNOVATOR)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest

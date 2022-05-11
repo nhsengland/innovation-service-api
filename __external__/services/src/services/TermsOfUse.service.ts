@@ -227,17 +227,13 @@ export class TermsOfUseService extends BaseService<TermsOfUse> {
         return;
       }
 
-      await this.connection.transaction(
-        async (transactionManager: EntityManager) => {
-          const termsOfUseUser = TermsOfUseUser.new({
-            termsOfUse: touId,
-            user: requestUser.id,
-            acceptedAt: new Date(),
-          });
+      const termsOfUseUser = TermsOfUseUser.new({
+        termsOfUse: touId,
+        user: requestUser.id,
+        acceptedAt: new Date(),
+      });
 
-          await transactionManager.save(TermsOfUseUser, termsOfUseUser);
-        }
-      );
+      await this.termsOfUseUserRepo.save(termsOfUseUser);
     } catch (error) {
       throw new Error(error);
     }
