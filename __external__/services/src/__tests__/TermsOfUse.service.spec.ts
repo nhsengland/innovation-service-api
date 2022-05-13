@@ -80,8 +80,10 @@ describe("Terms Of Use Service suite", () => {
   });
 
   it("Should create terms and use ", async () => {
+    const randomName = (Math.random() + 1).toString(36);
+
     const result = await touService.createTermsOfUse(dummy.requestUser, {
-      name: "TERMS OF USE 2",
+      name: randomName,
       summary: "TEST",
       touType: TouType.SUPPORT_ORGANISATION,
     });
@@ -167,8 +169,11 @@ describe("Terms Of Use Service suite", () => {
   });
 
   it("Should update terms and use ", async () => {
+    const randomName = (Math.random() + 1).toString(36);
+    const randomNameToUpdate = (Math.random() + 1).toString(36);
+
     const result = await touService.createTermsOfUse(dummy.requestUser, {
-      name: "TERMS OF USE 8",
+      name: randomName,
       summary: "TEST",
       touType: TouType.SUPPORT_ORGANISATION,
     });
@@ -176,7 +181,7 @@ describe("Terms Of Use Service suite", () => {
     const results = await touService.updateTermsOfUse(
       dummy.requestUser,
       {
-        name: "TERMS OF USE 9",
+        name: randomNameToUpdate,
         summary: "TEST",
         touType: TouType.SUPPORT_ORGANISATION,
       },
@@ -187,15 +192,33 @@ describe("Terms Of Use Service suite", () => {
   });
 
   it("Should accept terms of use ", async () => {
+    const randomName = (Math.random() + 1).toString(36);
+
+    const newToU = await touService.createTermsOfUse(dummy.requestUser, {
+      name: randomName,
+      summary: "TEST",
+      touType: TouType.INNOVATOR,
+    });
+
+    await touService.updateTermsOfUse(
+      dummy.requestUser,
+      {
+        name: newToU.name,
+        touType: TouType.INNOVATOR,
+        releasedAt: new Date(),
+      },
+      newToU.id
+    );
+
     jest.spyOn(touService, "findTermsOfUseById").mockResolvedValue({
-      id: "B11A433E-F36B-1410-8F35-00D5EBCEA8D0",
+      id: newToU.id,
       touType: "INNOVATOR",
       releasedAt: "2022-05-11 12:49:10.9760000",
     } as any);
 
     const result = await touService.acceptTermsOfUse(
       dummyInnovator.requestUser,
-      "B11A433E-F36B-1410-8F35-00D5EBCEA8D0"
+      newToU.id
     );
 
     expect(result).toBeDefined();
