@@ -4,6 +4,7 @@ import { CustomContext } from "../../utils/types";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import { AdminService } from "@services/services/Admin.service";
+import { UserService } from "@services/index";
 describe("[adminsUserDetails] Persistence suite", () => {
   beforeAll(() => {
     dotenv.config({
@@ -29,6 +30,7 @@ describe("[adminsUserDetails] Persistence suite", () => {
       const ctx = {
         services: {
           AdminService: new AdminService(),
+          UserService: new UserService(),
         },
         auth: {
           requestUser: {
@@ -37,6 +39,11 @@ describe("[adminsUserDetails] Persistence suite", () => {
           },
         },
       };
+
+      jest.spyOn(UserService.prototype, "getUser").mockResolvedValue({
+        id: ":userId",
+        externalId: ":userId",
+      } as any);
       // Act
       await persistence.getUser(ctx as CustomContext, "test", "MINIMAL");
 

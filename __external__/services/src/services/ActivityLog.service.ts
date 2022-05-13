@@ -128,7 +128,7 @@ export class ActivityLogService extends BaseService<ActivityLog> {
 
   private getActivityParameters(requestUser: RequestUser, params?) {
     const activityParams = {
-      actionUserId: params?.actionUserId || requestUser.id,
+      actionUserId: params?.actionUserId || requestUser.externalId,
       interveningUserId: params?.interveningUserId, //Check innovation transfer & Decline action implemention to retrieve value
       assessmentId: params?.assessmentId,
       innovationSupportStatus: params?.innovationSupportStatus,

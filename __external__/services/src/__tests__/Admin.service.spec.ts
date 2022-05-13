@@ -142,7 +142,7 @@ describe("[User Account Lock suite", () => {
 
     const result = await adminService.lockUsers(
       requestUser,
-      assessmentUser1.id
+      assessmentUser1.externalId
     );
 
     expect(result.error).toBeUndefined();
@@ -1021,7 +1021,7 @@ describe("[User Account Lock suite", () => {
 
     const result = await adminService.lockUsers(
       requestUser,
-      assessmentUser1.id
+      assessmentUser1.externalId
     );
 
     expect(result.error).toBeUndefined();
