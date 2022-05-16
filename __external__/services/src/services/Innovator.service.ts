@@ -1,6 +1,9 @@
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   Innovation,
+  InnovationSection,
+  InnovationSectionCatalogue,
+  InnovationSectionStatus,
   InnovationStatus,
   InnovationTransferStatus,
   InnovatorOrganisationRole,
@@ -10,8 +13,9 @@ import {
   User,
   UserType,
 } from "@domain/index";
+import { InvalidParamsError } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
-import { Connection, getConnection } from "typeorm";
+import { Connection, EntityManager, getConnection } from "typeorm";
 import { TransactionResult } from "../models/InnovatorTransactionResult";
 import { BaseService } from "./Base.service";
 import { InnovationService } from "./Innovation.service";
@@ -88,7 +92,26 @@ export class InnovatorService extends BaseService<User> {
       });
 
       await queryRunner.manager.save(organisationUser);
-
+      try {
+        await this.saveSection(
+          _innovation,
+          [
+            InnovationSectionCatalogue.INNOVATION_DESCRIPTION,
+            InnovationSectionCatalogue.VALUE_PROPOSITION,
+            InnovationSectionCatalogue.UNDERSTANDING_OF_BENEFITS,
+            InnovationSectionCatalogue.EVIDENCE_OF_EFFECTIVENESS,
+            InnovationSectionCatalogue.MARKET_RESEARCH,
+            InnovationSectionCatalogue.TESTING_WITH_USERS,
+          ],
+          queryRunner.manager
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while creating section from InnovationID ${_innovation.id}`,
+          error
+        );
+        throw error;
+      }
       result = {
         user: {
           id: _innovator.id,
@@ -227,5 +250,30 @@ export class InnovatorService extends BaseService<User> {
         throw error;
       }
     });
+  }
+
+  async saveSection(
+    innovation: Innovation,
+    sections: InnovationSectionCatalogue[],
+    queryRunner: EntityManager
+  ) {
+    if (!innovation) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+    let result;
+
+    for (let i = 0; i < sections.length; i++) {
+      const secKey = sections[i];
+      const innovationSection = InnovationSection.new({
+        innovation,
+        section: InnovationSectionCatalogue[secKey],
+        status: InnovationSectionStatus.DRAFT,
+        createdBy: innovation.createdBy,
+        updatedBy: innovation.updatedBy,
+      });
+
+      result = await queryRunner.save(InnovationSection, innovationSection);
+    }
+    return result;
   }
 }
