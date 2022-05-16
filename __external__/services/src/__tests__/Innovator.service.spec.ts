@@ -195,7 +195,7 @@ describe("Innovator Service Suite", () => {
       .spyOn(NotificationService.prototype, "sendEmail")
       .mockRejectedValue("error");
     // Act
-
+    jest.spyOn(InnovatorService.prototype, "saveSection").mockResolvedValue("");
     const result = await innovatorService.createFirstTimeSignIn(
       innovator,
       innovation,
@@ -213,7 +213,7 @@ describe("Innovator Service Suite", () => {
     const innovation = new Innovation();
     const organisation = new Organisation();
     jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue();
-
+    jest.spyOn(InnovatorService.prototype, "saveSection").mockResolvedValue("");
     let err;
 
     try {
