@@ -165,10 +165,10 @@ export class AdminService {
   }
   async lockUser(
     requestUser: RequestUser,
-    userId: string,
+    externalId: string,
     graphAccessToken?: string
   ): Promise<UserUpdateResult> {
-    if (!requestUser || !userId) {
+    if (!requestUser || !externalId) {
       throw new InvalidParamsError("Invalid params.");
     }
 
@@ -182,7 +182,7 @@ export class AdminService {
       graphAccessToken = await authenticateWitGraphAPI();
     }
 
-    const user = await getUserFromB2C(userId, graphAccessToken);
+    const user = await getUserFromB2C(externalId, graphAccessToken);
     if (!user) {
       throw new Error("Invalid user id.");
     }
@@ -192,14 +192,14 @@ export class AdminService {
       result = await this.connection.transaction(async (transaction) => {
         await transaction.update(
           User,
-          { id: userId },
+          { externalId },
           {
             lockedAt: new Date(),
           }
         );
         return await this.userService.updateB2CUser(
           { accountEnabled: false },
-          userId,
+          externalId,
           graphAccessToken
         );
       });
@@ -209,12 +209,15 @@ export class AdminService {
 
     //When the user is locked, trigger an inservice notification for Qualifying Accessors if the innovation support status is "further info",
     //"waiting" or "engaging" and for Accessors when the status = "engaging".
-    const userDetails = await this.userService.getUserDetails(userId, "FULL");
+    const userDetails = await this.userService.getUserDetails(
+      externalId,
+      "FULL"
+    );
     if (userDetails.type === "INNOVATOR") {
       let users: string[];
       const orgUnitUsersList: string[] = [];
       const userToRequestUser: RequestUser = {
-        id: userId,
+        id: userDetails.id,
         externalId: userDetails.externalId,
         type: UserType.INNOVATOR,
       };
@@ -302,7 +305,7 @@ export class AdminService {
     }
 
     const email = this.getUserEmail(user);
-    const display_name = user.display_name;
+
     try {
       await this.notificationService.sendEmail(
         requestUser,
@@ -322,7 +325,7 @@ export class AdminService {
     }
 
     return {
-      id: userId,
+      id: externalId,
       status: "OK",
     };
   }
