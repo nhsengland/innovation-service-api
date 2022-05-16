@@ -1,14 +1,22 @@
 import { closeTestsConnection, setupTestsConnection, UserType } from "..";
 import * as dotenv from "dotenv";
 import * as path from "path";
+
 import { getConnection } from "typeorm";
+
+import { getConnection, getRepository } from "typeorm";
+
 import { TermsOfUseService } from "@services/services/TermsOfUse.service";
 import {
   InvalidParamsError,
   InvalidUserTypeError,
   UniqueKeyError,
 } from "@services/errors";
+
 import { TouType } from "@domain/index";
+
+import { TermsOfUse, TermsOfUseUser, TouType } from "@domain/index";
+
 const dummy = {
   email: "email@email.com",
   requestUser: {
@@ -17,10 +25,25 @@ const dummy = {
     type: UserType.ADMIN,
   },
 };
+
 describe("[Terms Of Use suite", () => {
   let touService: TermsOfUseService;
   beforeAll(async () => {
     // await setupTestsConnection();
+
+const dummyInnovator = {
+  email: "email@email.com",
+  requestUser: {
+    id: "C7095D87-C3DF-46F6-A503-001B083F4639",
+    externalId: "C7095D87-C3DF-46F6-A503-001B083F4639",
+    type: UserType.INNOVATOR,
+  },
+};
+describe("Terms Of Use Service suite", () => {
+  let touService: TermsOfUseService;
+  beforeAll(async () => {
+    //await setupTestsConnection();
+
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
     });
@@ -34,7 +57,11 @@ describe("[Terms Of Use suite", () => {
   });
 
   afterAll(async () => {
+
     // await closeTestsConnection();
+
+    //await closeTestsConnection();
+
   });
 
   it("should throw when creating with invalid params", async () => {
@@ -71,8 +98,15 @@ describe("[Terms Of Use suite", () => {
   });
 
   it("Should create terms and use ", async () => {
+
     const result = await touService.createTermsOfUse(dummy.requestUser, {
       name: "TERMS OF USE 2",
+
+    const randomName = (Math.random() + 1).toString(36);
+
+    const result = await touService.createTermsOfUse(dummy.requestUser, {
+      name: randomName,
+
       summary: "TEST",
       touType: TouType.SUPPORT_ORGANISATION,
     });
@@ -85,8 +119,19 @@ describe("[Terms Of Use suite", () => {
     let err: UniqueKeyError;
     try {
       await touService.createTermsOfUse(dummy.requestUser, {
+
         name: "TERMS OF USE 2",
         summary: "TEST",
+
+        name: "TERMS OF USE",
+        summary: "TEST DUPLICATE NAME",
+        touType: TouType.INNOVATOR,
+      });
+
+      await touService.createTermsOfUse(dummy.requestUser, {
+        name: "TERMS OF USE",
+        summary: "TEST DUPLICATE NAME 2",
+
         touType: TouType.INNOVATOR,
       });
     } catch (error) {
@@ -158,8 +203,16 @@ describe("[Terms Of Use suite", () => {
   });
 
   it("Should update terms and use ", async () => {
+
     const result = await touService.createTermsOfUse(dummy.requestUser, {
       name: "TERMS OF USE 8",
+
+    const randomName = (Math.random() + 1).toString(36);
+    const randomNameToUpdate = (Math.random() + 1).toString(36);
+
+    const result = await touService.createTermsOfUse(dummy.requestUser, {
+      name: randomName,
+
       summary: "TEST",
       touType: TouType.SUPPORT_ORGANISATION,
     });
@@ -167,7 +220,11 @@ describe("[Terms Of Use suite", () => {
     const results = await touService.updateTermsOfUse(
       dummy.requestUser,
       {
+
         name: "TERMS OF USE 9",
+
+        name: randomNameToUpdate,
+
         summary: "TEST",
         touType: TouType.SUPPORT_ORGANISATION,
       },
@@ -176,4 +233,67 @@ describe("[Terms Of Use suite", () => {
 
     expect(results).toBeDefined();
   });
+
+
+  it("Should accept terms of use ", async () => {
+    const randomName = (Math.random() + 1).toString(36);
+
+    const newToU = await touService.createTermsOfUse(dummy.requestUser, {
+      name: randomName,
+      summary: "TEST",
+      touType: TouType.INNOVATOR,
+    });
+
+    await touService.updateTermsOfUse(
+      dummy.requestUser,
+      {
+        name: newToU.name,
+        touType: TouType.INNOVATOR,
+        releasedAt: new Date(),
+      },
+      newToU.id
+    );
+
+    jest.spyOn(touService, "findTermsOfUseById").mockResolvedValue({
+      id: newToU.id,
+      touType: "INNOVATOR",
+      releasedAt: "2022-05-11 12:49:10.9760000",
+    } as any);
+
+    const result = await touService.acceptTermsOfUse(
+      dummyInnovator.requestUser,
+      newToU.id
+    );
+
+    expect(result).toBeDefined();
+    expect(result).toBe("Terms Accepted");
+  });
+
+  it("Should check if user accepted terms of use ", async () => {
+    jest
+      .spyOn(getRepository(TermsOfUse, process.env.DB_TESTS_NAME), "findOne")
+      .mockResolvedValue({
+        id: "FAAAAAAA-C3DF-46F6-A503-001B083F4638",
+        touType: "INNOVATOR",
+        name: "name",
+        summary: "summary",
+        releasedAt: "2022-05-11 12:49:10.9760000",
+      } as any);
+
+    jest
+      .spyOn(
+        getRepository(TermsOfUseUser, process.env.DB_TESTS_NAME),
+        "findOne"
+      )
+      .mockResolvedValue({} as any);
+
+    const result = await touService.checkIfUserAccepted(
+      dummyInnovator.requestUser
+    );
+
+    expect(result).toBeDefined();
+    expect(result.id).toBe("FAAAAAAA-C3DF-46F6-A503-001B083F4638");
+    expect(result.isAccepted).toBe(true);
+  });
+
 });
