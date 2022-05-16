@@ -177,7 +177,7 @@ export function OrganisationRoleValidator(userType: UserType, ...roles: any[]) {
       const id = context.auth.requestUser.id;
 
       const userOrganisations: OrganisationUser[] = await context.services.OrganisationService.findUserOrganisations(
-        externalId
+        id
       );
       const filteredOrganisations = userOrganisations.filter((uo) =>
         roles.includes(uo.role)
