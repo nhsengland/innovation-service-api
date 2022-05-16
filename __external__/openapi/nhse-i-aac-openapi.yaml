@@ -3532,7 +3532,7 @@ paths:
           description: "Unauthorized"
 
   "/tou/{touId}/accept":
-  patch:
+    patch:
       tags:
         - "TermsOfUse"
         - "Accept"

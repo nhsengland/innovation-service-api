@@ -3454,34 +3454,34 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-  '/tou/{touId}/accept': null
-  patch:
-    tags:
-      - TermsOfUse
-      - Accept
-    description: User accepts a specific Terms of Use
-    operationId: terms-of-use-accept
-    parameters:
-      - name: Authorization
-        in: header
-        schema:
-          type: string
-        required: true
-      - name: touId
-        in: path
-        schema:
-          type: string
-        required: true
-    security:
-      - OpenId:
-          - tou_write
-    responses:
-      '200':
-        description: OK
-      '401':
-        description: Unauthorized
-      '404':
-        description: Not Found
+  '/tou/{touId}/accept':
+    patch:
+      tags:
+        - TermsOfUse
+        - Accept
+      description: User accepts a specific Terms of Use
+      operationId: terms-of-use-accept
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: touId
+          in: path
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - tou_write
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
   /notifications:
     patch:
       tags:
