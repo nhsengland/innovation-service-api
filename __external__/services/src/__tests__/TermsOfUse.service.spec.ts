@@ -96,8 +96,14 @@ describe("Terms Of Use Service suite", () => {
     let err: UniqueKeyError;
     try {
       await touService.createTermsOfUse(dummy.requestUser, {
-        name: "TERMS OF USE 2",
-        summary: "TEST",
+        name: "TERMS OF USE",
+        summary: "TEST DUPLICATE NAME",
+        touType: TouType.INNOVATOR,
+      });
+
+      await touService.createTermsOfUse(dummy.requestUser, {
+        name: "TERMS OF USE",
+        summary: "TEST DUPLICATE NAME 2",
         touType: TouType.INNOVATOR,
       });
     } catch (error) {
