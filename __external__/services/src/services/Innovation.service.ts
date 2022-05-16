@@ -128,6 +128,20 @@ export class InnovationService extends BaseService<Innovation> {
         throw error;
       }
 
+      try {
+        await this.saveSection(
+          requestUser,
+          innov,
+          trs,
+          InnovationSectionCatalogue.INNOVATION_DESCRIPTION
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while creating section from ${requestUser.id}`,
+          error
+        );
+        throw error;
+      }
       return innov;
     });
 
@@ -1769,5 +1783,30 @@ export class InnovationService extends BaseService<Innovation> {
       transaction,
       customParams
     );
+  }
+  async saveSection(
+    requestUser: RequestUser,
+    innovation: Innovation,
+    transaction: EntityManager,
+    section: InnovationSectionCatalogue
+  ) {
+    if (!requestUser || !innovation) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+    const innovationSection = InnovationSection.new({
+      innovation,
+      section: section,
+      status: InnovationSectionStatus.DRAFT,
+      createdBy: requestUser.id,
+      updatedBy: requestUser.id,
+    });
+
+    if (transaction) {
+      const result = await transaction.save(
+        InnovationSection,
+        innovationSection
+      );
+      return result;
+    }
   }
 }
