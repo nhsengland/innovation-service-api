@@ -1,6 +1,7 @@
 import {
   ActivityLog,
   Innovation,
+  InnovationSection,
   InnovationStatus,
   Organisation,
   OrganisationUser,
@@ -45,10 +46,10 @@ describe("Innovator Service Suite", () => {
     await query.from(ActivityLog).execute();
     await query.from(OrganisationUser).execute();
     await query.from(Organisation).execute();
+    await query.from(InnovationSection).execute();
     await query.from(Innovation).execute();
     await query.from(UserRole).execute();
     await query.from(User).execute();
-    // await closeTestsConnection();
   });
 
   afterAll(async () => {
@@ -56,7 +57,7 @@ describe("Innovator Service Suite", () => {
       .createQueryBuilder()
       .delete();
     await query.from(Innovation).execute();
-    await closeTestsConnection();
+    //await closeTestsConnection();
   });
 
   it("should instantiate the innovator service", async () => {
