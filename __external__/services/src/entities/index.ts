@@ -34,6 +34,7 @@ import {
   UserRole,
   Role,
   TermsOfUse,
+  TermsOfUseUser,
 } from "@domain/index";
 
 export const entities = [
@@ -72,4 +73,5 @@ export const entities = [
   Role,
   UserRole,
   TermsOfUse,
+  TermsOfUseUser,
 ];

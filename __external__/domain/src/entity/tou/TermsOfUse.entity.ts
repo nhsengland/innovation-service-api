@@ -31,7 +31,7 @@ export class TermsOfUse extends Base {
   @Column({ name: "summary", nullable: true, type: "nvarchar", length: 2000 })
   summary: string;
 
-  @UpdateDateColumn({ name: "released_at", nullable: true })
+  @Column({ name: "released_at", nullable: true })
   releasedAt: Date;
 
   // relationships

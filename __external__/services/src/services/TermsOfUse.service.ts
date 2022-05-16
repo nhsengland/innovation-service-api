@@ -1,31 +1,44 @@
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
-import { User, UserType, TouType, TermsOfUse } from "@domain/index";
+import {
+  User,
+  UserType,
+  TouType,
+  TermsOfUse,
+  TermsOfUseUser,
+} from "@domain/index";
 import {
   InvalidParamsError,
   InvalidUserTypeError,
   UniqueKeyError,
 } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
-import { Connection, getConnection } from "typeorm";
+import {
+  Connection,
+  EntityManager,
+  getConnection,
+  getRepository,
+  Repository,
+} from "typeorm";
 import { BaseService } from "./Base.service";
 import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
 import {
+  CheckIfAcceptedTermsOfUseResult,
   TermsOfUseModel,
   TermsOfUseResult,
   TermsOfUseResultCreationModel,
 } from "@services/models/TermsOfUseResult";
-import { id } from "inversify";
-import { name } from "faker";
 
 export class TermsOfUseService extends BaseService<TermsOfUse> {
   private readonly connection: Connection;
   private readonly logService: LoggerService;
+  readonly termsOfUseUserRepo: Repository<TermsOfUseUser>;
 
   constructor(connectionName?: string) {
     super(TermsOfUse, connectionName);
     this.connection = getConnection(connectionName);
     this.logService = new LoggerService();
+    this.termsOfUseUserRepo = getRepository(TermsOfUseUser, connectionName);
   }
 
   async createTermsOfUse(
@@ -173,5 +186,114 @@ export class TermsOfUseService extends BaseService<TermsOfUse> {
       }),
       count: tou[1] as number,
     };
+  }
+
+  async acceptTermsOfUse(requestUser: RequestUser, touId: string) {
+    if (!requestUser || !touId) {
+      throw new Error("Invalid parameters");
+    }
+
+    const tou = await this.findTermsOfUseById(requestUser, touId);
+
+    if (tou.releasedAt === null) {
+      throw new Error("This Terms of Use have not been released yet");
+    }
+
+    if (
+      requestUser.type === UserType.ACCESSOR ||
+      requestUser.type === UserType.ASSESSMENT
+    ) {
+      if (tou.touType !== "SUPPORT_ORGANISATION") {
+        throw new Error("Invalid Terms of Use for this user");
+      }
+    }
+
+    if (requestUser.type === UserType.INNOVATOR) {
+      if (tou.touType !== "INNOVATOR") {
+        throw new Error("Invalid Terms of Use for this user");
+      }
+    }
+
+    try {
+      //Check if User has already accepted this Terms of Use
+      if (
+        await this.termsOfUseUserRepo.findOne({
+          where: {
+            termsOfUse: touId,
+            user: requestUser.id,
+          },
+        })
+      ) {
+        return;
+      }
+
+      const termsOfUseUser = TermsOfUseUser.new({
+        termsOfUse: touId,
+        user: requestUser.id,
+        acceptedAt: new Date(),
+      });
+
+      await this.termsOfUseUserRepo.save(termsOfUseUser);
+    } catch (error) {
+      throw new Error(error);
+    }
+
+    return "Terms Accepted";
+  }
+
+  async checkIfUserAccepted(
+    requestUser: RequestUser
+  ): Promise<CheckIfAcceptedTermsOfUseResult> {
+    if (!requestUser) {
+      throw new Error("Invalid parameters");
+    }
+
+    let touType;
+    let isAccepted = false;
+
+    if (
+      requestUser.type === UserType.ACCESSOR ||
+      requestUser.type === UserType.ASSESSMENT
+    ) {
+      touType = "SUPPORT_ORGANISATION";
+    }
+
+    if (requestUser.type === UserType.INNOVATOR) {
+      touType = "INNOVATOR";
+    }
+
+    try {
+      //Get latest released Terms of Use
+      const lastTermsOfUse = await this.repository.findOne({
+        where: {
+          touType: touType,
+        },
+        order: {
+          releasedAt: "DESC",
+        },
+      });
+
+      //Check if user has already accepted the latest Terms of Use
+      if (
+        await this.termsOfUseUserRepo.findOne({
+          where: {
+            termsOfUse: lastTermsOfUse,
+            user: requestUser.id,
+          },
+        })
+      ) {
+        isAccepted = true;
+      }
+
+      return {
+        id: lastTermsOfUse.id,
+        name: lastTermsOfUse.name,
+        summary: lastTermsOfUse.summary,
+        releasedAt: lastTermsOfUse.releasedAt,
+        isAccepted: isAccepted,
+      };
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 }

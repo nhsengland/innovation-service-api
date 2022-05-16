@@ -3431,6 +3431,57 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
+  /tou/me:
+    get:
+      tags:
+        - TermsOfUse
+        - CheckIfUserAccepted
+      description: Checks if User has accepted the latest Terms of Use released on the service
+      operationId: terms-of-use-check-if-user-accepted
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - tou_details
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+  '/tou/{touId}/accept': null
+  patch:
+    tags:
+      - TermsOfUse
+      - Accept
+    description: User accepts a specific Terms of Use
+    operationId: terms-of-use-accept
+    parameters:
+      - name: Authorization
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: touId
+        in: path
+        schema:
+          type: string
+        required: true
+    security:
+      - OpenId:
+          - tou_write
+    responses:
+      '200':
+        description: OK
+      '401':
+        description: Unauthorized
+      '404':
+        description: Not Found
   /notifications:
     patch:
       tags:
