@@ -109,7 +109,7 @@ export class InnovationTransferService {
 
     return {
       hasInvites: !!transfer,
-      userExists: !!innovator,
+      userExists: !!innovator && !!innovator?.firstTimeSignInAt,
     };
   }
 

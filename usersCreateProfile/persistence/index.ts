@@ -1,6 +1,6 @@
 import { CustomContext } from "../../utils/types";
 
-export const getProfile = async (
+export const createProfile = async (
   ctx: CustomContext,
   surveyId: string,
   externalId: string

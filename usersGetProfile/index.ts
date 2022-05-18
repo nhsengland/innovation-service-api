@@ -12,6 +12,7 @@ import {
 } from "../utils/decorators";
 import { CustomContext, Severity } from "../utils/types";
 import { UserType } from "@domain/index";
+import { ProfileModel } from "@services/models/ProfileModel";
 
 class UsersGetProfile {
   @AppInsights()
@@ -31,7 +32,7 @@ class UsersGetProfile {
     const externalId = context.auth.requestUser.externalId;
     const id = context.auth.requestUser.id;
 
-    let result;
+    let result: ProfileModel;
 
     try {
       result = await persistence.getProfile(context, id, externalId);

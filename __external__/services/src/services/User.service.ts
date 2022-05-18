@@ -308,11 +308,11 @@ export class UserService {
       accessToken = await authenticateWitGraphAPI();
     }
 
-    // const user = await getUserFromB2C(externalId, accessToken);
+    const user = await getUserFromB2C(externalId, accessToken);
 
-    // if (!user) {
-    //   throw new Error("Invalid user.");
-    // }
+    if (!user) {
+      throw new Error("Invalid user.");
+    }
 
     let userDb: User;
     try {

@@ -1,32 +1,33 @@
-import { AzureFunction, Context, HttpRequest } from "@azure/functions";
-import * as Responsify from "../utils/responsify";
-import * as validation from "./validation";
-import { decodeToken } from "../utils/authentication";
-import * as persistence from "./persistence";
+import { HttpRequest } from "@azure/functions";
+import { User } from "@domain/index";
+import { decodeToken } from "utils/authentication";
 import {
   AppInsights,
   JwtDecoder,
   SQLConnector,
   Validator,
 } from "../utils/decorators";
+import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
-
+import * as persistence from "./persistence";
+import * as validation from "./validation";
 class UsersGetProfile {
   @AppInsights()
   @SQLConnector()
-  @Validator(validation.ValidateHeaders, "headers", "Invalid Headers")
-  @JwtDecoder()
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const externalId = req.body.externalId;
     const surveyId = req.body.surveyId;
+    const idToken = req.body.idToken;
 
-    let result;
+    const jwt = decodeToken(idToken);
+    const externalId = jwt.sub;
+
+    let result: User;
 
     try {
-      result = await persistence.getProfile(context, surveyId, externalId);
+      result = await persistence.createProfile(context, surveyId, externalId);
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
@@ -35,7 +36,10 @@ class UsersGetProfile {
     }
 
     if (result) {
-      context.res = Responsify.Ok(result);
+      context.res = Responsify.Ok({
+        id: result.id,
+        externalId: result.externalId,
+      });
       return;
     }
 
