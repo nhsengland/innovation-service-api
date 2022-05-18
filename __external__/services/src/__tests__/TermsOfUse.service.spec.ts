@@ -1,6 +1,12 @@
-import { closeTestsConnection, setupTestsConnection, UserType } from "..";
+import {
+  closeTestsConnection,
+  setupTestsConnection,
+  UserService,
+  UserType,
+} from "..";
 import * as dotenv from "dotenv";
 import * as path from "path";
+import * as fixtures from "../__fixtures__";
 import { getConnection, getRepository } from "typeorm";
 import { TermsOfUseService } from "@services/services/TermsOfUse.service";
 import {
@@ -40,6 +46,9 @@ describe("Terms Of Use Service suite", () => {
     const query = getConnection(process.env.DB_TESTS_NAME)
       .createQueryBuilder()
       .delete();
+
+    await query.from(TermsOfUseUser).execute();
+    await query.from(TermsOfUse).execute();
   });
 
   afterAll(async () => {
@@ -58,7 +67,7 @@ describe("Terms Of Use Service suite", () => {
     expect(err).toBeInstanceOf(InvalidParamsError);
   });
 
-  it("should throw when createUser with invalid requestUser type params", async () => {
+  it("should throw when createTermsOfUse with invalid requestUser type params", async () => {
     const requestUser = {
       id: ":user_id",
       externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
@@ -216,6 +225,10 @@ describe("Terms Of Use Service suite", () => {
       newToU.id
     );
 
+    const innovatorUser = await fixtures.createInnovatorUser();
+
+    const innovatorRequestUser = fixtures.getRequestUser(innovatorUser);
+
     jest.spyOn(touService, "findTermsOfUseById").mockResolvedValue({
       id: newToU.id,
       touType: "INNOVATOR",
@@ -223,7 +236,7 @@ describe("Terms Of Use Service suite", () => {
     } as any);
 
     const result = await touService.acceptTermsOfUse(
-      dummyInnovator.requestUser,
+      innovatorRequestUser,
       newToU.id
     );
 

@@ -1058,6 +1058,7 @@ describe("[User Account Lock suite", () => {
       updatedAt: null,
       updatedBy: null,
       deletedAt: null,
+      termsOfUseUsers: null,
       firstTimeSignInAt: null,
       surveyId: null,
     });
@@ -1099,6 +1100,7 @@ describe("[User Account Lock suite", () => {
       updatedAt: null,
       updatedBy: null,
       deletedAt: null,
+      termsOfUseUsers: null,
       surveyId: null,
       firstTimeSignInAt: null,
     });
