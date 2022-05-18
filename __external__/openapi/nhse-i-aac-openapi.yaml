@@ -2313,6 +2313,17 @@ paths:
           description: "Unauthorized"
         "403":
           description: "Forbidden"
+    post:
+      tags:
+        - "Users"
+        - "CreateProfile"
+      description: "Creates the user profile"
+      operationId: "users-create-profile"
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
 
   "/organisations":
     get:
