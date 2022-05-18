@@ -269,6 +269,9 @@ export class UserService {
         profile.type = userDb.type;
         profile.roles = userDb.serviceRoles?.map((sr) => sr.role.name) || [];
         profile.organisations = [];
+        profile.externalId = userDb.externalId;
+        profile.surveyId = userDb.surveyId;
+        profile.firstTimeSignInAt = userDb.firstTimeSignInAt;
 
         for (let idx = 0; idx < organisations.length; idx++) {
           const orgUser: OrganisationUser = organisations[idx];
@@ -294,6 +297,37 @@ export class UserService {
     }
 
     return profile;
+  }
+
+  async createProfile(
+    surveyId: string,
+    externalId: string,
+    accessToken?: string
+  ): Promise<User> {
+    if (!accessToken) {
+      accessToken = await authenticateWitGraphAPI();
+    }
+
+    const user = await getUserFromB2C(externalId, accessToken);
+
+    if (!user) {
+      throw new Error("Invalid user.");
+    }
+
+    let userDb: User;
+    try {
+      const usr = User.new({
+        externalId,
+        surveyId,
+        type: UserType.INNOVATOR,
+      });
+
+      userDb = await this.userRepo.save(usr);
+    } catch (error) {
+      throw error;
+    }
+
+    return userDb;
   }
 
   async searchUsersByEmail(

@@ -1,4 +1,5 @@
 import { HttpRequest } from "@azure/functions";
+import { User, UserType } from "@domain/index";
 import { AppInsights, SQLConnector, Validator } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
 import { CustomContext } from "../utils/types";
@@ -15,9 +16,12 @@ class InnovatorsHeadOne {
   ): Promise<void> {
     const userId = req.params.userId;
 
-    const result = await persistence.findInnovatorById(context, userId);
+    const result: User = await persistence.findInnovatorById(context, userId);
 
-    if (result) {
+    if (
+      result &&
+      (result.type !== UserType.INNOVATOR || result.firstTimeSignInAt)
+    ) {
       context.res = Responsify.Ok();
       return;
     }
