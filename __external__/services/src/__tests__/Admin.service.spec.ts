@@ -205,7 +205,7 @@ describe("[User Account Lock suite", () => {
 
     expect(result).toBeDefined();
     expect(result.lastAccessorUserOnOrganisation.valid).toBe(false);
-    expect(result.lastAccessorUserOnOrganisationUnit.valid).toBe(true);
+    expect(result.lastAccessorUserOnOrganisationUnit.valid).toBe(false);
     expect(result.lastAccessorFromUnitProvidingSupport.valid).toBe(true);
   });
 
