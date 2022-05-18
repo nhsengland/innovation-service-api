@@ -1,12 +1,9 @@
 import {
   Column,
   Entity,
-  ManyToMany,
-  OneToMany,
   PrimaryGeneratedColumn,
   Index,
-  UpdateDateColumn,
-  ManyToOne,
+  OneToMany,
 } from "typeorm";
 import { TouType } from "../../enums/terms-of-use.enums";
 import { Base } from "../Base.entity";
@@ -39,9 +36,8 @@ export class TermsOfUse extends Base {
   // relationships
   @OneToMany(() => TermsOfUseUser, (record) => record.termsOfUse, {
     lazy: true,
-    cascade: ["insert", "update"],
   })
-  termsOfUseUsers?: TermsOfUseUser[];
+  termsOfUseUsers: TermsOfUseUser[];
 
   // static constructor
   static new(data) {

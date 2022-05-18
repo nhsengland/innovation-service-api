@@ -42,9 +42,8 @@ export class User extends Base {
 
   @OneToMany(() => TermsOfUseUser, (record) => record.user, {
     lazy: true,
-    cascade: ["insert", "update"],
   })
-  termsOfUseUsers?: TermsOfUseUser[];
+  termsOfUseUsers: TermsOfUseUser[];
 
   //static constructor
   static new(data) {
