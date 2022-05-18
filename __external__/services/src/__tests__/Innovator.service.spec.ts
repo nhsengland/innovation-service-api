@@ -8,6 +8,7 @@ import {
   User,
   UserRole,
   UserType,
+  InnovationSection,
 } from "@domain/index";
 import { getConnection } from "typeorm";
 import { v4 as uuid } from "uuid";
@@ -17,12 +18,7 @@ import * as path from "path";
 import * as fixtures from "../__fixtures__";
 import { UserService } from "@services/services/User.service";
 import { InnovationService } from "@services/services/Innovation.service";
-import * as helpers from "../../src/helpers/index";
-import {
-  closeTestsConnection,
-  InnovationTransferService,
-  setupTestsConnection,
-} from "..";
+import { closeTestsConnection } from "..";
 import { NotificationService } from "@services/services/Notification.service";
 import { RequestUser } from "@services/models/RequestUser";
 
@@ -44,6 +40,7 @@ describe("Innovator Service Suite", () => {
       .delete();
     await query.from(ActivityLog).execute();
     await query.from(OrganisationUser).execute();
+    await query.from(InnovationSection).execute();
     await query.from(Organisation).execute();
     await query.from(Innovation).execute();
     await query.from(UserRole).execute();

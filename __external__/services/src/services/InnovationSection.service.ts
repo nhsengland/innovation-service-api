@@ -309,7 +309,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     if (sectionFields.innovationTypes) {
       for (let i = 0; i < sectionFields.innovationTypes.length; i++) {
         const type = sectionFields.innovationTypes[i];
-
+        if (!data[type]) continue;
         updatedInnovation[type] = await this.getUpdatedParentTypeArray(
           requestUser,
           innovation,
@@ -322,7 +322,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     if (sectionFields.innovationDependencies) {
       for (let i = 0; i < sectionFields.innovationDependencies.length; i++) {
         const dependency = sectionFields.innovationDependencies[i];
-
+        if (!data[dependency.type]) continue;
         updatedInnovation[
           dependency.type
         ] = await this.getUpdatedInnovationDependencyArray(
@@ -703,6 +703,8 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     const newValues: any = data[dependency.type];
     const filter: string[] = dependency.fields;
     const subtypes: string[] = dependency.subtypes;
+
+    if (!newValues) return original;
 
     original
       .filter((obj) => !newValues.some((e: any) => e.id === obj.id))

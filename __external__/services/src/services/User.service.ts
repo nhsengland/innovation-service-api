@@ -206,7 +206,8 @@ export class UserService {
 
     if (userB2C && user) {
       return {
-        id: userB2C.id,
+        id: user.id,
+        externalId: userB2C.id,
         displayName: userB2C.displayName,
         phone: userB2C.mobilePhone,
         email: userB2C.identities.find((i) => i.signInType === "emailAddress")
