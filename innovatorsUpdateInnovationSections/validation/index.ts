@@ -112,6 +112,8 @@ const payloadSchema = Joi.object({
     ),
     standards: Joi.array().items(
       Joi.object({
+        id: Joi.string().allow(null).allow("").optional(),
+        type: Joi.string().required(),
         hasMet: Joi.string().allow(null).allow("").optional().optional(),
       })
     ),
