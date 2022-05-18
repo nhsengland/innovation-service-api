@@ -47,3 +47,14 @@ export const getSurvey = async (id: string) => {
     throw error;
   }
 };
+
+export const getUserByExternalId = async (
+  ctx: CustomContext,
+  externalId: string
+) => {
+  const user = await ctx.services.UserService.getUserByOptions({
+    where: { externalId },
+  });
+
+  return user;
+};

@@ -205,7 +205,7 @@ describe("[User Account Lock suite", () => {
 
     expect(result).toBeDefined();
     expect(result.lastAccessorUserOnOrganisation.valid).toBe(false);
-    expect(result.lastAccessorUserOnOrganisationUnit.valid).toBe(true);
+    expect(result.lastAccessorUserOnOrganisationUnit.valid).toBe(false);
     expect(result.lastAccessorFromUnitProvidingSupport.valid).toBe(true);
   });
 
@@ -1159,6 +1159,8 @@ describe("[User Account Lock suite", () => {
       updatedBy: null,
       deletedAt: null,
       termsOfUseUsers: null,
+      firstTimeSignInAt: null,
+      surveyId: null,
     });
 
     const adminUser = await fixtures.createAdminUser();
@@ -1199,6 +1201,8 @@ describe("[User Account Lock suite", () => {
       updatedBy: null,
       deletedAt: null,
       termsOfUseUsers: null,
+      surveyId: null,
+      firstTimeSignInAt: null,
     });
 
     const adminRequestUser = await fixtures.createAdminUser();
