@@ -131,6 +131,7 @@ export const createInnovatorUser = async () => {
   const innovatorService = new InnovatorService(process.env.DB_TESTS_NAME);
   innovator.id = uuid.v4().toUpperCase();
   innovator.externalId = uuid.v4();
+  innovator.firstTimeSignInAt = new Date();
   return await innovatorService.create(innovator);
 };
 

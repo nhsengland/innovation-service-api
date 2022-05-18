@@ -90,7 +90,10 @@ class InnovatorsCreateOne {
     const payload = req.body;
     const jwt = context.auth.decodedJwt;
     const oid = jwt.oid;
-    const surveyId = jwt.surveyId;
+
+    const baseUser = await persistence.getUserByExternalId(context, oid);
+
+    const surveyId = baseUser?.surveyId || jwt.surveyId;
 
     let surveyInfo: any = {};
     if (payload.actionType === "first_time_signin") {
@@ -129,7 +132,9 @@ class InnovatorsCreateOne {
     }
 
     try {
-      const innovator: User = User.new({ externalId: oid });
+      const innovator: User = baseUser || User.new({ externalId: oid });
+      innovator.firstTimeSignInAt = new Date();
+
       const organisation: Organisation = Organisation.new({
         ...payload.organisation,
       });

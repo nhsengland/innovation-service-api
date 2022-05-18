@@ -1058,6 +1058,8 @@ describe("[User Account Lock suite", () => {
       updatedAt: null,
       updatedBy: null,
       deletedAt: null,
+      firstTimeSignInAt: null,
+      surveyId: null,
     });
 
     const adminUser = await fixtures.createAdminUser();
@@ -1097,6 +1099,8 @@ describe("[User Account Lock suite", () => {
       updatedAt: null,
       updatedBy: null,
       deletedAt: null,
+      surveyId: null,
+      firstTimeSignInAt: null,
     });
 
     const adminRequestUser = await fixtures.createAdminUser();
