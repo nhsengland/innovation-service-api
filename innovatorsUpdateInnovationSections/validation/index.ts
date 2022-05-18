@@ -78,8 +78,8 @@ const payloadSchema = Joi.object({
     ),
     subgroups: Joi.array().items(
       Joi.object({
-        id: Joi.string().allow(null).allow("").optional().optional(),
-        name: Joi.string().allow(null).allow("").optional().optional(),
+        id: Joi.string().allow(null).allow("").optional(),
+        name: Joi.string().allow(null).allow("").optional(),
         costDescription: Joi.string()
           .max(constants.mediumFieldCharacterLimit)
           .allow(null)
@@ -108,6 +108,11 @@ const payloadSchema = Joi.object({
         benefits: Joi.array().items(
           Joi.string().allow(null).allow("").optional()
         ),
+      })
+    ),
+    standards: Joi.array().items(
+      Joi.object({
+        hasMet: Joi.string().allow(null).allow("").optional().optional(),
       })
     ),
     costDescription: Joi.string()
