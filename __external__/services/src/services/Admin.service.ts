@@ -575,11 +575,19 @@ export class AdminService {
     const r = { ...qaRules };
 
     const accessorOrgRule = await this.CheckAccessorOrganisation(user);
+    const accesorOrgUnitRule = await this.CheckAccessorOrganisationUnit(user);
     const accessorSupportRule = await this.checkAccessorSupports(user);
 
     if (r[accessorOrgRule?.code.toString()]) {
       r[accessorOrgRule?.code.toString()] = {
         ...accessorOrgRule,
+        valid: false,
+      };
+    }
+
+    if (r[accesorOrgUnitRule?.code.toString()]) {
+      r[accesorOrgUnitRule?.code.toString()] = {
+        ...accesorOrgUnitRule,
         valid: false,
       };
     }
@@ -617,11 +625,19 @@ export class AdminService {
     const r = { ...unitrules };
     if (user.type === UserType.ACCESSOR) {
       const accessorOrgRule = await this.CheckAccessorOrganisation(user);
+      const accesorOrgUnitRule = await this.CheckAccessorOrganisationUnit(user);
       const accessorSupportRule = await this.checkAccessorSupports(user);
 
       if (r[accessorOrgRule?.code.toString()]) {
         r[accessorOrgRule?.code.toString()] = {
           ...accessorOrgRule,
+          valid: false,
+        };
+      }
+
+      if (r[accesorOrgUnitRule?.code.toString()]) {
+        r[accesorOrgUnitRule?.code.toString()] = {
+          ...accesorOrgUnitRule,
           valid: false,
         };
       }
@@ -700,6 +716,11 @@ export class AdminService {
             "orgUser",
             "unitUser.organisation_user_id = orgUser.id"
           )
+          .innerJoin(
+            "user",
+            "usr",
+            "orgUser.user_id = usr.id and usr.locked_at IS NULL"
+          )
           .where("unitUser.organisation_unit_id = :unitId", { unitId })
           .andWhere("orgUser.user_id != :userId", {
             userId: userToBeRemoved.id,
@@ -758,39 +779,6 @@ export class AdminService {
             },
           },
         };
-      }
-
-      // Make sure it is also not the last User on the organisation units
-      const userUnits = userOrg.userOrganisationUnits;
-      for (const userUnit of userUnits) {
-        const unitId = userUnit.organisationUnit.id;
-        const unitMembers = await this.connection
-          .createQueryBuilder(OrganisationUnitUser, "unitUser")
-          .innerJoinAndSelect(
-            "organisation_user",
-            "orgUser",
-            "unitUser.organisation_user_id = orgUser.id"
-          )
-          .where("unitUser.organisation_unit_id = :unitId", { unitId })
-          .andWhere("orgUser.user_id != :userId", {
-            userId: userToBeRemoved.id,
-          })
-          .andWhere("orgUser.role = :role", {
-            role: AccessorOrganisationRole.QUALIFYING_ACCESSOR,
-          })
-          .getMany();
-
-        if (unitMembers.length === 0) {
-          return {
-            code: UserLockValidationCode.LastAccessorUserOnOrganisationUnit,
-            meta: {
-              unit: {
-                id: userUnit.organisationUnit.id,
-                name: userUnit.organisationUnit.name,
-              },
-            },
-          };
-        }
       }
     }
   }
