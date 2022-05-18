@@ -10,8 +10,8 @@ import {
 import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
-import * as validation from "./validation";
-class UsersGetProfile {
+
+class UsersCreateProfile {
   @AppInsights()
   @SQLConnector()
   static async httpTrigger(
@@ -47,4 +47,4 @@ class UsersGetProfile {
   }
 }
 
-export default UsersGetProfile.httpTrigger;
+export default UsersCreateProfile.httpTrigger;
