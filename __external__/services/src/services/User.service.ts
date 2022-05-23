@@ -11,6 +11,8 @@ import {
   ServiceRole,
   UserRole,
   Comment,
+  TermsOfUse,
+  TermsOfUseUser,
 } from "@domain/index";
 import {
   InvalidDataError,
@@ -64,6 +66,8 @@ export class UserService {
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
   private readonly orgUnitUserRepo: Repository<OrganisationUnitUser>;
+  private readonly termsOfUseRepo: Repository<TermsOfUse>;
+  private readonly termsOfUseUserRepo: Repository<TermsOfUseUser>;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -76,6 +80,8 @@ export class UserService {
     this.notificationService = new NotificationService(connectionName);
     this.logService = new LoggerService();
     this.orgUnitUserRepo = getRepository(OrganisationUnitUser, connectionName);
+    this.termsOfUseRepo = getRepository(TermsOfUse, connectionName);
+    this.termsOfUseUserRepo = getRepository(TermsOfUseUser, connectionName);
   }
 
   async find(id: string, options?: FindOneOptions) {
@@ -227,6 +233,9 @@ export class UserService {
     externalId: string,
     accessToken?: string
   ): Promise<ProfileModel> {
+    let touType;
+    let isAccepted = false;
+
     if (!accessToken) {
       accessToken = await authenticateWitGraphAPI();
     }
@@ -266,12 +275,46 @@ export class UserService {
       if (userDb) {
         const organisations: OrganisationUser[] = await userDb.userOrganisations;
 
+        //Check if user has already accepted the latest Terms of Use
+        if (
+          userDb.type === UserType.ACCESSOR ||
+          userDb.type === UserType.ASSESSMENT
+        ) {
+          touType = "SUPPORT_ORGANISATION";
+        }
+
+        if (userDb.type === UserType.INNOVATOR) {
+          touType = "INNOVATOR";
+        }
+
+        const lastTermsOfUse = await this.termsOfUseRepo.findOne({
+          where: {
+            touType: touType,
+          },
+          order: {
+            releasedAt: "DESC",
+          },
+        });
+
+        if (
+          (await this.termsOfUseUserRepo.findOne({
+            where: {
+              termsOfUse: lastTermsOfUse,
+              user: id,
+            },
+          })) ||
+          userDb.type === UserType.ADMIN
+        ) {
+          isAccepted = true;
+        }
+
         profile.type = userDb.type;
         profile.roles = userDb.serviceRoles?.map((sr) => sr.role.name) || [];
         profile.organisations = [];
         profile.externalId = userDb.externalId;
         profile.surveyId = userDb.surveyId;
         profile.firstTimeSignInAt = userDb.firstTimeSignInAt;
+        profile.isTouAccepted = isAccepted;
 
         for (let idx = 0; idx < organisations.length; idx++) {
           const orgUser: OrganisationUser = organisations[idx];
