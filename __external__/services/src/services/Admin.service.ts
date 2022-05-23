@@ -330,44 +330,10 @@ export class AdminService {
     };
   }
 
-  async unlockUsers(
-    requestUser: RequestUser,
-    users: string[]
-  ): Promise<UserUnlockResult[]> {
-    if (!requestUser || !users || users.length === 0) {
-      throw new InvalidParamsError("Invalid params.");
-    }
-
-    const graphAccessToken = await authenticateWitGraphAPI();
-    const results: UserUnlockResult[] = [];
-
-    for (let i = 0; i < users.length; i++) {
-      const user = users[i];
-      let result: UserUnlockResult;
-
-      try {
-        result = await this.unlockUser(requestUser, users[i], graphAccessToken);
-      } catch (err) {
-        result = {
-          id: user,
-          status: "ERROR",
-          error: {
-            code: err.constructor.name,
-            message: err.message,
-            data: err.data,
-          },
-        };
-      }
-
-      results.push(result);
-    }
-
-    return results;
-  }
-
   async unlockUser(
     requestUser: RequestUser,
     userId: string,
+    externalId: string,
     graphAccessToken?: string
   ): Promise<UserUpdateResult> {
     if (!requestUser || !userId) {
@@ -384,7 +350,7 @@ export class AdminService {
       graphAccessToken = await authenticateWitGraphAPI();
     }
 
-    const user = await getUserFromB2C(userId, graphAccessToken);
+    const user = await getUserFromB2C(externalId, graphAccessToken);
     if (!user) {
       throw new Error("Invalid user id.");
     }
@@ -400,7 +366,7 @@ export class AdminService {
         );
         return await this.userService.updateB2CUser(
           { accountEnabled: true },
-          userId,
+          externalId,
           graphAccessToken
         );
       });

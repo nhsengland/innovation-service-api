@@ -2264,6 +2264,17 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
+    post:
+      tags:
+        - Users
+        - CreateProfile
+      description: Creates the user profile
+      operationId: users-create-profile
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not Found
   /organisations:
     get:
       tags:
