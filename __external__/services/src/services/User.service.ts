@@ -233,9 +233,6 @@ export class UserService {
     externalId: string,
     accessToken?: string
   ): Promise<ProfileModel> {
-    let touType;
-    let isAccepted = false;
-
     if (!accessToken) {
       accessToken = await authenticateWitGraphAPI();
     }
@@ -275,38 +272,9 @@ export class UserService {
       if (userDb) {
         const organisations: OrganisationUser[] = await userDb.userOrganisations;
 
-        //Check if user has already accepted the latest Terms of Use
-        if (
-          userDb.type === UserType.ACCESSOR ||
-          userDb.type === UserType.ASSESSMENT
-        ) {
-          touType = "SUPPORT_ORGANISATION";
-        }
-
-        if (userDb.type === UserType.INNOVATOR) {
-          touType = "INNOVATOR";
-        }
-
-        const lastTermsOfUse = await this.termsOfUseRepo.findOne({
-          where: {
-            touType: touType,
-          },
-          order: {
-            releasedAt: "DESC",
-          },
-        });
-
-        if (
-          (await this.termsOfUseUserRepo.findOne({
-            where: {
-              termsOfUse: lastTermsOfUse,
-              user: id,
-            },
-          })) ||
-          userDb.type === UserType.ADMIN
-        ) {
-          isAccepted = true;
-        }
+        const isTouAcceptedResult = await this.checkIfUserAcceptedTermsOfUse(
+          userDb
+        );
 
         profile.type = userDb.type;
         profile.roles = userDb.serviceRoles?.map((sr) => sr.role.name) || [];
@@ -314,7 +282,7 @@ export class UserService {
         profile.externalId = userDb.externalId;
         profile.surveyId = userDb.surveyId;
         profile.firstTimeSignInAt = userDb.firstTimeSignInAt;
-        profile.isTouAccepted = isAccepted;
+        profile.isTouAccepted = isTouAcceptedResult;
 
         for (let idx = 0; idx < organisations.length; idx++) {
           const orgUser: OrganisationUser = organisations[idx];
@@ -1097,5 +1065,43 @@ export class UserService {
     return b2cUser.identities.find(
       (identity: any) => identity.signInType === "emailAddress"
     ).issuerAssignedId;
+  }
+
+  private async checkIfUserAcceptedTermsOfUse(user: User): Promise<boolean> {
+    let touType;
+
+    if (user.type === UserType.ADMIN) {
+      return true;
+    }
+
+    if (user.type === UserType.ACCESSOR || user.type === UserType.ASSESSMENT) {
+      touType = "SUPPORT_ORGANISATION";
+    }
+
+    if (user.type === UserType.INNOVATOR) {
+      touType = "INNOVATOR";
+    }
+
+    const lastTermsOfUse = await this.termsOfUseRepo.findOne({
+      where: {
+        touType: touType,
+      },
+      order: {
+        releasedAt: "DESC",
+      },
+    });
+
+    const termsOfUseUser = await this.termsOfUseUserRepo.findOne({
+      where: {
+        termsOfUse: lastTermsOfUse,
+        user: user.id,
+      },
+    });
+
+    if (termsOfUseUser) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }
