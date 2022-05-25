@@ -11,6 +11,8 @@ import {
   ServiceRole,
   UserRole,
   Comment,
+  TermsOfUse,
+  TermsOfUseUser,
 } from "@domain/index";
 import {
   InvalidDataError,
@@ -64,6 +66,8 @@ export class UserService {
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
   private readonly orgUnitUserRepo: Repository<OrganisationUnitUser>;
+  private readonly termsOfUseRepo: Repository<TermsOfUse>;
+  private readonly termsOfUseUserRepo: Repository<TermsOfUseUser>;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -76,6 +80,8 @@ export class UserService {
     this.notificationService = new NotificationService(connectionName);
     this.logService = new LoggerService();
     this.orgUnitUserRepo = getRepository(OrganisationUnitUser, connectionName);
+    this.termsOfUseRepo = getRepository(TermsOfUse, connectionName);
+    this.termsOfUseUserRepo = getRepository(TermsOfUseUser, connectionName);
   }
 
   async find(id: string, options?: FindOneOptions) {
@@ -266,12 +272,17 @@ export class UserService {
       if (userDb) {
         const organisations: OrganisationUser[] = await userDb.userOrganisations;
 
+        const isTouAcceptedResult = await this.checkIfUserAcceptedTermsOfUse(
+          userDb
+        );
+
         profile.type = userDb.type;
         profile.roles = userDb.serviceRoles?.map((sr) => sr.role.name) || [];
         profile.organisations = [];
         profile.externalId = userDb.externalId;
         profile.surveyId = userDb.surveyId;
         profile.firstTimeSignInAt = userDb.firstTimeSignInAt;
+        profile.isTouAccepted = isTouAcceptedResult;
 
         for (let idx = 0; idx < organisations.length; idx++) {
           const orgUser: OrganisationUser = organisations[idx];
@@ -1054,5 +1065,43 @@ export class UserService {
     return b2cUser.identities.find(
       (identity: any) => identity.signInType === "emailAddress"
     ).issuerAssignedId;
+  }
+
+  private async checkIfUserAcceptedTermsOfUse(user: User): Promise<boolean> {
+    let touType;
+
+    if (user.type === UserType.ADMIN) {
+      return true;
+    }
+
+    if (user.type === UserType.ACCESSOR || user.type === UserType.ASSESSMENT) {
+      touType = "SUPPORT_ORGANISATION";
+    }
+
+    if (user.type === UserType.INNOVATOR) {
+      touType = "INNOVATOR";
+    }
+
+    const lastTermsOfUse = await this.termsOfUseRepo.findOne({
+      where: {
+        touType: touType,
+      },
+      order: {
+        releasedAt: "DESC",
+      },
+    });
+
+    const termsOfUseUser = await this.termsOfUseUserRepo.findOne({
+      where: {
+        termsOfUse: lastTermsOfUse,
+        user: user.id,
+      },
+    });
+
+    if (termsOfUseUser) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }

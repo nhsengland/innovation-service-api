@@ -14,7 +14,13 @@ import {
   InvalidUserTypeError,
   UniqueKeyError,
 } from "@services/errors";
-import { TermsOfUse, TermsOfUseUser, TouType } from "@domain/index";
+import {
+  TermsOfUse,
+  TermsOfUseUser,
+  TouType,
+  User,
+  UserRole,
+} from "@domain/index";
 const dummy = {
   email: "email@email.com",
   requestUser: {
@@ -48,7 +54,9 @@ describe("Terms Of Use Service suite", () => {
       .delete();
 
     await query.from(TermsOfUseUser).execute();
+    await query.from(UserRole).execute();
     await query.from(TermsOfUse).execute();
+    await query.from(User).execute();
   });
 
   afterAll(async () => {
