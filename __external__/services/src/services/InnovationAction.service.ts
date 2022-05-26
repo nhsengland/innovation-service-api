@@ -644,6 +644,7 @@ export class InnovationActionService {
         InnovationActionStatus.COMPLETED,
         InnovationActionStatus.DECLINED,
         InnovationActionStatus.DELETED,
+        InnovationActionStatus.CANCELLED,
       ];
     }
   }

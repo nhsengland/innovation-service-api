@@ -521,6 +521,7 @@ export class InnovationSupportService {
           });
           commentResult = await transactionManager.save(Comment, comment);
         }
+        const updatedActions: InnovationAction[] = [];
 
         if (
           innovationSupport.status === InnovationSupportStatus.ENGAGING &&
@@ -541,7 +542,7 @@ export class InnovationSupportService {
               InnovationAction,
               { id: actions[i].id },
               {
-                status: InnovationActionStatus.DELETED,
+                status: InnovationActionStatus.CANCELLED,
                 updatedBy: requestUser.id,
               }
             );
