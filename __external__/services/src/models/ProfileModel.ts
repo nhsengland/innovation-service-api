@@ -13,4 +13,5 @@ export interface ProfileModel {
   surveyId?: string;
   externalId?: string;
   firstTimeSignInAt?: Date;
+  isTouAccepted?: boolean;
 }
