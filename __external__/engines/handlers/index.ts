@@ -43,7 +43,7 @@ export const accessorsActionToReviewHandler = async (
   const action_url = parseUrl(params, template);
 
   let recipients = targetUsers;
-  recipients = recipients.filter((r) => r !== requestUser.id);
+  recipients = recipients.filter((r) => r !== requestUser.externalId);
 
   const filteredRecipients = await filterRecipientsByPreference(
     NotificationContextType.ACTION,
@@ -86,7 +86,7 @@ export const accessorsAssignedToInnovationHandler = async (
   };
 
   let recipients = targetUsers;
-  recipients = recipients.filter((r) => r !== requestUser.id);
+  recipients = recipients.filter((r) => r !== requestUser.externalId);
 
   const filteredRecipients = await filterRecipientsByPreference(
     NotificationContextType.SUPPORT,
@@ -129,7 +129,7 @@ export const innovatorActionRequested = async (
     action_url,
   };
 
-  const recipients = [innovation.owner.id];
+  const recipients = [innovation.owner.externalId];
 
   const filteredRecipients = await filterRecipientsByPreference(
     NotificationContextType.ACTION,
@@ -163,7 +163,7 @@ export const qaOrganisationSuggestedForSupport = async (
   };
 
   let recipients = targetUsers;
-  recipients = recipients.filter((r) => r !== requestUser.id);
+  recipients = recipients.filter((r) => r !== requestUser.externalId);
 
   const result = await emailService.sendMany(
     recipients,
@@ -385,7 +385,7 @@ export const assessmentUsersInnovationRecordSubmitedHandler = async (
       UserType.ASSESSMENT
     );
 
-    targetUsers = assessmentUsers.map((a) => a.id);
+    targetUsers = assessmentUsers.map((a) => a.externalId);
   }
 
   const innovation_url = parseUrl(params, template);
@@ -508,7 +508,9 @@ export const accessorsCommentReceivedHandler = async (
   // exit early if there are no recipients after filtering out preferences.
   if (filteredRecipients.length === 0) return;
 
-  filteredRecipients = filteredRecipients.filter((r) => r !== requestUser.id);
+  filteredRecipients = filteredRecipients.filter(
+    (r) => r !== requestUser.externalId
+  );
 
   const comment_url = parseUrl(params, template);
 
@@ -685,7 +687,7 @@ const getRecipientsEngaging = async (
   });
 
   const recipients = supports.flatMap((s) =>
-    s.organisationUnitUsers.map((x) => x.organisationUser.user.id)
+    s.organisationUnitUsers.map((x) => x.organisationUser.user.externalId)
   );
 
   return recipients;
@@ -708,7 +710,7 @@ const getRecipients = async (innovationId: string, connectionName?: string) => {
   });
 
   const recipients = supports.flatMap((s) =>
-    s.organisationUnitUsers.map((x) => x.organisationUser.user.id)
+    s.organisationUnitUsers.map((x) => x.organisationUser.user.externalId)
   );
 
   return recipients;
