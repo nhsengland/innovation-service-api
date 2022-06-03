@@ -54,6 +54,7 @@ import { ProfileModel } from "../models/ProfileModel";
 import { NotificationService } from "./Notification.service";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import { LoggerService } from "./Logger.service";
+import { TermsOfUseService } from "./TermsOfUse.service";
 
 export class UserService {
   private readonly connection: Connection;
@@ -68,6 +69,7 @@ export class UserService {
   private readonly orgUnitUserRepo: Repository<OrganisationUnitUser>;
   private readonly termsOfUseRepo: Repository<TermsOfUse>;
   private readonly termsOfUseUserRepo: Repository<TermsOfUseUser>;
+  private readonly termsOfUseService: TermsOfUseService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -78,6 +80,7 @@ export class UserService {
     this.roleRepo = getRepository(Role, connectionName);
     this.orgUserRepo = getRepository(OrganisationUser, connectionName);
     this.notificationService = new NotificationService(connectionName);
+    this.termsOfUseService = new TermsOfUseService(connectionName);
     this.logService = new LoggerService();
     this.orgUnitUserRepo = getRepository(OrganisationUnitUser, connectionName);
     this.termsOfUseRepo = getRepository(TermsOfUse, connectionName);
@@ -334,6 +337,23 @@ export class UserService {
       });
 
       userDb = await this.userRepo.save(usr);
+
+      //Accept the last termsofuse released
+      const lastTermsOfUse = await this.termsOfUseRepo.findOne({
+        where: {
+          touType: "INNOVATOR",
+        },
+        order: {
+          releasedAt: "DESC",
+        },
+      });
+
+      if (lastTermsOfUse) {
+        await this.termsOfUseService.acceptTermsOfUse(
+          userDb,
+          lastTermsOfUse.id
+        );
+      }
     } catch (error) {
       throw error;
     }
@@ -704,6 +724,25 @@ export class UserService {
             user: user,
             role: role,
           });
+        }
+
+        //Check if the user being created is an INNOVATOR, if it is, accept the last termsofuse released
+        if (user.type === "INNOVATOR") {
+          const lastTermsOfUse = await this.termsOfUseRepo.findOne({
+            where: {
+              touType: "INNOVATOR",
+            },
+            order: {
+              releasedAt: "DESC",
+            },
+          });
+
+          if (lastTermsOfUse) {
+            await this.termsOfUseService.acceptTermsOfUse(
+              user,
+              lastTermsOfUse.id
+            );
+          }
         }
 
         if (organisation) {
