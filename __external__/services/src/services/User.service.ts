@@ -727,10 +727,10 @@ export class UserService {
         }
 
         //Check if the user being created is an INNOVATOR, if it is, accept the last termsofuse released
-        if (user.type === "INNOVATOR") {
+        if (user.type === "ACCESSOR" || user.type === "ASSESSMENT") {
           const lastTermsOfUse = await this.termsOfUseRepo.findOne({
             where: {
-              touType: "INNOVATOR",
+              touType: "SUPPORT_ORGANISATION",
             },
             order: {
               releasedAt: "DESC",
