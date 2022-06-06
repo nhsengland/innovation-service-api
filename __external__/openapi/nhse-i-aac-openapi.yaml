@@ -2313,6 +2313,17 @@ paths:
           description: "Unauthorized"
         "403":
           description: "Forbidden"
+    post:
+      tags:
+        - "Users"
+        - "CreateProfile"
+      description: "Creates the user profile"
+      operationId: "users-create-profile"
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
 
   "/organisations":
     get:
@@ -3507,6 +3518,58 @@ paths:
         "404":
           description: "Not Found"
 
+  "/tou/me":
+    get:
+      tags:
+        - "TermsOfUse"
+        - "CheckIfUserAccepted"
+      description: "Checks if User has accepted the latest Terms of Use released on the service"
+      operationId: "terms-of-use-check-if-user-accepted"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - tou_details
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
+  "/tou/{touId}/accept":
+    patch:
+      tags:
+        - "TermsOfUse"
+        - "Accept"
+      description: "User accepts a specific Terms of Use"
+      operationId: "terms-of-use-accept"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: touId
+          in: path
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - tou_write
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
 
   "/notifications":
     patch:

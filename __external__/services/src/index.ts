@@ -21,6 +21,7 @@ export { InnovationSupportLogService } from "../src/services/InnovationSupportLo
 export { InnovationTransferService } from "../src/services/InnovationTransfer.service";
 export { OrganisationService } from "../src/services/Organisation.service";
 export { ActivityLogService } from "../src/services/ActivityLog.service";
+export { TermsOfUseService } from "../src/services/TermsOfUse.service";
 
 export { BaseService } from "../src/services/Base.service";
 export { UserService } from "../src/services/User.service";

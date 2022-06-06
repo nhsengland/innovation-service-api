@@ -11,6 +11,8 @@ import {
   ServiceRole,
   UserRole,
   Comment,
+  TermsOfUse,
+  TermsOfUseUser,
 } from "@domain/index";
 import {
   InvalidDataError,
@@ -52,6 +54,7 @@ import { ProfileModel } from "../models/ProfileModel";
 import { NotificationService } from "./Notification.service";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import { LoggerService } from "./Logger.service";
+import { TermsOfUseService } from "./TermsOfUse.service";
 
 export class UserService {
   private readonly connection: Connection;
@@ -64,6 +67,9 @@ export class UserService {
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
   private readonly orgUnitUserRepo: Repository<OrganisationUnitUser>;
+  private readonly termsOfUseRepo: Repository<TermsOfUse>;
+  private readonly termsOfUseUserRepo: Repository<TermsOfUseUser>;
+  private readonly termsOfUseService: TermsOfUseService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -74,8 +80,11 @@ export class UserService {
     this.roleRepo = getRepository(Role, connectionName);
     this.orgUserRepo = getRepository(OrganisationUser, connectionName);
     this.notificationService = new NotificationService(connectionName);
+    this.termsOfUseService = new TermsOfUseService(connectionName);
     this.logService = new LoggerService();
     this.orgUnitUserRepo = getRepository(OrganisationUnitUser, connectionName);
+    this.termsOfUseRepo = getRepository(TermsOfUse, connectionName);
+    this.termsOfUseUserRepo = getRepository(TermsOfUseUser, connectionName);
   }
 
   async find(id: string, options?: FindOneOptions) {
@@ -206,7 +215,8 @@ export class UserService {
 
     if (userB2C && user) {
       return {
-        id: userB2C.id,
+        id: user.id,
+        externalId: userB2C.id,
         displayName: userB2C.displayName,
         phone: userB2C.mobilePhone,
         email: userB2C.identities.find((i) => i.signInType === "emailAddress")
@@ -265,9 +275,17 @@ export class UserService {
       if (userDb) {
         const organisations: OrganisationUser[] = await userDb.userOrganisations;
 
+        const isTouAcceptedResult = await this.checkIfUserAcceptedTermsOfUse(
+          userDb
+        );
+
         profile.type = userDb.type;
         profile.roles = userDb.serviceRoles?.map((sr) => sr.role.name) || [];
         profile.organisations = [];
+        profile.externalId = userDb.externalId;
+        profile.surveyId = userDb.surveyId;
+        profile.firstTimeSignInAt = userDb.firstTimeSignInAt;
+        profile.isTouAccepted = isTouAcceptedResult;
 
         for (let idx = 0; idx < organisations.length; idx++) {
           const orgUser: OrganisationUser = organisations[idx];
@@ -295,6 +313,54 @@ export class UserService {
     return profile;
   }
 
+  async createProfile(
+    surveyId: string,
+    externalId: string,
+    accessToken?: string
+  ): Promise<User> {
+    if (!accessToken) {
+      accessToken = await authenticateWitGraphAPI();
+    }
+
+    const user = await getUserFromB2C(externalId, accessToken);
+
+    if (!user) {
+      throw new Error("Invalid user.");
+    }
+
+    let userDb: User;
+    try {
+      const usr = User.new({
+        externalId,
+        surveyId,
+        type: UserType.INNOVATOR,
+      });
+
+      userDb = await this.userRepo.save(usr);
+
+      //Accept the last termsofuse released
+      const lastTermsOfUse = await this.termsOfUseRepo.findOne({
+        where: {
+          touType: "INNOVATOR",
+        },
+        order: {
+          releasedAt: "DESC",
+        },
+      });
+
+      if (lastTermsOfUse) {
+        await this.termsOfUseService.acceptTermsOfUse(
+          userDb,
+          lastTermsOfUse.id
+        );
+      }
+    } catch (error) {
+      throw error;
+    }
+
+    return userDb;
+  }
+
   async searchUsersByEmail(
     requestUser: RequestUser,
     emails: string[]
@@ -320,7 +386,7 @@ export class UserService {
 
     if (!userB2C) return null;
 
-    const user = await this.find(userB2C.id, {
+    const user = await this.getUserByOptions({
       relations: [
         "userOrganisations",
         "userOrganisations.organisation",
@@ -329,6 +395,9 @@ export class UserService {
         "userOrganisations.userOrganisationUnits.innovationSupports.innovation",
         "userOrganisations.userOrganisationUnits.organisationUnit",
       ],
+      where: {
+        externalId: userB2C.id,
+      },
     });
 
     const userOrgs = await user.userOrganisations;
@@ -655,6 +724,25 @@ export class UserService {
             user: user,
             role: role,
           });
+        }
+
+        //Check if the user being created is an INNOVATOR, if it is, accept the last termsofuse released
+        if (user.type === "ACCESSOR" || user.type === "ASSESSMENT") {
+          const lastTermsOfUse = await this.termsOfUseRepo.findOne({
+            where: {
+              touType: "SUPPORT_ORGANISATION",
+            },
+            order: {
+              releasedAt: "DESC",
+            },
+          });
+
+          if (lastTermsOfUse) {
+            await this.termsOfUseService.acceptTermsOfUse(
+              user,
+              lastTermsOfUse.id
+            );
+          }
         }
 
         if (organisation) {
@@ -1016,5 +1104,43 @@ export class UserService {
     return b2cUser.identities.find(
       (identity: any) => identity.signInType === "emailAddress"
     ).issuerAssignedId;
+  }
+
+  private async checkIfUserAcceptedTermsOfUse(user: User): Promise<boolean> {
+    let touType;
+
+    if (user.type === UserType.ADMIN) {
+      return true;
+    }
+
+    if (user.type === UserType.ACCESSOR || user.type === UserType.ASSESSMENT) {
+      touType = "SUPPORT_ORGANISATION";
+    }
+
+    if (user.type === UserType.INNOVATOR) {
+      touType = "INNOVATOR";
+    }
+
+    const lastTermsOfUse = await this.termsOfUseRepo.findOne({
+      where: {
+        touType: touType,
+      },
+      order: {
+        releasedAt: "DESC",
+      },
+    });
+
+    const termsOfUseUser = await this.termsOfUseUserRepo.findOne({
+      where: {
+        termsOfUse: lastTermsOfUse,
+        user: user.id,
+      },
+    });
+
+    if (termsOfUseUser) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }

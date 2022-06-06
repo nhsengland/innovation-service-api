@@ -165,10 +165,10 @@ export class AdminService {
   }
   async lockUser(
     requestUser: RequestUser,
-    userId: string,
+    externalId: string,
     graphAccessToken?: string
   ): Promise<UserUpdateResult> {
-    if (!requestUser || !userId) {
+    if (!requestUser || !externalId) {
       throw new InvalidParamsError("Invalid params.");
     }
 
@@ -182,7 +182,7 @@ export class AdminService {
       graphAccessToken = await authenticateWitGraphAPI();
     }
 
-    const user = await getUserFromB2C(userId, graphAccessToken);
+    const user = await getUserFromB2C(externalId, graphAccessToken);
     if (!user) {
       throw new Error("Invalid user id.");
     }
@@ -192,14 +192,14 @@ export class AdminService {
       result = await this.connection.transaction(async (transaction) => {
         await transaction.update(
           User,
-          { id: userId },
+          { externalId },
           {
             lockedAt: new Date(),
           }
         );
         return await this.userService.updateB2CUser(
           { accountEnabled: false },
-          userId,
+          externalId,
           graphAccessToken
         );
       });
@@ -209,12 +209,15 @@ export class AdminService {
 
     //When the user is locked, trigger an inservice notification for Qualifying Accessors if the innovation support status is "further info",
     //"waiting" or "engaging" and for Accessors when the status = "engaging".
-    const userDetails = await this.userService.getUserDetails(userId, "FULL");
+    const userDetails = await this.userService.getUserDetails(
+      externalId,
+      "FULL"
+    );
     if (userDetails.type === "INNOVATOR") {
       let users: string[];
       const orgUnitUsersList: string[] = [];
       const userToRequestUser: RequestUser = {
-        id: userId,
+        id: userDetails.id,
         externalId: userDetails.externalId,
         type: UserType.INNOVATOR,
       };
@@ -302,7 +305,7 @@ export class AdminService {
     }
 
     const email = this.getUserEmail(user);
-    const display_name = user.display_name;
+
     try {
       await this.notificationService.sendEmail(
         requestUser,
@@ -322,49 +325,15 @@ export class AdminService {
     }
 
     return {
-      id: userId,
+      id: externalId,
       status: "OK",
     };
-  }
-
-  async unlockUsers(
-    requestUser: RequestUser,
-    users: string[]
-  ): Promise<UserUnlockResult[]> {
-    if (!requestUser || !users || users.length === 0) {
-      throw new InvalidParamsError("Invalid params.");
-    }
-
-    const graphAccessToken = await authenticateWitGraphAPI();
-    const results: UserUnlockResult[] = [];
-
-    for (let i = 0; i < users.length; i++) {
-      const user = users[i];
-      let result: UserUnlockResult;
-
-      try {
-        result = await this.unlockUser(requestUser, users[i], graphAccessToken);
-      } catch (err) {
-        result = {
-          id: user,
-          status: "ERROR",
-          error: {
-            code: err.constructor.name,
-            message: err.message,
-            data: err.data,
-          },
-        };
-      }
-
-      results.push(result);
-    }
-
-    return results;
   }
 
   async unlockUser(
     requestUser: RequestUser,
     userId: string,
+    externalId: string,
     graphAccessToken?: string
   ): Promise<UserUpdateResult> {
     if (!requestUser || !userId) {
@@ -381,7 +350,7 @@ export class AdminService {
       graphAccessToken = await authenticateWitGraphAPI();
     }
 
-    const user = await getUserFromB2C(userId, graphAccessToken);
+    const user = await getUserFromB2C(externalId, graphAccessToken);
     if (!user) {
       throw new Error("Invalid user id.");
     }
@@ -397,7 +366,7 @@ export class AdminService {
         );
         return await this.userService.updateB2CUser(
           { accountEnabled: true },
-          userId,
+          externalId,
           graphAccessToken
         );
       });
@@ -572,11 +541,19 @@ export class AdminService {
     const r = { ...qaRules };
 
     const accessorOrgRule = await this.CheckAccessorOrganisation(user);
+    const accesorOrgUnitRule = await this.CheckAccessorOrganisationUnit(user);
     const accessorSupportRule = await this.checkAccessorSupports(user);
 
     if (r[accessorOrgRule?.code.toString()]) {
       r[accessorOrgRule?.code.toString()] = {
         ...accessorOrgRule,
+        valid: false,
+      };
+    }
+
+    if (r[accesorOrgUnitRule?.code.toString()]) {
+      r[accesorOrgUnitRule?.code.toString()] = {
+        ...accesorOrgUnitRule,
         valid: false,
       };
     }
@@ -614,11 +591,19 @@ export class AdminService {
     const r = { ...unitrules };
     if (user.type === UserType.ACCESSOR) {
       const accessorOrgRule = await this.CheckAccessorOrganisation(user);
+      const accesorOrgUnitRule = await this.CheckAccessorOrganisationUnit(user);
       const accessorSupportRule = await this.checkAccessorSupports(user);
 
       if (r[accessorOrgRule?.code.toString()]) {
         r[accessorOrgRule?.code.toString()] = {
           ...accessorOrgRule,
+          valid: false,
+        };
+      }
+
+      if (r[accesorOrgUnitRule?.code.toString()]) {
+        r[accesorOrgUnitRule?.code.toString()] = {
+          ...accesorOrgUnitRule,
           valid: false,
         };
       }
@@ -697,6 +682,11 @@ export class AdminService {
             "orgUser",
             "unitUser.organisation_user_id = orgUser.id"
           )
+          .innerJoin(
+            "user",
+            "usr",
+            "orgUser.user_id = usr.id and usr.locked_at IS NULL"
+          )
           .where("unitUser.organisation_unit_id = :unitId", { unitId })
           .andWhere("orgUser.user_id != :userId", {
             userId: userToBeRemoved.id,
@@ -755,39 +745,6 @@ export class AdminService {
             },
           },
         };
-      }
-
-      // Make sure it is also not the last User on the organisation units
-      const userUnits = userOrg.userOrganisationUnits;
-      for (const userUnit of userUnits) {
-        const unitId = userUnit.organisationUnit.id;
-        const unitMembers = await this.connection
-          .createQueryBuilder(OrganisationUnitUser, "unitUser")
-          .innerJoinAndSelect(
-            "organisation_user",
-            "orgUser",
-            "unitUser.organisation_user_id = orgUser.id"
-          )
-          .where("unitUser.organisation_unit_id = :unitId", { unitId })
-          .andWhere("orgUser.user_id != :userId", {
-            userId: userToBeRemoved.id,
-          })
-          .andWhere("orgUser.role = :role", {
-            role: AccessorOrganisationRole.QUALIFYING_ACCESSOR,
-          })
-          .getMany();
-
-        if (unitMembers.length === 0) {
-          return {
-            code: UserLockValidationCode.LastAccessorUserOnOrganisationUnit,
-            meta: {
-              unit: {
-                id: userUnit.organisationUnit.id,
-                name: userUnit.organisationUnit.name,
-              },
-            },
-          };
-        }
       }
     }
   }

@@ -28,6 +28,8 @@ import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { ActivityLogService } from "./ActivityLog.service";
 import { InnovationService } from "./Innovation.service";
+// import { InnovationActionService } from "./InnovationAction.service";
+import { InnovationSectionService } from "./InnovationSection.service";
 import { InnovationSupportLogService } from "./InnovationSupportLog.service";
 import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
@@ -44,6 +46,9 @@ export class InnovationSupportService {
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
   private readonly activityLogService: ActivityLogService;
+  private readonly actionRepo: Repository<InnovationAction>;
+  private readonly innovationSectionService: InnovationSectionService;
+  // private readonly innovationActionService: InnovationActionService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -57,6 +62,13 @@ export class InnovationSupportService {
     this.notificationService = new NotificationService(connectionName);
     this.activityLogService = new ActivityLogService(connectionName);
     this.logService = new LoggerService();
+    this.actionRepo = getRepository(InnovationAction, connectionName);
+    this.innovationSectionService = new InnovationSectionService(
+      connectionName
+    );
+    // this.innovationActionService = new InnovationActionService(
+    //   connectionName
+    // );
   }
 
   async find(
@@ -521,6 +533,7 @@ export class InnovationSupportService {
           });
           commentResult = await transactionManager.save(Comment, comment);
         }
+        const updatedActions: InnovationAction[] = [];
 
         if (
           innovationSupport.status === InnovationSupportStatus.ENGAGING &&
@@ -545,6 +558,8 @@ export class InnovationSupportService {
                 updatedBy: requestUser.id,
               }
             );
+            actions[i].status = InnovationActionStatus.DELETED;
+            updatedActions.push(actions[i]);
           }
         } else {
           innovationSupport.organisationUnitUsers = support.accessors?.map(
@@ -723,5 +738,22 @@ export class InnovationSupportService {
       },
       innovation
     );
+  }
+  getFilterStatusList(openActions: boolean) {
+    if (openActions) {
+      return [
+        InnovationActionStatus.IN_REVIEW,
+        InnovationActionStatus.REQUESTED,
+        InnovationActionStatus.CONTINUE,
+        InnovationActionStatus.STARTED,
+      ];
+    } else {
+      return [
+        InnovationActionStatus.COMPLETED,
+        InnovationActionStatus.DECLINED,
+        InnovationActionStatus.DELETED,
+        InnovationActionStatus.CANCELLED,
+      ];
+    }
   }
 }

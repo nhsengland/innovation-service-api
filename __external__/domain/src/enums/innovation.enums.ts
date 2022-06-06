@@ -16,6 +16,7 @@ export enum InnovationActionStatus {
   DELETED = "DELETED",
   DECLINED = "DECLINED",
   COMPLETED = "COMPLETED",
+  CANCELLED = "CANCELLED",
 }
 
 export enum InnovationSectionStatus {

@@ -26,7 +26,7 @@ class AdminsLockUsers {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const user = req.params.userId;
+    const userId = req.params.userId;
     const externalId = context.auth.requestUser.externalId;
     const id = context.auth.requestUser.id;
 
@@ -38,7 +38,7 @@ class AdminsLockUsers {
         type: UserType.ADMIN,
       };
 
-      result = await persistence.unlockUser(context, user);
+      result = await persistence.unlockUser(context, userId);
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);

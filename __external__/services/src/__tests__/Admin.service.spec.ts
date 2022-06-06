@@ -205,7 +205,7 @@ describe("[User Account Lock suite", () => {
 
     expect(result).toBeDefined();
     expect(result.lastAccessorUserOnOrganisation.valid).toBe(false);
-    expect(result.lastAccessorUserOnOrganisationUnit.valid).toBe(true);
+    expect(result.lastAccessorUserOnOrganisationUnit.valid).toBe(false);
     expect(result.lastAccessorFromUnitProvidingSupport.valid).toBe(true);
   });
 
@@ -698,68 +698,6 @@ describe("[User Account Lock suite", () => {
     expect(result).toBeDefined();
   });
 
-  it("Should unlock users by id", async () => {
-    jest
-      .spyOn(helpers, "authenticateWitGraphAPI")
-      .mockResolvedValue(":access_token");
-    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
-      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
-    });
-    jest.spyOn(helpers, "saveB2CUser").mockImplementation();
-
-    const assessmentUser = await fixtures.createAssessmentUser();
-
-    const requestUser = {
-      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
-      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
-      type: UserType.ADMIN,
-    };
-
-    const result = await adminService.unlockUsers(requestUser, [
-      assessmentUser.id,
-    ]);
-
-    expect(result).toBeDefined();
-    expect(result[0].status).toBe("OK");
-  });
-
-  it("Should not unlock users if request user is not ADMIN", async () => {
-    jest
-      .spyOn(helpers, "authenticateWitGraphAPI")
-      .mockResolvedValue(":access_token");
-
-    const requestUser = {
-      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
-      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
-      type: UserType.ACCESSOR,
-    };
-
-    const result = await adminService.unlockUsers(requestUser, ["abc"]);
-
-    expect(result[0].error).toBeDefined();
-  });
-
-  it("Should not unlock users if user not found on B2C", async () => {
-    jest
-      .spyOn(helpers, "authenticateWitGraphAPI")
-      .mockResolvedValue(":access_token");
-    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue(null);
-
-    const assessmentUser = await fixtures.createAssessmentUser();
-
-    const requestUser = {
-      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
-      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
-      type: UserType.ADMIN,
-    };
-
-    const result = await adminService.unlockUsers(requestUser, [
-      assessmentUser.id,
-    ]);
-
-    expect(result[0].error).toBeDefined();
-  });
-
   it("Should not lock users if request user is not ADMIN", async () => {
     jest
       .spyOn(helpers, "authenticateWitGraphAPI")
@@ -1028,51 +966,13 @@ describe("[User Account Lock suite", () => {
     expect(result.status).toBe("OK");
   });
 
-  it("Should unlock users by id", async () => {
-    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
-    jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
-      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
-    });
-    jest.spyOn(helpers, "saveB2CUser").mockImplementation();
-
-    const assessmentUser = await fixtures.createAssessmentUser();
-
-    const requestUser = {
-      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
-      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
-      type: UserType.ADMIN,
-    };
-
-    const result = await adminService.unlockUsers(requestUser, [
-      assessmentUser.id,
-    ]);
-
-    expect(result).toBeDefined();
-    expect(result[0].status).toBe("OK");
-  });
-
   it("Should throw error on unlock users if invalid parameters", async () => {
     let err;
     jest
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
     try {
-      await adminService.unlockUser(undefined, null);
-    } catch (error) {
-      err = error;
-    }
-
-    expect(err).toBeDefined();
-    expect(err).toBeInstanceOf(InvalidParamsError);
-  });
-
-  it("Should throw error on unlock users if invalid parameters", async () => {
-    let err;
-    jest
-      .spyOn(helpers, "authenticateWitGraphAPI")
-      .mockResolvedValue(":access_token");
-    try {
-      await adminService.unlockUsers(undefined, null);
+      await adminService.unlockUser(undefined, undefined, null);
     } catch (error) {
       err = error;
     }
@@ -1158,6 +1058,9 @@ describe("[User Account Lock suite", () => {
       updatedAt: null,
       updatedBy: null,
       deletedAt: null,
+      termsOfUseUsers: null,
+      firstTimeSignInAt: null,
+      surveyId: null,
     });
 
     const adminUser = await fixtures.createAdminUser();
@@ -1197,6 +1100,9 @@ describe("[User Account Lock suite", () => {
       updatedAt: null,
       updatedBy: null,
       deletedAt: null,
+      termsOfUseUsers: null,
+      surveyId: null,
+      firstTimeSignInAt: null,
     });
 
     const adminRequestUser = await fixtures.createAdminUser();

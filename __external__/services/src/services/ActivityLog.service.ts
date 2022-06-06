@@ -180,6 +180,7 @@ export class ActivityLogService extends BaseService<ActivityLog> {
       case Activity.ACTION_STATUS_IN_REVIEW_UPDATE:
       case Activity.ACTION_STATUS_DECLINED_UPDATE:
       case Activity.ACTION_STATUS_COMPLETED_UPDATE:
+      case Activity.ACTION_STATUS_CANCELLED_UPDATE:
         activityType = ActivityType.ACTIONS;
         break;
 

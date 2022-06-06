@@ -1,14 +1,13 @@
 import {
   Column,
   Entity,
-  ManyToMany,
-  OneToMany,
   PrimaryGeneratedColumn,
   Index,
-  UpdateDateColumn,
+  OneToMany,
 } from "typeorm";
 import { TouType } from "../../enums/terms-of-use.enums";
 import { Base } from "../Base.entity";
+import { TermsOfUseUser } from "./TermsOfUseUser.entity";
 
 @Entity("terms_of_use")
 @Index(["name"], { unique: true })
@@ -31,10 +30,14 @@ export class TermsOfUse extends Base {
   @Column({ name: "summary", nullable: true, type: "nvarchar", length: 2000 })
   summary: string;
 
-  @UpdateDateColumn({ name: "released_at", nullable: true })
+  @Column({ name: "released_at", nullable: true })
   releasedAt: Date;
 
   // relationships
+  @OneToMany(() => TermsOfUseUser, (record) => record.termsOfUse, {
+    lazy: true,
+  })
+  termsOfUseUsers: TermsOfUseUser[];
 
   // static constructor
   static new(data) {
