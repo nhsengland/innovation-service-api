@@ -40,6 +40,7 @@ import {
   OrganisationUnit,
   OrganisationUnitUser,
   OrganisationUser,
+  PatientsCitizensBenefitCatalogue,
   StandardMetCatalogue,
   SubgroupBenefitCatalogue,
   User,
@@ -444,21 +445,15 @@ describe("Innovation Section Service Suite", () => {
       innovation.id,
       InnovationSectionCatalogue.UNDERSTANDING_OF_BENEFITS,
       {
+        impactPatients: true,
         hasBenefits: YesOrNoCatalogue.YES,
         accessibilityImpactDetails: ":accessibilityImpactDetails",
         accessibilityStepsDetails: ":accessibilityStepsDetails",
         generalBenefits: [GeneralBenefitCatalogue.OTHER],
         environmentalBenefits: [EnvironmentalBenefitCatalogue.OTHER],
+        patientsCitizensBenefits: [PatientsCitizensBenefitCatalogue.OTHER],
         otherGeneralBenefit: ":otherGeneralBenefit",
         otherEnvironmentalBenefit: ":otherEnvironmentalBenefit",
-        subgroups: [
-          {
-            id: subgroups[0].id,
-            conditions: "subgroup conditions",
-            benefits: [SubgroupBenefitCatalogue.OTHER],
-            otherBenefit: "other benefits",
-          },
-        ],
         name: "should not update name",
       }
     );
