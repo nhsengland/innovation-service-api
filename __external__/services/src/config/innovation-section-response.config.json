@@ -16,7 +16,7 @@
     ]
   },
   "UNDERSTANDING_OF_BENEFITS": {
-    "innovationFields": ["impactPatients", "hasBenefits", "accessibilityImpactDetails", "accessibilityStepsDetails", "otherGeneralBenefit", "otherEnvironmentalBenefit"],
+    "innovationFields": ["impactPatients", "hasBenefits", "accessibilityImpactDetails", "accessibilityStepsDetails", "otherGeneralBenefit", "otherEnvironmentalBenefit", "otherPatientsCitizensBenefit"],
     "innovationTypes": ["generalBenefits", "environmentalBenefits", "patientsCitizensBenefits"]
   },
   "EVIDENCE_OF_EFFECTIVENESS": {
@@ -59,7 +59,7 @@
     "files": true
   },
   "COST_OF_INNOVATION": {
-    "innovationFields": ["impactPatients", "hasCostKnowledge", "costDescription", "sellExpectations", "usageExpectations", "costDescription", "patientsRange", "sellExpectations", "usageExpectations"]
+    "innovationFields": ["impactPatients", "hasCostKnowledge", "costDescription", "sellExpectations", "usageExpectations", "patientsRange"]
   },
   "COMPARATIVE_COST_BENEFIT": {
     "innovationFields": ["hasCostSavingKnowledge", "hasCostCareKnowledge", "costComparison"]
