@@ -253,6 +253,13 @@ export class Innovation extends Base {
   })
   accessibilityStepsDetails: string;
 
+  @Column({
+    name: "other_patients_citizens_benefit",
+    type: "nvarchar",
+    nullable: true,
+  })
+  otherPatientsCitizensBenefit: string;
+
   @Column({ name: "other_general_benefit", type: "nvarchar", nullable: true })
   otherGeneralBenefit: string;
 
