@@ -738,10 +738,13 @@ export class UserService {
           });
 
           if (lastTermsOfUse) {
-            await this.termsOfUseService.acceptTermsOfUse(
-              user,
-              lastTermsOfUse.id
-            );
+            const termsOfUseUser = TermsOfUseUser.new({
+              termsOfUse: lastTermsOfUse.id,
+              user: user.id,
+              acceptedAt: new Date(),
+            });
+
+            await transactionManager.save(TermsOfUseUser, termsOfUseUser);
           }
         }
 
