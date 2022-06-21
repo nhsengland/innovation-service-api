@@ -84,7 +84,7 @@ export class InnovationAssessmentService {
     }
 
     const b2cUsers = await this.userService.getListOfUsers([
-      assessment.assignTo.id,
+      assessment.assignTo.externalId,
       assessment.createdBy,
       assessment.updatedBy,
     ]);
