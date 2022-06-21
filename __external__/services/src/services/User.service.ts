@@ -858,13 +858,14 @@ export class UserService {
   }
 
   async getUsersOfType(type: UserType): Promise<User[]> {
-    const users = await this.userRepo.find({
-      where: {
-        type: UserType.ASSESSMENT,
-      },
-    });
+    const query = this.connection
+      .createQueryBuilder(User, "usr")
+      .where(`usr.type = :userType`, {
+        userType: type,
+      })
+      .andWhere("usr.locked_at IS NULL");
 
-    return users;
+    return await query.getMany();
   }
 
   async getUsersOfTypePaged(
