@@ -380,7 +380,7 @@ export class InnovationAssessmentService {
           EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_COMPLETED,
           innovationId,
           assessmentDb.id,
-          [innovation.owner.id],
+          [innovation.owner.externalId],
           {
             innovation_name: innovation.name,
           }
