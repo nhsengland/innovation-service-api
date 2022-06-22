@@ -7,6 +7,7 @@ export { InnovationCategory } from "./entity/innovation/InnovationCategory.entit
 export { InnovationClinicalArea } from "./entity/innovation/InnovationClinicalArea.entity";
 export { InnovationDeploymentPlan } from "./entity/innovation/InnovationDeploymentPlan.entity";
 export { InnovationEnvironmentalBenefit } from "./entity/innovation/InnovationEnvironmentalBenefit.entity";
+export { InnovationPatientsCitizensBenefit } from "./entity/innovation/InnovationPatientsCitizensBenefit.entity";
 export { InnovationEvidence } from "./entity/innovation/InnovationEvidence.entity";
 export { InnovationFile } from "./entity/innovation/InnovationFile.entity";
 export { InnovationGeneralBenefit } from "./entity/innovation/InnovationGeneralBenefit.entity";

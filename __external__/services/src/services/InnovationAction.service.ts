@@ -343,9 +343,13 @@ export class InnovationActionService {
       );
     }
 
+    const actionCreator = await this.userService.getUser(
+      innovationAction.createdBy
+    );
+
     const b2cCreatorUser = await this.userService.getProfile(
       innovationAction.createdBy,
-      requestUser.externalId
+      actionCreator.externalId
     );
     const organisationUnit =
       innovationAction.innovationSupport.organisationUnit;

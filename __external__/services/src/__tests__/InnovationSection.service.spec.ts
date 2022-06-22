@@ -40,6 +40,8 @@ import {
   OrganisationUnit,
   OrganisationUnitUser,
   OrganisationUser,
+  PatientsCitizensBenefitCatalogue,
+  InnovationPatientsCitizensBenefit,
   StandardMetCatalogue,
   SubgroupBenefitCatalogue,
   User,
@@ -129,6 +131,7 @@ describe("Innovation Section Service Suite", () => {
     await query.from(Comment).execute();
     await query.from(InnovationGeneralBenefit).execute();
     await query.from(InnovationEnvironmentalBenefit).execute();
+    await query.from(InnovationPatientsCitizensBenefit).execute();
     await query.from(InnovationDeploymentPlan).execute();
     await query.from(InnovationRevenue).execute();
     await query.from(InnovationUserTest).execute();
@@ -444,21 +447,16 @@ describe("Innovation Section Service Suite", () => {
       innovation.id,
       InnovationSectionCatalogue.UNDERSTANDING_OF_BENEFITS,
       {
+        impactPatients: true,
         hasBenefits: YesOrNoCatalogue.YES,
         accessibilityImpactDetails: ":accessibilityImpactDetails",
         accessibilityStepsDetails: ":accessibilityStepsDetails",
         generalBenefits: [GeneralBenefitCatalogue.OTHER],
         environmentalBenefits: [EnvironmentalBenefitCatalogue.OTHER],
+        patientsCitizensBenefits: [PatientsCitizensBenefitCatalogue.OTHER],
         otherGeneralBenefit: ":otherGeneralBenefit",
         otherEnvironmentalBenefit: ":otherEnvironmentalBenefit",
-        subgroups: [
-          {
-            id: subgroups[0].id,
-            conditions: "subgroup conditions",
-            benefits: [SubgroupBenefitCatalogue.OTHER],
-            otherBenefit: "other benefits",
-          },
-        ],
+        otherPatientsCitizensBenefits: ":otherPatientsCitizensBenefits",
         name: "should not update name",
       }
     );
@@ -474,16 +472,10 @@ describe("Innovation Section Service Suite", () => {
         accessibilityStepsDetails: ":accessibilityStepsDetails",
         generalBenefits: [GeneralBenefitCatalogue.OTHER],
         environmentalBenefits: [EnvironmentalBenefitCatalogue.OTHER],
+        patientsCitizensBenefits: [PatientsCitizensBenefitCatalogue.OTHER],
         otherGeneralBenefit: ":otherGeneralBenefit",
         otherEnvironmentalBenefit: ":otherEnvironmentalBenefit",
-        subgroups: [
-          {
-            id: subgroups[0].id,
-            conditions: "subgroup conditions",
-            benefits: [SubgroupBenefitCatalogue.PREVENTS_CONDITION_OCCURRING],
-            otherBenefit: "other benefits",
-          },
-        ],
+        otherPatientsCitizensBenefits: ":otherPatientsCitizensBenefits",
         name: "should not update name",
       }
     );
@@ -493,9 +485,7 @@ describe("Innovation Section Service Suite", () => {
 
     // Assert
     expect(result.name).toEqual("My Innovation");
-    expect(subgroups[0].otherBenefit).toEqual("other benefits");
     expect(sections.length).toEqual(1);
-    expect(subgroups.length).toEqual(1);
   });
 
   it("should save EVIDENCE_OF_EFFECTIVENESS section with correct properties", async () => {

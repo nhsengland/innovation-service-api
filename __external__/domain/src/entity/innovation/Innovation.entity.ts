@@ -41,6 +41,7 @@ import { InnovationDeploymentPlan } from "./InnovationDeploymentPlan.entity";
 import { InnovationEnvironmentalBenefit } from "./InnovationEnvironmentalBenefit.entity";
 import { InnovationEvidence } from "./InnovationEvidence.entity";
 import { InnovationGeneralBenefit } from "./InnovationGeneralBenefit.entity";
+import { InnovationPatientsCitizensBenefit } from "./InnovationPatientsCitizensBenefit.entity";
 import { InnovationRevenue } from "./InnovationRevenue.entity";
 import { InnovationSection } from "./InnovationSection.entity";
 import { InnovationStandard } from "./InnovationStandard.entity";
@@ -225,6 +226,12 @@ export class Innovation extends Base {
   @Column({ name: "cost_comparison", type: "nvarchar", nullable: true })
   costComparison: CostComparisonCatalogue;
 
+  @Column({ name: "care_pathway", type: "nvarchar", nullable: true })
+  carePathway: string;
+
+  @Column({ name: "patients_range", type: "nvarchar", nullable: true })
+  patientsRange: string;
+
   @Column({
     name: "clinicians_impact_details",
     type: "nvarchar",
@@ -245,6 +252,13 @@ export class Innovation extends Base {
     nullable: true,
   })
   accessibilityStepsDetails: string;
+
+  @Column({
+    name: "other_patients_citizens_benefit",
+    type: "nvarchar",
+    nullable: true,
+  })
+  otherPatientsCitizensBenefit: string;
 
   @Column({ name: "other_general_benefit", type: "nvarchar", nullable: true })
   otherGeneralBenefit: string;
@@ -373,6 +387,16 @@ export class Innovation extends Base {
     }
   )
   environmentalBenefits: InnovationEnvironmentalBenefit[];
+
+  @OneToMany(
+    () => InnovationPatientsCitizensBenefit,
+    (record) => record.innovation,
+    {
+      lazy: true,
+      cascade: ["insert", "update"],
+    }
+  )
+  patientsCitizensBenefits: InnovationPatientsCitizensBenefit[];
 
   @OneToMany(() => Comment, (record) => record.innovation, { lazy: true })
   comments: Comment[];

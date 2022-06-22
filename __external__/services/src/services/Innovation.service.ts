@@ -1120,7 +1120,7 @@ export class InnovationService extends BaseService<Innovation> {
         EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_SUBMITED,
         innovation.id,
         innovation.id,
-        [requestUser.id],
+        [requestUser.externalId],
         {
           innovation_name: innovation.name,
         }
@@ -1139,7 +1139,7 @@ export class InnovationService extends BaseService<Innovation> {
         EmailNotificationTemplate.ASSESSMENT_USERS_INNOVATION_SUBMITED,
         innovation.id,
         innovation.id,
-        null, // list of recipients determined by the handler
+        [], // list of recipients determined by the handler
         {
           innovation_name: innovation.name,
         }

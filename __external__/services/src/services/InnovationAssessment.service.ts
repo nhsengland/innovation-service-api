@@ -84,7 +84,7 @@ export class InnovationAssessmentService {
     }
 
     const b2cUsers = await this.userService.getListOfUsers([
-      assessment.assignTo.id,
+      assessment.assignTo.externalId,
       assessment.createdBy,
       assessment.updatedBy,
     ]);
@@ -380,7 +380,7 @@ export class InnovationAssessmentService {
           EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_COMPLETED,
           innovationId,
           assessmentDb.id,
-          [innovation.owner.id],
+          [innovation.owner.externalId],
           {
             innovation_name: innovation.name,
           }

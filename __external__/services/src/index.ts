@@ -35,6 +35,7 @@ export {
   InnovationClinicalArea,
   InnovationDeploymentPlan,
   InnovationEnvironmentalBenefit,
+  InnovationPatientsCitizensBenefit,
   InnovationEvidence,
   InnovationStandard,
   InnovationGeneralBenefit,
