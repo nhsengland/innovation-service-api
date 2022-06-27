@@ -66,10 +66,6 @@ export class alterTableNotification1655977859835 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "notification_user" ADD CONSTRAINT "fk_notification_user_notification_id" FOREIGN KEY ("notification_id") REFERENCES "notification"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`
     );
-
-    await queryRunner.query(
-      `ALTER TABLE "notification_user" ADD CONSTRAINT "fk_notification_user_user_id" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`
-    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
