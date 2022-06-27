@@ -73,10 +73,6 @@ export class alterTableNotification1655977859835 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "notification"`);
-
-    await queryRunner.query(`DROP TABLE "notification_user`);
-
     await queryRunner.dropTable("notification_user", true);
     await queryRunner.dropTable("notification", true);
   }
