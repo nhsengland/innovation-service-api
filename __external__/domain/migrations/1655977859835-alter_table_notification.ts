@@ -2,11 +2,15 @@ import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class alterTableNotification1655977859835 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Drop current notification table
-    await queryRunner.dropTable("notification_user", true);
+    await queryRunner.query(
+      `ALTER TABLE "notification_user" DROP CONSTRAINT "fk_notification_user_user_id"`
+    );
 
     // Drop current notification table
-    await queryRunner.dropTable("notification", true);
+    await queryRunner.query(`DROP TABLE "notification_user"`);
+
+    // Drop current notification table
+    await queryRunner.query(`DROP TABLE "notification"`);
 
     // Create notification table
     await queryRunner.query(
@@ -66,10 +70,30 @@ export class alterTableNotification1655977859835 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "notification_user" ADD CONSTRAINT "fk_notification_user_notification_id" FOREIGN KEY ("notification_id") REFERENCES "notification"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`
     );
+
+    await queryRunner.query(
+      `ALTER TABLE "notification_user" ADD CONSTRAINT "fk_notification_user_user_id" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable("notification_user", true);
-    await queryRunner.dropTable("notification", true);
+    await queryRunner.query(
+      `ALTER TABLE "notification" DROP CONSTRAINT "fk_notification_innovation_innovation_id"`
+    );
+    await queryRunner.query(
+      `ALTER TABLE "notification" DROP CONSTRAINT "CK_notification_context_type"`
+    );
+    await queryRunner.query(
+      `ALTER TABLE "notification" DROP CONSTRAINT "CK_notification_context_detail"`
+    );
+    await queryRunner.query(
+      `ALTER TABLE "notification_user" DROP CONSTRAINT "fk_notification_user_notification_id"`
+    );
+    await queryRunner.query(
+      `ALTER TABLE "notification_user" DROP CONSTRAINT "fk_notification_user_user_id"`
+    );
+
+    await queryRunner.query(`DROP TABLE "notification_user"`);
+    await queryRunner.query(`DROP TABLE "notification"`);
   }
 }
