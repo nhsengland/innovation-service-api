@@ -65,7 +65,7 @@ export class InAppNotificationService {
 			}*/
 
     if (filters.unreadOnly === true) {
-      query.andWhere("notificationUser.read_at IS NULL");
+      query.andWhere("notificationUsers.read_at IS NULL");
     }
 
     // Pagination and ordering
