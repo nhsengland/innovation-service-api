@@ -1,6 +1,10 @@
 import { Activity } from "@domain/enums/activity.enums";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
+  NotifContextDetail,
+  NotifContextType,
+} from "@domain/enums/notification.enums";
+import {
   Innovation,
   InnovationAction,
   InnovationActionStatus,
@@ -508,9 +512,10 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
           requestUser,
           NotificationAudience.ACCESSORS,
           innovationId,
-          NotificationContextType.ACTION,
+          NotifContextType.ACTION,
+          NotifContextDetail.ACTION_UPDATE,
           element.id,
-          `The action with id ${element.id} was updated by the innovator with id ${requestUser.id} for the innovation with id ${innovationId}`,
+          {},
           targetNotificationUsers
         );
       } catch (error) {

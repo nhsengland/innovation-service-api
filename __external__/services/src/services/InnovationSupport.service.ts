@@ -1,6 +1,10 @@
 import { Activity } from "@domain/enums/activity.enums";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
+  NotifContextDetail,
+  NotifContextType,
+} from "@domain/enums/notification.enums";
+import {
   AccessorOrganisationRole,
   Comment,
   Innovation,
@@ -414,10 +418,10 @@ export class InnovationSupportService {
         requestUser,
         NotificationAudience.ACCESSORS,
         innovationId,
-        NotificationContextType.INNOVATION,
-
+        NotifContextType.SUPPORT,
+        NotifContextDetail.SUPPORT_STATUS_UPDATE,
         innovationId,
-        `Support was created for the Innovation with id ${innovationId} with the status ${support.status}`,
+        {},
         targetNotificationUsers
       );
     } catch (error) {
@@ -582,9 +586,9 @@ export class InnovationSupportService {
               requestUser,
               NotificationAudience.ASSESSMENT_USERS,
               innovationId,
-              NotificationContextType.INNOVATION,
-              innovationId,
-              `The innovation with id ${innovationId} has had its support status changed to ${innovationSupport.status}`
+              NotifContextType.SUPPORT,
+              NotifContextDetail.SUPPORT_STATUS_UPDATE,
+              innovationId
             );
           } catch (error) {
             this.logService.error(
@@ -603,9 +607,9 @@ export class InnovationSupportService {
               requestUser,
               NotificationAudience.ACCESSORS,
               innovationId,
-              NotificationContextType.INNOVATION,
-              innovationId,
-              `The innovation with id ${innovationId} has had its support status changed to ${innovationSupport.status}`
+              NotifContextType.SUPPORT,
+              NotifContextDetail.SUPPORT_STATUS_UPDATE,
+              innovationId
             );
           } catch (error) {
             this.logService.error(

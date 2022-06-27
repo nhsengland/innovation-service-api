@@ -27,6 +27,7 @@ import { InnovationSectionService } from "@services/services/InnovationSection.s
 import { InnovationSupportService } from "@services/services/InnovationSupport.service";
 import { InnovatorService } from "@services/services/Innovator.service";
 import { NotificationService } from "@services/services/Notification.service";
+import { InAppNotificationService } from "@services/services/InAppNotification.service";
 import { OrganisationService } from "@services/services/Organisation.service";
 import { UserService } from "@services/services/User.service";
 import * as faker from "faker";

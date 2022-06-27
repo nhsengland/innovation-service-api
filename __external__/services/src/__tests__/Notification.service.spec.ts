@@ -4,6 +4,10 @@
 /* tslint:disable */
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
+  NotifContextDetail,
+  NotifContextType,
+} from "@domain/enums/notification.enums";
+import {
   AccessorOrganisationRole,
   Comment,
   Innovation,
@@ -151,9 +155,9 @@ describe("Notification Service Suite", () => {
       requestUser,
       NotificationAudience.INNOVATORS,
       innovation.id,
-      NotificationContextType.ACTION,
-      innovation.id,
-      "teste"
+      NotifContextType.ACTION,
+      NotifContextDetail.ACTION_CREATION,
+      innovation.id
     );
 
     const notificationUsers = await notification.notificationUsers;
@@ -220,9 +224,9 @@ describe("Notification Service Suite", () => {
       requestUser,
       NotificationAudience.ACCESSORS,
       innovation.id,
-      NotificationContextType.ACTION,
-      innovation.id,
-      "teste"
+      NotifContextType.ACTION,
+      NotifContextDetail.ACTION_CREATION,
+      innovation.id
     );
 
     const notificationUsers = await notification.notificationUsers;
@@ -299,10 +303,9 @@ describe("Notification Service Suite", () => {
       requestUser,
       NotificationAudience.ACCESSORS,
       innovation.id,
-      NotificationContextType.ACTION,
-
-      innovation.id,
-      "teste"
+      NotifContextType.ACTION,
+      NotifContextDetail.ACTION_CREATION,
+      innovation.id
     );
 
     const notificationUsers = await notification.notificationUsers;
@@ -379,10 +382,9 @@ describe("Notification Service Suite", () => {
       requestUser,
       NotificationAudience.ACCESSORS,
       innovation.id,
-      NotificationContextType.ACTION,
-
-      innovation.id,
-      "teste"
+      NotifContextType.ACTION,
+      NotifContextDetail.ACTION_CREATION,
+      innovation.id
     );
 
     const notificationUsers = await notification.notificationUsers;
@@ -442,10 +444,10 @@ describe("Notification Service Suite", () => {
       requestUser,
       NotificationAudience.QUALIFYING_ACCESSORS,
       innovation.id,
-      NotificationContextType.ACTION,
+      NotifContextType.ACTION,
+      NotifContextDetail.ACTION_CREATION,
 
-      innovation.id,
-      "teste"
+      innovation.id
     );
 
     const notificationUsers = await notification.notificationUsers;
@@ -498,10 +500,10 @@ describe("Notification Service Suite", () => {
       requestUser,
       NotificationAudience.QUALIFYING_ACCESSORS,
       innovation.id,
-      NotificationContextType.ACTION,
+      NotifContextType.ACTION,
+      NotifContextDetail.ACTION_CREATION,
 
-      innovation.id,
-      "teste"
+      innovation.id
     );
 
     const notificationUsers = await notification.notificationUsers;
@@ -528,10 +530,10 @@ describe("Notification Service Suite", () => {
       requestUser,
       NotificationAudience.ASSESSMENT_USERS,
       innovation.id,
-      NotificationContextType.ACTION,
+      NotifContextType.ACTION,
+      NotifContextDetail.ACTION_CREATION,
 
-      innovation.id,
-      "teste"
+      innovation.id
     );
 
     const notificationUsers = await notification.notificationUsers;
@@ -593,20 +595,20 @@ describe("Notification Service Suite", () => {
       requestUser,
       NotificationAudience.INNOVATORS,
       innovation.id,
-      NotificationContextType.INNOVATION,
+      NotifContextType.INNOVATION,
+      NotifContextDetail.INNOVATION_SUBMISSION,
 
-      innovation.id,
-      "test 1"
+      innovation.id
     );
 
     const notification2 = await notificationService.create(
       requestUser,
       NotificationAudience.INNOVATORS,
       innovation.id,
-      NotificationContextType.COMMENT,
+      NotifContextType.COMMENT,
+      NotifContextDetail.COMMENT_CREATION,
 
-      innovation.id,
-      "test 2"
+      innovation.id
     );
 
     const dismisssRequestUser: RequestUser = {
@@ -652,10 +654,10 @@ describe("Notification Service Suite", () => {
       requestUser,
       NotificationAudience.INNOVATORS,
       innovation.id,
-      NotificationContextType.INNOVATION,
+      NotifContextType.INNOVATION,
+      NotifContextDetail.INNOVATION_SUBMISSION,
 
-      innovation.id,
-      "test 1"
+      innovation.id
     );
 
     const innovatorUser: RequestUser = {
@@ -705,40 +707,40 @@ describe("Notification Service Suite", () => {
       requestUser,
       NotificationAudience.INNOVATORS,
       innovation.id,
-      NotificationContextType.INNOVATION,
+      NotifContextType.INNOVATION,
+      NotifContextDetail.INNOVATION_SUBMISSION,
 
-      innovation.id,
-      "test 1"
+      innovation.id
     );
 
     const notification2 = await notificationService.create(
       requestUser,
       NotificationAudience.INNOVATORS,
       innovation.id,
-      NotificationContextType.INNOVATION,
+      NotifContextType.INNOVATION,
+      NotifContextDetail.INNOVATION_SUBMISSION,
 
-      innovation.id,
-      "test 2"
+      innovation.id
     );
 
     const notification3 = await notificationService.create(
       requestUser,
       NotificationAudience.INNOVATORS,
       innovation.id,
-      NotificationContextType.COMMENT,
+      NotifContextType.COMMENT,
+      NotifContextDetail.COMMENT_CREATION,
 
-      innovation.id,
-      "test 3"
+      innovation.id
     );
 
     const notification4 = await notificationService.create(
       requestUser,
       NotificationAudience.INNOVATORS,
       innovation.id,
-      NotificationContextType.ACTION,
+      NotifContextType.ACTION,
+      NotifContextDetail.ACTION_CREATION,
 
-      innovation.id,
-      "test 3"
+      innovation.id
     );
 
     const innovatorUser: RequestUser = {
@@ -784,40 +786,40 @@ describe("Notification Service Suite", () => {
       requestUser,
       NotificationAudience.INNOVATORS,
       innovation.id,
-      NotificationContextType.INNOVATION,
+      NotifContextType.INNOVATION,
+      NotifContextDetail.INNOVATION_SUBMISSION,
 
-      innovation.id,
-      "test 1"
+      innovation.id
     );
 
     const notification2 = await notificationService.create(
       requestUser,
       NotificationAudience.INNOVATORS,
       innovation.id,
-      NotificationContextType.INNOVATION,
+      NotifContextType.INNOVATION,
+      NotifContextDetail.INNOVATION_SUBMISSION,
 
-      innovation.id,
-      "test 2"
+      innovation.id
     );
 
     const notification3 = await notificationService.create(
       requestUser,
       NotificationAudience.INNOVATORS,
       innovation.id,
-      NotificationContextType.COMMENT,
+      NotifContextType.COMMENT,
+      NotifContextDetail.COMMENT_CREATION,
 
-      innovation.id,
-      "test 3"
+      innovation.id
     );
 
     const notification4 = await notificationService.create(
       requestUser,
       NotificationAudience.INNOVATORS,
       innovation.id,
-      NotificationContextType.ACTION,
+      NotifContextType.ACTION,
+      NotifContextDetail.ACTION_CREATION,
 
-      innovation.id,
-      "test 3"
+      innovation.id
     );
 
     const innovatorUser: RequestUser = {
@@ -863,40 +865,40 @@ describe("Notification Service Suite", () => {
       requestUser,
       NotificationAudience.INNOVATORS,
       innovation.id,
-      NotificationContextType.COMMENT,
+      NotifContextType.COMMENT,
+      NotifContextDetail.COMMENT_CREATION,
 
-      innovation.id,
-      "test 1"
+      innovation.id
     );
 
     const notification2 = await notificationService.create(
       requestUser,
       NotificationAudience.INNOVATORS,
       innovation.id,
-      NotificationContextType.INNOVATION,
+      NotifContextType.INNOVATION,
+      NotifContextDetail.INNOVATION_SUBMISSION,
 
-      innovation.id,
-      "test 2"
+      innovation.id
     );
 
     const notification3 = await notificationService.create(
       requestUser,
       NotificationAudience.INNOVATORS,
       innovation.id,
-      NotificationContextType.COMMENT,
+      NotifContextType.COMMENT,
+      NotifContextDetail.COMMENT_CREATION,
 
-      innovation.id,
-      "test 3"
+      innovation.id
     );
 
     const notification4 = await notificationService.create(
       requestUser,
       NotificationAudience.INNOVATORS,
       innovation.id,
-      NotificationContextType.ACTION,
+      NotifContextType.ACTION,
+      NotifContextDetail.ACTION_CREATION,
 
-      innovation.id,
-      "test 3"
+      innovation.id
     );
 
     const innovatorUser: RequestUser = {
@@ -960,40 +962,40 @@ describe("Notification Service Suite", () => {
       requestUser,
       NotificationAudience.INNOVATORS,
       innovation.id,
-      NotificationContextType.INNOVATION,
+      NotifContextType.INNOVATION,
+      NotifContextDetail.INNOVATION_SUBMISSION,
 
-      innovation.id,
-      "test 1"
+      innovation.id
     );
 
     const notification2 = await notificationService.create(
       requestUser,
       NotificationAudience.INNOVATORS,
       innovation.id,
-      NotificationContextType.INNOVATION,
+      NotifContextType.INNOVATION,
+      NotifContextDetail.INNOVATION_SUBMISSION,
 
-      innovation.id,
-      "test 2"
+      innovation.id
     );
 
     const notification3 = await notificationService.create(
       requestUser,
       NotificationAudience.INNOVATORS,
       innovation.id,
-      NotificationContextType.COMMENT,
+      NotifContextType.COMMENT,
+      NotifContextDetail.COMMENT_CREATION,
 
-      innovation.id,
-      "test 3"
+      innovation.id
     );
 
     const notification4 = await notificationService.create(
       requestUser,
       NotificationAudience.INNOVATORS,
       innovation.id,
-      NotificationContextType.ACTION,
+      NotifContextType.ACTION,
+      NotifContextDetail.ACTION_CREATION,
 
-      innovation.id,
-      "test 3"
+      innovation.id
     );
 
     const innovatorUser: RequestUser = {
@@ -1151,10 +1153,10 @@ describe("Notification Service Suite", () => {
       innovatorRequestUser,
       NotificationAudience.ACCESSORS,
       innovation1.id,
-      NotificationContextType.COMMENT,
+      NotifContextType.COMMENT,
+      NotifContextDetail.COMMENT_CREATION,
 
-      innovation1.id,
-      "test 3"
+      innovation1.id
     );
     const notificationByStatus = await notificationService.getNotificationsGroupedBySupportStatus(
       accessorRequestUser
