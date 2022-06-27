@@ -3576,17 +3576,17 @@ paths:
       tags:
           - "Notifications"
           - "List"
-        description: "Retrieves the list of all notifications"
-        operationId: "notifications-get-all"
-        parameters:
-          - name: Authorization
-            in: header
-            schema:
-              type: string
-            required: true
-        security:
-          - OpenId:
-              - notifications_list
+      description: "Retrieves the list of all notifications"
+      operationId: "notifications-get-all"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - notifications_list
       responses:
         "200":
           description: "OK"
