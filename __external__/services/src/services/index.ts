@@ -12,6 +12,7 @@ import { InnovationSupportLogService } from "./InnovationSupportLog.service";
 import { InnovationTransferService } from "./InnovationTransfer.service";
 import { InnovatorService } from "./Innovator.service";
 import { NotificationService } from "./Notification.service";
+import { InAppNotificationService } from "./InAppNotification.service";
 import { OrganisationService } from "./Organisation.service";
 import { UserService } from "./User.service";
 import { ActivityLogService } from "./ActivityLog.service";
@@ -36,6 +37,7 @@ export type Services = {
   InnovatorService?: InnovatorService;
   OrganisationService?: OrganisationService;
   NotificationService?: NotificationService;
+  InAppNotificationService?: InAppNotificationService;
   ActivityLogService?: ActivityLogService;
   AuthService?: AuthService;
   AdminService?: AdminService;
@@ -73,6 +75,7 @@ export const initializeAllServices = (connectionName?: string): Services => {
     InnovatorService,
     OrganisationService,
     NotificationService,
+    InAppNotificationService,
     ActivityLogService,
     AuthService,
     AdminService,

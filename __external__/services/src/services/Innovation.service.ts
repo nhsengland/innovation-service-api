@@ -66,6 +66,10 @@ import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enu
 import { OrderByClauseType, SupportFilter } from "@services/types";
 import { Activity } from "@domain/enums/activity.enums";
 import { ActivityLogService } from "./ActivityLog.service";
+import {
+  NotifContextDetail,
+  NotifContextType,
+} from "@domain/enums/notification.enums";
 
 export class InnovationService extends BaseService<Innovation> {
   private readonly connection: Connection;
@@ -1101,10 +1105,9 @@ export class InnovationService extends BaseService<Innovation> {
         requestUser,
         NotificationAudience.ASSESSMENT_USERS,
         innovation.id,
-        NotificationContextType.INNOVATION,
-
-        innovation.id,
-        `The innovation ${innovation.name} was submitted for assessment.`
+        NotifContextType.INNOVATION,
+        NotifContextDetail.INNOVATION_SUBMISSION,
+        innovation.id
       );
     } catch (error) {
       this.logService.error(

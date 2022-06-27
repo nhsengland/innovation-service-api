@@ -43,6 +43,10 @@ import { NotificationService } from "./Notification.service";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import { LoggerService } from "./Logger.service";
 import { InnovationSupportService } from "./InnovationSupport.service";
+import {
+  NotifContextDetail,
+  NotifContextType,
+} from "@domain/enums/notification.enums";
 
 export class AdminService {
   private readonly connection: Connection;
@@ -288,10 +292,10 @@ export class AdminService {
               requestUser,
               NotificationAudience.ACCESSORS,
               userDetails.innovations[innovationIdx].id,
-              NotificationContextType.INNOVATION,
-
+              NotifContextType.INNOVATION,
+              NotifContextDetail.LOCK_USER,
               userDetails.innovations[innovationIdx].id,
-              `Please Note that the Innovator ${userDetails.displayName} account has been locked by the Admin`,
+              {},
               users
             );
           } catch (error) {

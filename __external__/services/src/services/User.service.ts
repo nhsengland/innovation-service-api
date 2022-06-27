@@ -231,6 +231,93 @@ export class UserService {
     return null;
   }
 
+  async getUsersList(entryParams: {
+    userIds?: string[];
+    externalIds?: string[];
+  }): Promise<ProfileSlimModel[]> {
+    if (!entryParams.userIds && !entryParams.externalIds) {
+      throw new Error("Invalid parameters [userIds, externalIds]");
+    }
+
+    // If provided information is empty, nothing to do here!
+    if (
+      (entryParams.userIds && entryParams.userIds.length === 0) ||
+      (entryParams.externalIds && entryParams.externalIds.length === 0)
+    ) {
+      return [];
+    }
+
+    const query = this.userRepo.createQueryBuilder("users");
+    if (entryParams.userIds) {
+      query.where("id IN (:...userIds)", {
+        userIds: [...new Set(entryParams.userIds)],
+      });
+    } else if (entryParams.externalIds) {
+      query.where("external_id IN (:...identityIds)", {
+        identityIds: [...new Set(entryParams.externalIds)],
+      });
+    }
+
+    const dbUsers = await query.getMany();
+    const identityUsers = await this.getListOfUsers(
+      dbUsers.map((items) => items.externalId)
+    );
+
+    return dbUsers.map((dbUser) => {
+      const identityUser = identityUsers.find(
+        (item) => item.id === dbUser.externalId
+      );
+      if (!identityUser) {
+        throw new Error("B2C user doesn't exists - " + dbUser.externalId);
+      }
+
+      return {
+        id: dbUser.id,
+        externalId: dbUser.externalId,
+        email: identityUser.email,
+        displayName: identityUser.displayName,
+      };
+    });
+  }
+
+  async getUserInfo(data: {
+    userId?: string;
+    externalId?: string;
+  }): Promise<ProfileSlimModel> {
+    if (!data.userId && !data.externalId) {
+      throw new Error("Invalid user.");
+    }
+
+    const query = this.userRepo.createQueryBuilder("user");
+
+    if (data.userId) {
+      query.where("user.id = :userId", { userId: data.userId });
+    } else if (data.externalId) {
+      query.where("user.external_id = :externalId", {
+        externalId: data.externalId,
+      });
+    }
+
+    const dbUser = await query.getOne();
+
+    if (!dbUser) {
+      throw new Error("user not found");
+    }
+
+    const b2cUsers = await this.getUsersEmail([dbUser.externalId]);
+
+    try {
+      return {
+        id: dbUser.id,
+        externalId: dbUser.externalId,
+        displayName: b2cUsers[0].displayName,
+        email: b2cUsers[0].email,
+      };
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
   async getProfile(
     id: string,
     externalId: string,

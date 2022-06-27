@@ -1,5 +1,9 @@
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
+  NotifContextDetail,
+  NotifContextType,
+} from "@domain/enums/notification.enums";
+import {
   AccessorOrganisationRole,
   Innovation,
   InnovationAssessment,
@@ -8,11 +12,11 @@ import {
   Notification,
   NotificationAudience,
   NotificationContextType,
+  NotificationPreference,
   NotificationUser,
   OrganisationUser,
   User,
   UserType,
-  NotificationPreference,
 } from "@domain/index";
 import { emailEngines } from "@engines/index";
 import { InvalidParamsError } from "@services/errors";
@@ -102,9 +106,10 @@ export class NotificationService {
     requestUser: RequestUser,
     audience: NotificationAudience,
     innovationId: string,
-    contextType: NotificationContextType,
+    contextType: NotifContextType,
+    contextDetail: NotifContextDetail,
     contextId: string,
-    message: string,
+    params?: { [key: string]: any },
     specificUsers?: string[]
   ): Promise<Notification> {
     let notification: Notification;
@@ -115,8 +120,9 @@ export class NotificationService {
           requestUser,
           innovationId,
           contextType,
+          contextDetail,
           contextId,
-          message,
+          params,
           specificUsers
         );
         break;
@@ -125,9 +131,10 @@ export class NotificationService {
           requestUser,
           innovationId,
           contextType,
+          contextDetail,
           contextId,
-          message,
-          specificUsers || []
+          specificUsers || [],
+          params
         );
         break;
       case NotificationAudience.QUALIFYING_ACCESSORS:
@@ -135,9 +142,9 @@ export class NotificationService {
           requestUser,
           innovationId,
           contextType,
-
+          contextDetail,
           contextId,
-          message
+          params
         );
         break;
       case NotificationAudience.ASSESSMENT_USERS:
@@ -145,9 +152,9 @@ export class NotificationService {
           requestUser,
           innovationId,
           contextType,
-
+          contextDetail,
           contextId,
-          message
+          params
         );
         break;
       default:
@@ -537,9 +544,10 @@ export class NotificationService {
   private async createNotificationForAccessors(
     requestUser: RequestUser,
     innovationId: string,
-    contextType: NotificationContextType,
+    contextType: NotifContextType,
+    contextDetail: NotifContextDetail,
     contextId: string,
-    message: string,
+    params?: { [key: string]: any },
     specificUsers?: string[]
   ) {
     // target users are all accessors whose this innovation has been assigned to and whose support is on ENGAGING status OR COMPLETE status
@@ -574,10 +582,11 @@ export class NotificationService {
     const notification = Notification.new({
       contextId,
       contextType,
+      contextDetail,
 
       innovation: innovationId,
+      params,
       notificationUsers: targetUsers,
-      message,
       createdBy: requestUser.id,
     });
 
@@ -587,9 +596,10 @@ export class NotificationService {
   private async createNotificationForQualifyingAccessors(
     requestUser: RequestUser,
     innovationId: string,
-    contextType: NotificationContextType,
+    contextType: NotifContextType,
+    contextDetail: NotifContextDetail,
     contextId: string,
-    message: string,
+    params?: { [key: string]: any },
     specificUsers?: string[]
   ) {
     let targetUsers: any[] = [];
@@ -630,10 +640,10 @@ export class NotificationService {
     const notification = Notification.new({
       contextId,
       contextType,
-
+      contextDetail,
       innovation: innovationId,
       notificationUsers: targetUsers,
-      message,
+      params,
       createdBy: requestUser.id,
     });
 
@@ -643,10 +653,11 @@ export class NotificationService {
   private async createNotificationForInnovators(
     requestUser: RequestUser,
     innovationId: string,
-    contextType: NotificationContextType,
+    contextType: NotifContextType,
+    contextDetail: NotifContextDetail,
     contextId: string,
-    message: string,
-    specificUsers: string[]
+    specificUsers: string[],
+    params?: { [key: string]: any }
   ) {
     // target user is the owner of the innovation
     // this is obtained from the innovation entity
@@ -661,13 +672,13 @@ export class NotificationService {
     const notification = Notification.new({
       contextId,
       contextType,
-
+      contextDetail,
       innovation: innovationId,
       notificationUsers: targetUsers.map((u) => ({
         user: u,
         createdBy: requestUser.id,
       })),
-      message,
+      params,
       createdBy: requestUser.id,
     });
 
@@ -677,9 +688,10 @@ export class NotificationService {
   private async createNotificationForAssessmentUsers(
     requestUser: RequestUser,
     innovationId: string,
-    contextType: NotificationContextType,
+    contextType: NotifContextType,
+    contextDetail: NotifContextDetail,
     contextId: string,
-    message: string,
+    params?: { [key: string]: any },
     specificUsers?: string[]
   ) {
     let targetUsers: any[] = [];
@@ -709,10 +721,10 @@ export class NotificationService {
     const notification = Notification.new({
       contextId,
       contextType,
-
+      contextDetail,
       innovation: innovationId,
       notificationUsers: targetUsers,
-      message,
+      params,
       createdBy: requestUser.id,
     });
 

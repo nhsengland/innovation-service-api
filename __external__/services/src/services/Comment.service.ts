@@ -1,6 +1,10 @@
 import { Activity } from "@domain/enums/activity.enums";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
+  NotifContextDetail,
+  NotifContextType,
+} from "@domain/enums/notification.enums";
+import {
   Comment,
   NotificationAudience,
   NotificationContextType,
@@ -156,9 +160,12 @@ export class CommentService {
           ? NotificationAudience.ACCESSORS
           : NotificationAudience.INNOVATORS,
         innovationId,
-        NotificationContextType.COMMENT,
+        NotifContextType.COMMENT,
+        replyTo
+          ? NotifContextDetail.COMMENT_REPLY
+          : NotifContextDetail.COMMENT_CREATION,
         result.id,
-        `A ${NotificationContextType.COMMENT} was created by ${requestUser.id}`,
+        {},
         targetNotificationUsers || []
       );
     } catch (error) {

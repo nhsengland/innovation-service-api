@@ -1,6 +1,10 @@
 import { Activity } from "@domain/enums/activity.enums";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
+  NotifContextDetail,
+  NotifContextType,
+} from "@domain/enums/notification.enums";
+import {
   AccessorOrganisationRole,
   Comment,
   InnovationAction,
@@ -165,10 +169,9 @@ export class InnovationActionService {
         requestUser,
         NotificationAudience.INNOVATORS,
         innovation.id,
-        NotificationContextType.ACTION,
-
-        result.id,
-        `An action was created by the accessor with id ${requestUser.id} for the innovation ${innovation.name}(${innovationId})`
+        NotifContextType.ACTION,
+        NotifContextDetail.ACTION_CREATION,
+        result.id
       );
     } catch (error) {
       this.logService.error(
@@ -250,9 +253,9 @@ export class InnovationActionService {
         requestUser,
         NotificationAudience.INNOVATORS,
         innovationId,
-        NotificationContextType.ACTION,
-        result.id,
-        `An action was updated by the accessor with id ${requestUser.id} for the innovation ${innovation.name}(${innovationId})`
+        NotifContextType.ACTION,
+        NotifContextDetail.ACTION_UPDATE,
+        result.id
       );
     } catch (error) {
       this.logService.error(
@@ -296,9 +299,10 @@ export class InnovationActionService {
         requestUser,
         NotificationAudience.ACCESSORS,
         innovationId,
-        NotificationContextType.ACTION,
+        NotifContextType.ACTION,
+        NotifContextDetail.ACTION_UPDATE,
         innovationAction.id,
-        `An action was updated by the innovator with id ${requestUser.id} for the innovation with id ${innovationId}`,
+        {},
         targetNotificationUsers
       );
     } catch (error) {
