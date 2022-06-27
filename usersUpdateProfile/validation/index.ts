@@ -2,7 +2,7 @@ import Joi = require("joi");
 
 const payloadSchema = Joi.object({
   displayName: Joi.string().required(),
-  mobilePhone: Joi.string().optional(),
+  mobilePhone: Joi.string().allow(null).allow("").optional(),
   organisation: Joi.object({
     id: Joi.string().required(),
     name: Joi.string().allow(null).allow("").optional(),
