@@ -3574,19 +3574,19 @@ paths:
   "/notifications":
     get:
       tags:
-          - "Notifications"
-          - "List"
-        description: "Retrieves the list of all notifications"
-        operationId: "notifications-get-all"
-        parameters:
-          - name: Authorization
-            in: header
-            schema:
-              type: string
-            required: true
-        security:
-          - OpenId:
-              - notifications_list
+        - "Notifications"
+        - "GetAll"
+      description: "Get All Notifications by various filters"
+      operationId: "notifications-get-all"
+      security:
+        - OpenId:
+            - notifications_list
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
       responses:
         "200":
           description: "OK"
@@ -3594,6 +3594,8 @@ paths:
           description: "Not Found"
         "401":
           description: "Unauthorized"
+        "403":
+          description: "Forbidden"
     patch:
       tags:
         - "Notifications"
