@@ -532,7 +532,7 @@ describe("Innovation Transfer Suite", () => {
       dummy.newEmail
     );
 
-    const result = await transferService.findAll(innovatorRequestUser.id);
+    const result = await transferService.findAll(innovatorRequestUser);
 
     expect(result).toBeDefined();
     expect(result.length).toEqual(1);
@@ -563,7 +563,7 @@ describe("Innovation Transfer Suite", () => {
       dummy.newEmail
     );
 
-    const result = await transferService.findAll(innovatorRequestUser.id, true);
+    const result = await transferService.findAll(innovatorRequestUser, true);
 
     expect(result).toBeDefined();
     expect(result.length).toEqual(1);
