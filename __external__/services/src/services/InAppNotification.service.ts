@@ -2,12 +2,12 @@ import {
   NotifContextDetail,
   NotifContextType,
   NotificationParamsType,
-  PaginationQueryParamsType,
 } from "@domain/enums/notification.enums";
 import { InnovationStatus, Notification } from "@domain/index";
 import { InvalidParamsError } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
+import { PaginationQueryParamsType } from "__external__/domain/tools/helpers/joi.helper";
 import { UserService } from "./User.service";
 
 export class InAppNotificationService {

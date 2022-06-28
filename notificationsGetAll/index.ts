@@ -1,9 +1,10 @@
 import { HttpRequest } from "@azure/functions";
-import {
-  NotifContextType,
-  PaginationQueryParamsType,
-} from "@domain/enums/notification.enums";
+import { NotifContextType } from "@domain/enums/notification.enums";
 import { AccessorOrganisationRole, UserType } from "@domain/index";
+import {
+  JoiHelper,
+  PaginationQueryParamsType,
+} from "__external__/domain/tools/helpers/joi.helper";
 import {
   AllowedUserType,
   AppInsights,
@@ -14,6 +15,7 @@ import {
 import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
+import { QueryParamsSchema, QueryParamsType } from "./validation";
 
 class NotificationsGetAll {
   @AppInsights()
@@ -24,10 +26,10 @@ class NotificationsGetAll {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const queryParams = (req.query as unknown) as PaginationQueryParamsType<"createdAt"> & {
-      contextTypes: NotifContextType;
-      unreadOnly: boolean;
-    };
+    const queryParams = JoiHelper.Validate<QueryParamsType>(
+      QueryParamsSchema,
+      req.query
+    );
 
     const { skip, take, order, ...filters } = queryParams;
 

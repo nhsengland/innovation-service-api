@@ -19,9 +19,3 @@ export enum NotifContextDetail {
 }
 
 export type NotificationParamsType = {};
-
-export type PaginationQueryParamsType<T extends string> = {
-  take: number;
-  skip: number;
-  order: { [key in T]?: "ASC" | "DESC" };
-};

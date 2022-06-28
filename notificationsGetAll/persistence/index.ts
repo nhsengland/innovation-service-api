@@ -1,4 +1,4 @@
-import { PaginationQueryParamsType } from "@domain/enums/notification.enums";
+import { PaginationQueryParamsType } from "__external__/domain/tools/helpers/joi.helper";
 import { CustomContext } from "../../utils/types";
 
 export const getNotificationsByUserId = async (
