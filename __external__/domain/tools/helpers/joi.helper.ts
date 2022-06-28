@@ -36,7 +36,12 @@ export class JoiHelper {
         coerce(value) {
           return typeof value !== "string"
             ? { value }
-            : { value: value.replace(/(^,+)|(,+$)/gm, "").split(",") };
+            : {
+                value: value
+                  .replace(/(^,+)|(,+$)/gm, "")
+                  .split(",")
+                  .filter((item) => item),
+              };
         },
       },
 
