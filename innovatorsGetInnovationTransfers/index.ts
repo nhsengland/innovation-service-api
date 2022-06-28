@@ -1,11 +1,5 @@
 import { HttpRequest } from "@azure/functions";
-import { UserType } from "@domain/index";
-import {
-  AllowedUserType,
-  AppInsights,
-  JwtDecoder,
-  SQLConnector,
-} from "../utils/decorators";
+import { AppInsights, JwtDecoder, SQLConnector } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
