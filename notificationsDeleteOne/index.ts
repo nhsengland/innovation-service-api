@@ -10,22 +10,20 @@ import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 
-class InnovatorsGetInnovationTransfers {
+class notificationsDeleteOne {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder()
-  @AllowedUserType(UserType.INNOVATOR)
+  @AllowedUserType(UserType.ACCESSOR, UserType.INNOVATOR, UserType.ASSESSMENT)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const assignedToMe = req.query.assignedToMe
-      ? req.query.assignedToMe.toLocaleLowerCase() === "true"
-      : false;
+    const notificationId = req.params.id;
 
     let result;
     try {
-      result = await persistence.findInnovationTransfers(context, assignedToMe);
+      result = await persistence.deleteNotification(context, notificationId);
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
@@ -37,4 +35,4 @@ class InnovatorsGetInnovationTransfers {
   }
 }
 
-export default InnovatorsGetInnovationTransfers.httpTrigger;
+export default notificationsDeleteOne.httpTrigger;

@@ -1,15 +1,10 @@
 import { HttpRequest } from "@azure/functions";
-import { NotifContextType } from "@domain/enums/notification.enums";
-import { AccessorOrganisationRole, UserType } from "@domain/index";
-import {
-  JoiHelper,
-  PaginationQueryParamsType,
-} from "__external__/domain/tools/helpers/joi.helper";
+import { UserType } from "@domain/index";
+import { JoiHelper } from "utils/joi.helper";
 import {
   AllowedUserType,
   AppInsights,
   JwtDecoder,
-  OrganisationRoleValidator,
   SQLConnector,
 } from "../utils/decorators";
 import * as Responsify from "../utils/responsify";

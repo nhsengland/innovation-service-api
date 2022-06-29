@@ -1,12 +1,16 @@
+import { NotifContextPayloadType } from "@domain/enums/notification.enums";
 import Joi = require("joi");
 
-const payloadSchema = Joi.object({
-  contextType: Joi.string().required(),
-  contextId: Joi.string().required(),
-})
-  .required()
-  .unknown(true);
-
-export const ValidatePayload = (data: object): any => {
-  return payloadSchema.validate(data);
+export type BodyParamsType = {
+  notificationIds?: string[];
+  context?: NotifContextPayloadType;
 };
+
+export const BodySchema = Joi.alternatives().try(
+  Joi.object<BodyParamsType>({
+    notificationIds: Joi.array().items(Joi.string().guid()).required(),
+  }),
+  Joi.object<BodyParamsType>({
+    context: Joi.object().required(),
+  })
+);

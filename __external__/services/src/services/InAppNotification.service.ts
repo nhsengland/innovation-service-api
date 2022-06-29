@@ -7,7 +7,7 @@ import { InnovationStatus, Notification } from "@domain/index";
 import { InvalidParamsError } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
-import { PaginationQueryParamsType } from "__external__/domain/tools/helpers/joi.helper";
+import { PaginationQueryParamsType } from "utils/joi.helper";
 import { UserService } from "./User.service";
 
 export class InAppNotificationService {
@@ -111,6 +111,7 @@ export class InAppNotificationService {
         ) as NotificationParamsType;
 
         //add params logic
+
         const userInfo = createdByUsers.find(
           (createdByUser) => (createdByUser.id = notification.createdBy)
         );
@@ -120,6 +121,7 @@ export class InAppNotificationService {
           innovation: {
             id: notification.innovation.id,
             status: notification.innovation.status,
+            name: notification.innovation.name,
           },
           contextType: notification.contextType,
           contextDetail: notification.contextDetail,

@@ -41,7 +41,7 @@ export class Notification extends Base {
     () => NotificationUser,
     (notificationUser) => notificationUser.notification,
     {
-      lazy: true,
+      lazy: false,
       cascade: ["insert", "update"],
     }
   )
