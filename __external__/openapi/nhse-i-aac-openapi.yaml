@@ -3648,6 +3648,30 @@ paths:
         "401":
           description: "Unauthorized"
 
+  "/notifications/counters":
+    get:
+      tags:
+        - "NotificationsCounters"
+        - "List"
+      description: "Retrieves the number of notifications for a specific user"
+      operationId: "notifications-get-counters"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - notifications_counters
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
   "/notifications/context":
     get:
       tags:

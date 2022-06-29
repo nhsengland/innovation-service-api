@@ -4,6 +4,7 @@ import Joi = require("joi");
 export type BodyParamsType = {
   notificationIds?: string[];
   context?: NotifContextPayloadType;
+  dismissAll?: boolean;
 };
 
 export const BodySchema = Joi.alternatives().try(
@@ -12,5 +13,8 @@ export const BodySchema = Joi.alternatives().try(
   }),
   Joi.object<BodyParamsType>({
     context: Joi.object().required(),
+  }),
+  Joi.object<BodyParamsType>({
+    dismissAll: Joi.boolean().required(),
   })
 );

@@ -1,6 +1,5 @@
 import { HttpRequest } from "@azure/functions";
 import { UserType } from "@domain/index";
-import { JoiHelper } from "../utils/joi.helper";
 import {
   AllowedUserType,
   AppInsights,
@@ -10,9 +9,8 @@ import {
 import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
-import { QueryParamsSchema, QueryParamsType } from "./validation";
 
-class NotificationsGetAll {
+class NotificationsGetCounters {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder()
@@ -21,20 +19,9 @@ class NotificationsGetAll {
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
-    const queryParams = JoiHelper.Validate<QueryParamsType>(
-      QueryParamsSchema,
-      req.query
-    );
-
-    const { skip, take, order, ...filters } = queryParams;
-
     let result;
     try {
-      result = await persistence.getNotificationsByUserId(context, filters, {
-        skip,
-        take,
-        order,
-      });
+      result = await persistence.getNotificationsCountersByUserId(context);
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
@@ -46,4 +33,4 @@ class NotificationsGetAll {
   }
 }
 
-export default NotificationsGetAll.httpTrigger;
+export default NotificationsGetCounters.httpTrigger;

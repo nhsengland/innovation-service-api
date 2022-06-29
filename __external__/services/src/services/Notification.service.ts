@@ -2,7 +2,6 @@ import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enu
 import {
   NotifContextDetail,
   NotifContextType,
-  NotifContextPayloadType,
 } from "@domain/enums/notification.enums";
 import {
   AccessorOrganisationRole,
@@ -20,7 +19,7 @@ import {
   UserType,
 } from "@domain/index";
 import { emailEngines } from "@engines/index";
-import { InvalidParamsError, ResourceNotFoundError } from "@services/errors";
+import { InvalidParamsError } from "@services/errors";
 import { checkIfValidUUID } from "@services/helpers";
 import { PreferenceUpdateModel } from "@services/models/PreferenceUpdateModel";
 import { PreferenceUpdateResult } from "@services/models/PreferenceUpdateResult";
@@ -30,7 +29,6 @@ import {
   getConnection,
   getRepository,
   In,
-  IsNull,
   ObjectLiteral,
   Repository,
 } from "typeorm";
@@ -38,7 +36,6 @@ import { EmailProps } from "./Email.service";
 
 export type NotificationDismissResult = {
   affected: number;
-  updated: ObjectLiteral[];
   error?: any;
 };
 
@@ -163,116 +160,6 @@ export class NotificationService {
     }
 
     return notification;
-  }
-
-  async dismiss(
-    requestUser: RequestUser,
-    notificationIds?: string[],
-    context?: NotifContextPayloadType
-  ): Promise<NotificationDismissResult> {
-    if (!requestUser || (!notificationIds && !context)) {
-      throw new InvalidParamsError("Invalid parameters.");
-    }
-
-    if (context) {
-      if (!checkIfValidUUID(context.id)) {
-        throw new InvalidParamsError("Invalid parameters.");
-      }
-    }
-
-    const query = this.notificationRepo
-      .createQueryBuilder("notification")
-      .innerJoinAndSelect("notification.notificationUsers", "notificationUsers")
-      .where("notificationUsers.user_id = :userId", {
-        userId: requestUser.id,
-      })
-      .andWhere("notificationUsers.read_at IS NULL")
-      .andWhere("notificationUsers.deleted_at IS NULL");
-
-    // Search by notificationIds
-    if (notificationIds && notificationIds.length > 0) {
-      query.andWhere(
-        "notificationUsers.notification_id in (:...notificationIds)",
-        {
-          notificationIds,
-        }
-      );
-    }
-
-    // Search by context
-    if (context) {
-      query
-        .andWhere("notification.context_type = :contextType", {
-          contextType: context.type,
-        })
-        .andWhere("notification.context_id = :contextId", {
-          contextId: context.id,
-        });
-    }
-
-    const notifications = await query.getMany();
-
-    if (notifications.length === 0) {
-      return {
-        affected: 0,
-        updated: [],
-        error: "No notifications found",
-      };
-    }
-
-    let result;
-
-    try {
-      const notificationIdsFromQuery = notifications.map((u) => u.id);
-
-      if (notificationIdsFromQuery.length > 0) {
-        result = await this.notificationUserRepo
-          .createQueryBuilder()
-          .update(NotificationUser)
-          .set({ readAt: () => "CURRENT_TIMESTAMP" })
-          .where(
-            "user = :userId and notification in (:...notificationId) and read_at IS NULL",
-            { userId: requestUser.id, notificationId: notificationIdsFromQuery }
-          )
-          .execute();
-      }
-    } catch (error) {
-      return {
-        error,
-        updated: [],
-        affected: 0,
-      };
-    }
-
-    return {
-      affected: notifications.length,
-      updated: notifications,
-    };
-  }
-
-  async deleteNotification(requestUser: RequestUser, notificationId: string) {
-    if (!notificationId || !requestUser) {
-      throw new InvalidParamsError("Invalid parameters.");
-    }
-
-    return await this.connection.transaction(async (transactionManager) => {
-      try {
-        await transactionManager.update(
-          NotificationUser,
-          { notification: notificationId },
-          {
-            deletedAt: new Date(),
-          }
-        );
-
-        return {
-          id: notificationId,
-          status: "DELETED",
-        };
-      } catch (error) {
-        throw new Error(error);
-      }
-    });
   }
 
   async getAllUnreadNotificationsCounts(
