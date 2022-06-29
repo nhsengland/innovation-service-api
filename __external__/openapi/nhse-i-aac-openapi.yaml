@@ -3622,7 +3622,7 @@ paths:
           description: "Unauthorized"
 
   "/innovations/{innovationId}/notifications":
-    patch:
+    get:
       tags:
         - "Notifications"
         - "GetByInnovationId"
