@@ -3600,8 +3600,8 @@ paths:
       tags:
         - "Notifications"
         - "Dismiss"
-      description: "dismisses a given notification for the authenticated user"
-      operationId: "notifications-dismiss-one"
+      description: "dismisses the specified notifications for the authenticated user"
+      operationId: "notifications-dismiss"
       parameters:
         - name: Authorization
           in: header
@@ -3611,19 +3611,35 @@ paths:
       security:
         - OpenId:
             - notifications_dismiss
-      requestBody:
-        description: Dismiss notification payload
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                contextId:
-                  type: string
-                contextType:
-                  type: string
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
 
+  "/notifications/{id}":
+    delete:
+      tags:
+        - "Notifications"
+        - "Delete"
+      description: "Deletes the specified notification"
+      operationId: "notifications-delete-one"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - notifications_delete
       responses:
         "200":
           description: "OK"

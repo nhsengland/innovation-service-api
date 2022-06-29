@@ -5,7 +5,6 @@ import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
 import * as decorators from "../../utils/decorators";
 import * as authentication from "../../utils/authentication";
-
 import {
   runStubFunctionFromBindings,
   createHttpTrigger,
@@ -75,8 +74,10 @@ describe("[HttpTrigger] notificationPatchDismiss Suite", () => {
       jest.spyOn(persistence, "patchDismissNotification").mockResolvedValue({} as any);
 
       const { res } = await mockedRequestFactory({body :{
-        contextId:':contextId',
-        contextType: ':contextType'
+        context: {
+          id:':contextId',
+          type: ':contextType'
+        }
       }});
       expect(res.status).toBe(200);
     });

@@ -1,9 +1,6 @@
 import { NotifContextType } from "@domain/enums/notification.enums";
 import Joi = require("joi");
-import {
-  JoiHelper,
-  PaginationQueryParamsType,
-} from "__external__/domain/tools/helpers/joi.helper";
+import { JoiHelper, PaginationQueryParamsType } from "utils/joi.helper";
 
 enum orderFields {
   createdAt = "createdAt",

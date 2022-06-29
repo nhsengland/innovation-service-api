@@ -1,18 +1,21 @@
-import * as persistence from "../../notificationsPatchDismiss/persistence";
-import * as typeorm from "typeorm";
-import { CustomContext } from "../../utils/types";
+import {
+  NotifContextPayloadType,
+  NotifContextType,
+} from "@domain/enums/notification.enums";
+import { NotificationService } from "@services/services/Notification.service";
 import * as dotenv from "dotenv";
 import * as path from "path";
-import { NotificationService } from "@services/services/Notification.service";
-import { NotificationContextType } from "@domain/index";
-describe("[notificationsGetUnreadGroupedByStatus] Persistence suite", () => {
+import * as typeorm from "typeorm";
+import * as persistence from "../../notificationsPatchDismiss/persistence";
+import { CustomContext } from "../../utils/types";
+describe("[notificationsPatchDismiss] Persistence suite", () => {
   beforeAll(() => {
     dotenv.config({
       path: path.resolve(__dirname, "../.environment"),
     });
   });
   describe("dismissNotifications", () => {
-    it("should find all notifications grouped by context", async () => {
+    it("should dismiss notification", async () => {
       // Arrange
       jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
       jest.spyOn(typeorm, "getConnection").mockImplementation(
@@ -35,14 +38,21 @@ describe("[notificationsGetUnreadGroupedByStatus] Persistence suite", () => {
           NotificationService: new NotificationService(),
         },
       };
+
+      const context: NotifContextPayloadType = {
+        id: ":contextId",
+        type: NotifContextType.INNOVATION,
+      };
       // Act
       await persistence.patchDismissNotification(
         ctx as CustomContext,
-        ":innovationId",
-        NotificationContextType.INNOVATION
+        null,
+        context
       );
-
       expect(spy).toHaveBeenCalled();
+
+      const temporaryTest = true;
+      expect(temporaryTest).toBe(true);
     });
   });
 });

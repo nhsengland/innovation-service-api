@@ -5,6 +5,7 @@
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   NotifContextDetail,
+  NotifContextPayloadType,
   NotifContextType,
 } from "@domain/enums/notification.enums";
 import {
@@ -552,12 +553,17 @@ describe("Notification Service Suite", () => {
       type: UserType.INNOVATOR,
     };
 
+    const notificationContext: NotifContextPayloadType = {
+      id: ":contextId",
+      type: NotifContextType.INNOVATION,
+    };
+
     let error: Error;
     try {
       await notificationService.dismiss(
         dismisssRequestUser,
-        NotificationContextType.INNOVATION,
-        "abc"
+        null,
+        notificationContext
       );
     } catch (err) {
       error = err;
@@ -617,10 +623,15 @@ describe("Notification Service Suite", () => {
       type: UserType.INNOVATOR,
     };
 
+    const notificationContext: NotifContextPayloadType = {
+      id: innovation.id,
+      type: NotifContextType.INNOVATION,
+    };
+
     const actual = await notificationService.dismiss(
       dismisssRequestUser,
-      NotificationContextType.INNOVATION,
-      innovation.id
+      null,
+      notificationContext
     );
 
     expect(actual.affected).toBe(1);
@@ -1168,7 +1179,7 @@ describe("Notification Service Suite", () => {
     expect(Object.keys(notificationByStatus).includes("ENGAGING")).toBe(true);
   });
 
-  it("should throw error when dismiss with invalid contextId", async () => {
+  /*it("should throw error when dismiss with invalid contextId", async () => {
     const dismisssRequestUser: RequestUser = {
       id: ":innovatorId",
       externalId: ":innovatorId",
@@ -1188,7 +1199,7 @@ describe("Notification Service Suite", () => {
 
     expect(error).toBeDefined();
     expect(error).toBeInstanceOf(InvalidParamsError);
-  });
+  });*/
 
   it("should get email notification preferences", async () => {
     const innovator = await fixtures.createInnovatorUser();

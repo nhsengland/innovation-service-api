@@ -18,4 +18,9 @@ export enum NotifContextDetail {
   SUPPORT_STATUS_UPDATE = "SUPPORT_STATUS_UPDATE",
 }
 
+export type NotifContextPayloadType = {
+  id: string;
+  type: NotifContextType;
+};
+
 export type NotificationParamsType = {};
