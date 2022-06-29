@@ -421,7 +421,10 @@ export class InnovationSupportService {
         NotifContextType.SUPPORT,
         NotifContextDetail.SUPPORT_STATUS_UPDATE,
         innovationId,
-        {},
+        {
+          organisationUnitName: organisationUnit.name,
+          supportStatus: result.status,
+        },
         targetNotificationUsers
       );
     } catch (error) {
@@ -588,7 +591,11 @@ export class InnovationSupportService {
               innovationId,
               NotifContextType.SUPPORT,
               NotifContextDetail.SUPPORT_STATUS_UPDATE,
-              innovationId
+              innovationId,
+              {
+                organisationUnitName: organisationUnit.name,
+                supportStatus: support.status,
+              }
             );
           } catch (error) {
             this.logService.error(
@@ -609,7 +616,11 @@ export class InnovationSupportService {
               innovationId,
               NotifContextType.SUPPORT,
               NotifContextDetail.SUPPORT_STATUS_UPDATE,
-              innovationId
+              innovationId,
+              {
+                organisationUnitName: organisationUnit.name,
+                supportStatus: support.status,
+              }
             );
           } catch (error) {
             this.logService.error(

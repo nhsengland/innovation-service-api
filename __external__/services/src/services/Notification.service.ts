@@ -29,7 +29,6 @@ import {
   getConnection,
   getRepository,
   In,
-  ObjectLiteral,
   Repository,
 } from "typeorm";
 import { EmailProps } from "./Email.service";
@@ -642,6 +641,7 @@ export class NotificationService {
     const users = await this.userRepo.find({
       where: {
         type: UserType.ASSESSMENT,
+        lockedAt: null,
       },
     });
 
