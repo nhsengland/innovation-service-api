@@ -1,0 +1,19 @@
+{
+    "bindings": [
+      {
+        "authLevel": "anonymous",
+        "type": "httpTrigger",
+        "direction": "in",
+        "name": "req",
+        "methods": [ "get" ],
+        "route": "notifications/innovation/{innovationId}"
+      },
+      {
+        "type": "http",
+        "direction": "out",
+        "name": "res"
+      }
+    ],
+    "scriptFile": "../dist/notificationsGetInnovation/index.js"
+  }
+  

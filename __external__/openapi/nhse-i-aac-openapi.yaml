@@ -3621,6 +3621,35 @@ paths:
         "401":
           description: "Unauthorized"
 
+  "/notifications/innovation/{innovationId}":
+    patch:
+      tags:
+        - "Notifications"
+        - "GetByInnovationId"
+      description: "Get all notification context types and equivalent count"
+      operationId: "notifications-by-innovation-id"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: innovationId
+          in: path
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - notifications_list
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
   "/notifications/{id}":
     delete:
       tags:

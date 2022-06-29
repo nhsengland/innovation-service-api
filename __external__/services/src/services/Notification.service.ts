@@ -526,7 +526,7 @@ export class NotificationService {
       contextDetail,
 
       innovation: innovationId,
-      params,
+      params: JSON.stringify(params),
       notificationUsers: targetUsers,
       createdBy: requestUser.id,
     });
@@ -584,7 +584,7 @@ export class NotificationService {
       contextDetail,
       innovation: innovationId,
       notificationUsers: targetUsers,
-      params,
+      params: JSON.stringify(params),
       createdBy: requestUser.id,
     });
 
@@ -619,7 +619,7 @@ export class NotificationService {
         user: u,
         createdBy: requestUser.id,
       })),
-      params,
+      params: JSON.stringify(params),
       createdBy: requestUser.id,
     });
 
@@ -665,7 +665,7 @@ export class NotificationService {
       contextDetail,
       innovation: innovationId,
       notificationUsers: targetUsers,
-      params,
+      params: JSON.stringify(params),
       createdBy: requestUser.id,
     });
 
