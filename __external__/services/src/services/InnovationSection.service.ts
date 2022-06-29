@@ -443,7 +443,9 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
                   updatedBy: requestUser.id,
                 }
               );
+
               actions[i].status = InnovationActionStatus.IN_REVIEW;
+              actions[i].innovationSection = innovSections[secIdx];
               updatedActions.push(actions[i]);
             }
 
@@ -505,8 +507,8 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     );
 
     for (let index = 0; index < updatedActions.length; index++) {
-      const element = updatedActions[index];
-      targetNotificationUsers = [element.createdBy];
+      const updatedAction = updatedActions[index];
+      targetNotificationUsers = [updatedAction.createdBy];
       try {
         await this.notificationService.create(
           requestUser,
@@ -514,8 +516,11 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
           innovationId,
           NotifContextType.ACTION,
           NotifContextDetail.ACTION_UPDATE,
-          element.id,
-          {},
+          updatedAction.id,
+          {
+            section: updatedAction.innovationSection.section,
+            actionStatus: updatedAction.status,
+          },
           targetNotificationUsers
         );
       } catch (error) {
@@ -525,13 +530,13 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
         );
       }
 
-      if (element.status === InnovationActionStatus.IN_REVIEW) {
+      if (updatedAction.status === InnovationActionStatus.IN_REVIEW) {
         try {
           await this.notificationService.sendEmail(
             requestUser,
             EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
             innovationId,
-            element.id,
+            updatedAction.id,
             targetNotificationUsers
           );
         } catch (error) {

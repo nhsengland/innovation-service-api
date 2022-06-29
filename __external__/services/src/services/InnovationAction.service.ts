@@ -13,7 +13,6 @@ import {
   InnovationSupport,
   NotificationAudience,
   NotificationContextType,
-  UserType,
 } from "@domain/index";
 import {
   InnovationNotFoundError,
@@ -171,7 +170,11 @@ export class InnovationActionService {
         innovation.id,
         NotifContextType.ACTION,
         NotifContextDetail.ACTION_CREATION,
-        result.id
+        result.id,
+        {
+          section: action.section,
+          actionCode: result.displayId,
+        }
       );
     } catch (error) {
       this.logService.error(
@@ -255,7 +258,11 @@ export class InnovationActionService {
         innovationId,
         NotifContextType.ACTION,
         NotifContextDetail.ACTION_UPDATE,
-        result.id
+        result.id,
+        {
+          actionStatus: result.status,
+          actionCode: result.displayId,
+        }
       );
     } catch (error) {
       this.logService.error(
@@ -302,7 +309,10 @@ export class InnovationActionService {
         NotifContextType.ACTION,
         NotifContextDetail.ACTION_UPDATE,
         innovationAction.id,
-        {},
+        {
+          actionStatus: result.status,
+          actionCode: result.displayId,
+        },
         targetNotificationUsers
       );
     } catch (error) {

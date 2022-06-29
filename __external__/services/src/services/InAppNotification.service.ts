@@ -20,12 +20,10 @@ import { UserService } from "./User.service";
 export class InAppNotificationService {
   private readonly notificationRepo: Repository<Notification>;
   private readonly connection: Connection;
-  private readonly connectionName: string;
   private readonly userService: UserService;
   private readonly notificationUserRepo: Repository<NotificationUser>;
 
   constructor(connectionName?: string) {
-    this.connectionName = connectionName;
     this.connection = getConnection(connectionName);
 
     this.notificationRepo = getRepository(Notification, connectionName);
@@ -68,10 +66,6 @@ export class InAppNotificationService {
         contextType: filters.contextTypes,
       });
     }
-
-    /*if (filters.contextDetails && filters.contextDetails.length > 0){
-				query.andWhere('notification.context_detail IN (:...contextDetail)', { contextDetail: filters.contextDetails })
-			}*/
 
     if (filters.unreadOnly === true) {
       query.andWhere("notificationUsers.read_at IS NULL");
@@ -119,8 +113,6 @@ export class InAppNotificationService {
           ? (JSON.parse(notification.params) as NotificationParamsType)
           : {};
 
-        //add params logic
-
         const userInfo = createdByUsers.find(
           (createdByUser) => (createdByUser.id = notification.createdBy)
         );
@@ -138,7 +130,6 @@ export class InAppNotificationService {
           createdAt: notification.createdAt,
           createdBy: userInfo.displayName,
           readAt: notification.notificationUsers[0]?.readAt,
-
           params,
         };
       }),
@@ -221,13 +212,11 @@ export class InAppNotificationService {
       };
     }
 
-    let result;
-
     try {
       const notificationIdsFromQuery = notifications.map((u) => u.id);
 
       if (notificationIdsFromQuery.length > 0) {
-        result = await this.notificationUserRepo
+        await this.notificationUserRepo
           .createQueryBuilder()
           .update(NotificationUser)
           .set({ readAt: () => "CURRENT_TIMESTAMP" })
@@ -299,12 +288,15 @@ export class InAppNotificationService {
 
     const dbActivities = await query.getManyAndCount();
 
-    const data = {};
-
-    dbActivities[0].map((notification) => {
-      if (data[notification.contextType]) data[notification.contextType]++;
-      else data[notification.contextType] = 1;
-    });
+    // Get counters by contextType
+    const data = dbActivities[0].reduce((acumulator, notification) => {
+      const name = notification.contextType;
+      if (!acumulator.hasOwnProperty(name)) {
+        acumulator[name] = 0;
+      }
+      acumulator[name]++;
+      return acumulator;
+    }, {});
 
     return {
       count: dbActivities[1],

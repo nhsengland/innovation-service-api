@@ -75,7 +75,7 @@ describe("[HttpTrigger] notificationPatchDismiss Suite", () => {
 
       const { res } = await mockedRequestFactory({body :{
         context: {
-          id:':contextId',
+          id:'886554E4-83B6-EC11-997E-0050F25A43BD',
           type: ':contextType'
         }
       }});

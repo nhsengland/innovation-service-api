@@ -1,18 +1,17 @@
 import { HttpRequest } from "@azure/functions";
 import { UserType } from "@domain/index";
 import { NotificationDismissResult } from "@services/services/Notification.service";
-import { JoiHelper } from "../utils/joi.helper";
 import {
   AllowedUserType,
   AppInsights,
   JwtDecoder,
   SQLConnector,
-  Validator,
 } from "../utils/decorators";
+import { JoiHelper } from "../utils/joi.helper";
 import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
-import { BodySchema, BodyParamsType } from "./validation";
+import { BodyParamsType, BodySchema } from "./validation";
 
 class notificationsPatchDismiss {
   @AppInsights()
