@@ -3596,6 +3596,8 @@ paths:
           description: "Unauthorized"
         "403":
           description: "Forbidden"
+
+  "/notifications/dismiss":
     patch:
       tags:
         - "Notifications"

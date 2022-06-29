@@ -94,7 +94,7 @@ async function mockedRequestFactory(data?: any) {
         direction: "in",
         data: createHttpTrigger(
           "PATCH",
-          "http://nhse-i-aac/api/notifications",
+          "http://nhse-i-aac/api/notifications/dismiss",
           { ...data.headers }, // headers
           {}, // params
           {...data.body}, // payload/body
