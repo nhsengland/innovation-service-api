@@ -1,10 +1,10 @@
-import { User } from "@domain/entity/user/User.entity";
 import { InnovationTransfer } from "@domain/entity/innovation/InnovationTransfer.entity";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   Activity,
   Innovation,
   InnovationTransferStatus,
+  User,
   UserType,
 } from "@domain/index";
 import {
@@ -85,19 +85,19 @@ export class InnovationTransferService {
     };
   }
 
-  async checkUserPendingTransfers(userId: string) {
-    if (!userId) {
+  async checkUserPendingTransfers(externalId: string) {
+    if (!externalId) {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
     const innovator = await this.userRepo
       .createQueryBuilder("user")
       .where("external_id = :oid", {
-        oid: userId.toLocaleLowerCase(),
+        oid: externalId.toLocaleLowerCase(),
       })
       .getOne();
 
-    const b2cUser = await getUserFromB2C(userId);
+    const b2cUser = await getUserFromB2C(externalId);
     if (!b2cUser || (innovator && innovator.type !== UserType.INNOVATOR)) {
     }
     const email = this.getUserEmail(b2cUser);
@@ -141,9 +141,11 @@ export class InnovationTransferService {
     };
 
     if (requestUser.id !== transfer.createdBy) {
-      const b2cUser = await getUserFromB2C(transfer.createdBy);
+      const user = await this.userService.getUserInfo({
+        userId: transfer.createdBy,
+      });
 
-      result.innovation.owner = b2cUser.displayName;
+      result.innovation.owner = user.displayName;
     }
 
     return result;
@@ -161,13 +163,10 @@ export class InnovationTransferService {
     let graphAccessToken: string;
 
     if (assignedToMe) {
-      const graphAccessToken = await authenticateWitGraphAPI();
-      const b2cUser = await getUserFromB2C(
-        requestUser.externalId,
-        graphAccessToken
-      );
-
-      email = this.getUserEmail(b2cUser);
+      const user = await this.userService.getUserInfo({
+        externalId: requestUser.externalId,
+      });
+      email = user.email;
     }
 
     const transfers = await this.getMany(
@@ -196,11 +195,10 @@ export class InnovationTransferService {
       };
 
       if (assignedToMe) {
-        const b2cUser = await getUserFromB2C(
-          transfer.createdBy,
-          graphAccessToken
-        );
-        obj.innovation.owner = b2cUser.displayName;
+        const user = await this.userService.getUserInfo({
+          userId: transfer.createdBy,
+        });
+        obj.innovation.owner = user.displayName;
       }
 
       result.push(obj);
@@ -319,7 +317,7 @@ export class InnovationTransferService {
 
     let graphAccessToken: string;
     let destB2cUser: any;
-    let originB2cUser: any;
+    let originUser: any;
 
     switch (status) {
       case InnovationTransferStatus.CANCELED:
@@ -347,10 +345,9 @@ export class InnovationTransferService {
     }
 
     if (status === InnovationTransferStatus.COMPLETED) {
-      originB2cUser = await getUserFromB2C(
-        transfer.createdBy,
-        graphAccessToken
-      );
+      originUser = await this.userService.getUserInfo({
+        userId: transfer.createdBy,
+      });
     }
 
     return await this.connection.transaction(async (transactionManager) => {
@@ -371,7 +368,7 @@ export class InnovationTransferService {
             Activity.OWNERSHIP_TRANSFER,
             transactionManager,
             {
-              actionUserId: originB2cUser.id,
+              actionUserId: originUser.id,
               interveningUserId: destB2cUser.id,
             }
           );
@@ -389,9 +386,9 @@ export class InnovationTransferService {
             EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_CONFIRMATION,
             transfer.innovation.id,
             transfer.id,
-            [this.getUserEmail(originB2cUser)],
+            [originUser.email],
             {
-              innovator_name: originB2cUser.displayName,
+              innovator_name: originUser.displayName,
               innovation_name: transfer.innovation.name,
               new_innovator_name: destB2cUser.displayName,
               new_innovator_email: filter.email,
