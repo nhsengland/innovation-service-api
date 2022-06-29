@@ -36,6 +36,7 @@ import {
 import * as engines from "@engines/index";
 import { InvalidParamsError } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
+import { InAppNotificationService } from "@services/services/InAppNotification.service";
 import { LoggerService } from "@services/services/Logger.service";
 import * as dotenv from "dotenv";
 import * as path from "path";
@@ -52,6 +53,7 @@ import * as fixtures from "../__fixtures__";
 
 describe("Notification Service Suite", () => {
   let notificationService: NotificationService;
+  let inAppNotificationService: InAppNotificationService;
   let supportService: InnovationSupportService;
 
   beforeAll(async () => {
@@ -62,6 +64,9 @@ describe("Notification Service Suite", () => {
     });
     notificationService = new NotificationService(process.env.DB_TESTS_NAME);
     supportService = new InnovationSupportService(process.env.DB_TESTS_NAME);
+    inAppNotificationService = new InAppNotificationService(
+      process.env.DB_TESTS_NAME
+    );
 
     jest.spyOn(insights, "getInstance").mockReturnValue({
       default: {
@@ -560,8 +565,9 @@ describe("Notification Service Suite", () => {
 
     let error: Error;
     try {
-      await notificationService.dismiss(
+      await inAppNotificationService.dismiss(
         dismisssRequestUser,
+        null,
         null,
         notificationContext
       );
@@ -628,8 +634,9 @@ describe("Notification Service Suite", () => {
       type: NotifContextType.INNOVATION,
     };
 
-    const actual = await notificationService.dismiss(
+    const actual = await inAppNotificationService.dismiss(
       dismisssRequestUser,
+      null,
       null,
       notificationContext
     );

@@ -2,7 +2,7 @@ import {
   NotifContextPayloadType,
   NotifContextType,
 } from "@domain/enums/notification.enums";
-import { NotificationService } from "@services/services/Notification.service";
+import { InAppNotificationService } from "@services/services/InAppNotification.service";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import * as typeorm from "typeorm";
@@ -24,7 +24,7 @@ describe("[notificationsPatchDismiss] Persistence suite", () => {
           ({ close: () => {} } as typeorm.Connection)
       );
       const spy = jest
-        .spyOn(NotificationService.prototype, "dismiss")
+        .spyOn(InAppNotificationService.prototype, "dismiss")
         .mockResolvedValue({} as any);
 
       const ctx = {
@@ -35,7 +35,7 @@ describe("[notificationsPatchDismiss] Persistence suite", () => {
           },
         },
         services: {
-          NotificationService: new NotificationService(),
+          InAppNotificationService: new InAppNotificationService(),
         },
       };
 
@@ -46,6 +46,7 @@ describe("[notificationsPatchDismiss] Persistence suite", () => {
       // Act
       await persistence.patchDismissNotification(
         ctx as CustomContext,
+        null,
         null,
         context
       );

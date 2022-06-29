@@ -1,13 +1,20 @@
 import {
   NotifContextDetail,
+  NotifContextPayloadType,
   NotifContextType,
   NotificationParamsType,
 } from "@domain/enums/notification.enums";
-import { InnovationStatus, Notification } from "@domain/index";
+import {
+  InnovationStatus,
+  Notification,
+  NotificationUser,
+} from "@domain/index";
 import { InvalidParamsError } from "@services/errors";
+import { checkIfValidUUID } from "@services/helpers";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { PaginationQueryParamsType } from "utils/joi.helper";
+import { NotificationDismissResult } from "./Notification.service";
 import { UserService } from "./User.service";
 
 export class InAppNotificationService {
@@ -15,6 +22,7 @@ export class InAppNotificationService {
   private readonly connection: Connection;
   private readonly connectionName: string;
   private readonly userService: UserService;
+  private readonly notificationUserRepo: Repository<NotificationUser>;
 
   constructor(connectionName?: string) {
     this.connectionName = connectionName;
@@ -22,6 +30,7 @@ export class InAppNotificationService {
 
     this.notificationRepo = getRepository(Notification, connectionName);
     this.userService = new UserService(connectionName);
+    this.notificationUserRepo = getRepository(NotificationUser, connectionName);
   }
 
   async getNotificationsByUserId(
@@ -134,5 +143,134 @@ export class InAppNotificationService {
         };
       }),
     };
+  }
+
+  async getNotificationCountersByUserId(
+    requestUser: RequestUser
+  ): Promise<{ total: number }> {
+    if (!requestUser) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+
+    const query = this.notificationRepo
+      .createQueryBuilder("notification")
+      .innerJoinAndSelect("notification.notificationUsers", "notificationUsers")
+      .where("notificationUsers.user_id = :userId", {
+        userId: requestUser.id,
+      })
+      .where("notificationUsers.read_at IS NULL");
+
+    const dbActivities = await query.getManyAndCount();
+
+    return {
+      total: dbActivities[1],
+    };
+  }
+
+  async dismiss(
+    requestUser: RequestUser,
+    dismissAll: boolean,
+    notificationIds?: string[],
+    context?: NotifContextPayloadType
+  ): Promise<NotificationDismissResult> {
+    if (!requestUser || (!dismissAll && !notificationIds && !context)) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+
+    if (context) {
+      if (!checkIfValidUUID(context.id)) {
+        throw new InvalidParamsError("Invalid parameters.");
+      }
+    }
+
+    const query = this.notificationRepo
+      .createQueryBuilder("notification")
+      .innerJoinAndSelect("notification.notificationUsers", "notificationUsers")
+      .where("notificationUsers.user_id = :userId", {
+        userId: requestUser.id,
+      })
+      .andWhere("notificationUsers.read_at IS NULL");
+
+    // Search by notificationIds
+    if (!dismissAll && notificationIds && notificationIds.length > 0) {
+      query.andWhere(
+        "notificationUsers.notification_id in (:...notificationIds)",
+        {
+          notificationIds,
+        }
+      );
+    }
+
+    // Search by context
+    if (!dismissAll && context) {
+      query
+        .andWhere("notification.context_type = :contextType", {
+          contextType: context.type,
+        })
+        .andWhere("notification.context_id = :contextId", {
+          contextId: context.id,
+        });
+    }
+
+    const notifications = await query.getMany();
+
+    if (notifications.length === 0) {
+      return {
+        affected: 0,
+        error: "No notifications found",
+      };
+    }
+
+    let result;
+
+    try {
+      const notificationIdsFromQuery = notifications.map((u) => u.id);
+
+      if (notificationIdsFromQuery.length > 0) {
+        result = await this.notificationUserRepo
+          .createQueryBuilder()
+          .update(NotificationUser)
+          .set({ readAt: () => "CURRENT_TIMESTAMP" })
+          .where(
+            "user = :userId and notification in (:...notificationId) and read_at IS NULL",
+            { userId: requestUser.id, notificationId: notificationIdsFromQuery }
+          )
+          .execute();
+      }
+    } catch (error) {
+      return {
+        error,
+        affected: 0,
+      };
+    }
+
+    return {
+      affected: notifications.length,
+    };
+  }
+
+  async deleteNotification(requestUser: RequestUser, notificationId: string) {
+    if (!notificationId || !requestUser) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+
+    return await this.connection.transaction(async (transactionManager) => {
+      try {
+        await transactionManager.update(
+          NotificationUser,
+          { notification: notificationId, user: requestUser.id },
+          {
+            deletedAt: new Date(),
+          }
+        );
+
+        return {
+          id: notificationId,
+          status: "DELETED",
+        };
+      } catch (error) {
+        throw new Error(error);
+      }
+    });
   }
 }

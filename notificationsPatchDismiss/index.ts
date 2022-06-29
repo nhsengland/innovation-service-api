@@ -30,6 +30,7 @@ class notificationsPatchDismiss {
     try {
       result = await persistence.patchDismissNotification(
         context,
+        !!req.body.dismissAll,
         req.body.notificationIds,
         req.body.context
       );
