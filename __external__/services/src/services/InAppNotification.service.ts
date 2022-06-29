@@ -115,9 +115,9 @@ export class InAppNotificationService {
     return {
       count: dbActivities[1],
       data: dbActivities[0].map((notification) => {
-        const params = JSON.parse(
-          notification.params
-        ) as NotificationParamsType;
+        const params = notification.params
+          ? (JSON.parse(notification.params) as NotificationParamsType)
+          : {};
 
         //add params logic
 
@@ -158,7 +158,7 @@ export class InAppNotificationService {
       .where("notificationUsers.user_id = :userId", {
         userId: requestUser.id,
       })
-      .where("notificationUsers.read_at IS NULL");
+      .andWhere("notificationUsers.read_at IS NULL");
 
     const dbActivities = await query.getManyAndCount();
 
@@ -272,5 +272,43 @@ export class InAppNotificationService {
         throw new Error(error);
       }
     });
+  }
+
+  async getNotificationsByInnovationId(
+    requestUser: RequestUser,
+    innovationId: string
+  ): Promise<{
+    count: number;
+    data: { [key: string]: number };
+  }> {
+    if (!requestUser || !innovationId) {
+      throw new InvalidParamsError("Invalid parameters.");
+    }
+
+    const query = this.notificationRepo
+      .createQueryBuilder("notification")
+      .innerJoinAndSelect("notification.notificationUsers", "notificationUsers")
+      .innerJoinAndSelect("notification.innovation", "innovation")
+      .where("notificationUsers.user_id = :userId", {
+        userId: requestUser.id,
+      })
+      .andWhere("innovation.id = :innovationId", {
+        innovationId: innovationId,
+      })
+      .andWhere("notificationUsers.read_at IS NULL");
+
+    const dbActivities = await query.getManyAndCount();
+
+    const data = {};
+
+    dbActivities[0].map((notification) => {
+      if (data[notification.contextType]) data[notification.contextType]++;
+      else data[notification.contextType] = 1;
+    });
+
+    return {
+      count: dbActivities[1],
+      data,
+    };
   }
 }
