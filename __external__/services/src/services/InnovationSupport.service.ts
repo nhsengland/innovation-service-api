@@ -622,6 +622,18 @@ export class InnovationSupportService {
                 supportStatus: support.status,
               }
             );
+            await this.notificationService.create(
+              requestUser,
+              NotificationAudience.INNOVATORS,
+              innovationId,
+              NotifContextType.SUPPORT,
+              NotifContextDetail.SUPPORT_STATUS_UPDATE,
+              innovationId,
+              {
+                organisationUnitName: organisationUnit.name,
+                supportStatus: support.status,
+              }
+            );
           } catch (error) {
             this.logService.error(
               `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
