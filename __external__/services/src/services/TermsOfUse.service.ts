@@ -1,11 +1,4 @@
-import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
-import {
-  User,
-  UserType,
-  TouType,
-  TermsOfUse,
-  TermsOfUseUser,
-} from "@domain/index";
+import { TermsOfUse, TermsOfUseUser, UserType } from "@domain/index";
 import {
   InvalidParamsError,
   InvalidUserTypeError,
@@ -13,21 +6,14 @@ import {
 } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
 import {
-  Connection,
-  EntityManager,
-  getConnection,
-  getRepository,
-  Repository,
-} from "typeorm";
-import { BaseService } from "./Base.service";
-import { LoggerService } from "./Logger.service";
-import { NotificationService } from "./Notification.service";
-import {
   CheckIfAcceptedTermsOfUseResult,
   TermsOfUseModel,
   TermsOfUseResult,
   TermsOfUseResultCreationModel,
 } from "@services/models/TermsOfUseResult";
+import { Connection, getConnection, getRepository, Repository } from "typeorm";
+import { BaseService } from "./Base.service";
+import { LoggerService } from "./Logger.service";
 
 export class TermsOfUseService extends BaseService<TermsOfUse> {
   private readonly connection: Connection;

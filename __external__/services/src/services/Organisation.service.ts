@@ -14,9 +14,9 @@ import {
   MissingUserOrganisationUnitError,
 } from "@services/errors";
 import { OrganisationModel } from "@services/models/OrganisationModel";
-import { OrganisationUnitModel } from "@services/models/OrganisationUnitModel";
 import { OrganisationUnitUserModel } from "@services/models/OrganisationUnitUserModel";
 import { OrganisationUpdateResult } from "@services/models/OrganisationUpdateResult";
+import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
 import { RequestUser } from "@services/models/RequestUser";
 import {
   Connection,
@@ -86,12 +86,13 @@ export class OrganisationService extends BaseService<Organisation> {
   async findQualifyingAccessorsFromUnits(
     unitIds: string[],
     innovationId: string
-  ): Promise<string[]> {
+  ): Promise<ProfileSlimModel[]> {
     if (!unitIds || unitIds.length === 0) return [];
 
     const query = this.orgUnitUserRepo
       .createQueryBuilder("unitUser")
       .select("user.id", "id")
+      .addSelect("user.external_id", "externalId")
       .innerJoin("unitUser.organisationUnit", "unit")
       .innerJoin("unitUser.organisationUser", "orgUser")
       .innerJoin("orgUser.user", "user")
@@ -109,7 +110,10 @@ export class OrganisationService extends BaseService<Organisation> {
 
     const units = await query.execute();
 
-    return units.map((u) => u.id);
+    return units.map((u) => ({
+      id: u.id,
+      externalId: u.externalId,
+    }));
   }
 
   async findAllWithOrganisationUnits(): Promise<OrganisationModel[]> {
@@ -152,7 +156,9 @@ export class OrganisationService extends BaseService<Organisation> {
     });
   }
 
-  async findUserFromUnitUsers(unitUsers: string[]): Promise<string[]> {
+  async findUserFromUnitUsers(
+    unitUsers: string[]
+  ): Promise<ProfileSlimModel[]> {
     if (!unitUsers) {
       throw new InvalidParamsError("unitUsers param must be defined.");
     }
@@ -162,7 +168,10 @@ export class OrganisationService extends BaseService<Organisation> {
       relations: ["organisationUser", "organisationUser.user"],
     });
 
-    return users.map((u) => u.organisationUser.user.id);
+    return users.map((u) => ({
+      id: u.organisationUser.user.id,
+      externalId: u.organisationUser.user.id,
+    }));
   }
 
   async findUserOrganisationUnitUsers(

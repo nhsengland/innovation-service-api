@@ -1,7 +1,7 @@
 export interface ProfileSlimModel {
   id: string;
   externalId: string;
-  displayName: string;
+  displayName?: string;
   email?: string;
 }
 

@@ -1,18 +1,19 @@
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   AccessorOrganisationRole,
+  Comment,
   Innovation,
   Organisation,
   OrganisationUnit,
   OrganisationUnitUser,
   OrganisationUser,
-  User,
-  UserType,
   Role,
   ServiceRole,
-  UserRole,
-  Comment,
   TermsOfUse,
   TermsOfUseUser,
+  User,
+  UserRole,
+  UserType,
 } from "@domain/index";
 import {
   InvalidDataError,
@@ -27,10 +28,10 @@ import { RequestUser } from "@services/models/RequestUser";
 import { SimpleResult } from "@services/models/SimpleResult";
 import { UserCreationModel } from "@services/models/UserCreationModel";
 import { UserCreationResult } from "@services/models/UserCreationResult";
+import { UserOrganisationUnitUpdateResult } from "@services/models/UserOrganisationUnitUpdateResult";
 import { UserProfileUpdateModel } from "@services/models/UserProfileUpdateModel";
 import { UserUpdateModel } from "@services/models/UserUpdateModel";
 import { UserUpdateResult } from "@services/models/UserUpdateResult";
-import { UserOrganisationUnitUpdateResult } from "@services/models/UserOrganisationUnitUpdateResult";
 import { UserSearchResult } from "@services/types";
 import {
   Connection,
@@ -40,7 +41,6 @@ import {
   getRepository,
   Repository,
 } from "typeorm";
-import { NotFound } from "utils/responsify";
 import {
   authenticateWitGraphAPI,
   createB2CUser,
@@ -51,9 +51,8 @@ import {
   saveB2CUser,
 } from "../helpers";
 import { ProfileModel } from "../models/ProfileModel";
-import { NotificationService } from "./Notification.service";
-import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import { LoggerService } from "./Logger.service";
+import { NotificationService } from "./Notification.service";
 import { TermsOfUseService } from "./TermsOfUse.service";
 
 export class UserService {
@@ -1031,8 +1030,6 @@ export class UserService {
       throw new Error("Invalid Credentials");
     }
 
-    const user = await getUserFromB2C(userId, graphAccessToken);
-
     const filterOrgUser = {
       relations: [
         "user",
@@ -1045,7 +1042,12 @@ export class UserService {
         user: userId,
       },
     };
+
     const orgUser = await this.orgUserRepo.find(filterOrgUser);
+    const user = await getUserFromB2C(
+      orgUser[0].user.externalId,
+      graphAccessToken
+    );
 
     const filterOrgUnit = {
       relations: ["organisation"],
@@ -1058,7 +1060,7 @@ export class UserService {
 
     if (orgUnit.length > 0) {
       await this.connection.transaction(async (trs) => {
-        const updatedUserOrgUnit = await trs.update(
+        await trs.update(
           OrganisationUnitUser,
           { organisationUser: orgUser[0].id },
           {
@@ -1105,9 +1107,9 @@ export class UserService {
         );
       }
 
-      const newQAUsersquery = this.orgUnitUserRepo
+      const newQAUsers = await this.orgUnitUserRepo
         .createQueryBuilder("unitUser")
-        .select("user.id")
+        .select("user.external_id")
         .innerJoin("unitUser.organisationUnit", "unit")
         .innerJoin("unitUser.organisationUser", "orgUser")
         .innerJoin("orgUser.user", "user")
@@ -1118,11 +1120,8 @@ export class UserService {
         })
         .andWhere("user.id != :userId", {
           userId: userId,
-        });
-
-      const newQAUsers = await newQAUsersquery.execute();
-
-      const targetUsers_NewQA = newQAUsers.map((QA) => QA.user_id);
+        })
+        .execute();
 
       try {
         await this.notificationService.sendEmail(
@@ -1130,7 +1129,7 @@ export class UserService {
           EmailNotificationTemplate.NEW_QUALIFYING_ACCESSORS_UNIT_CHANGE,
           "",
           userId,
-          [targetUsers_NewQA],
+          newQAUsers.map((QA) => QA.external_id),
           {
             user_name: displayName,
             new_unit: new_unit,
@@ -1143,9 +1142,9 @@ export class UserService {
         );
       }
 
-      const oldQAUsersquery = this.orgUnitUserRepo
+      const oldQAUsers = await this.orgUnitUserRepo
         .createQueryBuilder("unitUser")
-        .select("user.id")
+        .select("user.external_id")
         .innerJoin("unitUser.organisationUnit", "unit")
         .innerJoin("unitUser.organisationUser", "orgUser")
         .innerJoin("orgUser.user", "user")
@@ -1153,11 +1152,8 @@ export class UserService {
         .where("unit.id = :unitId and orgUser.role = :role", {
           unitId: orgUser[0].userOrganisationUnits[0].organisationUnit.id,
           role: AccessorOrganisationRole.QUALIFYING_ACCESSOR,
-        });
-
-      const oldQAUsers = await oldQAUsersquery.execute();
-
-      const targetUsers_OldQA = oldQAUsers.map((QA) => QA.user_id);
+        })
+        .execute();
 
       try {
         await this.notificationService.sendEmail(
@@ -1165,7 +1161,7 @@ export class UserService {
           EmailNotificationTemplate.OLD_QUALIFYING_ACCESSORS_UNIT_CHANGE,
           "",
           userId,
-          [targetUsers_OldQA],
+          oldQAUsers.map((QA) => QA.external_id),
           {
             user_name: displayName,
             old_unit: old_unit,

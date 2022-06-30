@@ -1,3 +1,8 @@
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import {
+  NotifContextDetail,
+  NotifContextType,
+} from "@domain/enums/notification.enums";
 import {
   AccessorOrganisationRole,
   Innovation,
@@ -10,11 +15,13 @@ import {
   UserType,
 } from "@domain/index";
 import { InvalidParamsError, InvalidUserRoleError } from "@services/errors";
+import { AdminDeletionResult } from "@services/models/AdminDeletionResult";
+import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
 import { RequestUser } from "@services/models/RequestUser";
-import {
-  UserLockResult,
-  UserUnlockResult,
-} from "@services/models/UserLockResult";
+import { UserChangeRoleValidationResult } from "@services/models/UserChangeRoleValidationResult";
+import { UserCreationModel } from "@services/models/UserCreationModel";
+import { UserCreationResult } from "@services/models/UserCreationResult";
+import { UserLockResult } from "@services/models/UserLockResult";
 import { UserLockValidationResult } from "@services/models/UserLockValidationResult";
 import { UserUpdateResult } from "@services/models/UserUpdateResult";
 import {
@@ -24,29 +31,20 @@ import {
 } from "@services/types";
 import { Connection, getConnection } from "typeorm";
 import { UserService } from "..";
+import * as accessorRules from "../config/admin-accessor-user-lock.config.json";
+import * as rule from "../config/admin-change-role.config.json";
+import * as assessmentRules from "../config/admin-needs-assessment-user-lock.config.json";
+import * as qaRules from "../config/admin-qa-user-lock.config.json";
+import * as unitrules from "../config/admin-user-change-unit.config.json";
 import {
   authenticateWitGraphAPI,
-  getUserFromB2C,
   deleteB2CAccount,
+  getUserFromB2C,
 } from "../helpers";
-import * as qaRules from "../config/admin-qa-user-lock.config.json";
-import * as accessorRules from "../config/admin-accessor-user-lock.config.json";
-import * as assessmentRules from "../config/admin-needs-assessment-user-lock.config.json";
-import * as rule from "../config/admin-change-role.config.json";
-import * as unitrules from "../config/admin-user-change-unit.config.json";
-import { UserCreationModel } from "@services/models/UserCreationModel";
-import { UserCreationResult } from "@services/models/UserCreationResult";
-import { UserChangeRoleValidationResult } from "@services/models/UserChangeRoleValidationResult";
-import { AdminDeletionResult } from "@services/models/AdminDeletionResult";
-import { OrganisationService } from "./Organisation.service";
-import { NotificationService } from "./Notification.service";
-import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
-import { LoggerService } from "./Logger.service";
 import { InnovationSupportService } from "./InnovationSupport.service";
-import {
-  NotifContextDetail,
-  NotifContextType,
-} from "@domain/enums/notification.enums";
+import { LoggerService } from "./Logger.service";
+import { NotificationService } from "./Notification.service";
+import { OrganisationService } from "./Organisation.service";
 
 export class AdminService {
   private readonly connection: Connection;
@@ -218,7 +216,7 @@ export class AdminService {
       "FULL"
     );
     if (userDetails.type === "INNOVATOR") {
-      let users: string[];
+      let users: ProfileSlimModel[];
       const orgUnitUsersList: string[] = [];
       const userToRequestUser: RequestUser = {
         id: userDetails.id,
@@ -296,7 +294,7 @@ export class AdminService {
               NotifContextDetail.LOCK_USER,
               userDetails.innovations[innovationIdx].id,
               {},
-              users
+              users.map((u) => u.id)
             );
           } catch (error) {
             this.logService.error(
