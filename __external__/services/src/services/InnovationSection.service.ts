@@ -520,6 +520,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
           {
             section: updatedAction.innovationSection.section,
             actionStatus: updatedAction.status,
+            actionCode: updatedAction.displayId,
           },
           targetNotificationUsers
         );
