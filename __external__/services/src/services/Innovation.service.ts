@@ -1242,7 +1242,7 @@ export class InnovationService extends BaseService<Innovation> {
           userIdx++
         ) {
           supportUsers.push(
-            organisationUnitUsers[userIdx].organisationUser.user.id
+            organisationUnitUsers[userIdx].organisationUser.user.externalId
           );
         }
       }

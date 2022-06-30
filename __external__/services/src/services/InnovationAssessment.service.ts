@@ -363,7 +363,7 @@ export class InnovationAssessmentService {
           EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED,
           innovationId,
           assessmentDb.id,
-          qualifyingAccessors
+          qualifyingAccessors.map((u) => u.externalId)
         );
       } catch (error) {
         this.logService.error(

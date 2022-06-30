@@ -36,6 +36,7 @@ import { FileService } from "./File.service";
 import { InnovationService } from "./Innovation.service";
 import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
+import { UserService } from "./User.service";
 
 export class InnovationSectionService extends BaseService<InnovationSection> {
   private readonly connection: Connection;
@@ -44,6 +45,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
   private readonly activityLogService: ActivityLogService;
+  private readonly userService: UserService;
 
   constructor(connectionName?: string) {
     super(InnovationSection, connectionName);
@@ -53,6 +55,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     this.notificationService = new NotificationService(connectionName);
     this.logService = new LoggerService();
     this.activityLogService = new ActivityLogService(connectionName);
+    this.userService = new UserService(connectionName);
   }
 
   async findAllInnovationSectionsMetadata(
@@ -407,7 +410,6 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
 
     const innovSections = await innovation.sections;
     const updatedActions: InnovationAction[] = [];
-    let targetNotificationUsers: string[] = [];
 
     const result = await this.connection.transaction(
       async (transactionManager) => {
@@ -508,7 +510,6 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
 
     for (let index = 0; index < updatedActions.length; index++) {
       const updatedAction = updatedActions[index];
-      targetNotificationUsers = [updatedAction.createdBy];
       try {
         await this.notificationService.create(
           requestUser,
@@ -522,7 +523,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
             actionStatus: updatedAction.status,
             actionCode: updatedAction.displayId,
           },
-          targetNotificationUsers
+          [updatedAction.createdBy]
         );
       } catch (error) {
         this.logService.error(
@@ -533,12 +534,14 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
 
       if (updatedAction.status === InnovationActionStatus.IN_REVIEW) {
         try {
+          const dbUser = await this.userService.find(updatedAction.createdBy);
+
           await this.notificationService.sendEmail(
             requestUser,
             EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
             innovationId,
             updatedAction.id,
-            targetNotificationUsers
+            [dbUser.externalId]
           );
         } catch (error) {
           this.logService.error(

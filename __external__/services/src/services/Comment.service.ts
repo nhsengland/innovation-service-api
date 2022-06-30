@@ -20,8 +20,8 @@ import {
 } from "@services/errors";
 import { checkIfValidUUID } from "@services/helpers";
 import { CommentModel } from "@services/models/CommentModel";
+import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
 import { RequestUser } from "@services/models/RequestUser";
-
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
 import { ActivityLogService } from "./ActivityLog.service";
 import { InnovationService } from "./Innovation.service";
@@ -30,6 +30,7 @@ import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
 import { OrganisationService } from "./Organisation.service";
 import { UserService } from "./User.service";
+
 export class CommentService {
   private readonly connection: Connection;
   private readonly commentRepo: Repository<Comment>;
@@ -130,7 +131,7 @@ export class CommentService {
       return comment;
     });
 
-    let targetNotificationUsers;
+    let targetNotificationUsers: ProfileSlimModel[] = [];
     // If the comment if made by an accessor, it also has to send a notification for assigned accessors regardless of the unit they belong to.
     // The create method already knows it has to create a notification to the owner of the innovation.
     // But we need to pass in the accessors that are assigned to this innovation.
@@ -166,7 +167,7 @@ export class CommentService {
           : NotifContextDetail.COMMENT_CREATION,
         result.id,
         {},
-        targetNotificationUsers || []
+        targetNotificationUsers.map((u) => u.id)
       );
     } catch (error) {
       this.logService.error(
@@ -181,7 +182,6 @@ export class CommentService {
           relations: ["owner"],
         });
 
-        const owner = innovation.owner.id;
         const sender = await this.userService.getProfile(
           requestUser.id,
           requestUser.externalId
@@ -195,7 +195,7 @@ export class CommentService {
           EmailNotificationTemplate.INNOVATORS_COMMENT_RECEIVED,
           innovationId,
           result.id,
-          [owner],
+          [innovation.owner.externalId],
           {
             accessor_name: sender.displayName,
             unit_name: senderUnit.name,
