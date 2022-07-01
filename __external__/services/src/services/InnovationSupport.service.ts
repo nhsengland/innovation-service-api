@@ -347,6 +347,8 @@ export class InnovationSupportService {
       );
     }
 
+    let retVal;
+
     const organisationUnit = requestUser.organisationUnitUser.organisationUnit;
 
     const targetNotificationUsers: ProfileSlimModel[] = [];
@@ -378,7 +380,7 @@ export class InnovationSupportService {
         const usersToBeNotified =
           innovationSupport.organisationUnitUsers?.map((u) => u.id) || [];
 
-        const retVal = await transactionManager.save(
+        retVal = await transactionManager.save(
           InnovationSupport,
           innovationSupport
         );
@@ -417,7 +419,7 @@ export class InnovationSupportService {
         innovationId,
         NotifContextType.SUPPORT,
         NotifContextDetail.SUPPORT_STATUS_UPDATE,
-        innovationId,
+        retVal.id,
         {
           organisationUnitName: organisationUnit.name,
           supportStatus: result.status,
@@ -620,7 +622,7 @@ export class InnovationSupportService {
           innovationId,
           NotifContextType.SUPPORT,
           NotifContextDetail.SUPPORT_STATUS_UPDATE,
-          innovationId,
+          result.id,
           {
             organisationUnitName: organisationUnit.name,
             supportStatus: support.status,
@@ -645,7 +647,7 @@ export class InnovationSupportService {
           innovationId,
           NotifContextType.SUPPORT,
           NotifContextDetail.SUPPORT_STATUS_UPDATE,
-          innovationId,
+          result.id,
           {
             organisationUnitName: organisationUnit.name,
             supportStatus: support.status,
@@ -723,7 +725,7 @@ export class InnovationSupportService {
           innovationId,
           NotifContextType.SUPPORT,
           NotifContextDetail.SUPPORT_STATUS_UPDATE,
-          innovationId,
+          result.id,
           {
             organisationUnitName: organisationUnit.name,
             supportStatus: support.status,
