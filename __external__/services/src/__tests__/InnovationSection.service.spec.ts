@@ -22,6 +22,7 @@ import {
   InnovationEvidence,
   InnovationFile,
   InnovationGeneralBenefit,
+  InnovationPatientsCitizensBenefit,
   InnovationRevenue,
   InnovationSection,
   InnovationSectionCatalogue,
@@ -41,9 +42,7 @@ import {
   OrganisationUnitUser,
   OrganisationUser,
   PatientsCitizensBenefitCatalogue,
-  InnovationPatientsCitizensBenefit,
   StandardMetCatalogue,
-  SubgroupBenefitCatalogue,
   User,
   UserRole,
   UserType,
@@ -62,7 +61,6 @@ import { NotificationService } from "@services/services/Notification.service";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import { getConnection } from "typeorm";
-import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
 import { FileService } from "../services/File.service";
 import { InnovationSectionService } from "../services/InnovationSection.service";
