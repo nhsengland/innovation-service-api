@@ -434,6 +434,26 @@ export class InnovationSupportService {
     }
 
     try {
+      await this.notificationService.create(
+        requestUser,
+        NotificationAudience.INNOVATORS,
+        innovationId,
+        NotifContextType.SUPPORT,
+        NotifContextDetail.SUPPORT_STATUS_UPDATE,
+        innovationId,
+        {
+          organisationUnitName: organisationUnit.name,
+          supportStatus: result.status,
+        }
+      );
+    } catch (error) {
+      this.logService.error(
+        `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
+        error
+      );
+    }
+
+    try {
       const innovation = await this.innovationService.find(innovationId, {
         relations: ["owner"],
       });
