@@ -3572,12 +3572,38 @@ paths:
           description: "Unauthorized"
 
   "/notifications":
+    get:
+      tags:
+        - "Notifications"
+        - "GetAll"
+      description: "Get All Notifications by various filters"
+      operationId: "notifications-get-all"
+      security:
+        - OpenId:
+            - notifications_list
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
+
+  "/notifications/dismiss":
     patch:
       tags:
         - "Notifications"
         - "Dismiss"
-      description: "dismisses a given notification for the authenticated user"
-      operationId: "notifications-dismiss-one"
+      description: "dismisses the specified notifications for the authenticated user"
+      operationId: "notifications-dismiss"
       parameters:
         - name: Authorization
           in: header
@@ -3587,19 +3613,88 @@ paths:
       security:
         - OpenId:
             - notifications_dismiss
-      requestBody:
-        description: Dismiss notification payload
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                contextId:
-                  type: string
-                contextType:
-                  type: string
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
 
+  "/innovations/{innovationId}/notifications":
+    get:
+      tags:
+        - "Notifications"
+        - "GetByInnovationId"
+      description: "Get all notification context types and equivalent count"
+      operationId: "notifications-by-innovation-id"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: innovationId
+          in: path
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - notifications_list
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
+  "/notifications/{id}":
+    delete:
+      tags:
+        - "Notifications"
+        - "Delete"
+      description: "Deletes the specified notification"
+      operationId: "notifications-delete-one"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - notifications_delete
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "401":
+          description: "Unauthorized"
+
+  "/notifications/counters":
+    get:
+      tags:
+        - "NotificationsCounters"
+        - "List"
+      description: "Retrieves the number of notifications for a specific user"
+      operationId: "notifications-get-counters"
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          required: true
+      security:
+        - OpenId:
+            - notifications_counters
       responses:
         "200":
           description: "OK"

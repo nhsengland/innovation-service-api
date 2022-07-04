@@ -1,15 +1,17 @@
-import { NotificationContextType } from "@domain/index";
+import { NotifContextPayloadType } from "@domain/enums/notification.enums";
 import { CustomContext } from "../../utils/types";
 
 export const patchDismissNotification = async (
   ctx: CustomContext,
-  contextId: string,
-  contextType: NotificationContextType
+  dismissAll: boolean,
+  notificationIds?: string[],
+  notificationContext?: NotifContextPayloadType
 ) => {
-  const result = await ctx.services.NotificationService.dismiss(
+  const result = await ctx.services.InAppNotificationService.dismiss(
     ctx.auth.requestUser,
-    contextType,
-    contextId
+    dismissAll,
+    notificationIds,
+    notificationContext
   );
   return result;
 };

@@ -172,7 +172,7 @@ export class InnovationSupportLogService {
             EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED,
             innovationId,
             innovationId,
-            targetUsers
+            targetUsers.map((u) => u.externalId)
           );
         } catch (error) {
           this.loggerService.error(

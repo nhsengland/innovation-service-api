@@ -1,6 +1,10 @@
 import { Activity } from "@domain/enums/activity.enums";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
+  NotifContextDetail,
+  NotifContextType,
+} from "@domain/enums/notification.enums";
+import {
   Comment,
   Innovation,
   InnovationAssessment,
@@ -331,9 +335,9 @@ export class InnovationAssessmentService {
           requestUser,
           NotificationAudience.QUALIFYING_ACCESSORS,
           innovationId,
-          NotificationContextType.INNOVATION,
-          innovationId,
-          `Innovation with id ${innovationId} is now available for Qualifying Accessors`
+          NotifContextType.INNOVATION,
+          NotifContextDetail.NEEDS_ASSESSMENT_COMPLETED,
+          innovationId
         );
       } catch (error) {
         this.logService.error(
@@ -359,7 +363,7 @@ export class InnovationAssessmentService {
           EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED,
           innovationId,
           assessmentDb.id,
-          qualifyingAccessors
+          qualifyingAccessors.map((u) => u.externalId)
         );
       } catch (error) {
         this.logService.error(
@@ -407,9 +411,9 @@ export class InnovationAssessmentService {
             requestUser,
             NotificationAudience.INNOVATORS,
             innovationId,
-            NotificationContextType.DATA_SHARING,
-            innovationId,
-            `Innovation with id ${innovationId} has received Data sharing suggestions from the needs assessment team`
+            NotifContextType.INNOVATION,
+            NotifContextDetail.NEEDS_ASSESSMENT_ORGANISATION_SUGGESTION,
+            innovationId
           );
         } catch (error) {
           this.logService.error(

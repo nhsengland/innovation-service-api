@@ -1,6 +1,10 @@
 import { Activity } from "@domain/enums/activity.enums";
 import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
+  NotifContextDetail,
+  NotifContextType,
+} from "@domain/enums/notification.enums";
+import {
   Innovation,
   InnovationAction,
   InnovationActionStatus,
@@ -32,6 +36,7 @@ import { FileService } from "./File.service";
 import { InnovationService } from "./Innovation.service";
 import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
+import { UserService } from "./User.service";
 
 export class InnovationSectionService extends BaseService<InnovationSection> {
   private readonly connection: Connection;
@@ -40,6 +45,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
   private readonly activityLogService: ActivityLogService;
+  private readonly userService: UserService;
 
   constructor(connectionName?: string) {
     super(InnovationSection, connectionName);
@@ -49,6 +55,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     this.notificationService = new NotificationService(connectionName);
     this.logService = new LoggerService();
     this.activityLogService = new ActivityLogService(connectionName);
+    this.userService = new UserService(connectionName);
   }
 
   async findAllInnovationSectionsMetadata(
@@ -403,7 +410,6 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
 
     const innovSections = await innovation.sections;
     const updatedActions: InnovationAction[] = [];
-    let targetNotificationUsers: string[] = [];
 
     const result = await this.connection.transaction(
       async (transactionManager) => {
@@ -439,7 +445,9 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
                   updatedBy: requestUser.id,
                 }
               );
+
               actions[i].status = InnovationActionStatus.IN_REVIEW;
+              actions[i].innovationSection = innovSections[secIdx];
               updatedActions.push(actions[i]);
             }
 
@@ -501,17 +509,21 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     );
 
     for (let index = 0; index < updatedActions.length; index++) {
-      const element = updatedActions[index];
-      targetNotificationUsers = [element.createdBy];
+      const updatedAction = updatedActions[index];
       try {
         await this.notificationService.create(
           requestUser,
           NotificationAudience.ACCESSORS,
           innovationId,
-          NotificationContextType.ACTION,
-          element.id,
-          `The action with id ${element.id} was updated by the innovator with id ${requestUser.id} for the innovation with id ${innovationId}`,
-          targetNotificationUsers
+          NotifContextType.ACTION,
+          NotifContextDetail.ACTION_UPDATE,
+          updatedAction.id,
+          {
+            section: updatedAction.innovationSection.section,
+            actionStatus: updatedAction.status,
+            actionCode: updatedAction.displayId,
+          },
+          [updatedAction.createdBy]
         );
       } catch (error) {
         this.logService.error(
@@ -520,14 +532,16 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
         );
       }
 
-      if (element.status === InnovationActionStatus.IN_REVIEW) {
+      if (updatedAction.status === InnovationActionStatus.IN_REVIEW) {
         try {
+          const dbUser = await this.userService.find(updatedAction.createdBy);
+
           await this.notificationService.sendEmail(
             requestUser,
             EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
             innovationId,
-            element.id,
-            targetNotificationUsers
+            updatedAction.id,
+            [dbUser.externalId]
           );
         } catch (error) {
           this.logService.error(

@@ -1,9 +1,14 @@
+import { Activity } from "@domain/enums/activity.enums";
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import {
+  NotifContextDetail,
+  NotifContextType,
+} from "@domain/enums/notification.enums";
 import {
   AccessorOrganisationRole,
   Innovation,
   InnovationAction,
   InnovationActionStatus,
-  InnovationAssessment,
   InnovationSection,
   InnovationSectionCatalogue,
   InnovationSectionStatus,
@@ -29,6 +34,7 @@ import {
   getMergedArray,
   hasAccessorRole,
 } from "@services/helpers";
+import { InnovationCreationModel } from "@services/models/InnovationCreationModel";
 import {
   InnovationListModel,
   InnovationViewModel,
@@ -38,34 +44,28 @@ import { ProfileModel } from "@services/models/ProfileModel";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { SimpleResult } from "@services/models/SimpleResult";
+import { OrderByClauseType, SupportFilter } from "@services/types";
 import {
   Connection,
   EntityManager,
-  FindManyOptions,
   FindOneOptions,
   getConnection,
   getRepository,
   In,
-  IsNull,
   Repository,
   SelectQueryBuilder,
 } from "typeorm";
+import * as constants from "../../../../utils/constants";
 import {
   AccessorInnovationSummary,
   AssessmentInnovationSummary,
   InnovatorInnovationSummary,
 } from "../models/InnovationSummaryResult";
+import { ActivityLogService } from "./ActivityLog.service";
 import { BaseService } from "./Base.service";
 import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
 import { UserService } from "./User.service";
-
-import * as constants from "../../../../utils/constants";
-import { InnovationCreationModel } from "@services/models/InnovationCreationModel";
-import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
-import { OrderByClauseType, SupportFilter } from "@services/types";
-import { Activity } from "@domain/enums/activity.enums";
-import { ActivityLogService } from "./ActivityLog.service";
 
 export class InnovationService extends BaseService<Innovation> {
   private readonly connection: Connection;
@@ -1101,10 +1101,9 @@ export class InnovationService extends BaseService<Innovation> {
         requestUser,
         NotificationAudience.ASSESSMENT_USERS,
         innovation.id,
-        NotificationContextType.INNOVATION,
-
-        innovation.id,
-        `The innovation ${innovation.name} was submitted for assessment.`
+        NotifContextType.INNOVATION,
+        NotifContextDetail.INNOVATION_SUBMISSION,
+        innovation.id
       );
     } catch (error) {
       this.logService.error(
@@ -1243,7 +1242,7 @@ export class InnovationService extends BaseService<Innovation> {
           userIdx++
         ) {
           supportUsers.push(
-            organisationUnitUsers[userIdx].organisationUser.user.id
+            organisationUnitUsers[userIdx].organisationUser.user.externalId
           );
         }
       }

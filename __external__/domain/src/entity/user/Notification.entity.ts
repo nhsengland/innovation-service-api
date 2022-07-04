@@ -1,4 +1,7 @@
-import { NotificationContextType } from "@domain/enums/user.enums";
+import {
+  NotifContextDetail,
+  NotifContextType,
+} from "@domain/enums/notification.enums";
 import {
   Column,
   Entity,
@@ -17,14 +20,17 @@ export class Notification extends Base {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ name: "message" })
-  message: string;
-
   @Column({ name: "context_type" })
-  contextType: NotificationContextType;
+  contextType: NotifContextType;
 
   @Column({ name: "context_id" })
   contextId: string;
+
+  @Column({ name: "context_detail" })
+  contextDetail: NotifContextDetail;
+
+  @Column({ name: "params" })
+  params: string;
 
   //relationships
   @ManyToOne(() => Innovation)
@@ -35,7 +41,7 @@ export class Notification extends Base {
     () => NotificationUser,
     (notificationUser) => notificationUser.notification,
     {
-      lazy: true,
+      lazy: false,
       cascade: ["insert", "update"],
     }
   )

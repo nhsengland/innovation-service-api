@@ -5,7 +5,6 @@ import * as connection from "../../utils/connection";
 import * as service_loader from "../../utils/serviceLoader";
 import * as decorators from "../../utils/decorators";
 import * as authentication from "../../utils/authentication";
-
 import {
   runStubFunctionFromBindings,
   createHttpTrigger,
@@ -75,8 +74,10 @@ describe("[HttpTrigger] notificationPatchDismiss Suite", () => {
       jest.spyOn(persistence, "patchDismissNotification").mockResolvedValue({} as any);
 
       const { res } = await mockedRequestFactory({body :{
-        contextId:':contextId',
-        contextType: ':contextType'
+        context: {
+          id:'886554E4-83B6-EC11-997E-0050F25A43BD',
+          type: ':contextType'
+        }
       }});
       expect(res.status).toBe(200);
     });
@@ -93,7 +94,7 @@ async function mockedRequestFactory(data?: any) {
         direction: "in",
         data: createHttpTrigger(
           "PATCH",
-          "http://nhse-i-aac/api/notifications",
+          "http://nhse-i-aac/api/notifications/dismiss",
           { ...data.headers }, // headers
           {}, // params
           {...data.body}, // payload/body

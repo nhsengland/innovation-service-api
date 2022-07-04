@@ -17,7 +17,7 @@ import { NotificationService } from "@services/services/Notification.service";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import { getConnection } from "typeorm";
-import { closeTestsConnection, setupTestsConnection } from "..";
+import { UserService } from "..";
 import * as helpers from "../helpers";
 import * as fixtures from "../__fixtures__";
 
@@ -334,6 +334,12 @@ describe("Innovation Transfer Suite", () => {
         },
       ],
     });
+    jest.spyOn(UserService.prototype, "getUserInfo").mockResolvedValue({
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "c7095d87-c3df-46f6-a503-001b083f4630",
+      email: "test@example.com",
+      displayName: ":displayName",
+    });
     jest
       .spyOn(NotificationService.prototype, "sendEmail")
       .mockResolvedValue({} as any);
@@ -465,6 +471,12 @@ describe("Innovation Transfer Suite", () => {
       id: innovatorRequestUser.id,
       displayName: ":innovatorName",
     });
+    jest.spyOn(UserService.prototype, "getUserInfo").mockResolvedValue({
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "c7095d87-c3df-46f6-a503-001b083f4630",
+      email: "test@example.com",
+      displayName: ":displayName",
+    });
     jest
       .spyOn(NotificationService.prototype, "sendEmail")
       .mockResolvedValue({} as any);
@@ -532,7 +544,7 @@ describe("Innovation Transfer Suite", () => {
       dummy.newEmail
     );
 
-    const result = await transferService.findAll(innovatorRequestUser.id);
+    const result = await transferService.findAll(innovatorRequestUser);
 
     expect(result).toBeDefined();
     expect(result.length).toEqual(1);
@@ -553,6 +565,12 @@ describe("Innovation Transfer Suite", () => {
         },
       ],
     });
+    jest.spyOn(UserService.prototype, "getUserInfo").mockResolvedValue({
+      id: innovatorRequestUser.id,
+      externalId: innovatorRequestUser.externalId,
+      email: dummy.newEmail,
+      displayName: ":displayName",
+    });
     jest
       .spyOn(NotificationService.prototype, "sendEmail")
       .mockResolvedValue({} as any);
@@ -563,7 +581,7 @@ describe("Innovation Transfer Suite", () => {
       dummy.newEmail
     );
 
-    const result = await transferService.findAll(innovatorRequestUser.id, true);
+    const result = await transferService.findAll(innovatorRequestUser, true);
 
     expect(result).toBeDefined();
     expect(result.length).toEqual(1);

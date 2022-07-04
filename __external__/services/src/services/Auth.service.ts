@@ -1,13 +1,12 @@
-import { UserService } from "./User.service";
+import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import { UserEmailNotFound } from "@services/errors";
+import { UserEmailModel } from "@services/models/ProfileSlimModel";
+import { SLSEventType } from "@services/types";
 import * as crypto from "crypto";
 import { TTL2ls } from "../../../../schemas/TTL2ls";
 import { EmailService } from "./Email.service";
-import { UserEmailModel } from "@services/models/ProfileSlimModel";
-import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
-import { UserEmailNotFound } from "@services/errors";
 import { LoggerService } from "./Logger.service";
-import { SLSEventType } from "@services/types";
-import { number } from "joi";
+import { UserService } from "./User.service";
 
 export class AuthService {
   private readonly userService: UserService;

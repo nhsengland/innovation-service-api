@@ -1,0 +1,15 @@
+{
+    "bindings": [
+      {
+        "authLevel": "anonymous",
+        "type": "httpTrigger",
+        "direction": "in",
+        "name": "req",
+        "methods": ["delete"],
+        "route": "notifications/{id}"
+      },
+      { "type": "http", "direction": "out", "name": "res" }
+    ],
+    "scriptFile": "../dist/notificationsDeleteOne/index.js"
+  }
+  

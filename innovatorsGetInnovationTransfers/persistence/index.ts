@@ -5,7 +5,7 @@ export const findInnovationTransfers = async (
   assignedToMe?: boolean
 ) => {
   const result = await ctx.services.InnovationTransferService.findAll(
-    ctx.auth.decodedJwt.oid,
+    ctx.auth.requestUser,
     assignedToMe
   );
 

@@ -6,29 +6,32 @@ import {
   AppInsights,
   JwtDecoder,
   SQLConnector,
-  Validator,
 } from "../utils/decorators";
+import { JoiHelper } from "../utils/joi.helper";
 import * as Responsify from "../utils/responsify";
 import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
-import * as validation from "./validation";
+import { BodyParamsType, BodySchema } from "./validation";
 
-class NotificationsDismiss {
+class notificationsPatchDismiss {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder()
-  @Validator(validation.ValidatePayload, "body", "Invalid payload.")
   @AllowedUserType(UserType.INNOVATOR, UserType.ACCESSOR, UserType.ASSESSMENT)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
   ): Promise<void> {
     let result: NotificationDismissResult;
+
+    JoiHelper.Validate<BodyParamsType>(BodySchema, req.body);
+
     try {
       result = await persistence.patchDismissNotification(
         context,
-        req.body.contextId,
-        req.body.contextType
+        !!req.body.dismissAll,
+        req.body.notificationIds,
+        req.body.context
       );
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
@@ -46,4 +49,4 @@ class NotificationsDismiss {
   }
 }
 
-export default NotificationsDismiss.httpTrigger;
+export default notificationsPatchDismiss.httpTrigger;

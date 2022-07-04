@@ -146,7 +146,7 @@ export class InnovatorService extends BaseService<User> {
         EmailNotificationTemplate.INNOVATORS_ACCOUNT_CREATED,
         null,
         innovator.id,
-        [innovator.id],
+        [innovator.externalId],
         {
           innovation_service_url: process.env.CLIENT_WEB_BASE_URL,
         }

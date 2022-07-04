@@ -14,6 +14,7 @@ class InnovatorsGetInnovationTransfers {
   @AppInsights()
   @SQLConnector()
   @JwtDecoder()
+  @AllowedUserType(UserType.INNOVATOR)
   static async httpTrigger(
     context: CustomContext,
     req: HttpRequest
