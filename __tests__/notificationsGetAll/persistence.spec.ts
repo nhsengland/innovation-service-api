@@ -1,21 +1,18 @@
-import {
-  NotifContextPayloadType,
-  NotifContextType,
-} from "@domain/enums/notification.enums";
 import { InAppNotificationService } from "@services/services/InAppNotification.service";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import * as typeorm from "typeorm";
-import * as persistence from "../../notificationsPatchDismiss/persistence";
+import { PaginationQueryParamsType } from "utils/joi.helper";
+import * as persistence from "../../notificationsGetAll/persistence";
 import { CustomContext } from "../../utils/types";
-describe("[notificationsPatchDismiss] Persistence suite", () => {
+describe("[notificationsGetAll] Persistence suite", () => {
   beforeAll(() => {
     dotenv.config({
       path: path.resolve(__dirname, "../.environment"),
     });
   });
-  describe("dismissNotifications", () => {
-    it("should dismiss notification", async () => {
+  describe("notificationsGetAll", () => {
+    it("should get all notifications by user id", async () => {
       // Arrange
       jest.spyOn(typeorm, "getRepository").mockImplementation(jest.fn());
       jest.spyOn(typeorm, "getConnection").mockImplementation(
@@ -24,14 +21,14 @@ describe("[notificationsPatchDismiss] Persistence suite", () => {
           ({ close: () => {} } as typeorm.Connection)
       );
       const spy = jest
-        .spyOn(InAppNotificationService.prototype, "dismiss")
+        .spyOn(InAppNotificationService.prototype, "getNotificationsByUserId")
         .mockResolvedValue({} as any);
 
       const ctx = {
         auth: {
           requestUser: {
             id: ":userId",
-            type: "ACCESSOR",
+            type: "INNOVATOR",
           },
         },
         services: {
@@ -39,16 +36,22 @@ describe("[notificationsPatchDismiss] Persistence suite", () => {
         },
       };
 
-      const context: NotifContextPayloadType = {
-        id: ":contextId",
-        type: NotifContextType.INNOVATION,
+      const filters: { [key: string]: any } = {
+        contexTypes: [],
+      };
+
+      const paginationObj: PaginationQueryParamsType<string> = {
+        order: {
+          createdAt: "DESC",
+        },
+        skip: 0,
+        take: 20,
       };
       // Act
-      await persistence.patchDismissNotification(
+      await persistence.getNotificationsByUserId(
         ctx as CustomContext,
-        null,
-        null,
-        context
+        filters,
+        paginationObj
       );
       expect(spy).toHaveBeenCalled();
     });
