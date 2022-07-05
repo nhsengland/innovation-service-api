@@ -259,7 +259,7 @@ export class AdminService {
                 "QUALIFYING_ACCESSOR"
               ) {
                 orgUnitUsersList.push(
-                  organisationUnitUsers[organisationUnitUserIdx].id
+                  organisationUnitUsers[organisationUnitUserIdx].userId
                 );
               }
             }
@@ -274,17 +274,13 @@ export class AdminService {
                   "ACCESSOR"
               ) {
                 orgUnitUsersList.push(
-                  organisationUnitUsers[organisationUnitUserIdx].id
+                  organisationUnitUsers[organisationUnitUserIdx].userId
                 );
               }
             }
           }
         }
         if (orgUnitUsersList.length != 0) {
-          users = await this.organisationService.findUserFromUnitUsers(
-            orgUnitUsersList
-          );
-
           try {
             await this.notificationService.create(
               requestUser,
@@ -294,7 +290,7 @@ export class AdminService {
               NotifContextDetail.LOCK_USER,
               userDetails.innovations[innovationIdx].id,
               {},
-              users.map((u) => u.id)
+              orgUnitUsersList
             );
           } catch (error) {
             this.logService.error(
