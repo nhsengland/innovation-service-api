@@ -155,20 +155,46 @@ export class CommentService {
     }
 
     try {
-      await this.notificationService.create(
-        requestUser,
-        requestUser.type === UserType.INNOVATOR
-          ? NotificationAudience.ACCESSORS
-          : NotificationAudience.INNOVATORS,
-        innovationId,
-        NotifContextType.COMMENT,
-        replyTo
-          ? NotifContextDetail.COMMENT_REPLY
-          : NotifContextDetail.COMMENT_CREATION,
-        result.id,
-        {},
-        targetNotificationUsers.map((u) => u.id)
-      );
+      if (replyTo && requestUser.type === UserType.INNOVATOR) {
+        const replyChain = this.commentRepo
+          .createQueryBuilder("comment")
+          .innerJoinAndSelect("comment.user", "user")
+          .where("comment.reply_to_id = :replyToId", {
+            replyToId: replyTo,
+          })
+          .andWhere(`user.id != :userCommenting`, {
+            userCommenting: requestUser.id,
+          });
+
+        const usersInReplyChain = await replyChain.getManyAndCount();
+
+        await this.notificationService.create(
+          requestUser,
+          NotificationAudience.ACCESSORS,
+          innovationId,
+          NotifContextType.COMMENT,
+          NotifContextDetail.COMMENT_REPLY,
+          result.id,
+          {},
+          usersInReplyChain[0].map((u) => u.user.id)
+        );
+      } else if (
+        requestUser.type === UserType.ACCESSOR ||
+        requestUser.type === UserType.ASSESSMENT
+      ) {
+        await this.notificationService.create(
+          requestUser,
+          NotificationAudience.INNOVATORS,
+          innovationId,
+          NotifContextType.COMMENT,
+          replyTo
+            ? NotifContextDetail.COMMENT_REPLY
+            : NotifContextDetail.COMMENT_CREATION,
+          result.id,
+          {},
+          targetNotificationUsers.map((u) => u.id)
+        );
+      }
     } catch (error) {
       this.logService.error(
         `An error has occured while creating a notification of type ${NotificationContextType.COMMENT} from ${requestUser.id}`,
