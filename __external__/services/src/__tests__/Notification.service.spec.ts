@@ -38,9 +38,11 @@ import { InvalidParamsError } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
 import { InAppNotificationService } from "@services/services/InAppNotification.service";
 import { LoggerService } from "@services/services/Logger.service";
+import { UserService } from "@services/services/User.service";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import { getConnection } from "typeorm";
+import { PaginationQueryParamsType } from "utils/joi.helper";
 import {
   closeTestsConnection,
   InnovationSupportService,
@@ -642,6 +644,180 @@ describe("Notification Service Suite", () => {
     );
 
     expect(actual.affected).toBe(1);
+  });
+
+  it("should delete a notification", async () => {
+    const innovator = await fixtures.createInnovatorUser();
+
+    const innovationObj = fixtures.generateInnovation({
+      owner: { id: innovator.id },
+    });
+    const innovation = await fixtures.saveInnovation(innovationObj);
+
+    const requestUser: RequestUser = {
+      id: innovator.id,
+      externalId: innovator.id,
+      type: UserType.INNOVATOR,
+    };
+
+    const notification1 = await notificationService.create(
+      requestUser,
+      NotificationAudience.INNOVATORS,
+      innovation.id,
+      NotifContextType.INNOVATION,
+      NotifContextDetail.INNOVATION_SUBMISSION,
+
+      innovation.id
+    );
+
+    const deleteRequestUser: RequestUser = innovator;
+
+    const actual = await inAppNotificationService.deleteNotification(
+      deleteRequestUser,
+      notification1.id
+    );
+
+    expect(actual.id).toBe(notification1.id);
+    expect(actual.status).toBe("DELETED");
+  });
+
+  it("should get notification by innovation id", async () => {
+    const innovator = await fixtures.createInnovatorUser();
+
+    const innovationObj = fixtures.generateInnovation({
+      owner: { id: innovator.id },
+    });
+    const innovation = await fixtures.saveInnovation(innovationObj);
+
+    const requestUser: RequestUser = {
+      id: innovator.id,
+      externalId: innovator.id,
+      type: UserType.INNOVATOR,
+    };
+
+    const notification1 = await notificationService.create(
+      requestUser,
+      NotificationAudience.INNOVATORS,
+      innovation.id,
+      NotifContextType.INNOVATION,
+      NotifContextDetail.INNOVATION_SUBMISSION,
+
+      innovation.id
+    );
+
+    const actual = await inAppNotificationService.getNotificationsByInnovationId(
+      innovator,
+      innovation.id
+    );
+
+    expect(actual.count).toBe(1);
+  });
+
+  it("should get notification counters by user id", async () => {
+    const innovator = await fixtures.createInnovatorUser();
+
+    const innovationObj = fixtures.generateInnovation({
+      owner: { id: innovator.id },
+    });
+    const innovation = await fixtures.saveInnovation(innovationObj);
+
+    const requestUser: RequestUser = {
+      id: innovator.id,
+      externalId: innovator.id,
+      type: UserType.INNOVATOR,
+    };
+
+    await notificationService.create(
+      requestUser,
+      NotificationAudience.INNOVATORS,
+      innovation.id,
+      NotifContextType.INNOVATION,
+      NotifContextDetail.INNOVATION_SUBMISSION,
+
+      innovation.id
+    );
+    await notificationService.create(
+      requestUser,
+      NotificationAudience.INNOVATORS,
+      innovation.id,
+      NotifContextType.INNOVATION,
+      NotifContextDetail.INNOVATION_SUBMISSION,
+
+      innovation.id
+    );
+
+    const actual = await inAppNotificationService.getNotificationCountersByUserId(
+      innovator
+    );
+
+    expect(actual.total).toBe(2);
+  });
+
+  it("should get notifications by user id", async () => {
+    jest
+      .spyOn(helpers, "authenticateWitGraphAPI")
+      .mockResolvedValue(":access_token");
+
+    jest.spyOn(UserService.prototype, "getUsersList").mockResolvedValue([
+      {
+        id: "id",
+        externalId: "externalId",
+        displayName: "displayName",
+        email: "email",
+      },
+    ]);
+
+    const innovator = await fixtures.createInnovatorUser();
+
+    const innovationObj = fixtures.generateInnovation({
+      owner: { id: innovator.id },
+    });
+    const innovation = await fixtures.saveInnovation(innovationObj);
+
+    const requestUser: RequestUser = {
+      id: innovator.id,
+      externalId: innovator.id,
+      type: UserType.INNOVATOR,
+    };
+
+    await notificationService.create(
+      requestUser,
+      NotificationAudience.INNOVATORS,
+      innovation.id,
+      NotifContextType.INNOVATION,
+      NotifContextDetail.INNOVATION_SUBMISSION,
+
+      innovation.id
+    );
+    await notificationService.create(
+      requestUser,
+      NotificationAudience.INNOVATORS,
+      innovation.id,
+      NotifContextType.INNOVATION,
+      NotifContextDetail.INNOVATION_SUBMISSION,
+
+      innovation.id
+    );
+
+    const filters: { [key: string]: any } = {
+      contexTypes: [],
+    };
+
+    const paginationObj: PaginationQueryParamsType<string> = {
+      order: {
+        createdAt: "DESC",
+      },
+      skip: 0,
+      take: 20,
+    };
+
+    const actual = await inAppNotificationService.getNotificationsByUserId(
+      innovator,
+      filters,
+      paginationObj
+    );
+
+    expect(actual.count).toBe(2);
   });
 
   it("should fail with sql injection test", async () => {

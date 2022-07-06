@@ -554,6 +554,7 @@ export class OrganisationService extends BaseService<Organisation> {
           id: organisationUnitUser.id,
           name: b2cMap[organisationUser.user.externalId],
           role: organisationUser.role,
+          userId: organisationUser.user.id
         };
       });
 
