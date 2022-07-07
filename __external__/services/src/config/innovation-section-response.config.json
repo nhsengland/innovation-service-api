@@ -16,15 +16,8 @@
     ]
   },
   "UNDERSTANDING_OF_BENEFITS": {
-    "innovationFields": ["hasBenefits", "accessibilityImpactDetails", "accessibilityStepsDetails", "otherGeneralBenefit", "otherEnvironmentalBenefit"],
-    "innovationTypes": ["generalBenefits", "environmentalBenefits"],
-    "innovationDependencies": [
-      {
-        "type": "subgroups",
-        "fields": ["id", "name", "otherBenefit"],
-        "subtypes": ["benefits"]
-      }
-    ]
+    "innovationFields": ["impactPatients", "hasBenefits", "accessibilityImpactDetails", "accessibilityStepsDetails", "otherGeneralBenefit", "otherEnvironmentalBenefit", "otherPatientsCitizensBenefit"],
+    "innovationTypes": ["generalBenefits", "environmentalBenefits", "patientsCitizensBenefits"]
   },
   "EVIDENCE_OF_EFFECTIVENESS": {
     "innovationFields": ["hasEvidence"],
@@ -53,13 +46,7 @@
     "files": true
   },
   "CURRENT_CARE_PATHWAY": {
-    "innovationFields": ["hasUKPathwayKnowledge", "innovationPathwayKnowledge", "potentialPathway"],
-    "innovationDependencies": [
-      {
-        "type": "subgroups",
-        "fields": ["id", "name", "carePathway"]
-      }
-    ]
+    "innovationFields": ["hasUKPathwayKnowledge", "innovationPathwayKnowledge", "potentialPathway", "carePathway"]
   },
   "TESTING_WITH_USERS": {
     "innovationFields": ["hasTests"],
@@ -72,22 +59,10 @@
     "files": true
   },
   "COST_OF_INNOVATION": {
-    "innovationFields": ["hasCostKnowledge", "costDescription", "sellExpectations", "usageExpectations"],
-    "innovationDependencies": [
-      {
-        "type": "subgroups",
-        "fields": ["id", "name", "costDescription", "patientsRange", "sellExpectations", "usageExpectations"]
-      }
-    ]
+    "innovationFields": ["impactPatients", "hasCostKnowledge", "costDescription", "sellExpectations", "usageExpectations", "patientsRange"]
   },
   "COMPARATIVE_COST_BENEFIT": {
-    "innovationFields": ["hasCostSavingKnowledge", "hasCostCareKnowledge", "costComparison"],
-    "innovationDependencies": [
-      {
-        "type": "subgroups",
-        "fields": ["id", "name", "costComparison"]
-      }
-    ]
+    "innovationFields": ["hasCostSavingKnowledge", "hasCostCareKnowledge", "costComparison"]
   },
   "REVENUE_MODEL": {
     "innovationFields": ["hasRevenueModel", "payingOrganisations", "benefittingOrganisations", "hasFunding", "fundingDescription", "otherRevenueDescription"],

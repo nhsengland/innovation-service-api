@@ -16,15 +16,8 @@
     ]
   },
   "UNDERSTANDING_OF_BENEFITS": {
-    "innovationFields": ["hasBenefits", "accessibilityImpactDetails", "accessibilityStepsDetails", "otherGeneralBenefit", "otherEnvironmentalBenefit"],
-    "innovationTypes": ["generalBenefits", "environmentalBenefits"],
-    "innovationDependencies": [
-      {
-        "type": "subgroups",
-        "fields": ["otherBenefit"],
-        "subtypes": ["benefits"]
-      }
-    ]
+    "innovationFields": ["hasBenefits", "accessibilityImpactDetails", "accessibilityStepsDetails", "otherGeneralBenefit", "otherEnvironmentalBenefit", "otherPatientsCitizensBenefit"],
+    "innovationTypes": ["generalBenefits", "environmentalBenefits", "patientsCitizensBenefits"]
   },
   "EVIDENCE_OF_EFFECTIVENESS": {
     "innovationFields": ["hasEvidence"]
@@ -46,13 +39,7 @@
     "files": true
   },
   "CURRENT_CARE_PATHWAY": {
-    "innovationFields": ["hasUKPathwayKnowledge", "innovationPathwayKnowledge", "potentialPathway"],
-    "innovationDependencies": [
-      {
-        "type": "subgroups",
-        "fields": ["carePathway"]
-      }
-    ]
+    "innovationFields": ["hasUKPathwayKnowledge", "innovationPathwayKnowledge", "potentialPathway", "carePathway"]
   },
   "TESTING_WITH_USERS": {
     "innovationFields": ["hasTests"],
@@ -65,22 +52,10 @@
     "files": true
   },
   "COST_OF_INNOVATION": {
-    "innovationFields": ["hasCostKnowledge", "costDescription", "sellExpectations", "usageExpectations"],
-    "innovationDependencies": [
-      {
-        "type": "subgroups",
-        "fields": ["costDescription", "patientsRange", "sellExpectations", "usageExpectations"]
-      }
-    ]
+    "innovationFields": ["hasCostKnowledge", "costDescription", "sellExpectations", "usageExpectations", "patientsRange"]
   },
   "COMPARATIVE_COST_BENEFIT": {
-    "innovationFields": ["hasCostSavingKnowledge", "hasCostCareKnowledge", "costComparison"],
-    "innovationDependencies": [
-      {
-        "type": "subgroups",
-        "fields": ["costComparison"]
-      }
-    ]
+    "innovationFields": ["hasCostSavingKnowledge", "hasCostCareKnowledge", "costComparison"]
   },
   "REVENUE_MODEL": {
     "innovationFields": ["hasRevenueModel", "payingOrganisations", "benefittingOrganisations", "hasFunding", "fundingDescription", "otherRevenueDescription"],
