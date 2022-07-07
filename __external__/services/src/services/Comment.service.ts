@@ -156,17 +156,34 @@ export class CommentService {
 
     try {
       if (replyTo && requestUser.type === UserType.INNOVATOR) {
+        const originalComment = this.commentRepo
+          .createQueryBuilder("comment")
+          .innerJoinAndSelect("comment.user", "user")
+          .andWhere("comment.id = :commentId", {
+            commentId: replyTo,
+          })
+          .andWhere(`comment.user_id != :userCommenting`, {
+            userCommenting: requestUser.id,
+          });
+
+        const userInOriginalComment = await originalComment.getOne();
+
         const replyChain = this.commentRepo
           .createQueryBuilder("comment")
           .innerJoinAndSelect("comment.user", "user")
           .where("comment.reply_to_id = :replyToId", {
             replyToId: replyTo,
           })
-          .andWhere(`user.id != :userCommenting`, {
+          .andWhere("comment.id = :commentId", {
+            commentId: replyTo,
+          })
+          .andWhere(`comment.user_id != :userCommenting`, {
             userCommenting: requestUser.id,
           });
 
-        const usersInReplyChain = await replyChain.getManyAndCount();
+        const usersInReplyChain = await replyChain.getMany();
+
+        usersInReplyChain.push(userInOriginalComment);
 
         await this.notificationService.create(
           requestUser,
@@ -176,7 +193,7 @@ export class CommentService {
           NotifContextDetail.COMMENT_REPLY,
           result.id,
           {},
-          usersInReplyChain[0].map((u) => u.user.id)
+          usersInReplyChain.map((u) => u.user.id)
         );
       } else if (
         requestUser.type === UserType.ACCESSOR ||
