@@ -174,9 +174,6 @@ export class CommentService {
           .where("comment.reply_to_id = :replyToId", {
             replyToId: replyTo,
           })
-          .andWhere("comment.id = :commentId", {
-            commentId: replyTo,
-          })
           .andWhere(`comment.user_id != :userCommenting`, {
             userCommenting: requestUser.id,
           });
