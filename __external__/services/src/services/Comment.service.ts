@@ -181,18 +181,22 @@ export class CommentService {
 
           const usersInReplyChain = await replyChain.getMany();
 
-          usersInReplyChain.push(userInOriginalComment);
+          if (userInOriginalComment) {
+            usersInReplyChain.push(userInOriginalComment);
+          }
 
-          await this.notificationService.create(
-            requestUser,
-            NotificationAudience.ACCESSORS,
-            innovationId,
-            NotifContextType.COMMENT,
-            NotifContextDetail.COMMENT_REPLY,
-            result.id,
-            {},
-            usersInReplyChain.map((u) => u.user.id)
-          );
+          if (usersInReplyChain.length > 0) {
+            await this.notificationService.create(
+              requestUser,
+              NotificationAudience.ACCESSORS,
+              innovationId,
+              NotifContextType.COMMENT,
+              NotifContextDetail.COMMENT_REPLY,
+              result.id,
+              {},
+              usersInReplyChain.map((u) => u.user.id)
+            );
+          }
         } else {
           await this.notificationService.create(
             requestUser,
