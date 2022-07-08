@@ -155,44 +155,59 @@ export class CommentService {
     }
 
     try {
-      if (replyTo && requestUser.type === UserType.INNOVATOR) {
-        const originalComment = this.commentRepo
-          .createQueryBuilder("comment")
-          .innerJoinAndSelect("comment.user", "user")
-          .andWhere("comment.id = :commentId", {
-            commentId: replyTo,
-          })
-          .andWhere(`comment.user_id != :userCommenting`, {
-            userCommenting: requestUser.id,
-          });
+      if (requestUser.type === UserType.INNOVATOR) {
+        if (replyTo) {
+          const originalComment = this.commentRepo
+            .createQueryBuilder("comment")
+            .innerJoinAndSelect("comment.user", "user")
+            .where("comment.id = :commentId", {
+              commentId: replyTo,
+            })
+            .andWhere(`comment.user_id != :userCommenting`, {
+              userCommenting: requestUser.id,
+            });
 
-        const userInOriginalComment = await originalComment.getOne();
+          const userInOriginalComment = await originalComment.getOne();
 
-        const replyChain = this.commentRepo
-          .createQueryBuilder("comment")
-          .innerJoinAndSelect("comment.user", "user")
-          .where("comment.reply_to_id = :replyToId", {
-            replyToId: replyTo,
-          })
-          .andWhere(`comment.user_id != :userCommenting`, {
-            userCommenting: requestUser.id,
-          });
+          const replyChain = this.commentRepo
+            .createQueryBuilder("comment")
+            .innerJoinAndSelect("comment.user", "user")
+            .where("comment.reply_to_id = :replyToId", {
+              replyToId: replyTo,
+            })
+            .andWhere(`comment.user_id != :userCommenting`, {
+              userCommenting: requestUser.id,
+            });
 
-        const usersInReplyChain = await replyChain.getMany();
+          const usersInReplyChain = await replyChain.getMany();
 
-        usersInReplyChain.push(userInOriginalComment);
+          usersInReplyChain.push(userInOriginalComment);
 
-        await this.notificationService.create(
-          requestUser,
-          NotificationAudience.ACCESSORS,
-          innovationId,
-          NotifContextType.COMMENT,
-          NotifContextDetail.COMMENT_REPLY,
-          result.id,
-          {},
-          usersInReplyChain.map((u) => u.user.id)
-        );
-      } else if (
+          await this.notificationService.create(
+            requestUser,
+            NotificationAudience.ACCESSORS,
+            innovationId,
+            NotifContextType.COMMENT,
+            NotifContextDetail.COMMENT_REPLY,
+            result.id,
+            {},
+            usersInReplyChain.map((u) => u.user.id)
+          );
+        } else {
+          await this.notificationService.create(
+            requestUser,
+            NotificationAudience.ACCESSORS,
+            innovationId,
+            NotifContextType.COMMENT,
+            NotifContextDetail.COMMENT_CREATION,
+            result.id,
+            {},
+            targetNotificationUsers.map((u) => u.id)
+          );
+        }
+      }
+
+      if (
         requestUser.type === UserType.ACCESSOR ||
         requestUser.type === UserType.ASSESSMENT
       ) {
