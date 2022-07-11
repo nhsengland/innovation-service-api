@@ -1,4 +1,4 @@
-import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import { NotificationActionType } from "@domain/enums/notification.enums";
 import {
   AccessorOrganisationRole,
   Comment,
@@ -41,6 +41,7 @@ import {
   getRepository,
   Repository,
 } from "typeorm";
+import { QueueProducer } from "utils/queue-producer";
 import {
   authenticateWitGraphAPI,
   createB2CUser,
@@ -69,6 +70,7 @@ export class UserService {
   private readonly termsOfUseRepo: Repository<TermsOfUse>;
   private readonly termsOfUseUserRepo: Repository<TermsOfUseUser>;
   private readonly termsOfUseService: TermsOfUseService;
+  private readonly queueProducer: QueueProducer;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -84,6 +86,7 @@ export class UserService {
     this.orgUnitUserRepo = getRepository(OrganisationUnitUser, connectionName);
     this.termsOfUseRepo = getRepository(TermsOfUse, connectionName);
     this.termsOfUseUserRepo = getRepository(TermsOfUseUser, connectionName);
+    this.queueProducer = new QueueProducer();
   }
 
   async find(id: string, options?: FindOneOptions) {
@@ -1076,100 +1079,126 @@ export class UserService {
         );
       });
 
-      const old_unit =
-        orgUser[0].userOrganisationUnits[0].organisationUnit.name;
-      const old_organisation = orgUser[0].organisation.name;
-      const new_organisation = orgUnit[0].organisation.name;
-      const new_unit = orgUnit[0].name;
+      // const old_unit =
+      //   orgUser[0].userOrganisationUnits[0].organisationUnit.name;
+      // const old_organisation = orgUser[0].organisation.name;
+      // const new_organisation = orgUnit[0].organisation.name;
+      // const new_unit = orgUnit[0].name;
 
-      const displayName = user.displayName;
-      const email = this.getUserEmail(user);
+      // const displayName = user.displayName;
+      // const email = this.getUserEmail(user);
+
+      // try {
+      //   await this.notificationService.sendEmail(
+      //     requestUser,
+      //     EmailNotificationTemplate.ACCESSORS_UNIT_CHANGE,
+      //     "",
+      //     userId,
+      //     [email],
+      //     {
+      //       display_name: displayName,
+      //       old_unit: old_unit,
+      //       old_organisation: old_organisation,
+      //       new_unit: new_unit,
+      //       new_organisation: new_organisation,
+      //     }
+      //   );
+      // } catch (error) {
+      //   this.logService.error(
+      //     `An error has occured while sending an email with the template ${EmailNotificationTemplate.ACCESSORS_UNIT_CHANGE}.`,
+      //     error
+      //   );
+      // }
+
+      // const newQAUsers = await this.orgUnitUserRepo
+      //   .createQueryBuilder("unitUser")
+      //   .select("user.external_id")
+      //   .innerJoin("unitUser.organisationUnit", "unit")
+      //   .innerJoin("unitUser.organisationUser", "orgUser")
+      //   .innerJoin("orgUser.user", "user")
+      //   .innerJoin("orgUser.organisation", "organisation")
+      //   .where("unit.id = :unitId and orgUser.role = :role", {
+      //     unitId: orgUnit[0].id,
+      //     role: AccessorOrganisationRole.QUALIFYING_ACCESSOR,
+      //   })
+      //   .andWhere("user.id != :userId", {
+      //     userId: userId,
+      //   })
+      //   .execute();
+
+      // try {
+      //   await this.notificationService.sendEmail(
+      //     requestUser,
+      //     EmailNotificationTemplate.NEW_QUALIFYING_ACCESSORS_UNIT_CHANGE,
+      //     "",
+      //     userId,
+      //     newQAUsers.map((QA) => QA.external_id),
+      //     {
+      //       user_name: displayName,
+      //       new_unit: new_unit,
+      //     }
+      //   );
+      // } catch (error) {
+      //   this.logService.error(
+      //     `An error has occured while sending an email with the template ${EmailNotificationTemplate.NEW_QUALIFYING_ACCESSORS_UNIT_CHANGE}.`,
+      //     error
+      //   );
+      // }
+
+      // const oldQAUsers = await this.orgUnitUserRepo
+      //   .createQueryBuilder("unitUser")
+      //   .select("user.external_id")
+      //   .innerJoin("unitUser.organisationUnit", "unit")
+      //   .innerJoin("unitUser.organisationUser", "orgUser")
+      //   .innerJoin("orgUser.user", "user")
+      //   .innerJoin("orgUser.organisation", "organisation")
+      //   .where("unit.id = :unitId and orgUser.role = :role", {
+      //     unitId: orgUser[0].userOrganisationUnits[0].organisationUnit.id,
+      //     role: AccessorOrganisationRole.QUALIFYING_ACCESSOR,
+      //   })
+      //   .execute();
+
+      // try {
+      //   await this.notificationService.sendEmail(
+      //     requestUser,
+      //     EmailNotificationTemplate.OLD_QUALIFYING_ACCESSORS_UNIT_CHANGE,
+      //     "",
+      //     userId,
+      //     oldQAUsers.map((QA) => QA.external_id),
+      //     {
+      //       user_name: displayName,
+      //       old_unit: old_unit,
+      //     }
+      //   );
+      // } catch (error) {
+      //   this.logService.error(
+      //     `An error has occured while sending an email with the template ${EmailNotificationTemplate.OLD_QUALIFYING_ACCESSORS_UNIT_CHANGE}.`,
+      //     error
+      //   );
+      // }
 
       try {
-        await this.notificationService.sendEmail(
-          requestUser,
-          EmailNotificationTemplate.ACCESSORS_UNIT_CHANGE,
-          "",
-          userId,
-          [email],
-          {
-            display_name: displayName,
-            old_unit: old_unit,
-            old_organisation: old_organisation,
-            new_unit: new_unit,
-            new_organisation: new_organisation,
-          }
-        );
+        // send email: to admin
+        await this.queueProducer.sendMessage({
+          data: {
+            action: NotificationActionType.ACCESSOR_UNIT_CHANGE,
+            body: {
+              innovationId: null,
+              contextId: null,
+              requestUser: {
+                id: requestUser.id,
+                identityId: requestUser.externalId,
+                type: requestUser.type,
+              },
+              prevOrganisationUnit:
+                orgUser[0].userOrganisationUnits[0].organisationUnit.name,
+              newOrganisationUnit: orgUnit[0].name,
+            },
+          },
+        });
       } catch (error) {
         this.logService.error(
-          `An error has occured while sending an email with the template ${EmailNotificationTemplate.ACCESSORS_UNIT_CHANGE}.`,
-          error
-        );
-      }
-
-      const newQAUsers = await this.orgUnitUserRepo
-        .createQueryBuilder("unitUser")
-        .select("user.external_id")
-        .innerJoin("unitUser.organisationUnit", "unit")
-        .innerJoin("unitUser.organisationUser", "orgUser")
-        .innerJoin("orgUser.user", "user")
-        .innerJoin("orgUser.organisation", "organisation")
-        .where("unit.id = :unitId and orgUser.role = :role", {
-          unitId: orgUnit[0].id,
-          role: AccessorOrganisationRole.QUALIFYING_ACCESSOR,
-        })
-        .andWhere("user.id != :userId", {
-          userId: userId,
-        })
-        .execute();
-
-      try {
-        await this.notificationService.sendEmail(
-          requestUser,
-          EmailNotificationTemplate.NEW_QUALIFYING_ACCESSORS_UNIT_CHANGE,
-          "",
-          userId,
-          newQAUsers.map((QA) => QA.external_id),
-          {
-            user_name: displayName,
-            new_unit: new_unit,
-          }
-        );
-      } catch (error) {
-        this.logService.error(
-          `An error has occured while sending an email with the template ${EmailNotificationTemplate.NEW_QUALIFYING_ACCESSORS_UNIT_CHANGE}.`,
-          error
-        );
-      }
-
-      const oldQAUsers = await this.orgUnitUserRepo
-        .createQueryBuilder("unitUser")
-        .select("user.external_id")
-        .innerJoin("unitUser.organisationUnit", "unit")
-        .innerJoin("unitUser.organisationUser", "orgUser")
-        .innerJoin("orgUser.user", "user")
-        .innerJoin("orgUser.organisation", "organisation")
-        .where("unit.id = :unitId and orgUser.role = :role", {
-          unitId: orgUser[0].userOrganisationUnits[0].organisationUnit.id,
-          role: AccessorOrganisationRole.QUALIFYING_ACCESSOR,
-        })
-        .execute();
-
-      try {
-        await this.notificationService.sendEmail(
-          requestUser,
-          EmailNotificationTemplate.OLD_QUALIFYING_ACCESSORS_UNIT_CHANGE,
-          "",
-          userId,
-          oldQAUsers.map((QA) => QA.external_id),
-          {
-            user_name: displayName,
-            old_unit: old_unit,
-          }
-        );
-      } catch (error) {
-        this.logService.error(
-          `An error has occured while sending an email with the template ${EmailNotificationTemplate.OLD_QUALIFYING_ACCESSORS_UNIT_CHANGE}.`,
+          `An error has occured while writing notification on queue of type ${NotificationActionType.ACCESSOR_UNIT_CHANGE}`,
           error
         );
       }

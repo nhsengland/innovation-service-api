@@ -1,8 +1,9 @@
-import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import { NotificationActionType } from "@domain/enums/notification.enums";
 import { UserEmailNotFound } from "@services/errors";
 import { UserEmailModel } from "@services/models/ProfileSlimModel";
 import { SLSEventType } from "@services/types";
 import * as crypto from "crypto";
+import { QueueProducer } from "utils/queue-producer";
 import { TTL2ls } from "../../../../schemas/TTL2ls";
 import { EmailService } from "./Email.service";
 import { LoggerService } from "./Logger.service";
@@ -12,11 +13,13 @@ export class AuthService {
   private readonly userService: UserService;
   private readonly emailService: EmailService;
   private readonly loggerService: LoggerService;
+  private readonly queueProducer: QueueProducer;
 
   constructor(connectionName: string) {
     this.userService = new UserService(connectionName);
     this.emailService = new EmailService(connectionName);
     this.loggerService = new LoggerService();
+    this.queueProducer = new QueueProducer();
   }
   async send2LS(userId: string, eventType: SLSEventType) {
     const userEmails = await this.userService.getUsersEmail([userId]);
@@ -86,14 +89,38 @@ export class AuthService {
   }
 
   async sendTOTP(recipient: UserEmailModel, code: string) {
-    return await this.emailService.sendOne(
-      recipient,
-      EmailNotificationTemplate.ADMINS_LOGIN_VALIDATION,
-      {
-        display_name: "temp",
-        code,
-      }
-    );
+    try {
+      // send email: to admin
+      await this.queueProducer.sendMessage({
+        data: {
+          action: NotificationActionType.ADMINS_LOGIN_VALIDATION,
+          body: {
+            innovationId: null,
+            contextId: null,
+            requestUser: {
+              id: recipient.id,
+              email: recipient.email,
+              displayName: recipient.displayName,
+            },
+            code,
+          },
+        },
+      });
+    } catch (error) {
+      this.loggerService.error(
+        `An error has occured while writing notification on queue of type ${NotificationActionType.ADMINS_LOGIN_VALIDATION}`,
+        error
+      );
+    }
+
+    // return await this.emailService.sendOne(
+    //   recipient,
+    //   EmailNotificationTemplate.ADMINS_LOGIN_VALIDATION,
+    //   {
+    //     display_name: "temp",
+    //     code,
+    //   }
+    // );
   }
 
   async hash(password) {

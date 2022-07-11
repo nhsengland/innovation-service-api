@@ -1,9 +1,5 @@
 import { Activity } from "@domain/enums/activity.enums";
-import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
-import {
-  NotifContextDetail,
-  NotifContextType,
-} from "@domain/enums/notification.enums";
+import { NotificationActionType } from "@domain/enums/notification.enums";
 import {
   Innovation,
   InnovationAction,
@@ -13,8 +9,6 @@ import {
   InnovationSectionCatalogue,
   InnovationSectionStatus,
   InnovationStatus,
-  NotificationAudience,
-  NotificationContextType,
   UserType,
 } from "@domain/index";
 import * as sectionBodySchema from "@services/config/innovation-section-body.config.json";
@@ -28,6 +22,7 @@ import {
 import { checkIfValidUUID } from "@services/helpers";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, FindOneOptions, getConnection } from "typeorm";
+import { QueueProducer } from "utils/queue-producer";
 import { InnovationSectionModel } from "../models/InnovationSectionModel";
 import { InnovationSectionResult } from "../models/InnovationSectionResult";
 import { ActivityLogService } from "./ActivityLog.service";
@@ -46,6 +41,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
   private readonly logService: LoggerService;
   private readonly activityLogService: ActivityLogService;
   private readonly userService: UserService;
+  private readonly queueProducer: QueueProducer;
 
   constructor(connectionName?: string) {
     super(InnovationSection, connectionName);
@@ -56,6 +52,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     this.logService = new LoggerService();
     this.activityLogService = new ActivityLogService(connectionName);
     this.userService = new UserService(connectionName);
+    this.queueProducer = new QueueProducer();
   }
 
   async findAllInnovationSectionsMetadata(
@@ -510,45 +507,74 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
 
     for (let index = 0; index < updatedActions.length; index++) {
       const updatedAction = updatedActions[index];
+      // try {
+      //   await this.notificationService.create(
+      //     requestUser,
+      //     NotificationAudience.ACCESSORS,
+      //     innovationId,
+      //     NotifContextType.ACTION,
+      //     NotifContextDetail.ACTION_UPDATE,
+      //     updatedAction.id,
+      //     {
+      //       section: updatedAction.innovationSection.section,
+      //       actionStatus: updatedAction.status,
+      //       actionCode: updatedAction.displayId,
+      //     },
+      //     [updatedAction.createdBy]
+      //   );
+      // } catch (error) {
+      //   this.logService.error(
+      //     `An error has occured while creating a notification of type ${NotificationContextType.ACTION} from ${requestUser.id}`,
+      //     error
+      //   );
+      // }
+
+      // if (updatedAction.status === InnovationActionStatus.IN_REVIEW) {
+      //   try {
+      //     const dbUser = await this.userService.find(updatedAction.createdBy);
+
+      //     await this.notificationService.sendEmail(
+      //       requestUser,
+      //       EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
+      //       innovationId,
+      //       updatedAction.id,
+      //       [dbUser.externalId]
+      //     );
+      //   } catch (error) {
+      //     this.logService.error(
+      //       `An error has occured while creating an email notification of type ${NotificationContextType.ACTION} from ${requestUser.id}`,
+      //       error
+      //     );
+      //   }
+      // }
       try {
-        await this.notificationService.create(
-          requestUser,
-          NotificationAudience.ACCESSORS,
-          innovationId,
-          NotifContextType.ACTION,
-          NotifContextDetail.ACTION_UPDATE,
-          updatedAction.id,
-          {
-            section: updatedAction.innovationSection.section,
-            actionStatus: updatedAction.status,
-            actionCode: updatedAction.displayId,
+        // send in-app: to accessor
+        // send email: to accessor if new status is IN_REVIEW
+        await this.queueProducer.sendMessage({
+          data: {
+            action: NotificationActionType.ACTION_UPDATE,
+            body: {
+              innovationId: innovation.id,
+              contextId: updatedAction.id, // actionId
+              requestUser: {
+                id: requestUser.id,
+                identityId: requestUser.externalId,
+                type: requestUser.type,
+              },
+              action: {
+                id: updatedAction.id,
+                section: updatedAction.innovationSection.section,
+                displayId: updatedAction.displayId,
+                status: updatedAction.status,
+              },
+            },
           },
-          [updatedAction.createdBy]
-        );
+        });
       } catch (error) {
         this.logService.error(
-          `An error has occured while creating a notification of type ${NotificationContextType.ACTION} from ${requestUser.id}`,
+          `An error has occured while writing notification on queue of type ${NotificationActionType.ACTION_UPDATE}`,
           error
         );
-      }
-
-      if (updatedAction.status === InnovationActionStatus.IN_REVIEW) {
-        try {
-          const dbUser = await this.userService.find(updatedAction.createdBy);
-
-          await this.notificationService.sendEmail(
-            requestUser,
-            EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
-            innovationId,
-            updatedAction.id,
-            [dbUser.externalId]
-          );
-        } catch (error) {
-          this.logService.error(
-            `An error has occured while creating an email notification of type ${NotificationContextType.ACTION} from ${requestUser.id}`,
-            error
-          );
-        }
       }
     }
 
