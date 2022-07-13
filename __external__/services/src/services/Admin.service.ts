@@ -371,7 +371,7 @@ export class AdminService {
       });
     } catch (error) {
       this.logService.error(
-        `An error has occured while writing notification on queue of type ${NotificationActionType.SUPPORT_STATUS_UPDATE}`,
+        `An error has occured while writing notification on queue of type ${NotificationActionType.LOCK_USER}`,
         error
       );
     }

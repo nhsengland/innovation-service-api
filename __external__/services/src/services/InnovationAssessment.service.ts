@@ -396,7 +396,7 @@ export class InnovationAssessmentService {
       //   );
       // }
 
-      // // removes the units that the Innovator agreed to share his innovation with from the suggestions
+      // removes the units that the Innovator agreed to share his innovation with from the suggestions
       // organisationSuggestionsDiff = organisationSuggestionsDiff.filter(
       //   (ou) => !innovationOrganisationUnitShares.includes(ou)
       // );
@@ -424,14 +424,17 @@ export class InnovationAssessmentService {
       // }
       // ======================================================================================================================================
 
+      // removes the units that the Innovator agreed to share his innovation with from the suggestions
+      organisationSuggestionsDiff = organisationSuggestionsDiff.filter(
+        (ou) => !innovationOrganisationUnitShares.includes(ou)
+      );
+
       try {
-        // send in-app: to innovator if missing sharings
         // send in-app: to suggested QA's
-        // send email: to innovator
         // send email: to suggested QA's
         await this.queueProducer.sendMessage({
           data: {
-            action: NotificationActionType.NEEDS_ASSESSMENT_COMPLETED,
+            action: NotificationActionType.QA_NEEDS_ASSESSMENT_COMPLETED,
             body: {
               innovationId: innovation.id,
               contextId: assessmentDb.id, // assessmentId
@@ -445,9 +448,61 @@ export class InnovationAssessmentService {
         });
       } catch (error) {
         this.logService.error(
-          `An error has occured while writing notification on queue of type ${NotificationActionType.NEEDS_ASSESSMENT_COMPLETED}`,
+          `An error has occured while writing notification on queue of type ${NotificationActionType.QA_NEEDS_ASSESSMENT_COMPLETED}`,
           error
         );
+      }
+
+      try {
+        // send email: to innovator
+        await this.queueProducer.sendMessage({
+          data: {
+            action: NotificationActionType.INNOVATOR_NEEDS_ASSESSMENT_COMPLETED,
+            body: {
+              innovationId: innovation.id,
+              contextId: assessmentDb.id, // assessmentId
+              requestUser: {
+                id: requestUser.id,
+                identityId: requestUser.externalId,
+                type: requestUser.type,
+              },
+            },
+          },
+        });
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while writing notification on queue of type ${NotificationActionType.INNOVATOR_NEEDS_ASSESSMENT_COMPLETED}`,
+          error
+        );
+      }
+
+      if (
+        organisationSuggestionsDiff &&
+        organisationSuggestionsDiff.length > 0
+      ) {
+        try {
+          // send in-app: to innovator if missing sharings
+          await this.queueProducer.sendMessage({
+            data: {
+              action: NotificationActionType.INNOVATOR_ORGANISATION_SUGGESTION,
+              body: {
+                innovationId: innovation.id,
+                contextId: assessmentDb.id, // assessmentId
+                requestUser: {
+                  id: requestUser.id,
+                  identityId: requestUser.externalId,
+                  type: requestUser.type,
+                },
+                organisationIds: organisationSuggestionsDiff,
+              },
+            },
+          });
+        } catch (error) {
+          this.logService.error(
+            `An error has occured while writing notification on queue of type ${NotificationActionType.INNOVATOR_ORGANISATION_SUGGESTION}`,
+            error
+          );
+        }
       }
     }
 
