@@ -330,6 +330,17 @@ export class InnovationAssessmentService {
     );
 
     if (assessment.isSubmission) {
+      // maps the units object to only the unit id
+      const units = organisationSuggestionsDiff.filter((ou) =>
+        innovationOrganisationUnitShares.includes(ou)
+      );
+
+      // gets the qualifying accessors from the organisation units
+      const qualifyingAccessors = await this.organisationService.findQualifyingAccessorsFromUnits(
+        units,
+        innovationId
+      );
+
       try {
         await this.notificationService.create(
           requestUser,
@@ -337,7 +348,9 @@ export class InnovationAssessmentService {
           innovationId,
           NotifContextType.INNOVATION,
           NotifContextDetail.NEEDS_ASSESSMENT_COMPLETED,
-          innovationId
+          innovationId,
+          {},
+          qualifyingAccessors.map((u) => u.id)
         );
       } catch (error) {
         this.logService.error(
@@ -348,15 +361,6 @@ export class InnovationAssessmentService {
 
       // send email to Qualifying Accessors
       try {
-        // maps the units object to only the unit id
-        const units = suggestedOrganisationUnits.map((u) => u.id);
-
-        // gets the qualifying accessors from the organisation units
-        const qualifyingAccessors = await this.organisationService.findQualifyingAccessorsFromUnits(
-          units,
-          innovationId
-        );
-
         // sends an email notification to those Qualifying Accessors
         await this.notificationService.sendEmail(
           requestUser,
