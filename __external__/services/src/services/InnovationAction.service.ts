@@ -7,7 +7,6 @@ import {
   InnovationActionStatus,
   InnovationSectionAliasCatalogue,
   InnovationSupport,
-  NotificationAudience,
   NotificationContextType,
 } from "@domain/index";
 import {

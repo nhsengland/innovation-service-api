@@ -291,14 +291,15 @@ export class CommentService {
     // send in-app: to assigned accessors (if reply, to the users inside thread)
     // if innovator send to accessors, if accessor send to innovator
     // send email: (same rules)
-    const notificationActionType = replyTo
-      ? NotificationActionType.COMMENT_REPLY
-      : NotificationActionType.COMMENT_CREATION;
+    const action =
+      requestUser.type === UserType.INNOVATOR
+        ? NotificationActionType.ACCESSOR_COMMENT_RECEIVED
+        : NotificationActionType.INNOVATOR_COMMENT_RECEIVED;
 
     try {
       await this.queueProducer.sendMessage({
         data: {
-          action: notificationActionType,
+          action: action,
           body: {
             innovationId,
             contextId: result.id, // commentId
@@ -313,7 +314,7 @@ export class CommentService {
       });
     } catch (error) {
       this.logService.error(
-        `An error has occured while writing notification on queue of type ${notificationActionType}`,
+        `An error has occured while writing notification on queue of type ${action}`,
         error
       );
     }

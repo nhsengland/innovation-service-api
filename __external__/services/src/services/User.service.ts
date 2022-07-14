@@ -1184,15 +1184,15 @@ export class UserService {
             action: NotificationActionType.ACCESSOR_UNIT_CHANGE,
             body: {
               innovationId: null,
-              contextId: null,
+              contextId: userId,
               requestUser: {
                 id: requestUser.id,
                 identityId: requestUser.externalId,
                 type: requestUser.type,
               },
-              prevOrganisationUnit:
-                orgUser[0].userOrganisationUnits[0].organisationUnit.name,
-              newOrganisationUnit: orgUnit[0].name,
+              prevOrganisationUnitId:
+                orgUser[0].userOrganisationUnits[0].organisationUnit.id,
+              newOrganisationUnitId: orgUnit[0].id,
             },
           },
         });

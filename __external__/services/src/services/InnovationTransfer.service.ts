@@ -446,6 +446,7 @@ export class InnovationTransferService {
                 identityId: requestUser.externalId,
                 type: requestUser.type,
               },
+              email: originUser.email,
             },
           },
         });

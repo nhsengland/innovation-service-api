@@ -207,7 +207,7 @@ export class InnovationSupportLogService {
                 identityId: requestUser.externalId,
                 type: requestUser.type,
               },
-              suggestedOrganisationUnits: supportLog.organisationUnits,
+              organisationUnitIds: supportLog.organisationUnits,
             },
           },
         });
