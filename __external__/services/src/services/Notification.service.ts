@@ -141,7 +141,8 @@ export class NotificationService {
           contextType,
           contextDetail,
           contextId,
-          params
+          params,
+          specificUsers || []
         );
         break;
       case NotificationAudience.ASSESSMENT_USERS:
