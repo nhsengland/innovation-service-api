@@ -5,8 +5,6 @@ import {
   Innovation,
   InnovationAssessment,
   InnovationStatus,
-  NotificationAudience,
-  NotificationContextType,
   OrganisationUnit,
   UserType,
 } from "@domain/index";
@@ -26,8 +24,6 @@ import { InnovationAssessmentResult } from "../models/InnovationAssessmentResult
 import { ActivityLogService } from "./ActivityLog.service";
 import { InnovationService } from "./Innovation.service";
 import { LoggerService } from "./Logger.service";
-import { NotificationService } from "./Notification.service";
-import { OrganisationService } from "./Organisation.service";
 import { UserService } from "./User.service";
 
 export class InnovationAssessmentService {
@@ -35,9 +31,7 @@ export class InnovationAssessmentService {
   private readonly assessmentRepo: Repository<InnovationAssessment>;
   private readonly userService: UserService;
   private readonly innovationService: InnovationService;
-  private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
-  private readonly organisationService: OrganisationService;
   private readonly activityLogService: ActivityLogService;
   private readonly organisationUnitRepo: Repository<OrganisationUnit>;
   private readonly queueProducer: QueueProducer;
@@ -47,9 +41,7 @@ export class InnovationAssessmentService {
     this.assessmentRepo = getRepository(InnovationAssessment, connectionName);
     this.userService = new UserService(connectionName);
     this.innovationService = new InnovationService(connectionName);
-    this.notificationService = new NotificationService(connectionName);
     this.logService = new LoggerService();
-    this.organisationService = new OrganisationService(connectionName);
     this.activityLogService = new ActivityLogService(connectionName);
     this.organisationUnitRepo = getRepository(OrganisationUnit, connectionName);
     this.queueProducer = new QueueProducer();
@@ -329,101 +321,6 @@ export class InnovationAssessmentService {
     );
 
     if (assessment.isSubmission) {
-      // ======================================================================================================================================
-      // try {
-      //   await this.notificationService.create(
-      //     requestUser,
-      //     NotificationAudience.QUALIFYING_ACCESSORS,
-      //     innovationId,
-      //     NotifContextType.INNOVATION,
-      //     NotifContextDetail.NEEDS_ASSESSMENT_COMPLETED,
-      //     innovationId
-      //   );
-      // } catch (error) {
-      //   this.logService.error(
-      //     `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
-      //     error
-      //   );
-      // }
-
-      // // send email to Qualifying Accessors
-      // try {
-      //   // maps the units object to only the unit id
-      //   const units = suggestedOrganisationUnits.map((u) => u.id);
-
-      //   // gets the qualifying accessors from the organisation units
-      //   const qualifyingAccessors = await this.organisationService.findQualifyingAccessorsFromUnits(
-      //     units,
-      //     innovationId
-      //   );
-
-      //   // sends an email notification to those Qualifying Accessors
-      //   await this.notificationService.sendEmail(
-      //     requestUser,
-      //     EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED,
-      //     innovationId,
-      //     assessmentDb.id,
-      //     qualifyingAccessors.map((u) => u.externalId)
-      //   );
-      // } catch (error) {
-      //   this.logService.error(
-      //     `An error has occured while sending an email of type ${EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED}`,
-      //     error
-      //   );
-      // }
-
-      // // send email to innovator
-      // try {
-      //   const innovation = await this.innovationService.find(innovationId, {
-      //     relations: ["owner"],
-      //   });
-
-      //   // sends an email notification to the innovation owner
-      //   await this.notificationService.sendEmail(
-      //     requestUser,
-      //     EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_COMPLETED,
-      //     innovationId,
-      //     assessmentDb.id,
-      //     [innovation.owner.externalId],
-      //     {
-      //       innovation_name: innovation.name,
-      //     }
-      //   );
-      // } catch (error) {
-      //   this.logService.error(
-      //     `An error has occured while sending an email of type ${EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_COMPLETED}`,
-      //     error
-      //   );
-      // }
-
-      // removes the units that the Innovator agreed to share his innovation with from the suggestions
-      // organisationSuggestionsDiff = organisationSuggestionsDiff.filter(
-      //   (ou) => !innovationOrganisationUnitShares.includes(ou)
-      // );
-
-      // // if there are still any suggestions unmatched with the innovation data sharing, then create a notification for the innovator.
-      // if (
-      //   organisationSuggestionsDiff &&
-      //   organisationSuggestionsDiff.length > 0
-      // ) {
-      //   try {
-      //     await this.notificationService.create(
-      //       requestUser,
-      //       NotificationAudience.INNOVATORS,
-      //       innovationId,
-      //       NotifContextType.INNOVATION,
-      //       NotifContextDetail.NEEDS_ASSESSMENT_ORGANISATION_SUGGESTION,
-      //       innovationId
-      //     );
-      //   } catch (error) {
-      //     this.logService.error(
-      //       `An error has occured while creating a notification of type ${NotificationContextType.DATA_SHARING} from ${requestUser.id}`,
-      //       error
-      //     );
-      //   }
-      // }
-      // ======================================================================================================================================
-
       // removes the units that the Innovator agreed to share his innovation with from the suggestions
       organisationSuggestionsDiff = organisationSuggestionsDiff.filter(
         (ou) => !innovationOrganisationUnitShares.includes(ou)

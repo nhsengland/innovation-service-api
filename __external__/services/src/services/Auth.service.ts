@@ -112,15 +112,6 @@ export class AuthService {
         error
       );
     }
-
-    // return await this.emailService.sendOne(
-    //   recipient,
-    //   EmailNotificationTemplate.ADMINS_LOGIN_VALIDATION,
-    //   {
-    //     display_name: "temp",
-    //     code,
-    //   }
-    // );
   }
 
   async hash(password) {

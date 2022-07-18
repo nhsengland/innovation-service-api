@@ -161,40 +161,6 @@ export class InnovationActionService {
       return actionResult;
     });
 
-    // try {
-    //   await this.notificationService.create(
-    //     requestUser,
-    //     NotificationAudience.INNOVATORS,
-    //     innovation.id,
-    //     NotifContextType.ACTION,
-    //     NotifContextDetail.ACTION_CREATION,
-    //     result.id,
-    //     {
-    //       section: action.section,
-    //       actionCode: result.displayId,
-    //     }
-    //   );
-    // } catch (error) {
-    //   this.logService.error(
-    //     `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
-    //     error
-    //   );
-    // }
-
-    // try {
-    //   await this.notificationService.sendEmail(
-    //     requestUser,
-    //     EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
-    //     innovationId,
-    //     result.id
-    //   );
-    // } catch (error) {
-    //   this.logService.error(
-    //     `An error has occured an email with the template ${EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST} from ${requestUser.id}`,
-    //     error
-    //   );
-    // }
-
     try {
       // send in-app: to innovator
       // send email: to innovator
@@ -278,26 +244,6 @@ export class InnovationActionService {
       action
     );
 
-    // try {
-    //   await this.notificationService.create(
-    //     requestUser,
-    //     NotificationAudience.INNOVATORS,
-    //     innovationId,
-    //     NotifContextType.ACTION,
-    //     NotifContextDetail.ACTION_UPDATE,
-    //     result.id,
-    //     {
-    //       actionStatus: result.status,
-    //       actionCode: result.displayId,
-    //     }
-    //   );
-    // } catch (error) {
-    //   this.logService.error(
-    //     `An error has occured while creating a notification of type ${NotificationContextType.ACTION} from ${requestUser.id}`,
-    //     error
-    //   );
-    // }
-
     try {
       // send in-app: to innovator
       await this.queueProducer.sendMessage({
@@ -357,26 +303,6 @@ export class InnovationActionService {
       action
     );
     targetNotificationUsers = [innovationAction.createdBy];
-    // try {
-    //   await this.notificationService.create(
-    //     requestUser,
-    //     NotificationAudience.ACCESSORS,
-    //     innovationId,
-    //     NotifContextType.ACTION,
-    //     NotifContextDetail.ACTION_UPDATE,
-    //     innovationAction.id,
-    //     {
-    //       actionStatus: result.status,
-    //       actionCode: result.displayId,
-    //     },
-    //     targetNotificationUsers
-    //   );
-    // } catch (error) {
-    //   this.logService.error(
-    //     `An error has occured while creating a notification of type ${NotificationContextType.ACTION} from ${requestUser.id}`,
-    //     error
-    //   );
-    // }
 
     try {
       // send in-app: to action creator

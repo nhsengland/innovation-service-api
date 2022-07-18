@@ -41,20 +41,16 @@ import { LoggerService } from "./Logger.service";
 export class AdminService {
   private readonly connection: Connection;
   private readonly userService: UserService;
-  // private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
   private readonly innovationSupportService: InnovationSupportService;
-  // private readonly organisationService: OrganisationService;
   private readonly queueProducer: QueueProducer;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.userService = new UserService(connectionName);
-    // this.notificationService = new NotificationService(connectionName);
     this.innovationSupportService = new InnovationSupportService(
       connectionName
     );
-    // this.organisationService = new OrganisationService(connectionName);
     this.logService = new LoggerService();
     this.queueProducer = new QueueProducer();
   }
@@ -214,8 +210,6 @@ export class AdminService {
       "FULL"
     );
     if (userDetails.type === "INNOVATOR") {
-      // let users: ProfileSlimModel[];
-      // const orgUnitUsersList: string[] = [];
       const userToRequestUser: RequestUser = {
         id: userDetails.id,
         externalId: userDetails.externalId,
@@ -232,74 +226,6 @@ export class AdminService {
           userToRequestUser,
           innovation.id
         );
-
-        // =======================================================================================================================================================
-        // for (
-        //   let innovationSupportIdx = 0;
-        //   innovationSupportIdx < innovationSupports.length;
-        //   innovationSupportIdx++
-        // ) {
-        //   const organisationUnitUsers = await this.organisationService.findOrganisationUnitUsersById(
-        //     innovationSupports[innovationSupportIdx].organisationUnit.id
-        //   );
-
-        //   for (
-        //     let organisationUnitUserIdx = 0;
-        //     organisationUnitUserIdx < organisationUnitUsers.length;
-        //     organisationUnitUserIdx++
-        //   ) {
-        //     if (
-        //       innovationSupports[innovationSupportIdx].status ===
-        //         InnovationSupportStatus.FURTHER_INFO_REQUIRED ||
-        //       innovationSupports[innovationSupportIdx].status ===
-        //         InnovationSupportStatus.WAITING
-        //     ) {
-        //       if (
-        //         organisationUnitUsers[organisationUnitUserIdx].role ===
-        //         "QUALIFYING_ACCESSOR"
-        //       ) {
-        //         orgUnitUsersList.push(
-        //           organisationUnitUsers[organisationUnitUserIdx].userId
-        //         );
-        //       }
-        //     }
-        //     if (
-        //       innovationSupports[innovationSupportIdx].status ===
-        //       InnovationSupportStatus.ENGAGING
-        //     ) {
-        //       if (
-        //         organisationUnitUsers[organisationUnitUserIdx].role ===
-        //           "QUALIFYING_ACCESSOR" ||
-        //         organisationUnitUsers[organisationUnitUserIdx].role ===
-        //           "ACCESSOR"
-        //       ) {
-        //         orgUnitUsersList.push(
-        //           organisationUnitUsers[organisationUnitUserIdx].userId
-        //         );
-        //       }
-        //     }
-        //   }
-        // }
-        // if (orgUnitUsersList.length != 0) {
-        // try {
-        //   await this.notificationService.create(
-        //     requestUser,
-        //     NotificationAudience.ACCESSORS,
-        //     userDetails.innovations[innovationIdx].id,
-        //     NotifContextType.INNOVATION,
-        //     NotifContextDetail.LOCK_USER,
-        //     userDetails.innovations[innovationIdx].id,
-        //     {},
-        //     orgUnitUsersList
-        //   );
-        // } catch (error) {
-        //   this.logService.error(
-        //     `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
-        //     error
-        //   );
-        // }
-        // }
-        // =======================================================================================================================================================
 
         if (innovationSupports.length > 0) {
           try {
@@ -329,24 +255,6 @@ export class AdminService {
     }
 
     const email = this.getUserEmail(user);
-
-    // try {
-    // await this.notificationService.sendEmail(
-    //   requestUser,
-    //   EmailNotificationTemplate.USER_ACCOUNT_LOCKED,
-    //   null,
-    //   user.id,
-    //   [email],
-    //   {
-    //     display_name: user.displayName,
-    //   }
-    // );
-    // } catch (error) {
-    //   this.logService.error(
-    //     `An error has occured while sending an email with the template ${EmailNotificationTemplate.USER_ACCOUNT_LOCKED}.`,
-    //     error
-    //   );
-    // }
 
     // send email: to user locked
     try {
@@ -531,8 +439,7 @@ export class AdminService {
   }
 
   async userExistsB2C(email: string): Promise<boolean> {
-    const result = await this.userService.userExistsAtB2C(email);
-    return result;
+    return await this.userService.userExistsAtB2C(email);
   }
 
   async updateUserRole(
@@ -560,11 +467,7 @@ export class AdminService {
       throw new Error("Invalid user id.");
     }
 
-    const result = await this.userService.updateUserRole(
-      requestUser,
-      userId,
-      role
-    );
+    await this.userService.updateUserRole(requestUser, userId, role);
 
     return {
       id: userId,

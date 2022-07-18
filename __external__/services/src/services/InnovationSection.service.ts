@@ -37,10 +37,8 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
   private readonly connection: Connection;
   private readonly fileService: FileService;
   private readonly innovationService: InnovationService;
-  private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
   private readonly activityLogService: ActivityLogService;
-  private readonly userService: UserService;
   private readonly queueProducer: QueueProducer;
 
   constructor(connectionName?: string) {
@@ -48,10 +46,8 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
     this.connection = getConnection(connectionName);
     this.fileService = new FileService(connectionName);
     this.innovationService = new InnovationService(connectionName);
-    this.notificationService = new NotificationService(connectionName);
     this.logService = new LoggerService();
     this.activityLogService = new ActivityLogService(connectionName);
-    this.userService = new UserService(connectionName);
     this.queueProducer = new QueueProducer();
   }
 
@@ -340,11 +336,6 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
 
     updatedInnovation.updatedBy = requestUser.id;
 
-    // const result = this.innovationService.update(
-    //   innovationId,
-    //   updatedInnovation
-    // );
-
     const result = await this.connection.transaction(async (transaction) => {
       if (!updatedInnovation.id) {
         updatedInnovation.id = innovation.id;
@@ -507,46 +498,7 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
 
     for (let index = 0; index < updatedActions.length; index++) {
       const updatedAction = updatedActions[index];
-      // try {
-      //   await this.notificationService.create(
-      //     requestUser,
-      //     NotificationAudience.ACCESSORS,
-      //     innovationId,
-      //     NotifContextType.ACTION,
-      //     NotifContextDetail.ACTION_UPDATE,
-      //     updatedAction.id,
-      //     {
-      //       section: updatedAction.innovationSection.section,
-      //       actionStatus: updatedAction.status,
-      //       actionCode: updatedAction.displayId,
-      //     },
-      //     [updatedAction.createdBy]
-      //   );
-      // } catch (error) {
-      //   this.logService.error(
-      //     `An error has occured while creating a notification of type ${NotificationContextType.ACTION} from ${requestUser.id}`,
-      //     error
-      //   );
-      // }
 
-      // if (updatedAction.status === InnovationActionStatus.IN_REVIEW) {
-      //   try {
-      //     const dbUser = await this.userService.find(updatedAction.createdBy);
-
-      //     await this.notificationService.sendEmail(
-      //       requestUser,
-      //       EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
-      //       innovationId,
-      //       updatedAction.id,
-      //       [dbUser.externalId]
-      //     );
-      //   } catch (error) {
-      //     this.logService.error(
-      //       `An error has occured while creating an email notification of type ${NotificationContextType.ACTION} from ${requestUser.id}`,
-      //       error
-      //     );
-      //   }
-      // }
       try {
         // send in-app: to accessor
         // send email: to accessor if new status is IN_REVIEW

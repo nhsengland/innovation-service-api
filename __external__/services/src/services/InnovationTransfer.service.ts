@@ -163,7 +163,6 @@ export class InnovationTransferService {
     }
 
     let email: string = null;
-    let graphAccessToken: string;
 
     if (assignedToMe) {
       const user = await this.userService.getUserInfo({
@@ -237,19 +236,14 @@ export class InnovationTransferService {
       );
     }
 
-    const graphAccessToken = await authenticateWitGraphAPI();
     const destB2cUser = await getUserFromB2CByEmail(email);
     if (destB2cUser && destB2cUser.id === requestUser.externalId) {
       throw new InvalidParamsError("Invalid parameters.");
     }
-    const originB2cUser = await getUserFromB2C(
-      requestUser.externalId,
-      graphAccessToken
-    );
 
     const notificationActionType: NotificationActionType = destB2cUser
-      ? NotificationActionType.TRANSFER_OWNERSHIP_EXISTING_USER
-      : NotificationActionType.TRANSFER_OWNERSHIP_NEW_USER;
+      ? NotificationActionType.INNOVATOR_TRANSFER_OWNERSHIP_EXISTING_USER
+      : NotificationActionType.INNOVATOR_TRANSFER_OWNERSHIP_NEW_USER;
 
     const result = await this.connection.transaction(
       async (transactionManager) => {
@@ -266,27 +260,6 @@ export class InnovationTransferService {
           InnovationTransfer,
           transferObj
         );
-
-        // try {
-        //   await this.notificationService.sendEmail(
-        //     requestUser,
-        //     emailTemplate,
-        //     innovation.id,
-        //     result.id,
-        //     [email],
-        //     {
-        //       innovator_name: originB2cUser.displayName,
-        //       innovation_name: innovation.name,
-        //     }
-        //   );
-        // } catch (error) {
-        //   this.logService.error(
-        //     `An error has occured while sending an email with template ${emailTemplate} from ${requestUser.id}`,
-        //     error
-        //   );
-
-        //   throw error;
-        // }
 
         return {
           id: result.id,
@@ -312,7 +285,10 @@ export class InnovationTransferService {
               identityId: requestUser.externalId,
               type: requestUser.type,
             },
-            email,
+            newInnovator: {
+              identityId: destB2cUser?.id || null,
+              email,
+            },
           },
         },
       });
@@ -410,34 +386,14 @@ export class InnovationTransferService {
           );
           throw error;
         }
-
-        // try {
-        //   await this.notificationService.sendEmail(
-        //     requestUser,
-        //     EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_CONFIRMATION,
-        //     transfer.innovation.id,
-        //     transfer.id,
-        //     [originUser.email],
-        //     {
-        //       innovator_name: originUser.displayName,
-        //       innovation_name: transfer.innovation.name,
-        //       new_innovator_name: destB2cUser.displayName,
-        //       new_innovator_email: filter.email,
-        //     }
-        //   );
-        // } catch (error) {
-        //   this.logService.error(
-        //     `An error has occured while sending an email with template ${EmailNotificationTemplate.INNOVATORS_TRANSFER_OWNERSHIP_CONFIRMATION} from ${requestUser.id}`,
-        //     error
-        //   );
-        // }
       }
 
       try {
         // send email: to new innovation owner
         await this.queueProducer.sendMessage({
           data: {
-            action: NotificationActionType.TRANSFER_OWNERSHIP_CONFIRMATION,
+            action:
+              NotificationActionType.INNOVATOR_TRANSFER_OWNERSHIP_CONFIRMATION,
             body: {
               innovationId: transfer.innovation.id,
               contextId: transfer.id, // transferId
@@ -446,13 +402,12 @@ export class InnovationTransferService {
                 identityId: requestUser.externalId,
                 type: requestUser.type,
               },
-              email: originUser.email,
             },
           },
         });
       } catch (error) {
         this.logService.error(
-          `An error has occured while writing notification on queue of type ${NotificationActionType.TRANSFER_OWNERSHIP_CONFIRMATION}`,
+          `An error has occured while writing notification on queue of type ${NotificationActionType.INNOVATOR_TRANSFER_OWNERSHIP_CONFIRMATION}`,
           error
         );
       }
