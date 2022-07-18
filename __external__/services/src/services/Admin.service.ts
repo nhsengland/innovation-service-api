@@ -263,7 +263,7 @@ export class AdminService {
           action: NotificationActionType.LOCK_USER,
           body: {
             innovationId: null,
-            contextId: userDetails.id, // innovationId
+            contextId: userDetails.id, // userId
             requestUser: {
               id: requestUser.id,
               identityId: requestUser.externalId,
