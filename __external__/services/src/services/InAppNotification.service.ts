@@ -25,7 +25,6 @@ export class InAppNotificationService {
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
-
     this.notificationRepo = getRepository(Notification, connectionName);
     this.userService = new UserService(connectionName);
     this.notificationUserRepo = getRepository(NotificationUser, connectionName);

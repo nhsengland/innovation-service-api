@@ -28,8 +28,6 @@ export class InnovationSupportLogService {
   private readonly supportLogRepo: Repository<InnovationSupportLog>;
   private readonly innovationService: InnovationService;
   private readonly userService: UserService;
-  // private readonly organisationService: OrganisationService;
-  // private readonly notificationService: NotificationService;
   private readonly loggerService: LoggerService;
   private readonly activityLogService: ActivityLogService;
   private readonly organisationUnitRepo: Repository<OrganisationUnit>;
@@ -40,8 +38,6 @@ export class InnovationSupportLogService {
     this.supportLogRepo = getRepository(InnovationSupportLog, connectionName);
     this.innovationService = new InnovationService(connectionName);
     this.userService = new UserService(connectionName);
-    // this.organisationService = new OrganisationService(connectionName);
-    // this.notificationService = new NotificationService(connectionName);
     this.loggerService = new LoggerService();
     this.activityLogService = new ActivityLogService(connectionName);
     this.organisationUnitRepo = getRepository(OrganisationUnit, connectionName);
@@ -164,36 +160,6 @@ export class InnovationSupportLogService {
       supportLog?.organisationUnits &&
       supportLog.type === InnovationSupportLogType.ACCESSOR_SUGGESTION
     ) {
-      // const targetUsers = await this.organisationService.findQualifyingAccessorsFromUnits(
-      //   supportLog?.organisationUnits,
-      //   innovationId
-      // );
-
-      // if (targetUsers && targetUsers.length > 0) {
-      //   try {
-      //     await this.notificationService.sendEmail(
-      //       requestUser,
-      //       EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED,
-      //       innovationId,
-      //       innovationId,
-      //       targetUsers.map((u) => u.externalId)
-      //     );
-      //   } catch (error) {
-      //     this.loggerService.error(
-      //       `An error has occured when sending an email to Qualifying Accessors`,
-      //       error
-      //     );
-      //   }
-      // } else {
-      //   this.loggerService.log(
-      //     "Qualifying Accessors not found. No emails will be sent. Potential problem.",
-      //     1,
-      //     {
-      //       organisationUnits: supportLog?.organisationUnits,
-      //     }
-      //   );
-      // }
-
       // send email: to suggested organisation units
       try {
         await this.queueProducer.sendMessage({

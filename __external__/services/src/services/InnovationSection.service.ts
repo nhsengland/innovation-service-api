@@ -30,8 +30,6 @@ import { BaseService } from "./Base.service";
 import { FileService } from "./File.service";
 import { InnovationService } from "./Innovation.service";
 import { LoggerService } from "./Logger.service";
-import { NotificationService } from "./Notification.service";
-import { UserService } from "./User.service";
 
 export class InnovationSectionService extends BaseService<InnovationSection> {
   private readonly connection: Connection;

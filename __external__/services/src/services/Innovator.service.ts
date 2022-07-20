@@ -22,7 +22,6 @@ import { BaseService } from "./Base.service";
 import { InnovationService } from "./Innovation.service";
 import { InnovationTransferService } from "./InnovationTransfer.service";
 import { LoggerService } from "./Logger.service";
-import { NotificationService } from "./Notification.service";
 import { UserService } from "./User.service";
 
 export class InnovatorService extends BaseService<User> {
@@ -30,7 +29,6 @@ export class InnovatorService extends BaseService<User> {
   private readonly innovationTransferService: InnovationTransferService;
   private readonly innovationService: InnovationService;
   private readonly userService: UserService;
-  private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
   private readonly queueProducer: QueueProducer;
 
@@ -42,7 +40,6 @@ export class InnovatorService extends BaseService<User> {
     );
     this.innovationService = new InnovationService(connectionName);
     this.userService = new UserService(connectionName);
-    this.notificationService = new NotificationService(connectionName);
     this.logService = new LoggerService();
     this.queueProducer = new QueueProducer();
   }
@@ -137,12 +134,6 @@ export class InnovatorService extends BaseService<User> {
   }
 
   async sendEmail(innovator: User): Promise<void> {
-    // const requestUser: RequestUser = {
-    //   id: innovator.id,
-    //   externalId: innovator.externalId,
-    //   type: UserType.INNOVATOR,
-    // };
-
     try {
       // send email: to innovator
       await this.queueProducer.sendMessage({
@@ -165,24 +156,6 @@ export class InnovatorService extends BaseService<User> {
         error
       );
     }
-
-    // try {
-    //   await this.notificationService.sendEmail(
-    //     requestUser,
-    //     EmailNotificationTemplate.INNOVATORS_ACCOUNT_CREATED,
-    //     null,
-    //     innovator.id,
-    //     [innovator.externalId],
-    //     {
-    //       innovation_service_url: process.env.CLIENT_WEB_BASE_URL,
-    //     }
-    //   );
-    // } catch (error) {
-    //   this.logService.error(
-    //     `An error has occured while sending an email with the template ${EmailNotificationTemplate.INNOVATORS_ACCOUNT_CREATED}.`,
-    //     error
-    //   );
-    // }
   }
 
   async createFirstTimeSignInTransfer(

@@ -5,13 +5,13 @@ import {
   Innovation,
   InnovationTransferStatus,
   User,
-  UserType,
+  UserType
 } from "@domain/index";
 import {
   InnovationNotFoundError,
   InnovationTransferAlreadyExistsError,
   InnovationTransferNotFoundError,
-  InvalidParamsError,
+  InvalidParamsError
 } from "@services/errors";
 import { InnovationTransferResult } from "@services/models/InnovationTransferResult";
 import { RequestUser } from "@services/models/RequestUser";
@@ -20,19 +20,18 @@ import {
   EntityManager,
   getConnection,
   getRepository,
-  Repository,
+  Repository
 } from "typeorm";
 import { QueueProducer } from "utils/queue-producer";
 import {
   authenticateWitGraphAPI,
   checkIfValidUUID,
   getUserFromB2C,
-  getUserFromB2CByEmail,
+  getUserFromB2CByEmail
 } from "../helpers";
 import { ActivityLogService } from "./ActivityLog.service";
 import { InnovationService } from "./Innovation.service";
 import { LoggerService } from "./Logger.service";
-import { NotificationService } from "./Notification.service";
 import { UserService } from "./User.service";
 
 interface QueryFilter {
@@ -48,7 +47,6 @@ export class InnovationTransferService {
   private readonly transferRepo: Repository<InnovationTransfer>;
   private readonly userRepo: Repository<User>;
   private readonly innovationService: InnovationService;
-  private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
   private readonly userService: UserService;
   private readonly activityLogService: ActivityLogService;
@@ -59,7 +57,6 @@ export class InnovationTransferService {
     this.transferRepo = getRepository(InnovationTransfer, connectionName);
     this.userRepo = getRepository(User, connectionName);
     this.innovationService = new InnovationService(connectionName);
-    this.notificationService = new NotificationService(connectionName);
     this.userService = new UserService(connectionName);
     this.logService = new LoggerService();
     this.activityLogService = new ActivityLogService(connectionName);

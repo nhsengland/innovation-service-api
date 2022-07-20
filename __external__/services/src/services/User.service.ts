@@ -53,7 +53,6 @@ import {
 } from "../helpers";
 import { ProfileModel } from "../models/ProfileModel";
 import { LoggerService } from "./Logger.service";
-import { NotificationService } from "./Notification.service";
 import { TermsOfUseService } from "./TermsOfUse.service";
 
 export class UserService {
@@ -64,9 +63,7 @@ export class UserService {
   private readonly innovationRepo: Repository<Innovation>;
   private readonly roleRepo: Repository<Role>;
   private readonly orgUserRepo: Repository<OrganisationUser>;
-  private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
-  private readonly orgUnitUserRepo: Repository<OrganisationUnitUser>;
   private readonly termsOfUseRepo: Repository<TermsOfUse>;
   private readonly termsOfUseUserRepo: Repository<TermsOfUseUser>;
   private readonly termsOfUseService: TermsOfUseService;
@@ -80,10 +77,8 @@ export class UserService {
     this.innovationRepo = getRepository(Innovation, connectionName);
     this.roleRepo = getRepository(Role, connectionName);
     this.orgUserRepo = getRepository(OrganisationUser, connectionName);
-    this.notificationService = new NotificationService(connectionName);
     this.termsOfUseService = new TermsOfUseService(connectionName);
     this.logService = new LoggerService();
-    this.orgUnitUserRepo = getRepository(OrganisationUnitUser, connectionName);
     this.termsOfUseRepo = getRepository(TermsOfUse, connectionName);
     this.termsOfUseUserRepo = getRepository(TermsOfUseUser, connectionName);
     this.queueProducer = new QueueProducer();
@@ -1004,7 +999,7 @@ export class UserService {
 
     try {
       await this.connection.transaction(async (trs) => {
-        const updatedRole = await trs.update(
+        await trs.update(
           OrganisationUser,
           { id: userOrgs[0].id },
           {
@@ -1047,10 +1042,6 @@ export class UserService {
     };
 
     const orgUser = await this.orgUserRepo.find(filterOrgUser);
-    const user = await getUserFromB2C(
-      orgUser[0].user.externalId,
-      graphAccessToken
-    );
 
     const filterOrgUnit = {
       relations: ["organisation"],
@@ -1078,104 +1069,6 @@ export class UserService {
           }
         );
       });
-
-      // const old_unit =
-      //   orgUser[0].userOrganisationUnits[0].organisationUnit.name;
-      // const old_organisation = orgUser[0].organisation.name;
-      // const new_organisation = orgUnit[0].organisation.name;
-      // const new_unit = orgUnit[0].name;
-
-      // const displayName = user.displayName;
-      // const email = this.getUserEmail(user);
-
-      // try {
-      //   await this.notificationService.sendEmail(
-      //     requestUser,
-      //     EmailNotificationTemplate.ACCESSORS_UNIT_CHANGE,
-      //     "",
-      //     userId,
-      //     [email],
-      //     {
-      //       display_name: displayName,
-      //       old_unit: old_unit,
-      //       old_organisation: old_organisation,
-      //       new_unit: new_unit,
-      //       new_organisation: new_organisation,
-      //     }
-      //   );
-      // } catch (error) {
-      //   this.logService.error(
-      //     `An error has occured while sending an email with the template ${EmailNotificationTemplate.ACCESSORS_UNIT_CHANGE}.`,
-      //     error
-      //   );
-      // }
-
-      // const newQAUsers = await this.orgUnitUserRepo
-      //   .createQueryBuilder("unitUser")
-      //   .select("user.external_id")
-      //   .innerJoin("unitUser.organisationUnit", "unit")
-      //   .innerJoin("unitUser.organisationUser", "orgUser")
-      //   .innerJoin("orgUser.user", "user")
-      //   .innerJoin("orgUser.organisation", "organisation")
-      //   .where("unit.id = :unitId and orgUser.role = :role", {
-      //     unitId: orgUnit[0].id,
-      //     role: AccessorOrganisationRole.QUALIFYING_ACCESSOR,
-      //   })
-      //   .andWhere("user.id != :userId", {
-      //     userId: userId,
-      //   })
-      //   .execute();
-
-      // try {
-      //   await this.notificationService.sendEmail(
-      //     requestUser,
-      //     EmailNotificationTemplate.NEW_QUALIFYING_ACCESSORS_UNIT_CHANGE,
-      //     "",
-      //     userId,
-      //     newQAUsers.map((QA) => QA.external_id),
-      //     {
-      //       user_name: displayName,
-      //       new_unit: new_unit,
-      //     }
-      //   );
-      // } catch (error) {
-      //   this.logService.error(
-      //     `An error has occured while sending an email with the template ${EmailNotificationTemplate.NEW_QUALIFYING_ACCESSORS_UNIT_CHANGE}.`,
-      //     error
-      //   );
-      // }
-
-      // const oldQAUsers = await this.orgUnitUserRepo
-      //   .createQueryBuilder("unitUser")
-      //   .select("user.external_id")
-      //   .innerJoin("unitUser.organisationUnit", "unit")
-      //   .innerJoin("unitUser.organisationUser", "orgUser")
-      //   .innerJoin("orgUser.user", "user")
-      //   .innerJoin("orgUser.organisation", "organisation")
-      //   .where("unit.id = :unitId and orgUser.role = :role", {
-      //     unitId: orgUser[0].userOrganisationUnits[0].organisationUnit.id,
-      //     role: AccessorOrganisationRole.QUALIFYING_ACCESSOR,
-      //   })
-      //   .execute();
-
-      // try {
-      //   await this.notificationService.sendEmail(
-      //     requestUser,
-      //     EmailNotificationTemplate.OLD_QUALIFYING_ACCESSORS_UNIT_CHANGE,
-      //     "",
-      //     userId,
-      //     oldQAUsers.map((QA) => QA.external_id),
-      //     {
-      //       user_name: displayName,
-      //       old_unit: old_unit,
-      //     }
-      //   );
-      // } catch (error) {
-      //   this.logService.error(
-      //     `An error has occured while sending an email with the template ${EmailNotificationTemplate.OLD_QUALIFYING_ACCESSORS_UNIT_CHANGE}.`,
-      //     error
-      //   );
-      // }
 
       try {
         // send email: to admin

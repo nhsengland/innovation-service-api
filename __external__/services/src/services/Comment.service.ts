@@ -173,24 +173,6 @@ export class CommentService {
       );
     }
 
-    let organisationUnit = null;
-    if (requestUser.type === UserType.ACCESSOR) {
-      if (!requestUser.organisationUser) {
-        throw new MissingUserOrganisationError(
-          "Invalid user. User has no organisations."
-        );
-      }
-
-      if (!requestUser.organisationUnitUser) {
-        throw new MissingUserOrganisationUnitError(
-          "Invalid user. User has no organisation units."
-        );
-      }
-
-      organisationUnit = {
-        id: requestUser.organisationUnitUser.organisationUnit.id,
-      };
-    }
     const result = await this.connection.transaction(async (trs) => {
       const filterOptions = {
         where: { innovation: innovationId },

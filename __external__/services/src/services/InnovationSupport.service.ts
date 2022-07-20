@@ -39,11 +39,8 @@ export class InnovationSupportService {
   private readonly innovationSupportLogService: InnovationSupportLogService;
   private readonly organisationService: OrganisationService;
   private readonly userService: UserService;
-  // private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
   private readonly activityLogService: ActivityLogService;
-  // private readonly actionRepo: Repository<InnovationAction>;
-  // private readonly innovationSectionService: InnovationSectionService;
   private readonly queueProducer: QueueProducer;
 
   constructor(connectionName?: string) {

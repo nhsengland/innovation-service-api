@@ -3,28 +3,17 @@ import { ActivityLog, Innovation } from "@domain/index";
 import { InvalidParamsError } from "@services/errors";
 import { ActivityLogModel } from "@services/models/ActivityLogModel";
 import { RequestUser } from "@services/models/RequestUser";
-import {
-  Connection,
-  EntityManager,
-  getConnection,
-  getRepository,
-  Repository,
-} from "typeorm";
+import { EntityManager, getRepository, Repository } from "typeorm";
 import { BaseService } from "./Base.service";
-import { LoggerService } from "./Logger.service";
 import { UserService } from "./User.service";
 
 export class ActivityLogService extends BaseService<ActivityLog> {
-  private readonly connection: Connection;
   private readonly activityLogRepo: Repository<ActivityLog>;
-  private readonly loggerService: LoggerService;
   private readonly userService: UserService;
 
   constructor(connectionName?: string) {
     super(ActivityLog, connectionName);
-    this.connection = getConnection(connectionName);
     this.activityLogRepo = getRepository(ActivityLog, connectionName);
-    this.loggerService = new LoggerService();
     this.userService = new UserService(connectionName);
   }
 

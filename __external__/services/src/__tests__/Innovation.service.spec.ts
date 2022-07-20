@@ -48,8 +48,6 @@ import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
 import { InnovationService } from "../services/Innovation.service";
 import * as fixtures from "../__fixtures__";
-import { ActivityLogService } from "@services/services/ActivityLog.service";
-import axios from "axios";
 
 describe("Innovator Service Suite", () => {
   let innovationService: InnovationService;

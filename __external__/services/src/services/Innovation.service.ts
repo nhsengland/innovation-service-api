@@ -1088,66 +1088,6 @@ export class InnovationService extends BaseService<Innovation> {
       return updatedInnovation;
     });
 
-    // await this.repository.update(innovation.id, {
-    //   submittedAt: new Date(),
-    //   status: InnovationStatus.WAITING_NEEDS_ASSESSMENT,
-    //   updatedBy: requestUser.id,
-    // });
-
-    // try {
-    //   await this.notificationService.create(
-    //     requestUser,
-    //     NotificationAudience.ASSESSMENT_USERS,
-    //     innovation.id,
-    //     NotifContextType.INNOVATION,
-    //     NotifContextDetail.INNOVATION_SUBMISSION,
-    //     innovation.id
-    //   );
-    // } catch (error) {
-    //   this.logService.error(
-    //     `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
-    //     error
-    //   );
-    // }
-
-    // // send email to Innovator that submited this innovation
-    // try {
-    //   await this.notificationService.sendEmail(
-    //     requestUser,
-    //     EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_SUBMITED,
-    //     innovation.id,
-    //     innovation.id,
-    //     [requestUser.externalId],
-    //     {
-    //       innovation_name: innovation.name,
-    //     }
-    //   );
-    // } catch (error) {
-    //   this.logService.error(
-    //     `An error has occured while sending an email with the template ${EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_SUBMITED}.`,
-    //     error
-    //   );
-    // }
-
-    // // send email to all Needs Assessment users
-    // try {
-    //   await this.notificationService.sendEmail(
-    //     requestUser,
-    //     EmailNotificationTemplate.ASSESSMENT_USERS_INNOVATION_SUBMITED,
-    //     innovation.id,
-    //     innovation.id,
-    //     [], // list of recipients determined by the handler
-    //     {
-    //       innovation_name: innovation.name,
-    //     }
-    //   );
-    // } catch (error) {
-    //   this.logService.error(
-    //     `An error has occured while sending an email with the template ${EmailNotificationTemplate.ASSESSMENT_USERS_INNOVATION_SUBMITED}.`,
-    //     error
-    //   );
-    // }
-
     try {
       // send in-app: to NA team
       // send email: to NA team & to innovator
@@ -1290,26 +1230,6 @@ export class InnovationService extends BaseService<Innovation> {
         );
       });
     }
-
-    // if (supportUsers && supportUsers.length > 0) {
-    //   try {
-    //     await this.notificationService.sendEmail(
-    //       requestUser,
-    //       EmailNotificationTemplate.ACCESSORS_INNOVATION_ARCHIVAL_UPDATE,
-    //       innovation.id,
-    //       innovation.id,
-    //       supportUsers,
-    //       {
-    //         innovation_name: innovation.name,
-    //       }
-    //     );
-    //   } catch (error) {
-    //     this.logService.error(
-    //       `An error has occured while sending an email with the template ${EmailNotificationTemplate.ACCESSORS_INNOVATION_ARCHIVAL_UPDATE}.`,
-    //       error
-    //     );
-    //   }
-    // }
 
     try {
       // send email: to assigned accessors
