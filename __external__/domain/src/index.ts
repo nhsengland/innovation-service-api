@@ -21,6 +21,7 @@ export { InnovationSupportLog } from "./entity/innovation/InnovationSupportLog.e
 export { InnovationSupportType } from "./entity/innovation/InnovationSupportType.entity";
 export { InnovationTransfer } from "./entity/innovation/InnovationTransfer.entity";
 export { InnovationUserTest } from "./entity/innovation/InnovationUserTest.entity";
+export { InnovationDiseaseCondition } from "./entity/innovation/InnovationDiseaseCondition.entity";
 export { ActivityLog } from "./entity/innovation/ActivityLog.entity";
 
 export { Organisation } from "./entity/organisation/Organisation.entity";

@@ -49,6 +49,7 @@ export {
   InnovationTransfer,
   InnovationTransferStatus,
   InnovationUserTest,
+  InnovationDiseaseCondition,
   Organisation,
   OrganisationUnit,
   OrganisationUnitUser,

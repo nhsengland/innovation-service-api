@@ -11,9 +11,10 @@
     "innovationDependencies": [
       {
         "type": "subgroups",
-        "fields": ["id", "name", "conditions", "otherCondition"]
+        "fields": ["id", "name"]
       }
-    ]
+    ],
+    "innovationTypes": ["diseasesConditionsImpact"]
   },
   "UNDERSTANDING_OF_BENEFITS": {
     "innovationFields": ["impactPatients", "hasBenefits", "accessibilityImpactDetails", "accessibilityStepsDetails", "otherGeneralBenefit", "otherEnvironmentalBenefit", "otherPatientsCitizensBenefit"],

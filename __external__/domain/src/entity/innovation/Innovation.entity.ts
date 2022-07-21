@@ -38,6 +38,7 @@ import { InnovationCareSetting } from "./InnovationCareSetting.entity";
 import { InnovationCategory } from "./InnovationCategory.entity";
 import { InnovationClinicalArea } from "./InnovationClinicalArea.entity";
 import { InnovationDeploymentPlan } from "./InnovationDeploymentPlan.entity";
+import { InnovationDiseaseCondition } from "./InnovationDiseaseCondition.entity";
 import { InnovationEnvironmentalBenefit } from "./InnovationEnvironmentalBenefit.entity";
 import { InnovationEvidence } from "./InnovationEvidence.entity";
 import { InnovationGeneralBenefit } from "./InnovationGeneralBenefit.entity";
@@ -397,6 +398,12 @@ export class Innovation extends Base {
     }
   )
   patientsCitizensBenefits: InnovationPatientsCitizensBenefit[];
+
+  @OneToMany(() => InnovationDiseaseCondition, (record) => record.innovation, {
+    lazy: true,
+    cascade: ["insert", "update"],
+  })
+  diseasesConditionsImpact: InnovationDiseaseCondition[];
 
   @OneToMany(() => Comment, (record) => record.innovation, { lazy: true })
   comments: Comment[];
