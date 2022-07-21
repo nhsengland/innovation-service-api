@@ -18,6 +18,7 @@ import { OrganisationUnitUserModel } from "@services/models/OrganisationUnitUser
 import { OrganisationUpdateResult } from "@services/models/OrganisationUpdateResult";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
 import { RequestUser } from "@services/models/RequestUser";
+import { number } from "joi";
 import {
   Connection,
   getConnection,
@@ -267,6 +268,31 @@ export class OrganisationService extends BaseService<Organisation> {
     organisationUnitId: string
   ): Promise<OrganisationUnit> {
     return this.orgUnitRepo.findOne(organisationUnitId);
+  }
+
+  async findOrganisationUnitsByIds(
+    organisationUnitIds: string[]
+  ): Promise<OrganisationUnit[]> {
+    const units = await this.orgUnitRepo.find({
+      relations: ["organisation"],
+      where: { id: In(organisationUnitIds) },
+    });
+
+    return units;
+  }
+
+  async organisationActiveUnitsCount(
+    organisationId: string
+  ): Promise<{ count: number }> {
+    const count = await this.orgUnitRepo
+      .createQueryBuilder("unit")
+      .where("unit.inactivatedAt IS NULL")
+      .andWhere("unit.organisation_id = :organisationId", { organisationId })
+      .getCount();
+
+    return {
+      count,
+    };
   }
 
   async addUserToOrganisation(
@@ -557,6 +583,28 @@ export class OrganisationService extends BaseService<Organisation> {
           userId: organisationUser.user.id,
         };
       });
+
+    return result;
+  }
+
+  async findOrganisationUnitsUsersByUnitIds(
+    organisationUnitIds: string[]
+  ): Promise<
+    {
+      externalId: string;
+      id: string;
+    }[]
+  > {
+    const filterOptions = {
+      relations: ["organisationUser", "organisationUser.user"],
+      where: { organisationUnit: In(organisationUnitIds) },
+    };
+    const orgUnitUsers = await this.orgUnitUserRepo.find(filterOptions);
+
+    const result = orgUnitUsers.map((user) => ({
+      externalId: user.organisationUser.user.externalId,
+      id: user.organisationUser.user.id,
+    }));
 
     return result;
   }

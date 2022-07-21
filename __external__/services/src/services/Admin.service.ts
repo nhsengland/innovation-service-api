@@ -9,6 +9,8 @@ import {
   InnovationSupportStatus,
   NotificationAudience,
   NotificationContextType,
+  Organisation,
+  OrganisationUnit,
   OrganisationUnitUser,
   OrganisationUser,
   User,
@@ -29,7 +31,7 @@ import {
   UserLockValidationCode,
   UserSearchResult,
 } from "@services/types";
-import { Connection, getConnection } from "typeorm";
+import { Connection, EntityManager, getConnection, In } from "typeorm";
 import { UserService } from "..";
 import * as accessorRules from "../config/admin-accessor-user-lock.config.json";
 import * as rule from "../config/admin-change-role.config.json";
@@ -135,7 +137,8 @@ export class AdminService {
 
   async lockUsers(
     requestUser: RequestUser,
-    user: string
+    user: string,
+    trs?: EntityManager
   ): Promise<UserLockResult> {
     if (!requestUser) {
       throw new InvalidParamsError("Invalid params.");
@@ -145,7 +148,7 @@ export class AdminService {
     let result: UserLockResult;
 
     try {
-      result = await this.lockUser(requestUser, user, graphAccessToken);
+      result = await this.lockUser(requestUser, user, graphAccessToken, trs);
     } catch (err) {
       result = {
         id: user,
@@ -168,7 +171,8 @@ export class AdminService {
   async lockUser(
     requestUser: RequestUser,
     externalId: string,
-    graphAccessToken?: string
+    graphAccessToken?: string,
+    transaction?: EntityManager
   ): Promise<UserUpdateResult> {
     if (!requestUser || !externalId) {
       throw new InvalidParamsError("Invalid params.");
@@ -191,20 +195,21 @@ export class AdminService {
 
     let result;
     try {
-      result = await this.connection.transaction(async (transaction) => {
-        await transaction.update(
-          User,
-          { externalId },
-          {
-            lockedAt: new Date(),
-          }
-        );
-        return await this.userService.updateB2CUser(
-          { accountEnabled: false },
+      if (!transaction) {
+        result = await this.connection.transaction(async (trs) => {
+          return await this.lockUserTransaction(
+            trs,
+            externalId,
+            graphAccessToken
+          );
+        });
+      } else {
+        result = await this.lockUserTransaction(
+          transaction,
           externalId,
           graphAccessToken
         );
-      });
+      }
     } catch {
       throw new Error("Error locking user at IdP");
     }
@@ -326,6 +331,25 @@ export class AdminService {
       id: externalId,
       status: "OK",
     };
+  }
+
+  private async lockUserTransaction(
+    transaction: EntityManager,
+    externalId: string,
+    graphAccessToken: string
+  ) {
+    await transaction.update(
+      User,
+      { externalId },
+      {
+        lockedAt: new Date(),
+      }
+    );
+    return await this.userService.updateB2CUser(
+      { accountEnabled: false },
+      externalId,
+      graphAccessToken
+    );
   }
 
   async unlockUser(
@@ -517,6 +541,71 @@ export class AdminService {
       status: "OK",
     };
   }
+
+  async inactivateOrganisationUnits(
+    requestUser: RequestUser,
+    unitIds: string[]
+  ): Promise<OrganisationUnit[]> {
+
+    // GETS UNITS FROM DATABASE
+    const units = await this.organisationService.findOrganisationUnitsByIds(
+      unitIds
+    );
+
+    // GETS USERS FROM UNITS TO BE INACTIVATED
+    const usersToLock = await this.organisationService.findOrganisationUnitsUsersByUnitIds(
+      unitIds
+    );
+
+    // BEGIN TRANSACTION (ALL OR NOTHING HERE)
+    const success = await this.connection.transaction(async (transaction) => {
+
+      // INACTIVATE LIST OF UNITS
+      await transaction.update<OrganisationUnit>(
+        OrganisationUnit,
+        { id: In(unitIds) },
+        { inactivatedAt: new Date() }
+      );
+
+      // FOR EACH USER, LOCK IT
+      for (const user of usersToLock) {
+        await this.lockUsers(requestUser, user.externalId, transaction);
+      }
+
+      // GET THE DISTINCT ORGANISATIONS TO WHOM THE UNITS BELONG TO
+      const organisations = [...new Set(units.map((unit) => unit.organisation.id))];
+
+      for (const organisationId of organisations) {
+
+        // FOR EACH ORGANISATION, CHECK IF IT HAS ANY ACTIVE UNITS
+        const result = await this.organisationService.organisationActiveUnitsCount(
+          organisationId
+        );
+
+        // IF THE COUNT IS ZERO, IT MEANS IT HAS NO ACTIVE UNITS AT THIS POINT
+        if (result.count === 0) {
+
+          // INACTIVATE ORGANISATION DUE TO NOT HAVING ANY ACTIVE UNITS
+          transaction.update(
+            Organisation,
+            { id: organisationId },
+            { inactivatedAt: new Date() }
+          );
+          
+        }
+      }
+
+      return true;
+    });
+
+    if (success) return units;
+
+    return [];
+  }
+
+  /**
+   * PRIVATE METHODS
+   */
 
   private async runNeedsAssessmentUserValidation(
     user: User
