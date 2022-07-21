@@ -28,6 +28,9 @@ export class OrganisationUnit extends Base {
   @Column({ name: "is_shadow", nullable: false, default: false })
   isShadow: boolean;
 
+  @Column({ name: "inactivated_at", nullable: true })
+  inactivatedAt: Date;
+  
   //relationships
   @ManyToOne(() => Organisation, { nullable: false })
   @JoinColumn({ name: "organisation_id" })
