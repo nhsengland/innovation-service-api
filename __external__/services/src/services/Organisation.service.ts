@@ -21,11 +21,13 @@ import { RequestUser } from "@services/models/RequestUser";
 import { number } from "joi";
 import {
   Connection,
+  EntityManager,
   getConnection,
   getRepository,
   In,
   Not,
   Repository,
+  SelectQueryBuilder,
 } from "typeorm";
 import { BaseService } from "./Base.service";
 import { UserService } from "./User.service";
@@ -282,8 +284,20 @@ export class OrganisationService extends BaseService<Organisation> {
   }
 
   async organisationActiveUnitsCount(
-    organisationId: string
+    organisationId: string,
+    transaction?: EntityManager
   ): Promise<{ count: number }> {
+
+    if (transaction) {
+      const count  = await transaction
+        .createQueryBuilder(OrganisationUnit, "unit")
+        .where("unit.inactivatedAt IS NULL")
+        .andWhere("unit.organisation_id = :organisationId", { organisationId })
+        .getCount();
+      
+      return { count };
+    }
+
     const count = await this.orgUnitRepo
       .createQueryBuilder("unit")
       .where("unit.inactivatedAt IS NULL")
