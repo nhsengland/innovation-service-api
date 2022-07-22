@@ -155,20 +155,79 @@ export class CommentService {
     }
 
     try {
-      await this.notificationService.create(
-        requestUser,
-        requestUser.type === UserType.INNOVATOR
-          ? NotificationAudience.ACCESSORS
-          : NotificationAudience.INNOVATORS,
-        innovationId,
-        NotifContextType.COMMENT,
-        replyTo
-          ? NotifContextDetail.COMMENT_REPLY
-          : NotifContextDetail.COMMENT_CREATION,
-        result.id,
-        {},
-        targetNotificationUsers.map((u) => u.id)
-      );
+      if (requestUser.type === UserType.INNOVATOR) {
+        if (replyTo) {
+          const originalComment = this.commentRepo
+            .createQueryBuilder("comment")
+            .innerJoinAndSelect("comment.user", "user")
+            .where("comment.id = :commentId", {
+              commentId: replyTo,
+            })
+            .andWhere(`comment.user_id != :userCommenting`, {
+              userCommenting: requestUser.id,
+            });
+
+          const userInOriginalComment = await originalComment.getOne();
+
+          const replyChain = this.commentRepo
+            .createQueryBuilder("comment")
+            .innerJoinAndSelect("comment.user", "user")
+            .where("comment.reply_to_id = :replyToId", {
+              replyToId: replyTo,
+            })
+            .andWhere(`comment.user_id != :userCommenting`, {
+              userCommenting: requestUser.id,
+            });
+
+          const usersInReplyChain = await replyChain.getMany();
+
+          if (userInOriginalComment) {
+            usersInReplyChain.push(userInOriginalComment);
+          }
+
+          if (usersInReplyChain.length > 0) {
+            await this.notificationService.create(
+              requestUser,
+              NotificationAudience.ACCESSORS,
+              innovationId,
+              NotifContextType.COMMENT,
+              NotifContextDetail.COMMENT_REPLY,
+              result.id,
+              {},
+              usersInReplyChain.map((u) => u.user.id)
+            );
+          }
+        } else {
+          await this.notificationService.create(
+            requestUser,
+            NotificationAudience.ACCESSORS,
+            innovationId,
+            NotifContextType.COMMENT,
+            NotifContextDetail.COMMENT_CREATION,
+            result.id,
+            {},
+            targetNotificationUsers.map((u) => u.id)
+          );
+        }
+      }
+
+      if (
+        requestUser.type === UserType.ACCESSOR ||
+        requestUser.type === UserType.ASSESSMENT
+      ) {
+        await this.notificationService.create(
+          requestUser,
+          NotificationAudience.INNOVATORS,
+          innovationId,
+          NotifContextType.COMMENT,
+          replyTo
+            ? NotifContextDetail.COMMENT_REPLY
+            : NotifContextDetail.COMMENT_CREATION,
+          result.id,
+          {},
+          targetNotificationUsers.map((u) => u.id)
+        );
+      }
     } catch (error) {
       this.logService.error(
         `An error has occured while creating a notification of type ${NotificationContextType.COMMENT} from ${requestUser.id}`,
