@@ -1319,7 +1319,18 @@ export class InnovationService extends BaseService<Innovation> {
     const resolvedUnits = [];
     for (const org of organisationShares) {
       const units = await org.organisationUnits;
-      resolvedUnits.push(units);
+
+      // Did not want to convert this repository pattern to a querybuilder pattern where I could inner join with the units that are active.
+      // However, I do not know all the cases where this method is used, and the inputs it might receive.
+
+      // If you are cringing with the unit.inactivatedAt == null (double equality instead of triple equality)
+      // This is called juggling-check. It serves the purpose of testing both null and undefined in one go.
+      // What is juggling-check you might ask?
+      // Welp, it's when a type is juggled, or in other words, when we want to make it a boolean.
+      // Ie, an empty string is treated as a boolean false, but "false" == false being a non-empty string it will evaluate to true
+      // Isn't javascript great?
+
+      resolvedUnits.push(units.filter(unit => unit.inactivatedAt == null)); // The rare case you do want to use '==' instead of '==='.
     }
 
     const unitShares = resolvedUnits.flatMap((r) => r.map((u) => u.id));
@@ -1357,7 +1368,7 @@ export class InnovationService extends BaseService<Innovation> {
 
     const result = shares?.map((os: Organisation) => {
       const organisationSupports = supports.filter(
-        (is: InnovationSupport) => is.organisationUnit.organisation.id === os.id
+        (is: InnovationSupport) => is.organisationUnit.organisation.id === os.id && is.organisationUnit.inactivatedAt == null // juggle-checking. Rare case you want to use double equality.
       );
 
       let status: InnovationSupportStatus = InnovationSupportStatus.UNASSIGNED;

@@ -194,7 +194,8 @@ export const createOrganisation = async (
 };
 
 export const createOrganisationUnit = async (
-  organisation: Organisation
+  organisation: Organisation,
+  inactivatedAt?: Date,
 ): Promise<OrganisationUnit> => {
   const organisationService = new OrganisationService(
     process.env.DB_TESTS_NAME
@@ -204,6 +205,7 @@ export const createOrganisationUnit = async (
     name: faker.company.companyName(),
     acronym: faker.company.companySuffix(),
     organisation,
+    inactivatedAt,
   });
 
   return await organisationService.addOrganisationUnit(unitObj);

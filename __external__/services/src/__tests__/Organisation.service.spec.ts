@@ -35,7 +35,7 @@ describe("Organisation Service Suite", () => {
   let accessorService: AccessorService;
 
   beforeAll(async () => {
-    //await setupTestsConnection();
+    await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -45,7 +45,7 @@ describe("Organisation Service Suite", () => {
   });
 
   afterAll(async () => {
-    //closeTestsConnection();
+    closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -120,6 +120,60 @@ describe("Organisation Service Suite", () => {
     const actual = await organisationService.findAll(filter);
 
     expect(actual.length).toEqual(2);
+  });
+
+  it("should return not return organisations with findAll() when organsations are inactivated", async () => {
+    
+    let organisation = Organisation.new({
+      ...dummy.baseOrganisation,
+      type: OrganisationType.ACCESSOR,
+      inactivatedAt: new Date(),
+    });
+
+    await organisationService.create(organisation);
+
+    organisation = Organisation.new({
+      name: "MyOrg2",
+      size: "huge too",
+      type: OrganisationType.ACCESSOR,
+      inactivatedAt: new Date(),
+    });
+
+    await organisationService.create(organisation);
+
+    const filter = {
+      type: OrganisationType.ACCESSOR,
+    };
+    const actual = await organisationService.findAll(filter);
+
+    expect(actual.length).toEqual(0);
+  });
+
+  it("should return return only active organisations with findAll()", async () => {
+    
+    let organisation = Organisation.new({
+      ...dummy.baseOrganisation,
+      type: OrganisationType.ACCESSOR,
+      inactivatedAt: new Date(),
+    });
+
+    await organisationService.create(organisation);
+
+    organisation = Organisation.new({
+      name: "MyOrg2",
+      size: "huge too",
+      type: OrganisationType.ACCESSOR,
+    });
+
+    await organisationService.create(organisation);
+
+    const filter = {
+      type: OrganisationType.ACCESSOR,
+    };
+    const actual = await organisationService.findAll(filter);
+
+    expect(actual.length).toEqual(1);
+    expect(actual[0].name).toBe('MyOrg2');
   });
 
   it("should return all user organisations when findUserOrganisations()", async () => {

@@ -65,11 +65,13 @@ describe("Innovator Service Suite", () => {
   let accessorRequestUser: RequestUser;
   let qAccessorRequestUser: RequestUser;
   let qAccessorRequestUser2: RequestUser;
+  let inactiveUnitRequestUser: RequestUser;
   let assessmentRequestUser: RequestUser;
   let assessmentUser: User;
-
+  let inactiveUnitUser: OrganisationUnitUser;
+  
   beforeAll(async () => {
-    //await setupTestsConnection();
+    await setupTestsConnection();
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
     });
@@ -96,6 +98,8 @@ describe("Innovator Service Suite", () => {
     const qualAccessorUser = await fixtures.createAccessorUser();
     const qualAccessorUser2 = await fixtures.createAccessorUser();
     const accessorUser = await fixtures.createAccessorUser();
+    const inactiveAccessorUser = await fixtures.createAccessorUser();
+
     assessmentUser = await fixtures.createAssessmentUser();
 
     accessorOrganisation = await fixtures.createOrganisation(
@@ -121,19 +125,39 @@ describe("Innovator Service Suite", () => {
     );
 
     const organisationUnit = await fixtures.createOrganisationUnit(
-      accessorOrganisation
+      accessorOrganisation,
+
     );
     const organisationUnit2 = await fixtures.createOrganisationUnit(
       accessorOrganisation
     );
+
+    const organisationUnit3 = await fixtures.createOrganisationUnit(
+      accessorOrganisation,
+      new Date(), // inactive organisation
+    );
+
+    const inactiveOrgUser = await fixtures.addUserToOrganisation(
+      inactiveAccessorUser,
+      accessorOrganisation,
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR,
+    )
+
+    inactiveUnitUser = await fixtures.addOrganisationUserToOrganisationUnit(
+      inactiveOrgUser,
+      organisationUnit3,
+    )
+
     const organisationUnitQAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
       organisationQAccessorUser,
       organisationUnit
     );
+    
     const organisationUnitQAccessorUser2 = await fixtures.addOrganisationUserToOrganisationUnit(
       organisationQAccessorUser2,
       organisationUnit2
     );
+
     const organisationUnitAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
       organisationAccessorUser,
       organisationUnit
@@ -155,6 +179,12 @@ describe("Innovator Service Suite", () => {
       accessorUser,
       organisationAccessorUser,
       organisationUnitAccessorUser
+    );
+
+    inactiveUnitRequestUser = fixtures.getRequestUser(
+      inactiveAccessorUser,
+      inactiveOrgUser,
+      inactiveUnitUser
     );
 
     jest.spyOn(engines, "emailEngines").mockReturnValue([
@@ -190,7 +220,7 @@ describe("Innovator Service Suite", () => {
     await query.from(Organisation).execute();
     await query.from(UserRole).execute();
     await query.from(User).execute();
-    //closeTestsConnection();
+    closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -993,6 +1023,32 @@ describe("Innovator Service Suite", () => {
 
     expect(result).toBeDefined();
     expect(result[0].status).toEqual(InnovationSupportStatus.ENGAGING);
+  });
+
+  it("should return support status UNASSIGNED is an existing support is associated with an INACTIVE unit", async () => {
+
+
+    const fakeInnovation = await fixtures.saveInnovation(
+      fixtures.generateInnovation({
+        owner: { id: innovatorRequestUser.id },
+        status: InnovationStatus.IN_PROGRESS,
+        organisationShares: [{ id: accessorOrganisation.id }],
+      })
+    );
+
+    await fixtures.createSupportInInnovation(
+      inactiveUnitRequestUser,
+      fakeInnovation,
+      inactiveUnitUser.id,
+    );
+
+    const result = await innovationService.getOrganisationShares(
+      innovatorRequestUser,
+      fakeInnovation.id
+    );
+
+    expect(result).toBeDefined();
+    expect(result[0].status).toEqual(InnovationSupportStatus.UNASSIGNED);
   });
 
   it("should throw an error when updateOrganisationShares() with invalid params", async () => {

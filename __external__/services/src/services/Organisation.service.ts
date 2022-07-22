@@ -22,13 +22,16 @@ import { number } from "joi";
 import {
   Connection,
   EntityManager,
+  FindOperator,
   getConnection,
   getRepository,
   In,
+  IsNull,
   Not,
   Repository,
   SelectQueryBuilder,
 } from "typeorm";
+import { isNull } from "util";
 import { BaseService } from "./Base.service";
 import { UserService } from "./User.service";
 
@@ -67,11 +70,15 @@ export class OrganisationService extends BaseService<Organisation> {
       );
     }
 
+
     const filterOptions = {
       ...filter,
+      inactivatedAt: IsNull(),
     };
 
-    return await this.repository.find(filterOptions);
+    const organisations =  await this.repository.find(filterOptions);
+
+    return organisations;
   }
 
   async findAllUnits(filter: any): Promise<OrganisationUnit[]> {
@@ -81,6 +88,7 @@ export class OrganisationService extends BaseService<Organisation> {
 
     const filterOptions = {
       ...filter,
+      inactivatedAt: IsNull(),
     };
 
     return await this.orgUnitRepo.find(filterOptions);
