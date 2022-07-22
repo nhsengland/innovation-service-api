@@ -329,20 +329,18 @@ export class InnovationAssessmentService {
       try {
         // send in-app: to suggested QA's
         // send email: to suggested QA's
-        await this.queueProducer.sendMessage({
-          data: {
-            action: NotificationActionType.QA_NEEDS_ASSESSMENT_COMPLETED,
-            body: {
-              innovationId: innovation.id,
-              contextId: assessmentDb.id, // assessmentId
-              requestUser: {
-                id: requestUser.id,
-                identityId: requestUser.externalId,
-                type: requestUser.type,
-              },
-            },
+        await this.queueProducer.sendNotification(
+          NotificationActionType.QA_NEEDS_ASSESSMENT_COMPLETED,
+          {
+            id: requestUser.id,
+            identityId: requestUser.externalId,
+            type: requestUser.type,
           },
-        });
+          {
+            innovationId: innovation.id,
+            assessmentId: assessmentDb.id,
+          }
+        );
       } catch (error) {
         this.logService.error(
           `An error has occured while writing notification on queue of type ${NotificationActionType.QA_NEEDS_ASSESSMENT_COMPLETED}`,
@@ -352,20 +350,18 @@ export class InnovationAssessmentService {
 
       try {
         // send email: to innovator
-        await this.queueProducer.sendMessage({
-          data: {
-            action: NotificationActionType.INNOVATOR_NEEDS_ASSESSMENT_COMPLETED,
-            body: {
-              innovationId: innovation.id,
-              contextId: assessmentDb.id, // assessmentId
-              requestUser: {
-                id: requestUser.id,
-                identityId: requestUser.externalId,
-                type: requestUser.type,
-              },
-            },
+        await this.queueProducer.sendNotification(
+          NotificationActionType.INNOVATOR_NEEDS_ASSESSMENT_COMPLETED,
+          {
+            id: requestUser.id,
+            identityId: requestUser.externalId,
+            type: requestUser.type,
           },
-        });
+          {
+            innovationId: innovation.id,
+            assessmentId: assessmentDb.id,
+          }
+        );
       } catch (error) {
         this.logService.error(
           `An error has occured while writing notification on queue of type ${NotificationActionType.INNOVATOR_NEEDS_ASSESSMENT_COMPLETED}`,
@@ -379,21 +375,19 @@ export class InnovationAssessmentService {
       ) {
         try {
           // send in-app: to innovator if missing sharings
-          await this.queueProducer.sendMessage({
-            data: {
-              action: NotificationActionType.INNOVATOR_ORGANISATION_SUGGESTION,
-              body: {
-                innovationId: innovation.id,
-                contextId: assessmentDb.id, // assessmentId
-                requestUser: {
-                  id: requestUser.id,
-                  identityId: requestUser.externalId,
-                  type: requestUser.type,
-                },
-                organisationIds: organisationSuggestionsDiff,
-              },
+          await this.queueProducer.sendNotification(
+            NotificationActionType.INNOVATOR_ORGANISATION_SUGGESTION,
+            {
+              id: requestUser.id,
+              identityId: requestUser.externalId,
+              type: requestUser.type,
             },
-          });
+            {
+              innovationId: innovation.id,
+              assessmentId: assessmentDb.id,
+              organisationIds: organisationSuggestionsDiff,
+            }
+          );
         } catch (error) {
           this.logService.error(
             `An error has occured while writing notification on queue of type ${NotificationActionType.INNOVATOR_ORGANISATION_SUGGESTION}`,

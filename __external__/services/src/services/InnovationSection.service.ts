@@ -500,26 +500,23 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
       try {
         // send in-app: to accessor
         // send email: to accessor if new status is IN_REVIEW
-        await this.queueProducer.sendMessage({
-          data: {
-            action: NotificationActionType.ACTION_UPDATE,
-            body: {
-              innovationId: innovation.id,
-              contextId: updatedAction.id, // actionId
-              requestUser: {
-                id: requestUser.id,
-                identityId: requestUser.externalId,
-                type: requestUser.type,
-              },
-              action: {
-                id: updatedAction.id,
-                section: updatedAction.innovationSection.section,
-                displayId: updatedAction.displayId,
-                status: updatedAction.status,
-              },
-            },
+        await this.queueProducer.sendNotification(
+          NotificationActionType.ACTION_UPDATE,
+          {
+            id: requestUser.id,
+            identityId: requestUser.externalId,
+            type: requestUser.type,
           },
-        });
+          {
+            innovationId: innovation.id,
+            action: {
+              id: updatedAction.id,
+              section: updatedAction.innovationSection.section,
+              displayId: updatedAction.displayId,
+              status: updatedAction.status,
+            },
+          }
+        );
       } catch (error) {
         this.logService.error(
           `An error has occured while writing notification on queue of type ${NotificationActionType.ACTION_UPDATE}`,

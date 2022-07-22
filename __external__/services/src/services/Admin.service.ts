@@ -230,20 +230,17 @@ export class AdminService {
         if (innovationSupports.length > 0) {
           try {
             // send in-app: to assigned accessors
-            await this.queueProducer.sendMessage({
-              data: {
-                action: NotificationActionType.INNOVATION_USER_LOCK,
-                body: {
-                  innovationId: innovation.id,
-                  contextId: innovation.id, // innovationId
-                  requestUser: {
-                    id: requestUser.id,
-                    identityId: requestUser.externalId,
-                    type: requestUser.type,
-                  },
-                },
+            await this.queueProducer.sendNotification(
+              NotificationActionType.INNOVATION_USER_LOCK,
+              {
+                id: requestUser.id,
+                identityId: requestUser.externalId,
+                type: requestUser.type,
               },
-            });
+              {
+                innovationId: innovation.id,
+              }
+            );
           } catch (error) {
             this.logService.error(
               `An error has occured while writing notification on queue of type ${NotificationActionType.INNOVATION_USER_LOCK}`,
@@ -256,27 +253,25 @@ export class AdminService {
 
     const email = this.getUserEmail(user);
 
-    // send email: to user locked
     try {
-      await this.queueProducer.sendMessage({
-        data: {
-          action: NotificationActionType.LOCK_USER,
-          body: {
-            innovationId: null,
-            contextId: userDetails.id, // userId
-            requestUser: {
-              id: requestUser.id,
-              identityId: requestUser.externalId,
-              type: requestUser.type,
-            },
-            user: {
-              id: userDetails.id,
-              externalId: userDetails.externalId,
-              email,
-            },
-          },
+      // send email: to user locked
+      await this.queueProducer.sendNotification(
+        NotificationActionType.LOCK_USER,
+        {
+          id: requestUser.id,
+          identityId: requestUser.externalId,
+          type: requestUser.type,
         },
-      });
+        {
+          innovationId: null,
+          userId: userDetails.id,
+          user: {
+            id: userDetails.id,
+            externalId: userDetails.externalId,
+            email,
+          },
+        }
+      );
     } catch (error) {
       this.logService.error(
         `An error has occured while writing notification on queue of type ${NotificationActionType.LOCK_USER}`,

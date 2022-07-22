@@ -393,26 +393,23 @@ export class InnovationSupportService {
     // send in-app: innovator
     // send email: to innovator about status update
     try {
-      await this.queueProducer.sendMessage({
-        data: {
-          action: NotificationActionType.INNOVATOR_SUPPORT_STATUS_UPDATE,
-          body: {
-            innovationId,
-            contextId: retVal.id, // innovationSupportId
-            requestUser: {
-              id: requestUser.id,
-              identityId: requestUser.externalId,
-              type: requestUser.type,
-            },
-            innovationSupport: {
-              id: result.id,
-              status: result.status,
-              statusChanged: true,
-              organisationUnitId: organisationUnit.id,
-            },
-          },
+      await this.queueProducer.sendNotification(
+        NotificationActionType.INNOVATOR_SUPPORT_STATUS_UPDATE,
+        {
+          id: requestUser.id,
+          identityId: requestUser.externalId,
+          type: requestUser.type,
         },
-      });
+        {
+          innovationId,
+          innovationSupport: {
+            id: result.id,
+            status: result.status,
+            statusChanged: true,
+            organisationUnitId: organisationUnit.id,
+          },
+        }
+      );
     } catch (error) {
       this.logService.error(
         `An error has occured while writing notification on queue of type ${NotificationActionType.ACCESSOR_SUPPORT_STATUS_UPDATE}`,
@@ -421,28 +418,25 @@ export class InnovationSupportService {
     }
 
     if (support.status === InnovationSupportStatus.ENGAGING) {
-      // send in-app: to assigned accessors and innovators
       try {
-        await this.queueProducer.sendMessage({
-          data: {
-            action: NotificationActionType.ACCESSOR_SUPPORT_STATUS_UPDATE,
-            body: {
-              innovationId,
-              contextId: retVal.id, // innovationSupportId
-              requestUser: {
-                id: requestUser.id,
-                identityId: requestUser.externalId,
-                type: requestUser.type,
-              },
-              innovationSupport: {
-                id: result.id,
-                status: result.status,
-                statusChanged: true,
-                organisationUnitId: organisationUnit.id,
-              },
-            },
+        // send in-app: to assigned accessors and innovators
+        await this.queueProducer.sendNotification(
+          NotificationActionType.ACCESSOR_SUPPORT_STATUS_UPDATE,
+          {
+            id: requestUser.id,
+            identityId: requestUser.externalId,
+            type: requestUser.type,
           },
-        });
+          {
+            innovationId,
+            innovationSupport: {
+              id: result.id,
+              status: result.status,
+              statusChanged: true,
+              organisationUnitId: organisationUnit.id,
+            },
+          }
+        );
       } catch (error) {
         this.logService.error(
           `An error has occured while writing notification on queue of type ${NotificationActionType.ACCESSOR_SUPPORT_STATUS_UPDATE}`,
@@ -612,26 +606,23 @@ export class InnovationSupportService {
     ) {
       // send in-app: to needs assessment team
       try {
-        await this.queueProducer.sendMessage({
-          data: {
-            action: NotificationActionType.NA_SUPPORT_STATUS_UPDATE,
-            body: {
-              innovationId: innovationId,
-              contextId: result.id, //innovationSupportId
-              innovationSupport: {
-                id: result.id,
-                status: result.status,
-                statusChanged,
-              },
-              requestUser: {
-                id: requestUser.id,
-                identityId: requestUser.externalId,
-                type: requestUser.type,
-                organisationUnitId: organisationUnit.id,
-              },
-            },
+        await this.queueProducer.sendNotification(
+          NotificationActionType.NA_SUPPORT_STATUS_UPDATE,
+          {
+            id: requestUser.id,
+            identityId: requestUser.externalId,
+            type: requestUser.type,
+            organisationUnitId: organisationUnit.id,
           },
-        });
+          {
+            innovationId: innovationId,
+            innovationSupport: {
+              id: result.id,
+              status: result.status,
+              statusChanged,
+            },
+          }
+        );
       } catch (error) {
         this.logService.error(
           `An error has occured while writing notification on queue of type ${NotificationActionType.NA_SUPPORT_STATUS_UPDATE}`,
@@ -663,26 +654,23 @@ export class InnovationSupportService {
     // send in-app: to assigned accessors
     if (statusChanged && result.status === InnovationSupportStatus.ENGAGING) {
       try {
-        await this.queueProducer.sendMessage({
-          data: {
-            action: NotificationActionType.ACCESSOR_SUPPORT_STATUS_UPDATE,
-            body: {
-              innovationId: innovationId,
-              contextId: result.id, //innovationSupportId
-              innovationSupport: {
-                id: result.id,
-                status: result.status,
-                statusChanged,
-              },
-              requestUser: {
-                id: requestUser.id,
-                identityId: requestUser.externalId,
-                type: requestUser.type,
-                organisationUnitId: organisationUnit.id,
-              },
-            },
+        await this.queueProducer.sendNotification(
+          NotificationActionType.ACCESSOR_SUPPORT_STATUS_UPDATE,
+          {
+            id: requestUser.id,
+            identityId: requestUser.externalId,
+            type: requestUser.type,
+            organisationUnitId: organisationUnit.id,
           },
-        });
+          {
+            innovationId: innovationId,
+            innovationSupport: {
+              id: result.id,
+              status: result.status,
+              statusChanged,
+            },
+          }
+        );
       } catch (error) {
         this.logService.error(
           `An error has occured while writing notification on queue of type ${NotificationActionType.ACCESSOR_SUPPORT_STATUS_UPDATE}`,
@@ -695,26 +683,23 @@ export class InnovationSupportService {
       // send in-app: to innovator
       // send email: to innovator
       try {
-        await this.queueProducer.sendMessage({
-          data: {
-            action: NotificationActionType.INNOVATOR_SUPPORT_STATUS_UPDATE,
-            body: {
-              innovationId: innovationId,
-              contextId: result.id, //innovationSupportId
-              innovationSupport: {
-                id: result.id,
-                status: result.status,
-                statusChanged,
-              },
-              requestUser: {
-                id: requestUser.id,
-                identityId: requestUser.externalId,
-                type: requestUser.type,
-                organisationUnitId: organisationUnit.id,
-              },
-            },
+        await this.queueProducer.sendNotification(
+          NotificationActionType.INNOVATOR_SUPPORT_STATUS_UPDATE,
+          {
+            id: requestUser.id,
+            identityId: requestUser.externalId,
+            type: requestUser.type,
+            organisationUnitId: organisationUnit.id,
           },
-        });
+          {
+            innovationId: innovationId,
+            innovationSupport: {
+              id: result.id,
+              status: result.status,
+              statusChanged,
+            },
+          }
+        );
       } catch (error) {
         this.logService.error(
           `An error has occured while writing notification on queue of type ${NotificationActionType.INNOVATOR_SUPPORT_STATUS_UPDATE}`,

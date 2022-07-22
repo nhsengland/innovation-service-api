@@ -5,13 +5,13 @@ import {
   Innovation,
   InnovationTransferStatus,
   User,
-  UserType
+  UserType,
 } from "@domain/index";
 import {
   InnovationNotFoundError,
   InnovationTransferAlreadyExistsError,
   InnovationTransferNotFoundError,
-  InvalidParamsError
+  InvalidParamsError,
 } from "@services/errors";
 import { InnovationTransferResult } from "@services/models/InnovationTransferResult";
 import { RequestUser } from "@services/models/RequestUser";
@@ -20,14 +20,14 @@ import {
   EntityManager,
   getConnection,
   getRepository,
-  Repository
+  Repository,
 } from "typeorm";
 import { QueueProducer } from "utils/queue-producer";
 import {
   authenticateWitGraphAPI,
   checkIfValidUUID,
   getUserFromB2C,
-  getUserFromB2CByEmail
+  getUserFromB2CByEmail,
 } from "../helpers";
 import { ActivityLogService } from "./ActivityLog.service";
 import { InnovationService } from "./Innovation.service";
@@ -271,24 +271,22 @@ export class InnovationTransferService {
 
     try {
       // send email: to new innovation owner
-      await this.queueProducer.sendMessage({
-        data: {
-          action: notificationActionType,
-          body: {
-            innovationId: innovation.id,
-            contextId: result.id, // transferId
-            requestUser: {
-              id: requestUser.id,
-              identityId: requestUser.externalId,
-              type: requestUser.type,
-            },
-            newInnovator: {
-              identityId: destB2cUser?.id || null,
-              email,
-            },
-          },
+      await this.queueProducer.sendNotification(
+        notificationActionType,
+        {
+          id: requestUser.id,
+          identityId: requestUser.externalId,
+          type: requestUser.type,
         },
-      });
+        {
+          innovationId: innovation.id,
+          transferId: result.id,
+          newInnovator: {
+            identityId: destB2cUser?.id || null,
+            email,
+          },
+        }
+      );
     } catch (error) {
       this.logService.error(
         `An error has occured while writing notification on queue of type ${notificationActionType}`,
@@ -387,21 +385,18 @@ export class InnovationTransferService {
 
       try {
         // send email: to new innovation owner
-        await this.queueProducer.sendMessage({
-          data: {
-            action:
-              NotificationActionType.INNOVATOR_TRANSFER_OWNERSHIP_CONFIRMATION,
-            body: {
-              innovationId: transfer.innovation.id,
-              contextId: transfer.id, // transferId
-              requestUser: {
-                id: requestUser.id,
-                identityId: requestUser.externalId,
-                type: requestUser.type,
-              },
-            },
+        await this.queueProducer.sendNotification(
+          NotificationActionType.INNOVATOR_TRANSFER_OWNERSHIP_CONFIRMATION,
+          {
+            id: requestUser.id,
+            identityId: requestUser.externalId,
+            type: requestUser.type,
           },
-        });
+          {
+            innovationId: transfer.innovation.id,
+            transferId: transfer.id,
+          }
+        );
       } catch (error) {
         this.logService.error(
           `An error has occured while writing notification on queue of type ${NotificationActionType.INNOVATOR_TRANSFER_OWNERSHIP_CONFIRMATION}`,

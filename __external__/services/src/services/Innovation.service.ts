@@ -1091,20 +1091,17 @@ export class InnovationService extends BaseService<Innovation> {
     try {
       // send in-app: to NA team
       // send email: to NA team & to innovator
-      await this.queueProducer.sendMessage({
-        data: {
-          action: NotificationActionType.INNOVATION_SUBMITED,
-          body: {
-            innovationId: innovation.id,
-            contextId: innovation.id, // innovationId
-            requestUser: {
-              id: requestUser.id,
-              identityId: requestUser.externalId,
-              type: requestUser.type,
-            },
-          },
+      await this.queueProducer.sendNotification(
+        NotificationActionType.INNOVATION_SUBMITED,
+        {
+          id: requestUser.id,
+          identityId: requestUser.externalId,
+          type: requestUser.type,
         },
-      });
+        {
+          innovationId: innovation.id,
+        }
+      );
     } catch (error) {
       this.logService.error(
         `An error has occured while writing notification on queue of type ${NotificationActionType.INNOVATION_SUBMITED}`,
@@ -1233,20 +1230,17 @@ export class InnovationService extends BaseService<Innovation> {
 
     try {
       // send email: to assigned accessors
-      await this.queueProducer.sendMessage({
-        data: {
-          action: NotificationActionType.INNOVATION_ARCHIVED,
-          body: {
-            innovationId: innovation.id,
-            contextId: innovation.id, // innovationId
-            requestUser: {
-              id: requestUser.id,
-              identityId: requestUser.externalId,
-              type: requestUser.type,
-            },
-          },
+      await this.queueProducer.sendNotification(
+        NotificationActionType.INNOVATION_ARCHIVED,
+        {
+          id: requestUser.id,
+          identityId: requestUser.externalId,
+          type: requestUser.type,
         },
-      });
+        {
+          innovationId: innovation.id,
+        }
+      );
     } catch (error) {
       this.logService.error(
         `An error has occured while writing notification on queue of type ${NotificationActionType.INNOVATION_ARCHIVED}`,

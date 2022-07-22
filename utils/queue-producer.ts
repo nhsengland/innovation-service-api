@@ -4,6 +4,8 @@ import {
   QueueSendMessageResponse,
   QueueServiceClient,
 } from "@azure/storage-queue";
+import { UserType } from "@domain/index";
+import { NotificationActionType } from "@domain/enums/notification.enums";
 import { get, set } from "../utils/cache";
 
 export class QueueProducer {
@@ -33,7 +35,26 @@ export class QueueProducer {
     }
   }
 
-  async sendMessage(
+  async sendNotification(
+    notificationActionType: NotificationActionType,
+    requestUser: {
+      id: string;
+      identityId: string;
+      type: UserType;
+      organisationUnitId?: string;
+    },
+    params: { [key: string]: any }
+  ) {
+    return await this.sendMessage({
+      data: {
+        action: notificationActionType,
+        requestUser,
+        params,
+      },
+    });
+  }
+
+  private async sendMessage(
     message: { [key: string]: any },
     queueName?: string,
     opts?: QueueSendMessageOptions

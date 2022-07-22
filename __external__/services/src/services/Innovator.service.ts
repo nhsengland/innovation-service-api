@@ -136,20 +136,17 @@ export class InnovatorService extends BaseService<User> {
   async sendEmail(innovator: User): Promise<void> {
     try {
       // send email: to innovator
-      await this.queueProducer.sendMessage({
-        data: {
-          action: NotificationActionType.INNOVATOR_ACCOUNT_CREATION,
-          body: {
-            innovationId: null,
-            contextId: innovator.id, // innovatorId
-            requestUser: {
-              id: innovator.id,
-              identityId: innovator.externalId,
-              type: UserType.INNOVATOR,
-            },
-          },
+      await this.queueProducer.sendNotification(
+        NotificationActionType.INNOVATOR_ACCOUNT_CREATION,
+        {
+          id: innovator.id,
+          identityId: innovator.externalId,
+          type: UserType.INNOVATOR,
         },
-      });
+        {
+          userId: innovator.id,
+        }
+      );
     } catch (error) {
       this.logService.error(
         `An error has occured while writing notification on queue of type ${NotificationActionType.INNOVATOR_ACCOUNT_CREATION}`,

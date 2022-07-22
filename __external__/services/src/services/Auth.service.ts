@@ -91,21 +91,20 @@ export class AuthService {
   async sendTOTP(recipient: UserEmailModel, code: string) {
     try {
       // send email: to admin
-      await this.queueProducer.sendMessage({
-        data: {
-          action: NotificationActionType.ADMINS_LOGIN_VALIDATION,
-          body: {
-            innovationId: null,
-            contextId: null,
-            requestUser: {
-              id: recipient.id,
-              email: recipient.email,
-              displayName: recipient.displayName,
-            },
-            code,
-          },
+      await this.queueProducer.sendNotification(
+        NotificationActionType.ADMINS_LOGIN_VALIDATION,
+        {
+          id: "",
+          identityId: "",
+          type: null,
         },
-      });
+        {
+          id: recipient.id,
+          email: recipient.email,
+          displayName: recipient.displayName,
+          code,
+        }
+      );
     } catch (error) {
       this.loggerService.error(
         `An error has occured while writing notification on queue of type ${NotificationActionType.ADMINS_LOGIN_VALIDATION}`,

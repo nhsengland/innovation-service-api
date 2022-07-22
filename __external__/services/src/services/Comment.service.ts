@@ -116,30 +116,28 @@ export class CommentService {
       return comment;
     });
 
-    // send in-app: to assigned accessors (if reply, to the users inside thread)
-    // if innovator send to accessors, if accessor send to innovator
-    // send email: (same rules)
     const action =
       requestUser.type === UserType.INNOVATOR
         ? NotificationActionType.ACCESSOR_COMMENT_RECEIVED
         : NotificationActionType.INNOVATOR_COMMENT_RECEIVED;
 
     try {
-      await this.queueProducer.sendMessage({
-        data: {
-          action: action,
-          body: {
-            innovationId,
-            contextId: result.id, // commentId
-            requestUser: {
-              id: requestUser.id,
-              identityId: requestUser.externalId,
-              type: requestUser.type,
-            },
-            replyToId: replyTo,
-          },
+      // send in-app: to assigned accessors (if reply, to the users inside thread)
+      // if innovator send to accessors, if accessor send to innovator
+      // send email: (same rules)
+      await this.queueProducer.sendNotification(
+        action,
+        {
+          id: requestUser.id,
+          identityId: requestUser.externalId,
+          type: requestUser.type,
         },
-      });
+        {
+          innovationId,
+          commentId: result.id,
+          replyToId: replyTo,
+        }
+      );
     } catch (error) {
       this.logService.error(
         `An error has occured while writing notification on queue of type ${action}`,

@@ -164,25 +164,22 @@ export class InnovationActionService {
     try {
       // send in-app: to innovator
       // send email: to innovator
-      await this.queueProducer.sendMessage({
-        data: {
-          action: NotificationActionType.ACTION_CREATION,
-          body: {
-            innovationId: innovation.id,
-            contextId: result.id, // actionId
-            requestUser: {
-              id: requestUser.id,
-              identityId: requestUser.externalId,
-              type: requestUser.type,
-            },
-            action: {
-              id: result.id,
-              section: action.section,
-              displayId: result.displayId,
-            },
-          },
+      await this.queueProducer.sendNotification(
+        NotificationActionType.ACTION_CREATION,
+        {
+          id: requestUser.id,
+          identityId: requestUser.externalId,
+          type: requestUser.type,
         },
-      });
+        {
+          innovationId: innovation.id,
+          action: {
+            id: result.id,
+            section: action.section,
+            displayId: result.displayId,
+          },
+        }
+      );
     } catch (error) {
       this.logService.error(
         `An error has occured while writing notification on queue of type ${NotificationActionType.ACTION_CREATION}`,
@@ -246,26 +243,23 @@ export class InnovationActionService {
 
     try {
       // send in-app: to innovator
-      await this.queueProducer.sendMessage({
-        data: {
-          action: NotificationActionType.ACTION_UPDATE,
-          body: {
-            innovationId: innovation.id,
-            contextId: result.id, // actionId
-            requestUser: {
-              id: requestUser.id,
-              identityId: requestUser.externalId,
-              type: requestUser.type,
-            },
-            action: {
-              id: result.id,
-              section: action.section,
-              displayId: result.displayId,
-              status: result.status,
-            },
-          },
+      await this.queueProducer.sendNotification(
+        NotificationActionType.ACTION_UPDATE,
+        {
+          id: requestUser.id,
+          identityId: requestUser.externalId,
+          type: requestUser.type,
         },
-      });
+        {
+          innovationId: innovation.id,
+          action: {
+            id: result.id,
+            section: action.section,
+            displayId: result.displayId,
+            status: result.status,
+          },
+        }
+      );
     } catch (error) {
       this.logService.error(
         `An error has occured while writing notification on queue of type ${NotificationActionType.ACTION_UPDATE}`,
@@ -306,26 +300,23 @@ export class InnovationActionService {
 
     try {
       // send in-app: to action creator
-      await this.queueProducer.sendMessage({
-        data: {
-          action: NotificationActionType.ACTION_UPDATE,
-          body: {
-            innovationId: innovationId,
-            contextId: result.id, // actionId
-            requestUser: {
-              id: requestUser.id,
-              identityId: requestUser.externalId,
-              type: requestUser.type,
-            },
-            action: {
-              id: result.id,
-              section: action.section,
-              displayId: result.displayId,
-              status: result.status,
-            },
-          },
+      await this.queueProducer.sendNotification(
+        NotificationActionType.ACTION_UPDATE,
+        {
+          id: requestUser.id,
+          identityId: requestUser.externalId,
+          type: requestUser.type,
         },
-      });
+        {
+          innovationId: innovationId,
+          action: {
+            id: result.id,
+            section: action.section,
+            displayId: result.displayId,
+            status: result.status,
+          },
+        }
+      );
     } catch (error) {
       this.logService.error(
         `An error has occured while writing notification on queue of type ${NotificationActionType.ACTION_UPDATE}`,

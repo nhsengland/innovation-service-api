@@ -162,21 +162,18 @@ export class InnovationSupportLogService {
     ) {
       // send email: to suggested organisation units
       try {
-        await this.queueProducer.sendMessage({
-          data: {
-            action: NotificationActionType.QA_INNOVATION_SUGGESTION,
-            body: {
-              innovationId: innovationId,
-              contextId: innovationId, // innovationId
-              requestUser: {
-                id: requestUser.id,
-                identityId: requestUser.externalId,
-                type: requestUser.type,
-              },
-              organisationUnitIds: supportLog.organisationUnits,
-            },
+        await this.queueProducer.sendNotification(
+          NotificationActionType.QA_INNOVATION_SUGGESTION,
+          {
+            id: requestUser.id,
+            identityId: requestUser.externalId,
+            type: requestUser.type,
           },
-        });
+          {
+            innovationId: innovationId,
+            organisationUnitIds: supportLog.organisationUnits,
+          }
+        );
       } catch (error) {
         this.loggerService.error(
           `An error has occured while writing notification on queue of type ${NotificationActionType.QA_INNOVATION_SUGGESTION}`,

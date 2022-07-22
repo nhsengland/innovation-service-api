@@ -1072,23 +1072,20 @@ export class UserService {
 
       try {
         // send email: to admin
-        await this.queueProducer.sendMessage({
-          data: {
-            action: NotificationActionType.ACCESSOR_UNIT_CHANGE,
-            body: {
-              innovationId: null,
-              contextId: userId,
-              requestUser: {
-                id: requestUser.id,
-                identityId: requestUser.externalId,
-                type: requestUser.type,
-              },
-              prevOrganisationUnitId:
-                orgUser[0].userOrganisationUnits[0].organisationUnit.id,
-              newOrganisationUnitId: orgUnit[0].id,
-            },
+        await this.queueProducer.sendNotification(
+          NotificationActionType.ACCESSOR_UNIT_CHANGE,
+          {
+            id: requestUser.id,
+            identityId: requestUser.externalId,
+            type: requestUser.type,
           },
-        });
+          {
+            contextId: userId,
+            prevOrganisationUnitId:
+              orgUser[0].userOrganisationUnits[0].organisationUnit.id,
+            newOrganisationUnitId: orgUnit[0].id,
+          }
+        );
       } catch (error) {
         this.logService.error(
           `An error has occured while writing notification on queue of type ${NotificationActionType.ACCESSOR_UNIT_CHANGE}`,
