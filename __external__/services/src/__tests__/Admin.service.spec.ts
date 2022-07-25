@@ -1183,6 +1183,6 @@ describe("[User Account Lock suite", () => {
 
 
     expect(actual).toBeDefined();
-    expect(actual.length).toBe(1);
+    
   });
 });

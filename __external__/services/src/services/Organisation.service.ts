@@ -32,6 +32,7 @@ import {
   Repository,
   SelectQueryBuilder,
 } from "typeorm";
+import { isNull } from "util";
 import { BaseService } from "./Base.service";
 import { UserService } from "./User.service";
 
@@ -78,14 +79,21 @@ export class OrganisationService extends BaseService<Organisation> {
     return await this.repository.find(filterOptions);
   }
 
-  async findAllUnits(filter: any): Promise<OrganisationUnit[]> {
+  async findAllUnits(filter: any, excludeInactive?: boolean): Promise<OrganisationUnit[]> {
     if (!filter) {
       throw new InvalidParamsError("Invalid filter.");
     }
 
-    const filterOptions = {
+    let filterOptions = {
       ...filter,
     };
+
+    if (excludeInactive) {
+      filterOptions =  {
+        ...filterOptions,
+        inactivatedAt: IsNull(),
+      }
+    }
 
     return await this.orgUnitRepo.find(filterOptions);
   }
