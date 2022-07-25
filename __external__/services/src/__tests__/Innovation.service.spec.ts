@@ -69,7 +69,7 @@ describe("Innovator Service Suite", () => {
   let assessmentUser: User;
 
   beforeAll(async () => {
-    //await setupTestsConnection();
+    await setupTestsConnection();
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
     });
@@ -190,7 +190,7 @@ describe("Innovator Service Suite", () => {
     await query.from(Organisation).execute();
     await query.from(UserRole).execute();
     await query.from(User).execute();
-    //closeTestsConnection();
+    closeTestsConnection();
   });
 
   afterEach(async () => {
@@ -993,6 +993,110 @@ describe("Innovator Service Suite", () => {
 
     expect(result).toBeDefined();
     expect(result[0].status).toEqual(InnovationSupportStatus.ENGAGING);
+  });
+
+  it("should find the innovation organisation shares only on Active organisations [0]", async () => {
+    const qualAccessorUser = await fixtures.createAccessorUser();
+
+    const activeAccessorOrganisation = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR,
+      { inactivatedAt: new Date() }
+    );
+
+    const orgQualifyingAccessor = await fixtures.addUserToOrganisation(
+      qualAccessorUser,
+      activeAccessorOrganisation,
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    );
+
+    const organisationUnit = await fixtures.createOrganisationUnit(
+      activeAccessorOrganisation
+    );
+
+    const organisationUnitQAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
+      orgQualifyingAccessor,
+      organisationUnit
+    );
+
+    const qaRequestUser = fixtures.getRequestUser(
+      qualAccessorUser,
+      orgQualifyingAccessor,
+      organisationUnitQAccessorUser
+    );
+
+    const fakeInnovation = await fixtures.saveInnovation(
+      fixtures.generateInnovation({
+        owner: { id: innovatorRequestUser.id },
+        status: InnovationStatus.IN_PROGRESS,
+        organisationShares: [{ id: activeAccessorOrganisation.id }],
+      })
+    );
+
+    await fixtures.createSupportInInnovation(
+      qaRequestUser,
+      fakeInnovation,
+      qaRequestUser.organisationUnitUser.id
+    );
+
+    const result = await innovationService.getOrganisationShares(
+      innovatorRequestUser,
+      fakeInnovation.id
+    );
+
+    expect(result).toBeDefined();
+    expect(result.length).toEqual(0);
+  });
+
+  it("should find the innovation organisation shares only on Active organisations and status UNASSIGNED if there are no Active units supporting [1]", async () => {
+    const qualAccessorUser = await fixtures.createAccessorUser();
+
+    const activeAccessorOrganisation = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
+    );
+
+    const orgQualifyingAccessor = await fixtures.addUserToOrganisation(
+      qualAccessorUser,
+      activeAccessorOrganisation,
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    );
+
+    const organisationUnit = await fixtures.createOrganisationUnit(
+      activeAccessorOrganisation,
+      { inactivatedAt: new Date() }
+    );
+
+    const organisationUnitQAccessorUser = await fixtures.addOrganisationUserToOrganisationUnit(
+      orgQualifyingAccessor,
+      organisationUnit
+    );
+
+    const qaRequestUser = fixtures.getRequestUser(
+      qualAccessorUser,
+      orgQualifyingAccessor,
+      organisationUnitQAccessorUser
+    );
+
+    const fakeInnovation = await fixtures.saveInnovation(
+      fixtures.generateInnovation({
+        owner: { id: innovatorRequestUser.id },
+        status: InnovationStatus.IN_PROGRESS,
+        organisationShares: [{ id: activeAccessorOrganisation.id }],
+      })
+    );
+
+    await fixtures.createSupportInInnovation(
+      qaRequestUser,
+      fakeInnovation,
+      qaRequestUser.organisationUnitUser.id
+    );
+
+    const result = await innovationService.getOrganisationShares(
+      innovatorRequestUser,
+      fakeInnovation.id
+    );
+
+    expect(result).toBeDefined();
+    expect(result[0].status).toEqual(InnovationSupportStatus.UNASSIGNED);
   });
 
   it("should throw an error when updateOrganisationShares() with invalid params", async () => {
