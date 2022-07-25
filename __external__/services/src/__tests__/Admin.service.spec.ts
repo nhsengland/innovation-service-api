@@ -29,7 +29,7 @@ describe("[User Account Lock suite", () => {
   let adminService: AdminService;
   beforeAll(async () => {
     jest.setTimeout(50000);
-    await setupTestsConnection();
+    //await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -51,7 +51,7 @@ describe("[User Account Lock suite", () => {
   });
 
   afterAll(async () => {
-    await closeTestsConnection();
+    //await closeTestsConnection();
   });
   it("Should not lock User if is last assessment user", async () => {
     jest
@@ -1183,6 +1183,6 @@ describe("[User Account Lock suite", () => {
 
 
     expect(actual).toBeDefined();
-    
+
   });
 });

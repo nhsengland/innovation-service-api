@@ -69,7 +69,7 @@ describe("Innovator Service Suite", () => {
   let assessmentUser: User;
 
   beforeAll(async () => {
-    await setupTestsConnection();
+    //await setupTestsConnection();
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
     });
@@ -190,7 +190,7 @@ describe("Innovator Service Suite", () => {
     await query.from(Organisation).execute();
     await query.from(UserRole).execute();
     await query.from(User).execute();
-    closeTestsConnection();
+    //closeTestsConnection();
   });
 
   afterEach(async () => {
