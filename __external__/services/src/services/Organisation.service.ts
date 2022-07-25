@@ -22,9 +22,12 @@ import { number } from "joi";
 import {
   Connection,
   EntityManager,
+  EntityMetadata,
+  FindOptionsUtils,
   getConnection,
   getRepository,
   In,
+  IsNull,
   Not,
   Repository,
   SelectQueryBuilder,
@@ -69,6 +72,7 @@ export class OrganisationService extends BaseService<Organisation> {
 
     const filterOptions = {
       ...filter,
+      inactivatedAt: IsNull(),
     };
 
     return await this.repository.find(filterOptions);
@@ -126,6 +130,7 @@ export class OrganisationService extends BaseService<Organisation> {
       .where("organisation.type = :type", {
         type: OrganisationType.ACCESSOR,
       })
+      .andWhere("organisationUnits.inactivated_at IS NULL")
       .orderBy("organisation.name", "ASC")
       .getMany();
 
@@ -146,17 +151,17 @@ export class OrganisationService extends BaseService<Organisation> {
   }
 
   async findUserOrganisations(userId: string): Promise<OrganisationUser[]> {
-    return await this.orgUserRepo.find({
-      where: {
-        user: userId,
-      },
-      relations: [
-        "user",
-        "organisation",
-        "userOrganisationUnits",
-        "userOrganisationUnits.organisationUnit",
-      ],
-    });
+
+    const query = this.orgUserRepo.createQueryBuilder('organisationUser')
+    .leftJoinAndSelect('organisationUser.organisation', 'org')
+    .leftJoinAndSelect('org.organisationUnits', 'units')
+    .leftJoinAndSelect('organisationUser.user', 'usr')
+    .where('usr.id = :userId', {userId})
+    .andWhere('units.inactivated_at is NULL')
+    .andWhere('org.inactivated_at is NULL');
+
+    return await query.getMany();
+
   }
 
   async findUserFromUnitUsers(
@@ -352,12 +357,14 @@ export class OrganisationService extends BaseService<Organisation> {
   ): Promise<OrganisationModel> {
     const org = await this.repository
       .createQueryBuilder("organisation")
+      .leftJoinAndSelect("organisation.organisationUnits", "units")
       .where("organisation.type = :type", {
         type: OrganisationType.ACCESSOR,
       })
       .andWhere("organisation.id = :id", {
         id: organisationId,
       })
+      .andWhere("units.inactivated_at IS NULL")
       .getOne();
 
     const orgUnits = await org.organisationUnits;

@@ -16,7 +16,7 @@ import {
   MissingUserOrganisationError,
 } from "@services/errors";
 import * as faker from "faker";
-import { getConnection } from "typeorm";
+import { getConnection, IsNull } from "typeorm";
 import { closeTestsConnection, setupTestsConnection } from "..";
 import * as helpers from "../helpers";
 import { AccessorService } from "../services/Accessor.service";
@@ -122,6 +122,29 @@ describe("Organisation Service Suite", () => {
     expect(actual.length).toEqual(2);
   });
 
+  it("should return all ACTIVE accessor organisations when findAll() with type accessor [1]", async () => {
+    let organisation = Organisation.new({
+      ...dummy.baseOrganisation,
+      type: OrganisationType.ACCESSOR,
+    });
+    await organisationService.create(organisation);
+
+    organisation = Organisation.new({
+      name: "MyOrg2",
+      size: "huge too",
+      type: OrganisationType.ACCESSOR,
+      inactivatedAt: new Date(),
+    });
+    await organisationService.create(organisation);
+
+    const filter = {
+      type: OrganisationType.ACCESSOR,
+    };
+    const actual = await organisationService.findAll(filter);
+
+    expect(actual.length).toEqual(1);
+  });
+
   it("should return all user organisations when findUserOrganisations()", async () => {
     const organisationObj = Organisation.new({
       ...dummy.baseOrganisation,
@@ -143,6 +166,31 @@ describe("Organisation Service Suite", () => {
     const actual = await organisationService.findUserOrganisations(accessor.id);
 
     expect(actual.length).toEqual(1);
+  });
+
+
+  it("should return user active organisations when findUserOrganisations() [0]", async () => {
+    const organisationObj = Organisation.new({
+      ...dummy.baseOrganisation,
+      type: OrganisationType.ACCESSOR,
+      inactivatedAt: new Date(),
+    });
+    const organisation = await organisationService.create(organisationObj);
+
+    const accessorObj = User.new({
+      id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
+    });
+    const accessor = await accessorService.create(accessorObj);
+    await organisationService.addUserToOrganisation(
+      accessor,
+      organisation,
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    );
+
+    const actual = await organisationService.findUserOrganisations(accessor.id);
+
+    expect(actual.length).toEqual(0);
   });
 
   it("should add organisation unit to organisation", async () => {
@@ -330,6 +378,89 @@ describe("Organisation Service Suite", () => {
     expect(result.length).toEqual(1);
     expect(result[0].organisationUnits.length).toEqual(2);
   });
+
+  it("should return organisation unit users if units are active [0]", async () => {
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
+      {
+        id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        displayName: ":ACCESSOR",
+      },
+      {
+        id: "D7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "D7095D87-C3DF-46F6-A503-001B083F4630",
+        displayName: ":QUALIFYING_ACCESSOR",
+      },
+    ]);
+
+    const organisationObj = Organisation.new({
+      ...dummy.baseOrganisation,
+      type: OrganisationType.ACCESSOR,
+    });
+    const organisation = await organisationService.create(organisationObj);
+
+    let unitObj = OrganisationUnit.new({
+      name: "newUnit",
+      organisation,
+      inactivatedAt: new Date(),
+    });
+    await organisationService.addOrganisationUnit(unitObj);
+
+    unitObj = OrganisationUnit.new({
+      name: "newUnit2",
+      organisation,
+      inactivatedAt: new Date(),
+    });
+    await organisationService.addOrganisationUnit(unitObj);
+
+    const result = await organisationService.findAllWithOrganisationUnits();
+
+    expect(result).toBeDefined();
+    expect(result.length).toEqual(0);
+  });
+
+  it("should return organisation unit users if units are active [1]", async () => {
+    jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
+    jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
+      {
+        id: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
+        displayName: ":ACCESSOR",
+      },
+      {
+        id: "D7095D87-C3DF-46F6-A503-001B083F4630",
+        externalId: "D7095D87-C3DF-46F6-A503-001B083F4630",
+        displayName: ":QUALIFYING_ACCESSOR",
+      },
+    ]);
+
+    const organisationObj = Organisation.new({
+      ...dummy.baseOrganisation,
+      type: OrganisationType.ACCESSOR,
+    });
+    const organisation = await organisationService.create(organisationObj);
+
+    let unitObj = OrganisationUnit.new({
+      name: "newUnit",
+      organisation,
+    });
+    await organisationService.addOrganisationUnit(unitObj);
+
+    unitObj = OrganisationUnit.new({
+      name: "newUnit2",
+      organisation,
+      inactivatedAt: new Date(),
+    });
+    await organisationService.addOrganisationUnit(unitObj);
+
+    const result = await organisationService.findAllWithOrganisationUnits();
+
+    expect(result).toBeDefined();
+    expect(result.length).toEqual(1);
+    expect(result[0].organisationUnits.length).toEqual(1);
+  });
+
 
   it("should update organisation name and acronym", async () => {
     // Arrange
