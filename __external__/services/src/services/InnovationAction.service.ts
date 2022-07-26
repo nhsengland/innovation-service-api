@@ -29,7 +29,7 @@ import {
   getRepository,
   Repository,
 } from "typeorm";
-import { QueueProducer } from "utils/queue-producer";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import { ActivityLogService } from "./ActivityLog.service";
 import { InnovationService } from "./Innovation.service";
 import { InnovationSectionService } from "./InnovationSection.service";
@@ -135,7 +135,6 @@ export class InnovationActionService {
       updatedBy: requestUser.id,
     };
 
-    //const result = await this.actionRepo.save(actionObj);
     const result = await this.connection.transaction(async (trs) => {
       const actionResult = await trs.save(InnovationAction, actionObj);
       try {
@@ -176,7 +175,6 @@ export class InnovationActionService {
           action: {
             id: result.id,
             section: action.section,
-            displayId: result.displayId,
           },
         }
       );
@@ -255,7 +253,6 @@ export class InnovationActionService {
           action: {
             id: result.id,
             section: action.section,
-            displayId: result.displayId,
             status: result.status,
           },
         }
@@ -312,7 +309,6 @@ export class InnovationActionService {
           action: {
             id: result.id,
             section: action.section,
-            displayId: result.displayId,
             status: result.status,
           },
         }

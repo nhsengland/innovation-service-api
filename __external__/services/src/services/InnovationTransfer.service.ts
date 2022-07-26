@@ -22,7 +22,7 @@ import {
   getRepository,
   Repository,
 } from "typeorm";
-import { QueueProducer } from "utils/queue-producer";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import {
   authenticateWitGraphAPI,
   checkIfValidUUID,
@@ -238,10 +238,6 @@ export class InnovationTransferService {
       throw new InvalidParamsError("Invalid parameters.");
     }
 
-    const notificationActionType: NotificationActionType = destB2cUser
-      ? NotificationActionType.INNOVATOR_TRANSFER_OWNERSHIP_EXISTING_USER
-      : NotificationActionType.INNOVATOR_TRANSFER_OWNERSHIP_NEW_USER;
-
     const result = await this.connection.transaction(
       async (transactionManager) => {
         const transferObj = InnovationTransfer.new({
@@ -272,7 +268,7 @@ export class InnovationTransferService {
     try {
       // send email: to new innovation owner
       await this.queueProducer.sendNotification(
-        notificationActionType,
+        NotificationActionType.INNOVATION_TRANSFER_OWNERSHIP_CREATION,
         {
           id: requestUser.id,
           identityId: requestUser.externalId,
@@ -281,7 +277,7 @@ export class InnovationTransferService {
         {
           innovationId: innovation.id,
           transferId: result.id,
-          newInnovator: {
+          to: {
             identityId: destB2cUser?.id || null,
             email,
           },
@@ -289,7 +285,7 @@ export class InnovationTransferService {
       );
     } catch (error) {
       this.logService.error(
-        `An error has occured while writing notification on queue of type ${notificationActionType}`,
+        `An error has occured while writing notification on queue of type ${NotificationActionType.INNOVATION_TRANSFER_OWNERSHIP_CREATION}`,
         error
       );
     }
@@ -384,9 +380,9 @@ export class InnovationTransferService {
       }
 
       try {
-        // send email: to new innovation owner
+        // send email: to previous innovation owner
         await this.queueProducer.sendNotification(
-          NotificationActionType.INNOVATOR_TRANSFER_OWNERSHIP_CONFIRMATION,
+          NotificationActionType.INNOVATION_TRANSFER_OWNERSHIP_COMPLETED,
           {
             id: requestUser.id,
             identityId: requestUser.externalId,
@@ -399,7 +395,7 @@ export class InnovationTransferService {
         );
       } catch (error) {
         this.logService.error(
-          `An error has occured while writing notification on queue of type ${NotificationActionType.INNOVATOR_TRANSFER_OWNERSHIP_CONFIRMATION}`,
+          `An error has occured while writing notification on queue of type ${NotificationActionType.INNOVATION_TRANSFER_OWNERSHIP_COMPLETED}`,
           error
         );
       }

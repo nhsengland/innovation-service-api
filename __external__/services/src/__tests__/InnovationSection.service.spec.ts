@@ -1,4 +1,3 @@
-import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   AccessorOrganisationRole,
   ActivityLog,
@@ -48,7 +47,6 @@ import {
   UserType,
   YesOrNoCatalogue,
 } from "@domain/index";
-import * as engines from "@engines/index";
 import {
   InnovationNotFoundError,
   InvalidParamsError,
@@ -57,10 +55,10 @@ import {
 import { InnovationSectionModel } from "@services/models/InnovationSectionModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { LoggerService } from "@services/services/Logger.service";
-import { NotificationService } from "@services/services/Notification.service";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import { getConnection } from "typeorm";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import * as helpers from "../helpers";
 import { FileService } from "../services/File.service";
 import { InnovationSectionService } from "../services/InnovationSection.service";
@@ -86,27 +84,6 @@ describe("Innovation Section Service Suite", () => {
     const innovatorUser = await fixtures.createInnovatorUser();
 
     innovatorRequestUser = fixtures.getRequestUser(innovatorUser);
-
-    jest.spyOn(engines, "emailEngines").mockReturnValue([
-      {
-        key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
-        handler: async function () {
-          return [];
-        },
-      },
-      {
-        key: EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
-        handler: async function () {
-          return [];
-        },
-      },
-      {
-        key: EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
-        handler: async function () {
-          return [];
-        },
-      },
-    ]);
   });
 
   afterAll(async () => {
@@ -817,9 +794,8 @@ describe("Innovation Section Service Suite", () => {
     });
 
     jest
-      .spyOn(NotificationService.prototype, "create")
-      .mockRejectedValue("error in notification create");
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockImplementation();
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockRejectedValue("Error");
 
     const spy = jest.spyOn(LoggerService.prototype, "error");
 

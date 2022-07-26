@@ -16,14 +16,15 @@ import {
 } from "@domain/index";
 import { RequestUser } from "@services/models/RequestUser";
 import { LoggerService } from "@services/services/Logger.service";
-import { NotificationService } from "@services/services/Notification.service";
+import * as dotenv from "dotenv";
+import * as path from "path";
 import { getConnection } from "typeorm";
-import { closeTestsConnection, setupTestsConnection } from "..";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import * as helpers from "../helpers";
 import { InnovationAssessmentService } from "../services/InnovationAssessment.service";
 import * as fixtures from "../__fixtures__";
-import * as dotenv from "dotenv";
-import * as path from "path";
+import { closeTestsConnection, setupTestsConnection } from "..";
+
 const dummy = {
   assessment: {
     description: "Assessment Desc",
@@ -32,7 +33,6 @@ const dummy = {
 
 describe("Innovation Assessment Suite", () => {
   let assessmentService: InnovationAssessmentService;
-  let notificationService: NotificationService;
   let innovation: Innovation;
 
   let assessmentRequestUser: RequestUser;
@@ -50,8 +50,6 @@ describe("Innovation Assessment Suite", () => {
     assessmentService = new InnovationAssessmentService(
       process.env.DB_TESTS_NAME
     );
-
-    notificationService = new NotificationService(process.env.DB_TESTS_NAME);
 
     const innovatorUser = await fixtures.createInnovatorUser();
     const assessmentUser = await fixtures.createAssessmentUser();
@@ -252,11 +250,8 @@ describe("Innovation Assessment Suite", () => {
 
   it("should update an assessment with submission even when notifications fail", async () => {
     jest
-      .spyOn(NotificationService.prototype, "create")
-      .mockRejectedValue("error");
-    jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockRejectedValue("error");
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockRejectedValue("Error");
 
     const spy = jest.spyOn(LoggerService.prototype, "error");
 
@@ -376,9 +371,9 @@ describe("Innovation Assessment Suite", () => {
       organisationUnits: [fakeOrganisationUnit.id],
     };
 
-    jest.spyOn(notificationService, "sendEmail");
-
-    const spy = jest.spyOn(notificationService, "create");
+    jest
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     const item = await assessmentService.update(
       assessmentRequestUser,

@@ -1,4 +1,3 @@
-import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
 import {
   AccessorOrganisationRole,
   ActivityLog,
@@ -21,7 +20,6 @@ import {
   UserRole,
   UserType,
 } from "@domain/index";
-import * as engines from "@engines/index";
 import {
   InvalidParamsError,
   MissingUserOrganisationError,
@@ -30,10 +28,11 @@ import { RequestUser } from "@services/models/RequestUser";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import { getConnection } from "typeorm";
-import { closeTestsConnection, setupTestsConnection } from "..";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import * as helpers from "../helpers";
 import { InnovationActionService } from "../services/InnovationAction.service";
 import * as fixtures from "../__fixtures__";
+import { closeTestsConnection, setupTestsConnection } from "..";
 
 describe("Innovation Action Suite", () => {
   let actionService: InnovationActionService;
@@ -117,8 +116,13 @@ describe("Innovation Action Suite", () => {
     );
 
     jest
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
+
+    jest
       .spyOn(helpers, "authenticateWitGraphAPI")
       .mockResolvedValue(":access_token");
+
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       displayName: "Q Accessor A",
       identities: [
@@ -131,27 +135,6 @@ describe("Innovation Action Suite", () => {
     jest.spyOn(helpers, "getUsersFromB2C").mockResolvedValue([
       { id: accessorUser.id, displayName: ":ACCESSOR" },
       { id: qualAccessorUser.id, displayName: ":QUALIFYING_ACCESSOR" },
-    ]);
-
-    jest.spyOn(engines, "emailEngines").mockReturnValue([
-      {
-        key: EmailNotificationTemplate.ACCESSORS_ACTION_TO_REVIEW,
-        handler: async function () {
-          return [];
-        },
-      },
-      {
-        key: EmailNotificationTemplate.ACCESSORS_ASSIGNED_TO_INNOVATION,
-        handler: async function () {
-          return [];
-        },
-      },
-      {
-        key: EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
-        handler: async function () {
-          return [];
-        },
-      },
     ]);
   });
 

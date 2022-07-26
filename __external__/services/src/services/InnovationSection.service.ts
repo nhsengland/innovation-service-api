@@ -22,7 +22,7 @@ import {
 import { checkIfValidUUID } from "@services/helpers";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, FindOneOptions, getConnection } from "typeorm";
-import { QueueProducer } from "utils/queue-producer";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import { InnovationSectionModel } from "../models/InnovationSectionModel";
 import { InnovationSectionResult } from "../models/InnovationSectionResult";
 import { ActivityLogService } from "./ActivityLog.service";
@@ -512,7 +512,6 @@ export class InnovationSectionService extends BaseService<InnovationSection> {
             action: {
               id: updatedAction.id,
               section: updatedAction.innovationSection.section,
-              displayId: updatedAction.displayId,
               status: updatedAction.status,
             },
           }

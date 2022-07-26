@@ -3,7 +3,7 @@ import { UserEmailNotFound } from "@services/errors";
 import { UserEmailModel } from "@services/models/ProfileSlimModel";
 import { SLSEventType } from "@services/types";
 import * as crypto from "crypto";
-import { QueueProducer } from "utils/queue-producer";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import { TTL2ls } from "../../../../schemas/TTL2ls";
 import { EmailService } from "./Email.service";
 import { LoggerService } from "./Logger.service";

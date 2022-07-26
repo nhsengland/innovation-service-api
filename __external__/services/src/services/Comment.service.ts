@@ -13,7 +13,7 @@ import { checkIfValidUUID } from "@services/helpers";
 import { CommentModel } from "@services/models/CommentModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
-import { QueueProducer } from "utils/queue-producer";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import { ActivityLogService } from "./ActivityLog.service";
 import { InnovationService } from "./Innovation.service";
 import { LoggerService } from "./Logger.service";
@@ -116,17 +116,12 @@ export class CommentService {
       return comment;
     });
 
-    const action =
-      requestUser.type === UserType.INNOVATOR
-        ? NotificationActionType.ACCESSOR_COMMENT_RECEIVED
-        : NotificationActionType.INNOVATOR_COMMENT_RECEIVED;
-
     try {
       // send in-app: to assigned accessors (if reply, to the users inside thread)
       // if innovator send to accessors, if accessor send to innovator
       // send email: (same rules)
       await this.queueProducer.sendNotification(
-        action,
+        NotificationActionType.COMMENT_CREATION,
         {
           id: requestUser.id,
           identityId: requestUser.externalId,
@@ -140,7 +135,7 @@ export class CommentService {
       );
     } catch (error) {
       this.logService.error(
-        `An error has occured while writing notification on queue of type ${action}`,
+        `An error has occured while writing notification on queue of type ${NotificationActionType.COMMENT_CREATION}`,
         error
       );
     }

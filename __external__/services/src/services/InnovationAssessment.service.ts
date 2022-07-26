@@ -15,7 +15,7 @@ import {
 } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
-import { QueueProducer } from "utils/queue-producer";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import {
   checkIfValidUUID,
   getOrganisationsFromOrganisationUnitsObj,
@@ -327,10 +327,10 @@ export class InnovationAssessmentService {
       );
 
       try {
-        // send in-app: to suggested QA's
-        // send email: to suggested QA's
+        // send in-app: to suggested QA's and to innovator if missing sharings
+        // send email: to suggested QA's, and innovator
         await this.queueProducer.sendNotification(
-          NotificationActionType.QA_NEEDS_ASSESSMENT_COMPLETED,
+          NotificationActionType.NEEDS_ASSESSMENT_COMPLETED,
           {
             id: requestUser.id,
             identityId: requestUser.externalId,
@@ -339,61 +339,14 @@ export class InnovationAssessmentService {
           {
             innovationId: innovation.id,
             assessmentId: assessmentDb.id,
+            organisationIds: organisationSuggestionsDiff,
           }
         );
       } catch (error) {
         this.logService.error(
-          `An error has occured while writing notification on queue of type ${NotificationActionType.QA_NEEDS_ASSESSMENT_COMPLETED}`,
+          `An error has occured while writing notification on queue of type ${NotificationActionType.NEEDS_ASSESSMENT_COMPLETED}`,
           error
         );
-      }
-
-      try {
-        // send email: to innovator
-        await this.queueProducer.sendNotification(
-          NotificationActionType.INNOVATOR_NEEDS_ASSESSMENT_COMPLETED,
-          {
-            id: requestUser.id,
-            identityId: requestUser.externalId,
-            type: requestUser.type,
-          },
-          {
-            innovationId: innovation.id,
-            assessmentId: assessmentDb.id,
-          }
-        );
-      } catch (error) {
-        this.logService.error(
-          `An error has occured while writing notification on queue of type ${NotificationActionType.INNOVATOR_NEEDS_ASSESSMENT_COMPLETED}`,
-          error
-        );
-      }
-
-      if (
-        organisationSuggestionsDiff &&
-        organisationSuggestionsDiff.length > 0
-      ) {
-        try {
-          // send in-app: to innovator if missing sharings
-          await this.queueProducer.sendNotification(
-            NotificationActionType.INNOVATOR_ORGANISATION_SUGGESTION,
-            {
-              id: requestUser.id,
-              identityId: requestUser.externalId,
-              type: requestUser.type,
-            },
-            {
-              innovationId: innovation.id,
-              assessmentId: assessmentDb.id,
-              organisationIds: organisationSuggestionsDiff,
-            }
-          );
-        } catch (error) {
-          this.logService.error(
-            `An error has occured while writing notification on queue of type ${NotificationActionType.INNOVATOR_ORGANISATION_SUGGESTION}`,
-            error
-          );
-        }
       }
     }
 

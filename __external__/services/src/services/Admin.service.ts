@@ -23,7 +23,7 @@ import {
   UserSearchResult,
 } from "@services/types";
 import { Connection, getConnection } from "typeorm";
-import { QueueProducer } from "utils/queue-producer";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import { UserService } from "..";
 import * as accessorRules from "../config/admin-accessor-user-lock.config.json";
 import * as rule from "../config/admin-change-role.config.json";

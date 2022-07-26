@@ -41,7 +41,7 @@ import {
   getRepository,
   Repository,
 } from "typeorm";
-import { QueueProducer } from "utils/queue-producer";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import {
   authenticateWitGraphAPI,
   createB2CUser,

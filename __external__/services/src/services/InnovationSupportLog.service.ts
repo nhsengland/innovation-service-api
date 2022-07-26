@@ -17,7 +17,7 @@ import { checkIfValidUUID } from "@services/helpers";
 import { InnovationSupportLogModel } from "@services/models/InnovationSupportLogModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
-import { QueueProducer } from "utils/queue-producer";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import { ActivityLogService } from "./ActivityLog.service";
 import { InnovationService } from "./Innovation.service";
 import { LoggerService } from "./Logger.service";

@@ -23,16 +23,16 @@ import {
 import { RequestUser } from "@services/models/RequestUser";
 import { ActivityLogService } from "@services/services/ActivityLog.service";
 import { LoggerService } from "@services/services/Logger.service";
-import { NotificationService } from "@services/services/Notification.service";
 import { OrganisationService } from "@services/services/Organisation.service";
 import { UserService } from "@services/services/User.service";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import { getConnection } from "typeorm";
-import { closeTestsConnection, setupTestsConnection } from "..";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import * as helpers from "../helpers";
 import { CommentService } from "../services/Comment.service";
 import * as fixtures from "../__fixtures__";
+import { closeTestsConnection, setupTestsConnection } from "..";
 
 describe("Comment Service Suite", () => {
   let commentService: CommentService;
@@ -82,13 +82,8 @@ describe("Comment Service Suite", () => {
       displayName: "Q Accessor A",
     });
     jest
-      .spyOn(NotificationService.prototype, "create")
-      .mockRejectedValue("error");
-
-    jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockRejectedValue("error");
-    // .mockImplementation();
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     jest.spyOn(LoggerService.prototype, "error");
 
@@ -365,31 +360,6 @@ describe("Comment Service Suite", () => {
 
     expect(err).toBeDefined();
     expect(err).toBeInstanceOf(InnovationNotFoundError);
-  });
-
-  it("should throw when update() by accessor with without organisations", async () => {
-    let err;
-
-    const comment = await commentService.create(
-      qAccessorRequestUser,
-      innovation.id,
-      "My Comment",
-      true
-    );
-
-    try {
-      await commentService.update(
-        { id: ":id", externalId: ":id", type: UserType.ACCESSOR },
-        innovation.id,
-        "message",
-        comment.id
-      );
-    } catch (error) {
-      err = error;
-    }
-
-    expect(err).toBeDefined();
-    expect(err).toBeInstanceOf(MissingUserOrganisationError);
   });
 
   it("should update a comment by innovator", async () => {

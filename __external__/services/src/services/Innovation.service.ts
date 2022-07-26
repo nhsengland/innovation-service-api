@@ -50,7 +50,7 @@ import {
   Repository,
   SelectQueryBuilder,
 } from "typeorm";
-import { QueueProducer } from "utils/queue-producer";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import * as constants from "../../../../utils/constants";
 import {
   AccessorInnovationSummary,

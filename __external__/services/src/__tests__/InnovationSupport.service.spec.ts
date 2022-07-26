@@ -20,26 +20,26 @@ import {
   UserRole,
   UserType,
 } from "@domain/index";
+import * as engines from "@engines/index";
 import {
-  InvalidParamsError,
   InnovationNotFoundError,
-  InvalidUserRoleError,
-  MissingUserOrganisationUnitError,
-  MissingUserOrganisationError,
   InnovationSupportNotFoundError,
+  InvalidParamsError,
+  InvalidUserRoleError,
+  MissingUserOrganisationError,
+  MissingUserOrganisationUnitError,
   ResourceNotFoundError,
 } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
-import { getConnection } from "typeorm";
-import { closeTestsConnection, setupTestsConnection } from "..";
-import * as helpers from "../helpers";
-import { InnovationSupportService } from "../services/InnovationSupport.service";
-import * as fixtures from "../__fixtures__";
-import * as engines from "@engines/index";
-import { NotificationService } from "@services/services/Notification.service";
 import { LoggerService } from "@services/services/Logger.service";
 import * as dotenv from "dotenv";
 import * as path from "path";
+import { getConnection } from "typeorm";
+import { QueueProducer } from "../../../../utils/queue-producer";
+import * as helpers from "../helpers";
+import { InnovationSupportService } from "../services/InnovationSupport.service";
+import * as fixtures from "../__fixtures__";
+import { closeTestsConnection, setupTestsConnection } from "..";
 
 describe("Innovation Support Suite", () => {
   let supportService: InnovationSupportService;
@@ -203,11 +203,8 @@ describe("Innovation Support Suite", () => {
     };
 
     jest
-      .spyOn(NotificationService.prototype, "create")
-      .mockRejectedValue("error");
-    jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockRejectedValue("error");
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockRejectedValue("Error");
 
     const spy = jest.spyOn(LoggerService.prototype, "error");
 

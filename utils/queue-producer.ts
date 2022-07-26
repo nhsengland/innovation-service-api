@@ -43,13 +43,13 @@ export class QueueProducer {
       type: UserType;
       organisationUnitId?: string;
     },
-    params: { [key: string]: any }
-  ) {
+    params?: { [key: string]: any }
+  ): Promise<QueueSendMessageResponse> {
     return await this.sendMessage({
       data: {
         action: notificationActionType,
         requestUser,
-        params,
+        params: params || {},
       },
     });
   }

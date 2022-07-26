@@ -16,7 +16,7 @@ import {
 import { InvalidParamsError } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, EntityManager, getConnection } from "typeorm";
-import { QueueProducer } from "utils/queue-producer";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import { TransactionResult } from "../models/InnovatorTransactionResult";
 import { BaseService } from "./Base.service";
 import { InnovationService } from "./Innovation.service";
@@ -142,9 +142,6 @@ export class InnovatorService extends BaseService<User> {
           id: innovator.id,
           identityId: innovator.externalId,
           type: UserType.INNOVATOR,
-        },
-        {
-          userId: innovator.id,
         }
       );
     } catch (error) {
