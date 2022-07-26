@@ -13,7 +13,7 @@ import { InvalidParamsError } from "@services/errors";
 import { checkIfValidUUID } from "@services/helpers";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
-import { PaginationQueryParamsType } from "utils/joi.helper";
+import { PaginationQueryParamsType } from "../../../../utils/joi.helper";
 import { NotificationDismissResult } from "./Notification.service";
 import { UserService } from "./User.service";
 
@@ -25,7 +25,6 @@ export class InAppNotificationService {
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
-
     this.notificationRepo = getRepository(Notification, connectionName);
     this.userService = new UserService(connectionName);
     this.notificationUserRepo = getRepository(NotificationUser, connectionName);

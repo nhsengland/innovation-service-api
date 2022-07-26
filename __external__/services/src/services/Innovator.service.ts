@@ -1,4 +1,4 @@
-import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import { NotificationActionType } from "@domain/enums/notification.enums";
 import {
   Innovation,
   InnovationSection,
@@ -16,12 +16,12 @@ import {
 import { InvalidParamsError } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, EntityManager, getConnection } from "typeorm";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import { TransactionResult } from "../models/InnovatorTransactionResult";
 import { BaseService } from "./Base.service";
 import { InnovationService } from "./Innovation.service";
 import { InnovationTransferService } from "./InnovationTransfer.service";
 import { LoggerService } from "./Logger.service";
-import { NotificationService } from "./Notification.service";
 import { UserService } from "./User.service";
 
 export class InnovatorService extends BaseService<User> {
@@ -29,8 +29,8 @@ export class InnovatorService extends BaseService<User> {
   private readonly innovationTransferService: InnovationTransferService;
   private readonly innovationService: InnovationService;
   private readonly userService: UserService;
-  private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
+  private readonly queueProducer: QueueProducer;
 
   constructor(connectionName?: string) {
     super(User, connectionName);
@@ -40,8 +40,8 @@ export class InnovatorService extends BaseService<User> {
     );
     this.innovationService = new InnovationService(connectionName);
     this.userService = new UserService(connectionName);
-    this.notificationService = new NotificationService(connectionName);
     this.logService = new LoggerService();
+    this.queueProducer = new QueueProducer();
   }
 
   async create(user: User): Promise<User> {
@@ -134,26 +134,19 @@ export class InnovatorService extends BaseService<User> {
   }
 
   async sendEmail(innovator: User): Promise<void> {
-    const requestUser: RequestUser = {
-      id: innovator.id,
-      externalId: innovator.externalId,
-      type: UserType.INNOVATOR,
-    };
-
     try {
-      await this.notificationService.sendEmail(
-        requestUser,
-        EmailNotificationTemplate.INNOVATORS_ACCOUNT_CREATED,
-        null,
-        innovator.id,
-        [innovator.externalId],
+      // send email: to innovator
+      await this.queueProducer.sendNotification(
+        NotificationActionType.INNOVATOR_ACCOUNT_CREATION,
         {
-          innovation_service_url: process.env.CLIENT_WEB_BASE_URL,
+          id: innovator.id,
+          identityId: innovator.externalId,
+          type: UserType.INNOVATOR,
         }
       );
     } catch (error) {
       this.logService.error(
-        `An error has occured while sending an email with the template ${EmailNotificationTemplate.INNOVATORS_ACCOUNT_CREATED}.`,
+        `An error has occured while writing notification on queue of type ${NotificationActionType.INNOVATOR_ACCOUNT_CREATION}`,
         error
       );
     }

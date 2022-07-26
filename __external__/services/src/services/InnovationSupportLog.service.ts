@@ -1,4 +1,4 @@
-import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
+import { NotificationActionType } from "@domain/enums/notification.enums";
 import {
   Activity,
   Innovation,
@@ -17,11 +17,10 @@ import { checkIfValidUUID } from "@services/helpers";
 import { InnovationSupportLogModel } from "@services/models/InnovationSupportLogModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import { ActivityLogService } from "./ActivityLog.service";
 import { InnovationService } from "./Innovation.service";
 import { LoggerService } from "./Logger.service";
-import { NotificationService } from "./Notification.service";
-import { OrganisationService } from "./Organisation.service";
 import { UserService } from "./User.service";
 
 export class InnovationSupportLogService {
@@ -29,22 +28,20 @@ export class InnovationSupportLogService {
   private readonly supportLogRepo: Repository<InnovationSupportLog>;
   private readonly innovationService: InnovationService;
   private readonly userService: UserService;
-  private readonly organisationService: OrganisationService;
-  private readonly notificationService: NotificationService;
   private readonly loggerService: LoggerService;
   private readonly activityLogService: ActivityLogService;
   private readonly organisationUnitRepo: Repository<OrganisationUnit>;
+  private readonly queueProducer: QueueProducer;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.supportLogRepo = getRepository(InnovationSupportLog, connectionName);
     this.innovationService = new InnovationService(connectionName);
     this.userService = new UserService(connectionName);
-    this.organisationService = new OrganisationService(connectionName);
-    this.notificationService = new NotificationService(connectionName);
     this.loggerService = new LoggerService();
     this.activityLogService = new ActivityLogService(connectionName);
     this.organisationUnitRepo = getRepository(OrganisationUnit, connectionName);
+    this.queueProducer = new QueueProducer();
   }
 
   async create(
@@ -159,34 +156,28 @@ export class InnovationSupportLogService {
       return supportLogResult;
     });
 
-    if (supportLog.type === InnovationSupportLogType.ACCESSOR_SUGGESTION) {
-      const targetUsers = await this.organisationService.findQualifyingAccessorsFromUnits(
-        supportLog?.organisationUnits,
-        innovationId
-      );
-
-      if (targetUsers && targetUsers.length > 0) {
-        try {
-          await this.notificationService.sendEmail(
-            requestUser,
-            EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED,
-            innovationId,
-            innovationId,
-            targetUsers.map((u) => u.externalId)
-          );
-        } catch (error) {
-          this.loggerService.error(
-            `An error has occured when sending an email to Qualifying Accessors`,
-            error
-          );
-        }
-      } else {
-        this.loggerService.log(
-          "Qualifying Accessors not found. No emails will be sent. Potential problem.",
-          1,
+    if (
+      supportLog?.organisationUnits &&
+      supportLog.type === InnovationSupportLogType.ACCESSOR_SUGGESTION
+    ) {
+      // send email: to suggested organisation units
+      try {
+        await this.queueProducer.sendNotification(
+          NotificationActionType.QA_INNOVATION_SUGGESTION,
           {
-            organisationUnits: supportLog?.organisationUnits,
+            id: requestUser.id,
+            identityId: requestUser.externalId,
+            type: requestUser.type,
+          },
+          {
+            innovationId: innovationId,
+            organisationUnitIds: supportLog.organisationUnits,
           }
+        );
+      } catch (error) {
+        this.loggerService.error(
+          `An error has occured while writing notification on queue of type ${NotificationActionType.QA_INNOVATION_SUGGESTION}`,
+          error
         );
       }
     }

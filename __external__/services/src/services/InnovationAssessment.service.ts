@@ -1,16 +1,10 @@
 import { Activity } from "@domain/enums/activity.enums";
-import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
-import {
-  NotifContextDetail,
-  NotifContextType,
-} from "@domain/enums/notification.enums";
+import { NotificationActionType } from "@domain/enums/notification.enums";
 import {
   Comment,
   Innovation,
   InnovationAssessment,
   InnovationStatus,
-  NotificationAudience,
-  NotificationContextType,
   OrganisationUnit,
   UserType,
 } from "@domain/index";
@@ -21,6 +15,7 @@ import {
 } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
 import { Connection, getConnection, getRepository, Repository } from "typeorm";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import {
   checkIfValidUUID,
   getOrganisationsFromOrganisationUnitsObj,
@@ -29,8 +24,6 @@ import { InnovationAssessmentResult } from "../models/InnovationAssessmentResult
 import { ActivityLogService } from "./ActivityLog.service";
 import { InnovationService } from "./Innovation.service";
 import { LoggerService } from "./Logger.service";
-import { NotificationService } from "./Notification.service";
-import { OrganisationService } from "./Organisation.service";
 import { UserService } from "./User.service";
 
 export class InnovationAssessmentService {
@@ -38,22 +31,20 @@ export class InnovationAssessmentService {
   private readonly assessmentRepo: Repository<InnovationAssessment>;
   private readonly userService: UserService;
   private readonly innovationService: InnovationService;
-  private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
-  private readonly organisationService: OrganisationService;
   private readonly activityLogService: ActivityLogService;
   private readonly organisationUnitRepo: Repository<OrganisationUnit>;
+  private readonly queueProducer: QueueProducer;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.assessmentRepo = getRepository(InnovationAssessment, connectionName);
     this.userService = new UserService(connectionName);
     this.innovationService = new InnovationService(connectionName);
-    this.notificationService = new NotificationService(connectionName);
     this.logService = new LoggerService();
-    this.organisationService = new OrganisationService(connectionName);
     this.activityLogService = new ActivityLogService(connectionName);
     this.organisationUnitRepo = getRepository(OrganisationUnit, connectionName);
+    this.queueProducer = new QueueProducer();
   }
 
   async find(
@@ -330,101 +321,32 @@ export class InnovationAssessmentService {
     );
 
     if (assessment.isSubmission) {
-      // maps the units object to only the unit id
-      const units = organisationSuggestionsDiff.filter((ou) =>
-        innovationOrganisationUnitShares.includes(ou)
-      );
-
-      // gets the qualifying accessors from the organisation units
-      const qualifyingAccessors = await this.organisationService.findQualifyingAccessorsFromUnits(
-        units,
-        innovationId
-      );
-
-      try {
-        await this.notificationService.create(
-          requestUser,
-          NotificationAudience.QUALIFYING_ACCESSORS,
-          innovationId,
-          NotifContextType.INNOVATION,
-          NotifContextDetail.NEEDS_ASSESSMENT_COMPLETED,
-          innovationId,
-          {},
-          qualifyingAccessors.map((u) => u.id)
-        );
-      } catch (error) {
-        this.logService.error(
-          `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
-          error
-        );
-      }
-
-      // send email to Qualifying Accessors
-      try {
-        // sends an email notification to those Qualifying Accessors
-        await this.notificationService.sendEmail(
-          requestUser,
-          EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED,
-          innovationId,
-          assessmentDb.id,
-          qualifyingAccessors.map((u) => u.externalId)
-        );
-      } catch (error) {
-        this.logService.error(
-          `An error has occured while sending an email of type ${EmailNotificationTemplate.QA_ORGANISATION_SUGGESTED}`,
-          error
-        );
-      }
-
-      // send email to innovator
-      try {
-        const innovation = await this.innovationService.find(innovationId, {
-          relations: ["owner"],
-        });
-
-        // sends an email notification to the innovation owner
-        await this.notificationService.sendEmail(
-          requestUser,
-          EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_COMPLETED,
-          innovationId,
-          assessmentDb.id,
-          [innovation.owner.externalId],
-          {
-            innovation_name: innovation.name,
-          }
-        );
-      } catch (error) {
-        this.logService.error(
-          `An error has occured while sending an email of type ${EmailNotificationTemplate.INNOVATORS_NEEDS_ASSESSMENT_COMPLETED}`,
-          error
-        );
-      }
-
       // removes the units that the Innovator agreed to share his innovation with from the suggestions
       organisationSuggestionsDiff = organisationSuggestionsDiff.filter(
         (ou) => !innovationOrganisationUnitShares.includes(ou)
       );
 
-      // if there are still any suggestions unmatched with the innovation data sharing, then create a notification for the innovator.
-      if (
-        organisationSuggestionsDiff &&
-        organisationSuggestionsDiff.length > 0
-      ) {
-        try {
-          await this.notificationService.create(
-            requestUser,
-            NotificationAudience.INNOVATORS,
-            innovationId,
-            NotifContextType.INNOVATION,
-            NotifContextDetail.NEEDS_ASSESSMENT_ORGANISATION_SUGGESTION,
-            innovationId
-          );
-        } catch (error) {
-          this.logService.error(
-            `An error has occured while creating a notification of type ${NotificationContextType.DATA_SHARING} from ${requestUser.id}`,
-            error
-          );
-        }
+      try {
+        // send in-app: to suggested QA's and to innovator if missing sharings
+        // send email: to suggested QA's, and innovator
+        await this.queueProducer.sendNotification(
+          NotificationActionType.NEEDS_ASSESSMENT_COMPLETED,
+          {
+            id: requestUser.id,
+            identityId: requestUser.externalId,
+            type: requestUser.type,
+          },
+          {
+            innovationId: innovation.id,
+            assessmentId: assessmentDb.id,
+            organisationIds: organisationSuggestionsDiff,
+          }
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while writing notification on queue of type ${NotificationActionType.NEEDS_ASSESSMENT_COMPLETED}`,
+          error
+        );
       }
     }
 

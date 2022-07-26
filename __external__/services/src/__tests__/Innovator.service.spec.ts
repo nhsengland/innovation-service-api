@@ -1,26 +1,25 @@
 import {
   ActivityLog,
   Innovation,
+  InnovationSection,
   InnovationStatus,
   Organisation,
   OrganisationUser,
-  OrganisationType,
   User,
   UserRole,
   UserType,
-  InnovationSection,
 } from "@domain/index";
-import { getConnection } from "typeorm";
-import { v4 as uuid } from "uuid";
-import { InnovatorService } from "../services/Innovator.service";
+import { RequestUser } from "@services/models/RequestUser";
+import { InnovationService } from "@services/services/Innovation.service";
+import { UserService } from "@services/services/User.service";
 import * as dotenv from "dotenv";
 import * as path from "path";
-import * as fixtures from "../__fixtures__";
-import { UserService } from "@services/services/User.service";
-import { InnovationService } from "@services/services/Innovation.service";
+import { getConnection } from "typeorm";
+import { v4 as uuid } from "uuid";
 import { closeTestsConnection } from "..";
-import { NotificationService } from "@services/services/Notification.service";
-import { RequestUser } from "@services/models/RequestUser";
+import { QueueProducer } from "../../../../utils/queue-producer";
+import { InnovatorService } from "../services/Innovator.service";
+import * as fixtures from "../__fixtures__";
 
 describe("Innovator Service Suite", () => {
   let userService: UserService;
@@ -189,8 +188,8 @@ describe("Innovator Service Suite", () => {
     });
 
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockRejectedValue("error");
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockRejectedValue("Error");
     // Act
 
     const result = await innovatorService.createFirstTimeSignIn(
@@ -209,7 +208,9 @@ describe("Innovator Service Suite", () => {
     const innovator = new User();
     const innovation = new Innovation();
     const organisation = new Organisation();
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue();
+    jest
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     let err;
 

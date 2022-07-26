@@ -13,11 +13,11 @@ import {
 } from "@services/errors";
 import { RequestUser } from "@services/models/RequestUser";
 import { InnovationTransferService } from "@services/services/InnovationTransfer.service";
-import { NotificationService } from "@services/services/Notification.service";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import { getConnection } from "typeorm";
 import { UserService } from "..";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import * as helpers from "../helpers";
 import * as fixtures from "../__fixtures__";
 
@@ -96,8 +96,8 @@ describe("Innovation Transfer Suite", () => {
       ],
     });
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockResolvedValue({} as any);
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     const item = await transferService.create(
       innovatorRequestUser,
@@ -124,8 +124,8 @@ describe("Innovation Transfer Suite", () => {
       ],
     });
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockResolvedValue({} as any);
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     const item = await transferService.create(
       innovatorRequestUser,
@@ -191,9 +191,10 @@ describe("Innovation Transfer Suite", () => {
         },
       ],
     });
+
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockResolvedValue({} as any);
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     await transferService.create(
       innovatorRequestUser,
@@ -225,8 +226,8 @@ describe("Innovation Transfer Suite", () => {
       displayName: ":userName",
     });
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockResolvedValue({} as any);
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     let err;
     try {
@@ -261,8 +262,8 @@ describe("Innovation Transfer Suite", () => {
       ],
     });
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockResolvedValue({} as any);
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     const item = await transferService.create(
       innovatorRequestUser,
@@ -298,8 +299,8 @@ describe("Innovation Transfer Suite", () => {
       ],
     });
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockResolvedValue({} as any);
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     const item = await transferService.create(
       innovatorRequestUser,
@@ -341,8 +342,8 @@ describe("Innovation Transfer Suite", () => {
       displayName: ":displayName",
     });
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockResolvedValue({} as any);
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     const innovationObj = fixtures.generateInnovation({
       owner: { id: innovatorRequestUser.id },
@@ -413,8 +414,8 @@ describe("Innovation Transfer Suite", () => {
       ],
     });
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockResolvedValue({} as any);
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     const item = await transferService.create(
       innovatorRequestUser,
@@ -453,8 +454,8 @@ describe("Innovation Transfer Suite", () => {
       dummy.newEmail
     );
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockResolvedValue({} as any);
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     const result = await transferService.findOne(innovatorRequestUser, item.id);
 
@@ -478,8 +479,8 @@ describe("Innovation Transfer Suite", () => {
       displayName: ":displayName",
     });
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockResolvedValue({} as any);
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     const item = await transferService.create(
       innovatorRequestUser,
@@ -535,8 +536,8 @@ describe("Innovation Transfer Suite", () => {
       ],
     });
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockResolvedValue({} as any);
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     const item = await transferService.create(
       innovatorRequestUser,
@@ -572,8 +573,8 @@ describe("Innovation Transfer Suite", () => {
       displayName: ":displayName",
     });
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockResolvedValue({} as any);
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     const item = await transferService.create(
       innovatorRequestUser,
@@ -618,8 +619,8 @@ describe("Innovation Transfer Suite", () => {
       ],
     });
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockResolvedValue({} as any);
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     const item = await transferService.create(
       innovatorRequestUser,
@@ -648,8 +649,8 @@ describe("Innovation Transfer Suite", () => {
       ],
     });
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockResolvedValue({} as any);
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     const item = await transferService.create(
       innovatorRequestUser,
@@ -705,8 +706,8 @@ describe("Innovation Transfer Suite", () => {
       ],
     });
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockResolvedValue({} as any);
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     await transferService.create(
       innovatorRequestUser,

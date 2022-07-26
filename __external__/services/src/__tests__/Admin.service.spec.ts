@@ -1,4 +1,11 @@
+import { InvalidParamsError, InvalidUserRoleError } from "@services/errors";
+import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
+import { AdminService } from "@services/services/Admin.service";
 import { UserService } from "@services/services/User.service";
+import { UserSearchResult } from "@services/types";
+import * as dotenv from "dotenv";
+import * as path from "path";
+import { getConnection } from "typeorm";
 import {
   AccessorOrganisationRole,
   closeTestsConnection,
@@ -13,22 +20,14 @@ import {
   UserRole,
   UserType,
 } from "..";
-import * as fixtures from "../__fixtures__";
-import * as dotenv from "dotenv";
-import * as path from "path";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import * as helpers from "../helpers";
-import { getConnection } from "typeorm";
-import { AdminService } from "@services/services/Admin.service";
-import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
-import { UserSearchResult } from "@services/types";
-import { InvalidParamsError, InvalidUserRoleError } from "@services/errors";
-import { NotificationService } from "@services/services/Notification.service";
-import { RequestUser } from "@services/models/RequestUser";
+import * as fixtures from "../__fixtures__";
 
 describe("[User Account Lock suite", () => {
   let adminService: AdminService;
   beforeAll(async () => {
-    //await setupTestsConnection();
+    // await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -50,7 +49,7 @@ describe("[User Account Lock suite", () => {
   });
 
   afterAll(async () => {
-    //await closeTestsConnection();
+    // await closeTestsConnection();
   });
   it("Should not lock User if is last assessment user", async () => {
     jest
@@ -129,7 +128,12 @@ describe("[User Account Lock suite", () => {
       ],
       mobilePhone: "+351960000000",
     });
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue();
+    jest
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
+    jest
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockRejectedValue("Error");
     jest.spyOn(helpers, "saveB2CUser").mockImplementation();
     const assessmentUser1 = await fixtures.createAssessmentUser();
     const assessmentUser2 = await fixtures.createAssessmentUser();

@@ -38,23 +38,20 @@ import { RequestUser } from "@services/models/RequestUser";
 import { InnovationAssessmentService } from "@services/services/InnovationAssessment.service";
 import { InnovationSupportService } from "@services/services/InnovationSupport.service";
 import { LoggerService } from "@services/services/Logger.service";
-import { NotificationService } from "@services/services/Notification.service";
 import { UserService } from "@services/services/User.service";
 import { SupportFilter } from "@services/types";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import { getConnection } from "typeorm";
-import { closeTestsConnection, setupTestsConnection } from "..";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import * as helpers from "../helpers";
 import { InnovationService } from "../services/Innovation.service";
 import * as fixtures from "../__fixtures__";
-import { ActivityLogService } from "@services/services/ActivityLog.service";
-import axios from "axios";
+import { closeTestsConnection, setupTestsConnection } from "..";
 
 describe("Innovator Service Suite", () => {
   let innovationService: InnovationService;
   let assessmentService: InnovationAssessmentService;
-  let notificationService: NotificationService;
   let supportService: InnovationSupportService;
 
   let userService: UserService;
@@ -78,7 +75,6 @@ describe("Innovator Service Suite", () => {
     assessmentService = new InnovationAssessmentService(
       process.env.DB_TESTS_NAME
     );
-    notificationService = new NotificationService(process.env.DB_TESTS_NAME);
 
     userService = new UserService(process.env.DB_TESTS_NAME);
     supportService = new InnovationSupportService(process.env.DB_TESTS_NAME);
@@ -222,10 +218,7 @@ describe("Innovator Service Suite", () => {
     const innovation = await fixtures.saveInnovation(innovationObj);
 
     jest
-      .spyOn(NotificationService.prototype, "create")
-      .mockRejectedValue("error");
-    jest
-      .spyOn(NotificationService.prototype, "sendEmail")
+      .spyOn(QueueProducer.prototype, "sendNotification")
       .mockRejectedValue("error");
     jest
       .spyOn(innovationService, "hasIncompleteSections")
@@ -382,10 +375,8 @@ describe("Innovator Service Suite", () => {
     };
 
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
+      .spyOn(QueueProducer.prototype, "sendNotification")
       .mockRejectedValue("error");
-
-    jest.spyOn(notificationService, "create");
 
     await assessmentService.update(
       assessmentRequestUser,
@@ -779,18 +770,6 @@ describe("Innovator Service Suite", () => {
       }))
     );
 
-    // jest.spyOn(axios, "get").mockResolvedValue({
-    //   data: {
-    //     value: [
-    //       {
-    //         id: assessmentUser.externalId,
-    //         displayName: "assessment_user_name",
-    //         accountEnabled: true,
-    //       },
-    //     ],
-    //   },
-    // });
-
     let result: InnovationListModel;
     try {
       result = await innovationService.getInnovationListByState(
@@ -822,7 +801,7 @@ describe("Innovator Service Suite", () => {
       .mockResolvedValue(false);
 
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
+      .spyOn(QueueProducer.prototype, "sendNotification")
       .mockRejectedValue("error");
 
     await innovationService.submitInnovation(
@@ -846,7 +825,7 @@ describe("Innovator Service Suite", () => {
       .mockResolvedValue(false);
 
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
+      .spyOn(QueueProducer.prototype, "sendNotification")
       .mockRejectedValue("error");
 
     try {
@@ -864,7 +843,9 @@ describe("Innovator Service Suite", () => {
       .spyOn(innovationService, "hasIncompleteSections")
       .mockResolvedValue(false);
 
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue();
+    jest
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     let err;
     try {
@@ -885,7 +866,9 @@ describe("Innovator Service Suite", () => {
       .spyOn(innovationService, "hasIncompleteSections")
       .mockResolvedValue(true as any);
 
-    jest.spyOn(NotificationService.prototype, "sendEmail").mockResolvedValue();
+    jest
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
     const innovationObj = fixtures.generateInnovation({
       owner: { id: innovatorRequestUser.id },
       surveyId: "abc",
@@ -1072,8 +1055,8 @@ describe("Innovator Service Suite", () => {
 
   it("should archive the innovation by innovator Id and innovation Id", async () => {
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockRejectedValue("error");
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockRejectedValue("Error");
 
     const innovationObj = fixtures.generateInnovation({
       owner: { id: innovatorRequestUser.id },
@@ -1094,8 +1077,9 @@ describe("Innovator Service Suite", () => {
 
   it("should throw an error when archiveInnovation() without id", async () => {
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockRejectedValue("error");
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockRejectedValue("Error");
+
     let err;
     try {
       await innovationService.archiveInnovation(undefined, "id", "");
@@ -1109,8 +1093,9 @@ describe("Innovator Service Suite", () => {
 
   it("should throw an error when archiveInnovation() with innovation not found", async () => {
     jest
-      .spyOn(NotificationService.prototype, "sendEmail")
-      .mockRejectedValue("error");
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockRejectedValue("Error");
+
     let err;
     try {
       await innovationService.archiveInnovation(
@@ -1582,8 +1567,9 @@ describe("Innovator Service Suite", () => {
   });
 
   it("Should find records when user is of type Accessor and all matching arguments", async () => {
-    jest.spyOn(notificationService, "sendEmail");
-    jest.spyOn(notificationService, "create");
+    jest
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     const innovation = {
       countryName: "England",
@@ -1610,8 +1596,9 @@ describe("Innovator Service Suite", () => {
   });
 
   it("Should throw error when request user does not have an accessor role", async () => {
-    jest.spyOn(notificationService, "sendEmail");
-    jest.spyOn(notificationService, "create");
+    jest
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     const innovation = {
       countryName: "England",
@@ -1657,8 +1644,9 @@ describe("Innovator Service Suite", () => {
   });
 
   it("Should throw error when request user does not have an org", async () => {
-    jest.spyOn(notificationService, "sendEmail");
-    jest.spyOn(notificationService, "create");
+    jest
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     const innovation = {
       countryName: "England",
@@ -1693,8 +1681,9 @@ describe("Innovator Service Suite", () => {
   });
 
   it("Should throw error when request user is invaild", async () => {
-    jest.spyOn(notificationService, "sendEmail");
-    jest.spyOn(notificationService, "create");
+    jest
+      .spyOn(QueueProducer.prototype, "sendNotification")
+      .mockResolvedValue(undefined);
 
     const innovation = {
       countryName: "England",

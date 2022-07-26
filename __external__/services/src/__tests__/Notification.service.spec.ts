@@ -1343,7 +1343,7 @@ describe("Notification Service Suite", () => {
       supportObj2
     );
 
-    const notification = await notificationService.create(
+    await notificationService.create(
       innovatorRequestUser,
       NotificationAudience.ACCESSORS,
       innovation1.id,
@@ -1357,32 +1357,9 @@ describe("Notification Service Suite", () => {
     );
 
     expect(notificationByStatus).toBeDefined();
-    expect(Object.keys(notificationByStatus).length).toBe(2);
-    expect(Object.keys(notificationByStatus).includes("UNASSIGNED")).toBe(true);
+    expect(Object.keys(notificationByStatus).length).toBe(1);
     expect(Object.keys(notificationByStatus).includes("ENGAGING")).toBe(true);
   });
-
-  /*it("should throw error when dismiss with invalid contextId", async () => {
-    const dismisssRequestUser: RequestUser = {
-      id: ":innovatorId",
-      externalId: ":innovatorId",
-      type: UserType.INNOVATOR,
-    };
-
-    let error: Error;
-    try {
-      await notificationService.dismiss(
-        dismisssRequestUser,
-        NotificationContextType.INNOVATION,
-        "abc"
-      );
-    } catch (err) {
-      error = err;
-    }
-
-    expect(error).toBeDefined();
-    expect(error).toBeInstanceOf(InvalidParamsError);
-  });*/
 
   it("should get email notification preferences", async () => {
     const innovator = await fixtures.createInnovatorUser();

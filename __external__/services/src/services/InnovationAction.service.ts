@@ -1,9 +1,5 @@
 import { Activity } from "@domain/enums/activity.enums";
-import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
-import {
-  NotifContextDetail,
-  NotifContextType,
-} from "@domain/enums/notification.enums";
+import { NotificationActionType } from "@domain/enums/notification.enums";
 import {
   AccessorOrganisationRole,
   Comment,
@@ -11,7 +7,6 @@ import {
   InnovationActionStatus,
   InnovationSectionAliasCatalogue,
   InnovationSupport,
-  NotificationAudience,
   NotificationContextType,
 } from "@domain/index";
 import {
@@ -34,6 +29,7 @@ import {
   getRepository,
   Repository,
 } from "typeorm";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import { ActivityLogService } from "./ActivityLog.service";
 import { InnovationService } from "./Innovation.service";
 import { InnovationSectionService } from "./InnovationSection.service";
@@ -50,6 +46,7 @@ export class InnovationActionService {
   private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
   private readonly activityLogService: ActivityLogService;
+  private readonly queueProducer: QueueProducer;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -62,6 +59,7 @@ export class InnovationActionService {
     this.notificationService = new NotificationService(connectionName);
     this.logService = new LoggerService();
     this.activityLogService = new ActivityLogService(connectionName);
+    this.queueProducer = new QueueProducer();
   }
 
   async create(requestUser: RequestUser, innovationId: string, action: any) {
@@ -137,7 +135,6 @@ export class InnovationActionService {
       updatedBy: requestUser.id,
     };
 
-    //const result = await this.actionRepo.save(actionObj);
     const result = await this.connection.transaction(async (trs) => {
       const actionResult = await trs.save(InnovationAction, actionObj);
       try {
@@ -164,35 +161,26 @@ export class InnovationActionService {
     });
 
     try {
-      await this.notificationService.create(
-        requestUser,
-        NotificationAudience.INNOVATORS,
-        innovation.id,
-        NotifContextType.ACTION,
-        NotifContextDetail.ACTION_CREATION,
-        result.id,
+      // send in-app: to innovator
+      // send email: to innovator
+      await this.queueProducer.sendNotification(
+        NotificationActionType.ACTION_CREATION,
         {
-          section: action.section,
-          actionCode: result.displayId,
+          id: requestUser.id,
+          identityId: requestUser.externalId,
+          type: requestUser.type,
+        },
+        {
+          innovationId: innovation.id,
+          action: {
+            id: result.id,
+            section: action.section,
+          },
         }
       );
     } catch (error) {
       this.logService.error(
-        `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
-        error
-      );
-    }
-
-    try {
-      await this.notificationService.sendEmail(
-        requestUser,
-        EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST,
-        innovationId,
-        result.id
-      );
-    } catch (error) {
-      this.logService.error(
-        `An error has occured an email with the template ${EmailNotificationTemplate.INNOVATORS_ACTION_REQUEST} from ${requestUser.id}`,
+        `An error has occured while writing notification on queue of type ${NotificationActionType.ACTION_CREATION}`,
         error
       );
     }
@@ -252,21 +240,26 @@ export class InnovationActionService {
     );
 
     try {
-      await this.notificationService.create(
-        requestUser,
-        NotificationAudience.INNOVATORS,
-        innovationId,
-        NotifContextType.ACTION,
-        NotifContextDetail.ACTION_UPDATE,
-        result.id,
+      // send in-app: to innovator
+      await this.queueProducer.sendNotification(
+        NotificationActionType.ACTION_UPDATE,
         {
-          actionStatus: result.status,
-          actionCode: result.displayId,
+          id: requestUser.id,
+          identityId: requestUser.externalId,
+          type: requestUser.type,
+        },
+        {
+          innovationId: innovation.id,
+          action: {
+            id: result.id,
+            section: action.section,
+            status: result.status,
+          },
         }
       );
     } catch (error) {
       this.logService.error(
-        `An error has occured while creating a notification of type ${NotificationContextType.ACTION} from ${requestUser.id}`,
+        `An error has occured while writing notification on queue of type ${NotificationActionType.ACTION_UPDATE}`,
         error
       );
     }
@@ -301,23 +294,28 @@ export class InnovationActionService {
       action
     );
     targetNotificationUsers = [innovationAction.createdBy];
+
     try {
-      await this.notificationService.create(
-        requestUser,
-        NotificationAudience.ACCESSORS,
-        innovationId,
-        NotifContextType.ACTION,
-        NotifContextDetail.ACTION_UPDATE,
-        innovationAction.id,
+      // send in-app: to action creator
+      await this.queueProducer.sendNotification(
+        NotificationActionType.ACTION_UPDATE,
         {
-          actionStatus: result.status,
-          actionCode: result.displayId,
+          id: requestUser.id,
+          identityId: requestUser.externalId,
+          type: requestUser.type,
         },
-        targetNotificationUsers
+        {
+          innovationId: innovationId,
+          action: {
+            id: result.id,
+            section: action.section,
+            status: result.status,
+          },
+        }
       );
     } catch (error) {
       this.logService.error(
-        `An error has occured while creating a notification of type ${NotificationContextType.ACTION} from ${requestUser.id}`,
+        `An error has occured while writing notification on queue of type ${NotificationActionType.ACTION_UPDATE}`,
         error
       );
     }

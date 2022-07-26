@@ -1,14 +1,8 @@
-import { EmailNotificationTemplate } from "@domain/enums/email-notifications.enum";
-import {
-  NotifContextDetail,
-  NotifContextType,
-} from "@domain/enums/notification.enums";
+import { NotificationActionType } from "@domain/enums/notification.enums";
 import {
   AccessorOrganisationRole,
   Innovation,
   InnovationSupportStatus,
-  NotificationAudience,
-  NotificationContextType,
   OrganisationUnitUser,
   OrganisationUser,
   User,
@@ -16,7 +10,6 @@ import {
 } from "@domain/index";
 import { InvalidParamsError, InvalidUserRoleError } from "@services/errors";
 import { AdminDeletionResult } from "@services/models/AdminDeletionResult";
-import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
 import { RequestUser } from "@services/models/RequestUser";
 import { UserChangeRoleValidationResult } from "@services/models/UserChangeRoleValidationResult";
 import { UserCreationModel } from "@services/models/UserCreationModel";
@@ -30,6 +23,7 @@ import {
   UserSearchResult,
 } from "@services/types";
 import { Connection, getConnection } from "typeorm";
+import { QueueProducer } from "../../../../utils/queue-producer";
 import { UserService } from "..";
 import * as accessorRules from "../config/admin-accessor-user-lock.config.json";
 import * as rule from "../config/admin-change-role.config.json";
@@ -43,26 +37,24 @@ import {
 } from "../helpers";
 import { InnovationSupportService } from "./InnovationSupport.service";
 import { LoggerService } from "./Logger.service";
-import { NotificationService } from "./Notification.service";
-import { OrganisationService } from "./Organisation.service";
 
 export class AdminService {
   private readonly connection: Connection;
   private readonly userService: UserService;
-  private readonly notificationService: NotificationService;
   private readonly logService: LoggerService;
   private readonly innovationSupportService: InnovationSupportService;
-  private readonly organisationService: OrganisationService;
+  private readonly queueProducer: QueueProducer;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
     this.userService = new UserService(connectionName);
-    this.notificationService = new NotificationService(connectionName);
     this.innovationSupportService = new InnovationSupportService(
       connectionName
     );
-    this.organisationService = new OrganisationService(connectionName);
+    this.logService = new LoggerService();
+    this.queueProducer = new QueueProducer();
   }
+
   async getUsersOfType(
     type: UserType,
     skip = 0,
@@ -160,11 +152,13 @@ export class AdminService {
 
     return result;
   }
+
   private getUserEmail(b2cUser: any) {
     return b2cUser.identities.find(
       (identity: any) => identity.signInType === "emailAddress"
     ).issuerAssignedId;
   }
+
   async lockUser(
     requestUser: RequestUser,
     externalId: string,
@@ -189,9 +183,8 @@ export class AdminService {
       throw new Error("Invalid user id.");
     }
 
-    let result;
     try {
-      result = await this.connection.transaction(async (transaction) => {
+      await this.connection.transaction(async (transaction) => {
         await transaction.update(
           User,
           { externalId },
@@ -199,6 +192,7 @@ export class AdminService {
             lockedAt: new Date(),
           }
         );
+
         return await this.userService.updateB2CUser(
           { accountEnabled: false },
           externalId,
@@ -216,8 +210,6 @@ export class AdminService {
       "FULL"
     );
     if (userDetails.type === "INNOVATOR") {
-      let users: ProfileSlimModel[];
-      const orgUnitUsersList: string[] = [];
       const userToRequestUser: RequestUser = {
         id: userDetails.id,
         externalId: userDetails.externalId,
@@ -229,72 +221,29 @@ export class AdminService {
         innovationIdx < userDetails.innovations.length;
         innovationIdx++
       ) {
+        const innovation = userDetails.innovations[innovationIdx];
         const innovationSupports = await this.innovationSupportService.findAllByInnovation(
           userToRequestUser,
-          userDetails.innovations[innovationIdx].id
+          innovation.id
         );
 
-        for (
-          let innovationSupportIdx = 0;
-          innovationSupportIdx < innovationSupports.length;
-          innovationSupportIdx++
-        ) {
-          const organisationUnitUsers = await this.organisationService.findOrganisationUnitUsersById(
-            innovationSupports[innovationSupportIdx].organisationUnit.id
-          );
-
-          for (
-            let organisationUnitUserIdx = 0;
-            organisationUnitUserIdx < organisationUnitUsers.length;
-            organisationUnitUserIdx++
-          ) {
-            if (
-              innovationSupports[innovationSupportIdx].status ===
-                InnovationSupportStatus.FURTHER_INFO_REQUIRED ||
-              innovationSupports[innovationSupportIdx].status ===
-                InnovationSupportStatus.WAITING
-            ) {
-              if (
-                organisationUnitUsers[organisationUnitUserIdx].role ===
-                "QUALIFYING_ACCESSOR"
-              ) {
-                orgUnitUsersList.push(
-                  organisationUnitUsers[organisationUnitUserIdx].userId
-                );
-              }
-            }
-            if (
-              innovationSupports[innovationSupportIdx].status ===
-              InnovationSupportStatus.ENGAGING
-            ) {
-              if (
-                organisationUnitUsers[organisationUnitUserIdx].role ===
-                  "QUALIFYING_ACCESSOR" ||
-                organisationUnitUsers[organisationUnitUserIdx].role ===
-                  "ACCESSOR"
-              ) {
-                orgUnitUsersList.push(
-                  organisationUnitUsers[organisationUnitUserIdx].userId
-                );
-              }
-            }
-          }
-        }
-        if (orgUnitUsersList.length != 0) {
+        if (innovationSupports.length > 0) {
           try {
-            await this.notificationService.create(
-              requestUser,
-              NotificationAudience.ACCESSORS,
-              userDetails.innovations[innovationIdx].id,
-              NotifContextType.INNOVATION,
-              NotifContextDetail.LOCK_USER,
-              userDetails.innovations[innovationIdx].id,
-              {},
-              orgUnitUsersList
+            // send in-app: to assigned accessors
+            await this.queueProducer.sendNotification(
+              NotificationActionType.INNOVATION_USER_LOCK,
+              {
+                id: requestUser.id,
+                identityId: requestUser.externalId,
+                type: requestUser.type,
+              },
+              {
+                innovationId: innovation.id,
+              }
             );
           } catch (error) {
             this.logService.error(
-              `An error has occured while creating a notification of type ${NotificationContextType.INNOVATION} from ${requestUser.id}`,
+              `An error has occured while writing notification on queue of type ${NotificationActionType.INNOVATION_USER_LOCK}`,
               error
             );
           }
@@ -305,19 +254,27 @@ export class AdminService {
     const email = this.getUserEmail(user);
 
     try {
-      await this.notificationService.sendEmail(
-        requestUser,
-        EmailNotificationTemplate.USER_ACCOUNT_LOCKED,
-        null,
-        user.id,
-        [email],
+      // send email: to user locked
+      await this.queueProducer.sendNotification(
+        NotificationActionType.LOCK_USER,
         {
-          display_name: user.displayName,
+          id: requestUser.id,
+          identityId: requestUser.externalId,
+          type: requestUser.type,
+        },
+        {
+          innovationId: null,
+          userId: userDetails.id,
+          user: {
+            id: userDetails.id,
+            externalId: userDetails.externalId,
+            email,
+          },
         }
       );
     } catch (error) {
       this.logService.error(
-        `An error has occured while sending an email with the template ${EmailNotificationTemplate.USER_ACCOUNT_LOCKED}.`,
+        `An error has occured while writing notification on queue of type ${NotificationActionType.LOCK_USER}`,
         error
       );
     }
@@ -477,8 +434,7 @@ export class AdminService {
   }
 
   async userExistsB2C(email: string): Promise<boolean> {
-    const result = await this.userService.userExistsAtB2C(email);
-    return result;
+    return await this.userService.userExistsAtB2C(email);
   }
 
   async updateUserRole(
@@ -506,11 +462,7 @@ export class AdminService {
       throw new Error("Invalid user id.");
     }
 
-    const result = await this.userService.updateUserRole(
-      requestUser,
-      userId,
-      role
-    );
+    await this.userService.updateUserRole(requestUser, userId, role);
 
     return {
       id: userId,
