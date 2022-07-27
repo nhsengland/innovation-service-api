@@ -28,7 +28,7 @@ import { RequestUser } from "@services/models/RequestUser";
 describe("[User Account Lock suite", () => {
   let adminService: AdminService;
   beforeAll(async () => {
-    await setupTestsConnection();
+    //await setupTestsConnection();
 
     dotenv.config({
       path: path.resolve(__dirname, "./.environment"),
@@ -50,7 +50,7 @@ describe("[User Account Lock suite", () => {
   });
 
   afterAll(async () => {
-    await closeTestsConnection();
+    //await closeTestsConnection();
   });
   it("Should not lock User if is last assessment user", async () => {
     jest
