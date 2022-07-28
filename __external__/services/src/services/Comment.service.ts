@@ -87,6 +87,15 @@ export class CommentService {
       };
     }
 
+    const innovation = await this.innovationService.find(innovationId, {
+      relations: ["owner"],
+    });
+    if (!innovation) {
+      throw new InnovationNotFoundError(
+        `The Innovation with id ${innovationId} was not found.`
+      );
+    }
+
     const commentObj = {
       message,
       user: { id: requestUser.id },
@@ -100,13 +109,8 @@ export class CommentService {
     };
 
     const result = await this.connection.transaction(async (trs) => {
-      const innovation = await this.innovationService.find(innovationId);
-      if (!innovation) {
-        throw new InnovationNotFoundError(
-          `The Innovation with id ${innovationId} was not found.`
-        );
-      }
       const comment = await trs.save(Comment, commentObj);
+
       if (comment.replyTo === null) {
         try {
           await this.activityLogService.createLog(
@@ -131,61 +135,38 @@ export class CommentService {
       return comment;
     });
 
-    let targetNotificationUsers: ProfileSlimModel[] = [];
-    // If the comment if made by an accessor, it also has to send a notification for assigned accessors regardless of the unit they belong to.
-    // The create method already knows it has to create a notification to the owner of the innovation.
-    // But we need to pass in the accessors that are assigned to this innovation.
-    if (requestUser.type === UserType.ACCESSOR) {
-      const supports = await this.innovationSupportService.findAllByInnovation(
-        requestUser,
-        innovationId
-      );
+    if (requestUser.type === UserType.INNOVATOR) {
+      if (replyTo) {
+        const originalComment = this.commentRepo
+          .createQueryBuilder("comment")
+          .innerJoinAndSelect("comment.user", "user")
+          .where("comment.id = :commentId", {
+            commentId: replyTo,
+          })
+          .andWhere(`comment.user_id != :userCommenting`, {
+            userCommenting: requestUser.id,
+          });
 
-      if (supports && supports.length > 0) {
-        const accessorsUnitIds = supports
-          .filter((s) => s.accessors && s.accessors.length > 0)
-          .flatMap((s) => s.accessors.map((a) => a.id));
+        const userInOriginalComment = await originalComment.getOne();
 
-        if (accessorsUnitIds && accessorsUnitIds.length > 0) {
-          targetNotificationUsers = await this.organisationService.findUserFromUnitUsers(
-            accessorsUnitIds
-          );
+        const replyChain = this.commentRepo
+          .createQueryBuilder("comment")
+          .innerJoinAndSelect("comment.user", "user")
+          .where("comment.reply_to_id = :replyToId", {
+            replyToId: replyTo,
+          })
+          .andWhere(`comment.user_id != :userCommenting`, {
+            userCommenting: requestUser.id,
+          });
+
+        const usersInReplyChain = await replyChain.getMany();
+
+        if (userInOriginalComment) {
+          usersInReplyChain.push(userInOriginalComment);
         }
-      }
-    }
 
-    try {
-      if (requestUser.type === UserType.INNOVATOR) {
-        if (replyTo) {
-          const originalComment = this.commentRepo
-            .createQueryBuilder("comment")
-            .innerJoinAndSelect("comment.user", "user")
-            .where("comment.id = :commentId", {
-              commentId: replyTo,
-            })
-            .andWhere(`comment.user_id != :userCommenting`, {
-              userCommenting: requestUser.id,
-            });
-
-          const userInOriginalComment = await originalComment.getOne();
-
-          const replyChain = this.commentRepo
-            .createQueryBuilder("comment")
-            .innerJoinAndSelect("comment.user", "user")
-            .where("comment.reply_to_id = :replyToId", {
-              replyToId: replyTo,
-            })
-            .andWhere(`comment.user_id != :userCommenting`, {
-              userCommenting: requestUser.id,
-            });
-
-          const usersInReplyChain = await replyChain.getMany();
-
-          if (userInOriginalComment) {
-            usersInReplyChain.push(userInOriginalComment);
-          }
-
-          if (usersInReplyChain.length > 0) {
+        if (usersInReplyChain.length > 0) {
+          try {
             await this.notificationService.create(
               requestUser,
               NotificationAudience.ACCESSORS,
@@ -196,51 +177,74 @@ export class CommentService {
               {},
               usersInReplyChain.map((u) => u.user.id)
             );
+          } catch (error) {
+            this.logService.error(
+              `An error has occured while creating a notification of type ${NotificationContextType.COMMENT} from ${requestUser.id}`,
+              error
+            );
           }
-        } else {
-          await this.notificationService.create(
-            requestUser,
-            NotificationAudience.ACCESSORS,
-            innovationId,
-            NotifContextType.COMMENT,
-            NotifContextDetail.COMMENT_CREATION,
-            result.id,
-            {},
-            targetNotificationUsers.map((u) => u.id)
-          );
+        }
+      } else {
+        const supports = await this.innovationSupportService.findAllByInnovation(
+          requestUser,
+          innovationId
+        );
+
+        let targetNotificationUsers: ProfileSlimModel[] = [];
+        if (supports && supports.length > 0) {
+          const accessorsUnitIds = supports
+            .filter((s) => s.accessors && s.accessors.length > 0)
+            .flatMap((s) => s.accessors.map((a) => a.id));
+
+          if (accessorsUnitIds && accessorsUnitIds.length > 0) {
+            targetNotificationUsers = await this.organisationService.findUserFromUnitUsers(
+              accessorsUnitIds
+            );
+          }
+
+          if (targetNotificationUsers.length > 0) {
+            try {
+              await this.notificationService.create(
+                requestUser,
+                NotificationAudience.ACCESSORS,
+                innovationId,
+                NotifContextType.COMMENT,
+                NotifContextDetail.COMMENT_CREATION,
+                result.id,
+                {},
+                targetNotificationUsers.map((u) => u.id)
+              );
+            } catch (error) {
+              this.logService.error(
+                `An error has occured while creating a notification of type ${NotificationContextType.COMMENT} from ${requestUser.id}`,
+                error
+              );
+            }
+
+            try {
+              await this.notificationService.sendEmail(
+                requestUser,
+                EmailNotificationTemplate.ACCESSORS_COMMENT_RECEIVED,
+                innovationId,
+                result.id,
+                [],
+                {
+                  innovation_name: innovation.name,
+                }
+              );
+            } catch (error) {
+              this.logService.error(
+                `An error has occured while sending an email of type ${EmailNotificationTemplate.ACCESSORS_COMMENT_RECEIVED}`,
+                error
+              );
+            }
+          }
         }
       }
-
-      if (
-        requestUser.type === UserType.ACCESSOR ||
-        requestUser.type === UserType.ASSESSMENT
-      ) {
-        await this.notificationService.create(
-          requestUser,
-          NotificationAudience.INNOVATORS,
-          innovationId,
-          NotifContextType.COMMENT,
-          replyTo
-            ? NotifContextDetail.COMMENT_REPLY
-            : NotifContextDetail.COMMENT_CREATION,
-          result.id,
-          {},
-          targetNotificationUsers.map((u) => u.id)
-        );
-      }
-    } catch (error) {
-      this.logService.error(
-        `An error has occured while creating a notification of type ${NotificationContextType.COMMENT} from ${requestUser.id}`,
-        error
-      );
     }
 
-    try {
-      if (requestUser.type !== UserType.INNOVATOR) {
-        const innovation = await this.innovationService.find(innovationId, {
-          relations: ["owner"],
-        });
-
+    if (requestUser.type !== UserType.INNOVATOR) {
+      try {
         const sender = await this.userService.getProfile(
           requestUser.id,
           requestUser.externalId
@@ -260,31 +264,32 @@ export class CommentService {
             unit_name: senderUnit.name,
           }
         );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while sending an email of type ${EmailNotificationTemplate.INNOVATORS_COMMENT_RECEIVED}`,
+          error
+        );
       }
-    } catch (error) {
-      this.logService.error(
-        `An error has occured while sending an email of type ${EmailNotificationTemplate.INNOVATORS_COMMENT_RECEIVED}`,
-        error
-      );
-    }
 
-    try {
-      const innovation = await this.innovationService.find(innovationId);
-      await this.notificationService.sendEmail(
-        requestUser,
-        EmailNotificationTemplate.ACCESSORS_COMMENT_RECEIVED,
-        innovationId,
-        result.id,
-        [],
-        {
-          innovation_name: innovation.name,
-        }
-      );
-    } catch (error) {
-      this.logService.error(
-        `An error has occured while sending an email of type ${EmailNotificationTemplate.ACCESSORS_COMMENT_RECEIVED}`,
-        error
-      );
+      try {
+        await this.notificationService.create(
+          requestUser,
+          NotificationAudience.INNOVATORS,
+          innovationId,
+          NotifContextType.COMMENT,
+          replyTo
+            ? NotifContextDetail.COMMENT_REPLY
+            : NotifContextDetail.COMMENT_CREATION,
+          result.id,
+          {},
+          [innovation.owner.id]
+        );
+      } catch (error) {
+        this.logService.error(
+          `An error has occured while creating a notification of type ${NotificationContextType.COMMENT} from ${requestUser.id}`,
+          error
+        );
+      }
     }
 
     return result;

@@ -588,7 +588,9 @@ export class AdminService {
       graphAccessToken = await authenticateWitGraphAPI();
     }
 
-    const user = await getUserFromB2C(userId, graphAccessToken);
+    const dbUser = await this.userService.getUser(userId);
+
+    const user = await getUserFromB2C(dbUser.externalId, graphAccessToken);
     if (!user) {
       throw new Error("Invalid user id.");
     }
