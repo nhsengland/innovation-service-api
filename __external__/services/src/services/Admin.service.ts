@@ -32,7 +32,6 @@ import {
   UserLockValidationCode,
   UserSearchResult,
 } from "@services/types";
-import { randomUUID } from "crypto";
 import {
   Connection,
   EntityManager,
@@ -40,6 +39,7 @@ import {
   In,
   UpdateResult,
 } from "typeorm";
+import { v4 as uuid } from "uuid";
 import { UserService } from "..";
 import * as accessorRules from "../config/admin-accessor-user-lock.config.json";
 import * as rule from "../config/admin-change-role.config.json";
@@ -619,7 +619,7 @@ export class AdminService {
     requestUser: RequestUser,
     unitIds: string[]
   ): Promise<UpdateResult> {
-    const correlationId = randomUUID();
+    const correlationId = uuid();
 
     // GETS UNITS AND ITS USERS FROM DATABASE
     const { units, usersToLock } = await this.getUnitsWithUsers(unitIds);

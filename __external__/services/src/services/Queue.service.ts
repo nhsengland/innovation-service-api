@@ -3,9 +3,9 @@ import { QueueMessageConfig } from "@services/config/queue";
 
 import { QueueMessageEnum, QueuesEnum } from "@services/enums/queue.enum";
 import { DisplayNameUpdateIdentityQueueType, QueueContextType, UserLockIdentityQueueType, UserUnlockIdentityQueueType } from "@services/types/queue";
-import { randomUUID } from "crypto";
 
 import * as dotenv from "dotenv";
+import { v4 as uuid } from "uuid";
 import { LoggerService } from "./Logger.service";
 
 dotenv.config();
@@ -38,7 +38,7 @@ export class QueueService {
     data: QueueContextType<T>
   ): Promise<boolean> {
 
-    const correlationId = randomUUID();
+    const correlationId = uuid();
 
     const { queue } = this.getQueueConfig<T>(messageType);
 
@@ -57,7 +57,7 @@ export class QueueService {
     const response = await this.queueClient.sendMessage(payload);
 
     return response._response.status === 201;
-    
+
   }
 
   async handleMessage<T extends QueueMessageEnum>(messageType: T, data: QueueContextType<T>, correlationId: string): Promise<{success: boolean, extra: unknown}> {
