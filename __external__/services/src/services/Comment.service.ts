@@ -175,11 +175,29 @@ export class CommentService {
               NotifContextDetail.COMMENT_REPLY,
               result.id,
               {},
-              usersInReplyChain.map((u) => u.user.id)
+              [...new Set(usersInReplyChain.map((u) => u.user.id))]
             );
           } catch (error) {
             this.logService.error(
               `An error has occured while creating a notification of type ${NotificationContextType.COMMENT} from ${requestUser.id}`,
+              error
+            );
+          }
+
+          try {
+            await this.notificationService.sendEmail(
+              requestUser,
+              EmailNotificationTemplate.ACCESSORS_COMMENT_RECEIVED,
+              innovationId,
+              result.id,
+              [...new Set(usersInReplyChain.map((u) => u.user.externalId))],
+              {
+                innovation_name: innovation.name,
+              }
+            );
+          } catch (error) {
+            this.logService.error(
+              `An error has occured while sending an email of type ${EmailNotificationTemplate.ACCESSORS_COMMENT_RECEIVED}`,
               error
             );
           }
@@ -212,7 +230,7 @@ export class CommentService {
                 NotifContextDetail.COMMENT_CREATION,
                 result.id,
                 {},
-                targetNotificationUsers.map((u) => u.id)
+                [...new Set(targetNotificationUsers.map((u) => u.id))]
               );
             } catch (error) {
               this.logService.error(
@@ -227,7 +245,7 @@ export class CommentService {
                 EmailNotificationTemplate.ACCESSORS_COMMENT_RECEIVED,
                 innovationId,
                 result.id,
-                [],
+                [...new Set(targetNotificationUsers.map((u) => u.externalId))],
                 {
                   innovation_name: innovation.name,
                 }
@@ -280,9 +298,7 @@ export class CommentService {
           replyTo
             ? NotifContextDetail.COMMENT_REPLY
             : NotifContextDetail.COMMENT_CREATION,
-          result.id,
-          {},
-          [innovation.owner.id]
+          result.id
         );
       } catch (error) {
         this.logService.error(
