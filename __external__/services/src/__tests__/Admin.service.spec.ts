@@ -982,14 +982,21 @@ describe("[User Account Lock suite", () => {
   });
 
   it("Should update user role", async () => {
-
     const accessor = await fixtures.createAccessorUser();
-    const accessorOrg = await fixtures.createOrganisation(OrganisationType.ACCESSOR);
+    const accessorOrg = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
+    );
     const unit = await fixtures.createOrganisationUnit(accessorOrg);
 
-    const accessorOrganisationUser = await fixtures.addUserToOrganisation(accessor, accessorOrg, AccessorOrganisationRole.QUALIFYING_ACCESSOR);
-    const  accessorOrganisationUnitUser = await fixtures.addOrganisationUserToOrganisationUnit(accessorOrganisationUser, unit);
-    
+    const accessorOrganisationUser = await fixtures.addUserToOrganisation(
+      accessor,
+      accessorOrg,
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    );
+    const accessorOrganisationUnitUser = await fixtures.addOrganisationUserToOrganisationUnit(
+      accessorOrganisationUser,
+      unit
+    );
 
     jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
@@ -1010,8 +1017,11 @@ describe("[User Account Lock suite", () => {
     );
 
     // sadly, typeorm does not have an UpdateResult implementation for SQL Server, always returns 0 affected rows because of that.
-    
-    const orgUserRepo = getRepository(OrganisationUser, process.env.DB_TESTS_NAME);
+
+    const orgUserRepo = getRepository(
+      OrganisationUser,
+      process.env.DB_TESTS_NAME
+    );
     const actual = await orgUserRepo.findOne(accessorOrganisationUser.id);
 
     expect(actual.role).toBe(AccessorOrganisationRole.ACCESSOR);
