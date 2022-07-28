@@ -2,7 +2,12 @@ import { QueueClient, QueueServiceClient } from "@azure/storage-queue";
 import { QueueMessageConfig } from "@services/config/queue";
 
 import { QueueMessageEnum, QueuesEnum } from "@services/enums/queue.enum";
-import { DisplayNameUpdateIdentityQueueType, QueueContextType, UserLockIdentityQueueType, UserUnlockIdentityQueueType } from "@services/types/queue";
+import {
+  DisplayNameUpdateIdentityQueueType,
+  QueueContextType,
+  UserLockIdentityQueueType,
+  UserUnlockIdentityQueueType,
+} from "@services/types/queue";
 
 import * as dotenv from "dotenv";
 import { v4 as uuid } from "uuid";
@@ -37,7 +42,6 @@ export class QueueService {
     messageType: T,
     data: QueueContextType<T>
   ): Promise<boolean> {
-
     const correlationId = uuid();
 
     const { queue } = this.getQueueConfig<T>(messageType);
@@ -50,23 +54,25 @@ export class QueueService {
       correlationId,
       messageType,
       data,
-    }
+    };
 
-    const payload = Buffer.from(JSON.stringify(message)).toString('base64');
+    const payload = Buffer.from(JSON.stringify(message)).toString("base64");
 
     const response = await this.queueClient.sendMessage(payload);
 
     return response._response.status === 201;
-
   }
 
-  async handleMessage<T extends QueueMessageEnum>(messageType: T, data: QueueContextType<T>, correlationId: string): Promise<{success: boolean, extra: unknown}> {
+  async handleMessage<T extends QueueMessageEnum>(
+    messageType: T,
+    data: QueueContextType<T>,
+    correlationId: string
+  ): Promise<{ success: boolean; extra: unknown }> {
+    const { handler, queue } = this.getQueueConfig(messageType);
 
-    const { handler, queue} = this.getQueueConfig(messageType);
-    
     this.validateHandler<T>(handler, correlationId, messageType);
 
-    const result = await handler(queue, data as QueueContextType<T>)
+    const result = await handler(queue, data as QueueContextType<T>);
 
     return result;
   }
@@ -88,7 +94,11 @@ export class QueueService {
     await this.queueClient.createIfNotExists();
   }
 
-  private validateQueueName<T extends QueueMessageEnum>(queueName: QueuesEnum, requestId: string, messageType: T) {
+  private validateQueueName<T extends QueueMessageEnum>(
+    queueName: QueuesEnum,
+    requestId: string,
+    messageType: T
+  ) {
     if (!queueName) {
       this.logger.error(
         `[createQueueMessage] empty queueName. Request: ${requestId}`,
@@ -103,7 +113,11 @@ export class QueueService {
     }
   }
 
-  private validateHandler<T extends QueueMessageEnum>(handler: unknown, correlationId: string, messageType: T){
+  private validateHandler<T extends QueueMessageEnum>(
+    handler: unknown,
+    correlationId: string,
+    messageType: T
+  ) {
     if (!handler) {
       this.logger.error(
         `[createQueueMessage] empty handler. Request: ${correlationId}`,
@@ -120,5 +134,4 @@ export class QueueService {
   private getQueueConfig<T extends QueueMessageEnum>(messageType: T) {
     return QueueMessageConfig[messageType];
   }
-
 }
