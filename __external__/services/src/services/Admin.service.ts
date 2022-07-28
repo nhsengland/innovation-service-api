@@ -16,6 +16,7 @@ import {
   User,
   UserType,
 } from "@domain/index";
+import { QueueMessageEnum } from "@services/enums/queue.enum";
 import { InvalidParamsError, InvalidUserRoleError } from "@services/errors";
 import { AdminDeletionResult } from "@services/models/AdminDeletionResult";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
@@ -31,6 +32,7 @@ import {
   UserLockValidationCode,
   UserSearchResult,
 } from "@services/types";
+import { randomUUID } from "crypto";
 import {
   Connection,
   EntityManager,
@@ -53,6 +55,7 @@ import { InnovationSupportService } from "./InnovationSupport.service";
 import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
 import { OrganisationService } from "./Organisation.service";
+import { QueueService } from "./Queue.service";
 
 export class AdminService {
   private readonly connection: Connection;
@@ -61,6 +64,7 @@ export class AdminService {
   private readonly logService: LoggerService;
   private readonly innovationSupportService: InnovationSupportService;
   private readonly organisationService: OrganisationService;
+  private readonly queueService: QueueService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -70,6 +74,7 @@ export class AdminService {
       connectionName
     );
     this.organisationService = new OrganisationService(connectionName);
+    this.queueService = new QueueService();
   }
   async getUsersOfType(
     type: UserType,
@@ -158,7 +163,12 @@ export class AdminService {
       if (!ignoreNotifications) {
         result = await this.lockUser(requestUser, user, graphAccessToken, trs);
       } else {
-        result = await this.lockUserNoNotifications(requestUser, user, graphAccessToken, trs);
+        result = await this.lockUserNoNotifications(
+          requestUser,
+          user,
+          graphAccessToken,
+          trs
+        );
       }
     } catch (err) {
       result = {
@@ -609,15 +619,10 @@ export class AdminService {
     requestUser: RequestUser,
     unitIds: string[]
   ): Promise<UpdateResult> {
-    // GETS UNITS FROM DATABASE
-    const units = await this.organisationService.findOrganisationUnitsByIds(
-      unitIds
-    );
+    const correlationId = randomUUID();
 
-    // GETS USERS FROM UNITS TO BE INACTIVATED
-    const usersToLock = await this.organisationService.findOrganisationUnitsUsersByUnitIds(
-      unitIds
-    );
+    // GETS UNITS AND ITS USERS FROM DATABASE
+    const { units, usersToLock } = await this.getUnitsWithUsers(unitIds);
 
     // BEGIN TRANSACTION (ALL OR NOTHING HERE)
     const result = await this.connection.transaction(async (transaction) => {
@@ -629,45 +634,31 @@ export class AdminService {
         { inactivatedAt: new Date() }
       );
 
-      // GET THE DISTINCT ORGANISATIONS TO WHOM THE UNITS BELONG TO
-      const organisations = [
-        ...new Set(units.map((unit) => unit.organisation.id)),
-      ];
+      // GET ORGANISATIONS, FROM THE LOCKED UNITS, THAT HAVE 0 ACTIVE UNITS REMAINING
+      const organisationsToLock = await this.getAccessorOrgsWithoutActiveUnits(units, transaction);
 
-      const organisationsToLock = [];
-      for (const organisationId of organisations) {
-        // FOR EACH ORGANISATION, CHECK IF IT HAS ANY ACTIVE UNITS
-        const activeUnits = await this.organisationService.organisationActiveUnitsCount(
-          organisationId,
-          transaction
-        );
+      // INACTIVATE ORGANISATIONS, IF ANY, DUE TO NOT HAVING ACTIVE UNITS
+      if(organisationsToLock.length > 0) {
 
-        if (activeUnits.count === 0) {
-          organisationsToLock.push(organisationId);
-        }
-      }
-
-      // INACTIVATE ORGANISATION DUE TO NOT HAVING ANY ACTIVE UNITS
-      try {
         await transaction.update<Organisation>(
           Organisation,
           { id: In(organisationsToLock) },
           { inactivatedAt: new Date() }
         );
-      } catch (error) {
-        console.log("Inactivate organisations", error);
-        throw error;
+
       }
 
-      //FOR EACH USER, LOCK IT (SADLY IT HAS TO BE ON A LOOP BECAUSE B2C UPDATES. MAYBE CHECK IF B2C ALLOWS FOR BULK UPDATES)
-      try {
-        for (const user of usersToLock) {
-          await this.lockUsers(requestUser, user.externalId, transaction, true);
-        }
-      } catch (error) {
-        console.log("Lock users", error);
-        throw error;
-      }
+      // LOCK USERS, THAT BELONG TO THE INACTIVATED UNITS, ON THE DATABASE.
+      await transaction.update<User>(
+        User,
+        { id: In(usersToLock.map((u) => u.id)) },
+        { lockedAt: new Date() }
+      );
+
+      // Failure does not rollback the transaction
+      // backend and frontend have to validate if the user is locked during authentication
+      // We will not rely only on the Identity Provider to check if the user is locked.
+      await this.lockUsersAtIdentityProviderUsingQueue(usersToLock, requestUser, correlationId);
 
       return inactivatedUnitsUpdateResult;
     });
@@ -675,9 +666,63 @@ export class AdminService {
     return result;
   }
 
+
   /**
    * PRIVATE METHODS
    */
+
+   private async lockUsersAtIdentityProviderUsingQueue(usersToLock: { externalId: string; id: string; }[], requestUser: RequestUser, correlationId: string) {
+    for (const user of usersToLock) {
+      // should not rollback the transaction
+      // log the error and move on
+      // backend and frontend will need to handle locked users
+      try {
+        await this.queueService.createQueueMessage<QueueMessageEnum.LOCK_USER>(
+          QueueMessageEnum.LOCK_USER,
+          { requestUser, identityId: user.externalId }
+        );
+      } catch (error) {
+        this.logService.error(
+          `CorrelationId: ${correlationId}. [Inactive Units] Error while creating queue message to lock user at the identity provider ${user.externalId}.`,
+          {
+            error,
+          }
+        );
+      }
+    }
+  }
+
+  private async getAccessorOrgsWithoutActiveUnits(units: OrganisationUnit[], transaction: EntityManager) {
+    const organisations = [
+      ...new Set(units.map((unit) => unit.organisation.id)),
+    ];
+
+    const organisationsToLock = [];
+    for (const organisationId of organisations) {
+      // FOR EACH ORGANISATION, CHECK IF IT HAS ANY ACTIVE UNITS
+      const activeUnits = await this.organisationService.organisationActiveUnitsCount(
+        organisationId,
+        transaction
+      );
+
+      if (activeUnits.count === 0) {
+        organisationsToLock.push(organisationId);
+      }
+    }
+    return organisationsToLock;
+  }
+
+  private async getUnitsWithUsers(unitIds: string[]) {
+    const units = await this.organisationService.findOrganisationUnitsByIds(
+      unitIds
+    );
+
+    // GETS USERS FROM UNITS TO BE INACTIVATED
+    const usersToLock = await this.organisationService.findOrganisationUnitsUsersByUnitIds(
+      unitIds
+    );
+    return { units, usersToLock };
+  }
 
   private async runNeedsAssessmentUserValidation(
     user: User

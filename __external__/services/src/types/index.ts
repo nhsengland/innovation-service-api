@@ -1,4 +1,4 @@
-import { OrganisationUser, UserRole, UserType } from "@domain/index";
+import { UserRole, UserType } from "@domain/index";
 
 export type OrderByCriteria = "ASC" | "DESC";
 export type OrderByClauseType = {
