@@ -1,6 +1,9 @@
+DISABLE_MOCKED_WARNING=true
 APPINSIGHTS_INSTRUMENTATIONKEY=00000000-0000-0000-0000-000000000000
 DB_TESTS_HOST=localhost
 DB_TESTS_USER=sa
 DB_TESTS_PWD=Pass@word
 DB_TESTS_NAME=tests
 ADMIN_DB=SLSDB
+AZURE_STORAGE_CONNECTIONSTRING="DefaultEndpointsProtocol=https;AccountName=nhsenhsaacinnovdev;AccountKey=ujpx7JmeYv+YhOfK7c+f/1s7JYoQoZNd0an4uGAJO0sSWKF9eGBzLvYTszM6mnAcV43iuYGnyiOwP8YUmbR9Aw==;EndpointSuffix=core.windows.net"
+AZURE_STORAGE_QUEUE_NAME=email-notification-queue

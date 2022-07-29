@@ -1,5 +1,5 @@
 export enum QueuesEnum {
-  IDENTITY_OPERATIONS = "identity_ops_queue",
+  IDENTITY_OPERATIONS = "identity-ops-queue",
 }
 
 export enum QueueMessageEnum {

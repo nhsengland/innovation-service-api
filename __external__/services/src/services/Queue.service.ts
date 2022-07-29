@@ -10,6 +10,7 @@ import {
 } from "@services/types/queue";
 
 import * as dotenv from "dotenv";
+import { CustomContext } from "utils/types";
 import { v4 as uuid } from "uuid";
 import { LoggerService } from "./Logger.service";
 
@@ -64,15 +65,16 @@ export class QueueService {
   }
 
   async handleMessage<T extends QueueMessageEnum>(
+    context: CustomContext,
     messageType: T,
     data: QueueContextType<T>,
     correlationId: string
-  ): Promise<{ success: boolean; extra: unknown }> {
+  ): Promise<{ success: boolean; extra?: unknown }> {
     const { handler, queue } = this.getQueueConfig(messageType);
 
     this.validateHandler<T>(handler, correlationId, messageType);
 
-    const result = await handler(queue, data as QueueContextType<T>);
+    const result = await handler(context,queue, data as QueueContextType<T>);
 
     return result;
   }
