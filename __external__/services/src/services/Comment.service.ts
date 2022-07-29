@@ -267,9 +267,16 @@ export class CommentService {
           requestUser.id,
           requestUser.externalId
         );
-        const senderUnit = await this.organisationService.findOrganisationUnitById(
-          requestUser.organisationUnitUser.organisationUnit.id
-        );
+
+        let senderUnitName = "needs assessment";
+
+        if (requestUser.type === UserType.ACCESSOR) {
+          const senderUnit = await this.organisationService.findOrganisationUnitById(
+            requestUser.organisationUnitUser.organisationUnit.id
+          );
+
+          senderUnitName = senderUnit.name;
+        }
 
         await this.notificationService.sendEmail(
           requestUser,
@@ -279,7 +286,7 @@ export class CommentService {
           [innovation.owner.externalId],
           {
             accessor_name: sender.displayName,
-            unit_name: senderUnit.name,
+            unit_name: senderUnitName,
           }
         );
       } catch (error) {
