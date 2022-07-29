@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { NotificationPreferenceType } from "@domain/index";
+import { NotificationContextType, NotificationPreferenceType } from "@domain/index";
 import { UserType } from "@services/index";
 import {
   createHttpTrigger, runStubFunctionFromBindings
@@ -72,7 +72,7 @@ describe("[HttpTrigger] notificationsUpdatePreferences Suite", () => {
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
 
       jest.spyOn(persistence, "updateEmailNotificationPreferences").mockResolvedValue([
-          { notificationType: "NotificationType" , status: "OK"}
+          { notificationType: NotificationContextType.ACTION , status: "OK"}
         ]);
 
       const { res } = await mockedRequestFactory({});
@@ -96,7 +96,7 @@ async function mockedRequestFactory(data?: any) {
           {}, // params
           [
             {
-              notificationType: 'notification-type',
+              notificationType: NotificationContextType.ACTION,
               preference: NotificationPreferenceType.NEVER
             },
           ], // payload/body

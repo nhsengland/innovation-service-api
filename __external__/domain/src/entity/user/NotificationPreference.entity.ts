@@ -22,7 +22,6 @@ export class NotificationPreference extends Base {
     type: "simple-enum",
     enum: NotificationContextType,
     nullable: false,
-    primary: true,
   })
   preference: NotificationPreferenceType;
 
