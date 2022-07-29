@@ -1,6 +1,9 @@
-import { NotificationContextType } from "@domain/index";
+import {
+  NotificationContextType,
+  NotificationPreferenceType,
+} from "@domain/index";
 
 export interface PreferenceUpdateModel {
   notificationType: NotificationContextType;
-  isSubscribed: boolean;
+  preference: NotificationPreferenceType;
 }

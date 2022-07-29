@@ -1,4 +1,7 @@
-import { NotificationContextType } from "@domain/enums/user.enums";
+import {
+  NotificationContextType,
+  NotificationPreferenceType,
+} from "@domain/enums/user.enums";
 import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { Base } from "../Base.entity";
 import { User } from "./User.entity";
@@ -9,13 +12,19 @@ export class NotificationPreference extends Base {
   @Column({
     type: "simple-enum",
     enum: NotificationContextType,
+    name: "notification_id",
     nullable: false,
     primary: true,
   })
-  notification_id: NotificationContextType;
+  notificationId: NotificationContextType;
 
-  @Column({ name: "is_subscribed" })
-  isSubscribed: boolean;
+  @Column({
+    type: "simple-enum",
+    enum: NotificationContextType,
+    nullable: false,
+    primary: true,
+  })
+  preference: NotificationPreferenceType;
 
   //relationships
   @ManyToOne(() => User, { nullable: false, primary: true })

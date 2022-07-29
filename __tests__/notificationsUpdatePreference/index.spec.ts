@@ -1,16 +1,16 @@
 /* eslint-disable */
-import * as persistence from "../../notificationsUpdatePreference/persistence";
-import notificationsUpdatePreferences from '../../notificationsUpdatePreference'
-import * as connection from "../../utils/connection";
-import * as service_loader from "../../utils/serviceLoader";
-import * as decorators from "../../utils/decorators";
-import * as authentication from "../../utils/authentication";
-
-import {
-  runStubFunctionFromBindings,
-  createHttpTrigger,
-} from "stub-azure-function-context";
+import { NotificationPreferenceType } from "@domain/index";
 import { UserType } from "@services/index";
+import {
+  createHttpTrigger, runStubFunctionFromBindings
+} from "stub-azure-function-context";
+import notificationsUpdatePreferences from '../../notificationsUpdatePreference';
+import * as persistence from "../../notificationsUpdatePreference/persistence";
+import * as authentication from "../../utils/authentication";
+import * as connection from "../../utils/connection";
+import * as decorators from "../../utils/decorators";
+import * as service_loader from "../../utils/serviceLoader";
+
 
 jest.mock("../../utils/logging/insights", () => ({
   start: () => {},
@@ -72,7 +72,7 @@ describe("[HttpTrigger] notificationsUpdatePreferences Suite", () => {
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
 
       jest.spyOn(persistence, "updateEmailNotificationPreferences").mockResolvedValue([
-          { id: "NotificationType" , status: "OK"}
+          { notificationType: "NotificationType" , status: "OK"}
         ]);
 
       const { res } = await mockedRequestFactory({});
@@ -97,7 +97,7 @@ async function mockedRequestFactory(data?: any) {
           [
             {
               notificationType: 'notification-type',
-              isSubscribed: 'true'
+              preference: NotificationPreferenceType.NEVER
             },
           ], // payload/body
           {} // query params

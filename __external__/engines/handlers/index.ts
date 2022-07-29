@@ -5,6 +5,7 @@ import {
   InnovationSupportStatus,
   NotificationContextType,
   NotificationPreference,
+  NotificationPreferenceType,
   UserType,
 } from "@domain/index";
 import * as helpers from "@helpers/index";
@@ -735,7 +736,10 @@ const filterRecipientsByPreference = async (
       where: `notification_id = '${notificationType}' and user_id = '${recipient}'`,
     });
 
-    if (!userPreference || userPreference?.isSubscribed) {
+    if (
+      !userPreference ||
+      userPreference?.preference === NotificationPreferenceType.INSTANTLY
+    ) {
       filteredRecipients.push(recipient);
     }
   }
