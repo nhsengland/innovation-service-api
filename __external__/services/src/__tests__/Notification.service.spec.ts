@@ -1406,7 +1406,7 @@ describe("Notification Service Suite", () => {
     );
 
     expect(notificationPreferences).toBeDefined();
-    expect(notificationPreferences[0].id).toBeDefined();
+    expect(notificationPreferences[0].notificationType).toBeDefined();
     expect(
       notificationPreferences[0].preference.includes(
         NotificationPreferenceType.NEVER

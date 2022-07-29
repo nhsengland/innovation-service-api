@@ -4,7 +4,7 @@ import { CustomContext } from "../../utils/types";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import { NotificationService } from "@services/services/Notification.service";
-import { NotificationPreferenceType } from "@domain/index";
+import { NotificationContextType, NotificationPreferenceType } from "@domain/index";
 describe("[notificationsGetEmailTypes] Persistence suite", () => {
   beforeAll(() => {
     dotenv.config({
@@ -24,7 +24,7 @@ describe("[notificationsGetEmailTypes] Persistence suite", () => {
         .spyOn(NotificationService.prototype, "getEmailNotificationPreferences")
         .mockResolvedValue([
           {
-            id: "NotificationType",
+            notificationType: NotificationContextType.ACTION,
             preference: NotificationPreferenceType.INSTANTLY,
           },
         ]);
