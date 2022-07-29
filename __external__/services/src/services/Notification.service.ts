@@ -40,7 +40,7 @@ export type NotificationDismissResult = {
 };
 
 export type NotificationType = {
-  id: string;
+  notificationType: NotificationContextType;
   preference: NotificationPreferenceType;
 };
 
@@ -374,15 +374,15 @@ export class NotificationService {
   ): Promise<NotificationType[]> {
     const result = [
       {
-        id: NotificationContextType.ACTION,
+        notificationType: NotificationContextType.ACTION,
         preference: NotificationPreferenceType.INSTANTLY,
       },
       {
-        id: NotificationContextType.SUPPORT,
+        notificationType: NotificationContextType.SUPPORT,
         preference: NotificationPreferenceType.INSTANTLY,
       },
       {
-        id: NotificationContextType.COMMENT,
+        notificationType: NotificationContextType.COMMENT,
         preference: NotificationPreferenceType.INSTANTLY,
       },
     ];
@@ -398,7 +398,7 @@ export class NotificationService {
 
     result.forEach((r) => {
       const userPreference = notificationPreferences.find(
-        (n) => n.notificationId === r.id
+        (n) => n.notificationId === r.notificationType
       );
       if (userPreference) {
         r.preference = userPreference.preference;
