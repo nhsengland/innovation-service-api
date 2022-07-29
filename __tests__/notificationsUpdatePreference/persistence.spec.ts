@@ -29,7 +29,9 @@ describe("[notificationsUpdatePreference] Persistence suite", () => {
           NotificationService.prototype,
           "updateEmailNotificationPreferences"
         )
-        .mockResolvedValue([{ id: "NotificationType", status: "OK" }]);
+        .mockResolvedValue([
+          { notificationType: NotificationContextType.ACTION, status: "OK" },
+        ]);
 
       const ctx = {
         auth: {

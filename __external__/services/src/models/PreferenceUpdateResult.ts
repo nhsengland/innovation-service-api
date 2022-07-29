@@ -4,7 +4,7 @@ interface PreferenceUpdateError {
 }
 
 export interface PreferenceUpdateResult {
-  id: string;
+  notificationType: string;
   status: "OK" | "ERROR";
   error?: PreferenceUpdateError;
 }

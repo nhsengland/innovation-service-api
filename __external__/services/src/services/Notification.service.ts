@@ -426,7 +426,7 @@ export class NotificationService {
         result = await this.updatePreference(requestUser, preference);
       } catch (err) {
         result = {
-          id: preference.notificationType,
+          notificationType: preference.notificationType,
           status: "ERROR",
           error: {
             code: err.constructor.name,
@@ -477,7 +477,7 @@ export class NotificationService {
     );
 
     return {
-      id: result.notificationId,
+      notificationType: result.notificationId,
       status: "OK",
     };
   }

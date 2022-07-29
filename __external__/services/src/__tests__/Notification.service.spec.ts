@@ -1441,7 +1441,7 @@ describe("Notification Service Suite", () => {
     );
 
     expect(updateResult).toBeDefined();
-    expect(updateResult[0].id).toBeDefined();
+    expect(updateResult[0].notificationType).toBeDefined();
     expect(updateResult[0].status).toBeDefined();
   });
 });
