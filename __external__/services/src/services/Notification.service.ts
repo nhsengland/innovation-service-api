@@ -449,26 +449,28 @@ export class NotificationService {
       throw new InvalidParamsError("Invalid params.");
     }
 
-    const user_id = requestUser.id;
+    const userId = requestUser.id;
 
-    const query = this.notificationPreferenceRepo
-      .createQueryBuilder("n_pref")
-      .select("users.id", "user_id")
-      .innerJoin(User, "users", "n_pref.user_id = users.id")
-      .where(
-        "n_pref.notification_id = :notificationId and users.id = :userId",
-        { notificationId: preferenceModel.notificationType, userId: user_id }
-      );
-
-    let userNotificationPreference = await query.getOne();
+    let userNotificationPreference = await this.notificationPreferenceRepo.findOne(
+      {
+        where: {
+          user: userId,
+          notificationId: preferenceModel.notificationType,
+        },
+        relations: ["user"],
+      }
+    );
 
     if (userNotificationPreference) {
       userNotificationPreference.preference = preferenceModel.preference;
+      userNotificationPreference.updatedBy = userId;
     } else {
       userNotificationPreference = NotificationPreference.new({
         notificationId: preferenceModel.notificationType,
         preference: preferenceModel.preference,
-        user: { id: user_id },
+        createdBy: userId,
+        updatedBy: userId,
+        user: { id: userId },
       });
     }
 
