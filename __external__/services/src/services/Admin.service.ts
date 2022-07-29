@@ -209,49 +209,6 @@ export class AdminService {
       externalId,
       "FULL"
     );
-    if (userDetails.type === "INNOVATOR") {
-      const userToRequestUser: RequestUser = {
-        id: userDetails.id,
-        externalId: userDetails.externalId,
-        type: UserType.INNOVATOR,
-      };
-
-      for (
-        let innovationIdx = 0;
-        innovationIdx < userDetails.innovations.length;
-        innovationIdx++
-      ) {
-        const innovation = userDetails.innovations[innovationIdx];
-        const innovationSupports = await this.innovationSupportService.findAllByInnovation(
-          userToRequestUser,
-          innovation.id
-        );
-
-        if (innovationSupports.length > 0) {
-          try {
-            // send in-app: to assigned accessors
-            await this.queueProducer.sendNotification(
-              NotificationActionType.INNOVATION_USER_LOCK,
-              {
-                id: requestUser.id,
-                identityId: requestUser.externalId,
-                type: requestUser.type,
-              },
-              {
-                innovationId: innovation.id,
-              }
-            );
-          } catch (error) {
-            this.logService.error(
-              `An error has occured while writing notification on queue of type ${NotificationActionType.INNOVATION_USER_LOCK}`,
-              error
-            );
-          }
-        }
-      }
-    }
-
-    const email = this.getUserEmail(user);
 
     try {
       // send email: to user locked
@@ -263,12 +220,9 @@ export class AdminService {
           type: requestUser.type,
         },
         {
-          innovationId: null,
-          userId: userDetails.id,
           user: {
             id: userDetails.id,
-            externalId: userDetails.externalId,
-            email,
+            identityId: userDetails.externalId,
           },
         }
       );
