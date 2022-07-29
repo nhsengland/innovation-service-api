@@ -210,9 +210,7 @@ export class CommentService {
 
         let targetNotificationUsers: ProfileSlimModel[] = [];
         if (supports && supports.length > 0) {
-          const accessorsUnitIds = supports
-            .filter((s) => s.accessors && s.accessors.length > 0)
-            .flatMap((s) => s.accessors.map((a) => a.id));
+          const accessorsUnitIds = supports.map((s) => s.organisationUnit.id);
 
           if (accessorsUnitIds && accessorsUnitIds.length > 0) {
             targetNotificationUsers = await this.organisationService.findUserFromUnitUsers(
