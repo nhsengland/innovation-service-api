@@ -210,9 +210,7 @@ export class CommentService {
 
         let targetNotificationUsers: ProfileSlimModel[] = [];
         if (supports && supports.length > 0) {
-          const accessorsUnitIds = supports
-            .filter((s) => s.accessors && s.accessors.length > 0)
-            .flatMap((s) => s.accessors.map((a) => a.id));
+          const accessorsUnitIds = supports.map((s) => s.organisationUnit.id);
 
           if (accessorsUnitIds && accessorsUnitIds.length > 0) {
             targetNotificationUsers = await this.organisationService.findUserFromUnitUsers(
@@ -267,9 +265,16 @@ export class CommentService {
           requestUser.id,
           requestUser.externalId
         );
-        const senderUnit = await this.organisationService.findOrganisationUnitById(
-          requestUser.organisationUnitUser.organisationUnit.id
-        );
+
+        let senderUnitName = "needs assessment";
+
+        if (requestUser.type === UserType.ACCESSOR) {
+          const senderUnit = await this.organisationService.findOrganisationUnitById(
+            requestUser.organisationUnitUser.organisationUnit.id
+          );
+
+          senderUnitName = senderUnit.name;
+        }
 
         await this.notificationService.sendEmail(
           requestUser,
@@ -279,7 +284,7 @@ export class CommentService {
           [innovation.owner.externalId],
           {
             accessor_name: sender.displayName,
-            unit_name: senderUnit.name,
+            unit_name: senderUnitName,
           }
         );
       } catch (error) {
