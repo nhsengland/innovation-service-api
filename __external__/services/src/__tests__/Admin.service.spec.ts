@@ -17,7 +17,7 @@ import * as fixtures from "../__fixtures__";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import * as helpers from "../helpers";
-import { getConnection } from "typeorm";
+import { getConnection, getRepository } from "typeorm";
 import { AdminService } from "@services/services/Admin.service";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
 import { UserSearchResult } from "@services/types";
@@ -982,11 +982,27 @@ describe("[User Account Lock suite", () => {
   });
 
   it("Should update user role", async () => {
+    const accessor = await fixtures.createAccessorUser();
+    const accessorOrg = await fixtures.createOrganisation(
+      OrganisationType.ACCESSOR
+    );
+    const unit = await fixtures.createOrganisationUnit(accessorOrg);
+
+    const accessorOrganisationUser = await fixtures.addUserToOrganisation(
+      accessor,
+      accessorOrg,
+      AccessorOrganisationRole.QUALIFYING_ACCESSOR
+    );
+    const accessorOrganisationUnitUser = await fixtures.addOrganisationUserToOrganisationUnit(
+      accessorOrganisationUser,
+      unit
+    );
+
     jest.spyOn(helpers, "authenticateWitGraphAPI").mockImplementation();
     jest.spyOn(helpers, "getUserFromB2C").mockResolvedValue({
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
     });
-    jest.spyOn(UserService.prototype, "updateUserRole").mockImplementation();
+    //jest.spyOn(UserService.prototype, "updateUserRole").mockImplementation();
 
     const requestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
@@ -994,13 +1010,21 @@ describe("[User Account Lock suite", () => {
       type: UserType.ADMIN,
     };
 
-    const result = await adminService.updateUserRole(
+    await adminService.updateUserRole(
       requestUser,
-      ":userId",
+      accessor.id,
       AccessorOrganisationRole.ACCESSOR
     );
 
-    expect(result).toBeDefined();
+    // sadly, typeorm does not have an UpdateResult implementation for SQL Server, always returns 0 affected rows because of that.
+
+    const orgUserRepo = getRepository(
+      OrganisationUser,
+      process.env.DB_TESTS_NAME
+    );
+    const actual = await orgUserRepo.findOne(accessorOrganisationUser.id);
+
+    expect(actual.role).toBe(AccessorOrganisationRole.ACCESSOR);
   });
 
   it("Should throw error on change user role if invalid parameters", async () => {
