@@ -32,6 +32,7 @@ import {
   NotificationPreference,
   ActivityLog,
   UserRole,
+  NotificationPreferenceType,
 } from "@domain/index";
 import * as engines from "@engines/index";
 import { InvalidParamsError } from "@services/errors";
@@ -1396,7 +1397,7 @@ describe("Notification Service Suite", () => {
     await notificationService.updateEmailNotificationPreferences(requestUser, [
       {
         notificationType: NotificationContextType.ACTION,
-        isSubscribed: false,
+        preference: NotificationPreferenceType.NEVER,
       },
     ]);
 
@@ -1406,7 +1407,11 @@ describe("Notification Service Suite", () => {
 
     expect(notificationPreferences).toBeDefined();
     expect(notificationPreferences[0].id).toBeDefined();
-    expect(notificationPreferences[0].isSubscribed).toBeDefined();
+    expect(
+      notificationPreferences[0].preference.includes(
+        NotificationPreferenceType.NEVER
+      )
+    ).toBe(true);
   });
 
   it("should update email notification preferences", async () => {
@@ -1421,7 +1426,7 @@ describe("Notification Service Suite", () => {
     await notificationService.updateEmailNotificationPreferences(requestUser, [
       {
         notificationType: NotificationContextType.ACTION,
-        isSubscribed: false,
+        preference: NotificationPreferenceType.NEVER,
       },
     ]);
 
@@ -1430,7 +1435,7 @@ describe("Notification Service Suite", () => {
       [
         {
           notificationType: NotificationContextType.ACTION,
-          isSubscribed: true,
+          preference: NotificationPreferenceType.DAILY,
         },
       ]
     );

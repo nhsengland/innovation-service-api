@@ -13,6 +13,7 @@ import {
   NotificationAudience,
   NotificationContextType,
   NotificationPreference,
+  NotificationPreferenceType,
   NotificationUser,
   OrganisationUser,
   User,
@@ -40,7 +41,7 @@ export type NotificationDismissResult = {
 
 export type NotificationType = {
   id: string;
-  isSubscribed: boolean;
+  preference: NotificationPreferenceType;
 };
 
 export class NotificationService {
@@ -372,9 +373,18 @@ export class NotificationService {
     requestUser: RequestUser
   ): Promise<NotificationType[]> {
     const result = [
-      { id: NotificationContextType.ACTION, isSubscribed: true },
-      { id: NotificationContextType.SUPPORT, isSubscribed: true },
-      { id: NotificationContextType.COMMENT, isSubscribed: true },
+      {
+        id: NotificationContextType.ACTION,
+        preference: NotificationPreferenceType.INSTANTLY,
+      },
+      {
+        id: NotificationContextType.SUPPORT,
+        preference: NotificationPreferenceType.INSTANTLY,
+      },
+      {
+        id: NotificationContextType.COMMENT,
+        preference: NotificationPreferenceType.INSTANTLY,
+      },
     ];
 
     // if the user type has a specific notification
@@ -388,10 +398,10 @@ export class NotificationService {
 
     result.forEach((r) => {
       const userPreference = notificationPreferences.find(
-        (n) => n.notification_id === r.id
+        (n) => n.notificationId === r.id
       );
       if (userPreference) {
-        r.isSubscribed = userPreference.isSubscribed;
+        r.preference = userPreference.preference;
       }
     });
 
@@ -413,7 +423,7 @@ export class NotificationService {
       let result: PreferenceUpdateResult;
 
       try {
-        result = await this.updatePreference(requestUser, preferences[i]);
+        result = await this.updatePreference(requestUser, preference);
       } catch (err) {
         result = {
           id: preference.notificationType,
@@ -453,11 +463,11 @@ export class NotificationService {
     let userNotificationPreference = await query.getOne();
 
     if (userNotificationPreference) {
-      userNotificationPreference.isSubscribed = preferenceModel.isSubscribed;
+      userNotificationPreference.preference = preferenceModel.preference;
     } else {
       userNotificationPreference = NotificationPreference.new({
-        notification_id: preferenceModel.notificationType,
-        isSubscribed: preferenceModel.isSubscribed,
+        notificationId: preferenceModel.notificationType,
+        preference: preferenceModel.preference,
         user: { id: user_id },
       });
     }
@@ -467,7 +477,7 @@ export class NotificationService {
     );
 
     return {
-      id: result.notification_id,
+      id: result.notificationId,
       status: "OK",
     };
   }
