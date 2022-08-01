@@ -103,6 +103,44 @@ describe("[HttpTrigger] usersGetProfile Test Suite", () => {
       expect(res.status).toBe(200);
     });
 
+    it("Should return 401 when User Profile is found but is Locked", async () => {
+      const services = {
+        OrganisationService: {
+          findUserOrganisations: () => [{ id: ":id", organisation: { id: ":id", name: ":name" }, role: "other" }],
+        },
+        UserService: {
+          getUserByOptions: () => ({ type: UserType.ACCESSOR, lockedAt: new Date() }),
+        }
+      };
+      jest.spyOn(connection, "setupSQLConnection").mockResolvedValue(null);
+      jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(services as any);
+      jest.spyOn(validation, "ValidateHeaders").mockResolvedValue({} as any);
+      jest.spyOn(persistence, "getProfile").mockResolvedValue([
+        {
+          id: ":user_oid",
+          displayName: ":test_user",
+          type: UserType.INNOVATOR,
+          organisations: [
+            {
+              id: ":org_id",
+              name: ":org_name",
+              role: "OWNER",
+            },
+          ],
+        },
+      ] as any);
+
+      jest.spyOn(decodejwt, "decodeToken").mockResolvedValue({
+        oid: ":user_oid",
+      });
+
+      const { res } = await mockedRequestFactory({
+        headers: { authorization: ":access_token" },
+      });
+      expect(res.status).toBe(401);
+      expect(res.body.locked).toBe(true);
+    });
+
     it("Should return 404 when User Profile is not found", async () => {
       const services = {
         OrganisationService: {
