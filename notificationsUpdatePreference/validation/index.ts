@@ -4,7 +4,7 @@ const payloadSchema = Joi.array()
   .items(
     Joi.object({
       notificationType: Joi.string().required(),
-      isSubscribed: Joi.boolean().required(),
+      preference: Joi.string().required(),
     })
   )
   .required();
