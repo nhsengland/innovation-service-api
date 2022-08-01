@@ -4,6 +4,10 @@ import { CustomContext } from "../../utils/types";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import { NotificationService } from "@services/services/Notification.service";
+import {
+  NotificationContextType,
+  NotificationPreferenceType,
+} from "@domain/index";
 describe("[notificationsGetEmailTypes] Persistence suite", () => {
   beforeAll(() => {
     dotenv.config({
@@ -21,7 +25,12 @@ describe("[notificationsGetEmailTypes] Persistence suite", () => {
         .mockImplementation(() => ({ close: () => {} } as typeorm.Connection));
       const spy = jest
         .spyOn(NotificationService.prototype, "getEmailNotificationPreferences")
-        .mockResolvedValue([{ id: "NotificationType", isSubscribed: false }]);
+        .mockResolvedValue([
+          {
+            notificationType: NotificationContextType.ACTION,
+            preference: NotificationPreferenceType.INSTANTLY,
+          },
+        ]);
 
       const ctx = {
         auth: {

@@ -11,6 +11,7 @@ import {
   createHttpTrigger,
 } from "stub-azure-function-context";
 import { UserType } from "@services/index";
+import { NotificationContextType, NotificationPreferenceType } from "@domain/index";
 
 jest.mock("../../utils/logging/insights", () => ({
   start: () => {},
@@ -72,7 +73,7 @@ describe("[HttpTrigger] notificationsGetEmailNotificationPreferences Suite", () 
       jest.spyOn(service_loader, "loadAllServices").mockResolvedValue(dummy.services as any);
 
       jest.spyOn(persistence, "getEmailNotificationPreferences").mockResolvedValue([
-          { id: "NotificationType" , isSubscribed: true}
+          { notificationType: NotificationContextType.ACTION, preference: NotificationPreferenceType.INSTANTLY}
         ]);
 
       const { res } = await mockedRequestFactory({});

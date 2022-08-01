@@ -23,3 +23,9 @@ export enum NotificationAudience {
   QUALIFYING_ACCESSORS = "QUALIFYING_ACCESSORS",
   ASSESSMENT_USERS = "ASSESSMENT_USERS",
 }
+
+export enum NotificationPreferenceType {
+  NEVER = "NEVER",
+  INSTANTLY = "INSTANTLY",
+  DAILY = "DAILY",
+}
