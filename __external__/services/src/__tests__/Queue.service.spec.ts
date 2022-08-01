@@ -129,10 +129,9 @@
 //     const { messageType, data } = rawMessage;
 //     type MESSAGETYPE = typeof messageType;
 
-
 //     const t: CustomContext = {
 //       auth: undefined,
-//       services: { AdminService: { lockUsers: () => ({ 
+//       services: { AdminService: { lockUsers: () => ({
 //         id: user.externalId,
 //         status: 'OK',
 //       })} as unknown as AdminService},
@@ -144,7 +143,7 @@
 //       log: undefined,
 //       traceContext: undefined,
 //       done: undefined,
-//     }; 
+//     };
 
 //     const result = await queueService.handleMessage<MESSAGETYPE>(
 //       t,

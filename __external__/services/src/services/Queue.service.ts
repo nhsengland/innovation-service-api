@@ -74,7 +74,7 @@ export class QueueService {
 
     this.validateHandler<T>(handler, correlationId, messageType);
 
-    const result = await handler(context,queue, data as QueueContextType<T>);
+    const result = await handler(context, queue, data as QueueContextType<T>);
 
     return result;
   }

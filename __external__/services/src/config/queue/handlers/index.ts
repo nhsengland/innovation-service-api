@@ -7,7 +7,6 @@ export async function lockUserIdentityQueueHandler(
   queue: QueuesEnum,
   context: UserLockIdentityQueueType
 ): Promise<{ success: boolean; extra?: unknown }> {
-
   const adminService = queueContext.services.AdminService;
 
   const result = await adminService.lockUsers(
@@ -16,7 +15,7 @@ export async function lockUserIdentityQueueHandler(
   );
 
   console.log(result);
-  
+
   return {
     success: result.status === "OK",
     extra: result.error,

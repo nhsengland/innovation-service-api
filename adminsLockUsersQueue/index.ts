@@ -4,7 +4,6 @@ import { AppInsights, SQLConnector } from "utils/decorators";
 import { CustomContext } from "utils/types";
 
 class AdminsLockUsersQueue {
-
   @SQLConnector()
   static async queueTrigger(
     context: CustomContext,
