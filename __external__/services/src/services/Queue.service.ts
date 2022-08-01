@@ -30,6 +30,8 @@ export const STORAGE_QUEUE_CONFIG = Object.freeze({
   storageQueueName: process.env.AZURE_STORAGE_QUEUE_NAME || "",
 });
 
+type CreateMessageType<T extends QueueMessageEnum> = (messageType: T, data: QueueContextType<T>) => Promise<boolean>;
+
 export class QueueService {
   logger: LoggerService;
   queueClient: QueueClient;

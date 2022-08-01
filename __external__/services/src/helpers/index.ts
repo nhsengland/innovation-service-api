@@ -1,5 +1,7 @@
 import { AccessorOrganisationRole, OrganisationUnit } from "@domain/index";
+import { QueueMessageEnum } from "@services/enums/queue.enum";
 import { OrganisationModel } from "@services/models/OrganisationModel";
+import { QueueContextType } from "@services/types/queue";
 import axios from "axios";
 
 export async function authenticateWitGraphAPI() {
@@ -275,4 +277,25 @@ export function checkIfValidUUID(str: string): boolean {
   const regexExp = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
 
   return regexExp.test(str);
+}
+
+export async function retryCreateQueueMessage<T extends QueueMessageEnum>(
+  fn: <Q extends QueueMessageEnum>(messageType: Q, data: QueueContextType<T>) => Promise<boolean>,
+  args: Parameters<<Q extends QueueMessageEnum>(messageType: Q, data: QueueContextType<T>) => Promise<boolean>>,
+  maxRetries: number,
+  retryCount = 1,
+): Promise<boolean> {
+
+  const currentRetry = typeof retryCount === "number" ? retryCount: 1;
+  try {
+    return await fn<typeof args[0]>(args[0], args[1]); 
+  } catch (error) {
+    if (currentRetry > maxRetries) {
+      throw error;
+    }
+
+    setTimeout(() => {
+      return retryCreateQueueMessage(fn, args, maxRetries, retryCount++);  
+    }, 100);
+  }
 }

@@ -50,6 +50,7 @@ import {
   authenticateWitGraphAPI,
   deleteB2CAccount,
   getUserFromB2C,
+  retryCreateQueueMessage,
 } from "../helpers";
 import { InnovationSupportService } from "./InnovationSupport.service";
 import { LoggerService } from "./Logger.service";
@@ -793,10 +794,21 @@ export class AdminService {
 
     for (const user of usersToLock) {
       try {
-        await this.queueService.createQueueMessage<QueueMessageEnum.LOCK_USER>(
-          QueueMessageEnum.LOCK_USER,
-          { requestUser, identityId: user.externalId }
+        // retries 3 times before giving up and finally throwing 
+        await retryCreateQueueMessage<QueueMessageEnum.LOCK_USER>(
+          this.queueService.createQueueMessage,
+          [
+            QueueMessageEnum.LOCK_USER,
+            { requestUser, identityId: user.externalId },
+          ],
+          3
         );
+
+        // await this.queueService.createQueueMessage<QueueMessageEnum.LOCK_USER>(
+        //   QueueMessageEnum.LOCK_USER,
+        //   { requestUser, identityId: user.externalId }
+        // );
+
       } catch (error) {
         this.logService.error(
           `Correlation: ${correlationId}: [IDP Lock] failed to send message to lock user queue for user ${user.externalId}`,
