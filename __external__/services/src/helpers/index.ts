@@ -280,15 +280,15 @@ export function checkIfValidUUID(str: string): boolean {
 }
 
 export async function retryCreateQueueMessage<T extends QueueMessageEnum>(
-  fn: <Q extends QueueMessageEnum>(messageType: Q, data: QueueContextType<T>) => Promise<boolean>,
-  args: Parameters<<Q extends QueueMessageEnum>(messageType: Q, data: QueueContextType<T>) => Promise<boolean>>,
+  fn:(messageType: T, data: QueueContextType<T>) => Promise<boolean>,
+  args: Parameters<(messageType: T, data: QueueContextType<T>) => Promise<boolean>>,
   maxRetries: number,
   retryCount = 1,
 ): Promise<boolean> {
 
   const currentRetry = typeof retryCount === "number" ? retryCount: 1;
   try {
-    return await fn<typeof args[0]>(args[0], args[1]); 
+    return await fn(args[0], args[1]); 
   } catch (error) {
     if (currentRetry > maxRetries) {
       throw error;
