@@ -9,6 +9,8 @@ import {
   InnovationSupportStatus,
   NotificationAudience,
   NotificationContextType,
+  Organisation,
+  OrganisationUnit,
   OrganisationUnitUser,
   OrganisationUser,
   User,
@@ -30,7 +32,13 @@ import {
   UserLockValidationCode,
   UserSearchResult,
 } from "@services/types";
-import { Connection, getConnection } from "typeorm";
+import {
+  Connection,
+  EntityManager,
+  getConnection,
+  In,
+  UpdateResult,
+} from "typeorm";
 import { UserService } from "..";
 import * as accessorRules from "../config/admin-accessor-user-lock.config.json";
 import * as rule from "../config/admin-change-role.config.json";
@@ -139,7 +147,9 @@ export class AdminService {
 
   async lockUsers(
     requestUser: RequestUser,
-    user: string
+    user: string,
+    trs?: EntityManager,
+    ignoreNotifications?: boolean
   ): Promise<UserLockResult> {
     if (!requestUser) {
       throw new InvalidParamsError("Invalid params.");
@@ -149,7 +159,11 @@ export class AdminService {
     let result: UserLockResult;
 
     try {
-      result = await this.lockUser(requestUser, user, graphAccessToken);
+      if (!ignoreNotifications) {
+        result = await this.lockUser(requestUser, user, graphAccessToken, trs);
+      } else {
+        result = await this.lockUserNoNotifications(requestUser, user, graphAccessToken, trs);
+      }
     } catch (err) {
       result = {
         id: user,
@@ -172,7 +186,8 @@ export class AdminService {
   async lockUser(
     requestUser: RequestUser,
     externalId: string,
-    graphAccessToken?: string
+    graphAccessToken?: string,
+    transaction?: EntityManager
   ): Promise<UserUpdateResult> {
     if (!requestUser || !externalId) {
       throw new InvalidParamsError("Invalid params.");
@@ -195,20 +210,21 @@ export class AdminService {
 
     let result;
     try {
-      result = await this.connection.transaction(async (transaction) => {
-        await transaction.update(
-          User,
-          { externalId },
-          {
-            lockedAt: new Date(),
-          }
-        );
-        return await this.userService.updateB2CUser(
-          { accountEnabled: false },
+      if (!transaction) {
+        result = await this.connection.transaction(async (trs) => {
+          return await this.lockUserTransaction(
+            trs,
+            externalId,
+            graphAccessToken
+          );
+        });
+      } else {
+        result = await this.lockUserTransaction(
+          transaction,
           externalId,
           graphAccessToken
         );
-      });
+      }
     } catch {
       throw new Error("Error locking user at IdP");
     }
@@ -330,6 +346,77 @@ export class AdminService {
       id: externalId,
       status: "OK",
     };
+  }
+
+  async lockUserNoNotifications(
+    requestUser: RequestUser,
+    externalId: string,
+    graphAccessToken?: string,
+    transaction?: EntityManager
+  ): Promise<UserUpdateResult> {
+    if (!requestUser || !externalId) {
+      throw new InvalidParamsError("Invalid params.");
+    }
+
+    if (requestUser.type !== UserType.ADMIN) {
+      throw new InvalidUserRoleError(
+        "User has no permissions to execute this operation"
+      );
+    }
+
+    if (!graphAccessToken) {
+      graphAccessToken = await authenticateWitGraphAPI();
+    }
+
+    const user = await getUserFromB2C(externalId, graphAccessToken);
+    if (!user) {
+      throw new Error("Invalid user id.");
+    }
+
+    let result;
+    try {
+      if (!transaction) {
+        result = await this.connection.transaction(async (trs) => {
+          return await this.lockUserTransaction(
+            trs,
+            externalId,
+            graphAccessToken
+          );
+        });
+      } else {
+        result = await this.lockUserTransaction(
+          transaction,
+          externalId,
+          graphAccessToken
+        );
+      }
+    } catch {
+      throw new Error("Error locking user at IdP");
+    }
+
+    return {
+      id: externalId,
+      status: "OK",
+    };
+  }
+
+  private async lockUserTransaction(
+    transaction: EntityManager,
+    externalId: string,
+    graphAccessToken: string
+  ) {
+    await transaction.update(
+      User,
+      { externalId },
+      {
+        lockedAt: new Date(),
+      }
+    );
+    return await this.userService.updateB2CUser(
+      { accountEnabled: false },
+      externalId,
+      graphAccessToken
+    );
   }
 
   async unlockUser(
@@ -524,6 +611,80 @@ export class AdminService {
     };
   }
 
+  async inactivateOrganisationUnits(
+    requestUser: RequestUser,
+    unitIds: string[]
+  ): Promise<UpdateResult> {
+    // GETS UNITS FROM DATABASE
+    const units = await this.organisationService.findOrganisationUnitsByIds(
+      unitIds
+    );
+
+    // GETS USERS FROM UNITS TO BE INACTIVATED
+    const usersToLock = await this.organisationService.findOrganisationUnitsUsersByUnitIds(
+      unitIds
+    );
+
+    // BEGIN TRANSACTION (ALL OR NOTHING HERE)
+    const result = await this.connection.transaction(async (transaction) => {
+      // INACTIVATE LIST OF UNITS
+
+      const inactivatedUnitsUpdateResult = await transaction.update<OrganisationUnit>(
+        OrganisationUnit,
+        { id: In(unitIds) },
+        { inactivatedAt: new Date() }
+      );
+
+      // GET THE DISTINCT ORGANISATIONS TO WHOM THE UNITS BELONG TO
+      const organisations = [
+        ...new Set(units.map((unit) => unit.organisation.id)),
+      ];
+
+      const organisationsToLock = [];
+      for (const organisationId of organisations) {
+        // FOR EACH ORGANISATION, CHECK IF IT HAS ANY ACTIVE UNITS
+        const activeUnits = await this.organisationService.organisationActiveUnitsCount(
+          organisationId,
+          transaction
+        );
+
+        if (activeUnits.count === 0) {
+          organisationsToLock.push(organisationId);
+        }
+      }
+
+      // INACTIVATE ORGANISATION DUE TO NOT HAVING ANY ACTIVE UNITS
+      try {
+        await transaction.update<Organisation>(
+          Organisation,
+          { id: In(organisationsToLock) },
+          { inactivatedAt: new Date() }
+        );
+      } catch (error) {
+        console.log("Inactivate organisations", error);
+        throw error;
+      }
+
+      //FOR EACH USER, LOCK IT (SADLY IT HAS TO BE ON A LOOP BECAUSE B2C UPDATES. MAYBE CHECK IF B2C ALLOWS FOR BULK UPDATES)
+      try {
+        for (const user of usersToLock) {
+          await this.lockUsers(requestUser, user.externalId, transaction, true);
+        }
+      } catch (error) {
+        console.log("Lock users", error);
+        throw error;
+      }
+
+      return inactivatedUnitsUpdateResult;
+    });
+
+    return result;
+  }
+
+  /**
+   * PRIVATE METHODS
+   */
+
   private async runNeedsAssessmentUserValidation(
     user: User
   ): Promise<{ [key: string]: any }> {
@@ -645,6 +806,7 @@ export class AdminService {
 
     return [];
   }
+
   private async CheckAssessmentUser(
     userBeingRemoved: User
   ): Promise<UserLockValidationResult> {

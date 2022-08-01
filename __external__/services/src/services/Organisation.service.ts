@@ -18,14 +18,21 @@ import { OrganisationUnitUserModel } from "@services/models/OrganisationUnitUser
 import { OrganisationUpdateResult } from "@services/models/OrganisationUpdateResult";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
 import { RequestUser } from "@services/models/RequestUser";
+import { number } from "joi";
 import {
   Connection,
+  EntityManager,
+  EntityMetadata,
+  FindOptionsUtils,
   getConnection,
   getRepository,
   In,
+  IsNull,
   Not,
   Repository,
+  SelectQueryBuilder,
 } from "typeorm";
+import { isNull } from "util";
 import { BaseService } from "./Base.service";
 import { UserService } from "./User.service";
 
@@ -66,19 +73,27 @@ export class OrganisationService extends BaseService<Organisation> {
 
     const filterOptions = {
       ...filter,
+      inactivatedAt: IsNull(),
     };
 
     return await this.repository.find(filterOptions);
   }
 
-  async findAllUnits(filter: any): Promise<OrganisationUnit[]> {
+  async findAllUnits(filter: any, excludeInactive?: boolean): Promise<OrganisationUnit[]> {
     if (!filter) {
       throw new InvalidParamsError("Invalid filter.");
     }
 
-    const filterOptions = {
+    let filterOptions = {
       ...filter,
     };
+
+    if (excludeInactive) {
+      filterOptions =  {
+        ...filterOptions,
+        inactivatedAt: IsNull(),
+      }
+    }
 
     return await this.orgUnitRepo.find(filterOptions);
   }
@@ -123,6 +138,7 @@ export class OrganisationService extends BaseService<Organisation> {
       .where("organisation.type = :type", {
         type: OrganisationType.ACCESSOR,
       })
+      .andWhere("organisationUnits.inactivated_at IS NULL")
       .orderBy("organisation.name", "ASC")
       .getMany();
 
@@ -143,17 +159,17 @@ export class OrganisationService extends BaseService<Organisation> {
   }
 
   async findUserOrganisations(userId: string): Promise<OrganisationUser[]> {
-    return await this.orgUserRepo.find({
-      where: {
-        user: userId,
-      },
-      relations: [
-        "user",
-        "organisation",
-        "userOrganisationUnits",
-        "userOrganisationUnits.organisationUnit",
-      ],
-    });
+
+    const query = this.orgUserRepo.createQueryBuilder('organisationUser')
+    .leftJoinAndSelect('organisationUser.organisation', 'org')
+    .leftJoinAndSelect('org.organisationUnits', 'units')
+    .leftJoinAndSelect('organisationUser.user', 'usr')
+    .where('usr.id = :userId', {userId})
+    .andWhere('units.inactivated_at is NULL')
+    .andWhere('org.inactivated_at is NULL');
+
+    return await query.getMany();
+
   }
 
   async findUserFromUnitUsers(
@@ -269,6 +285,43 @@ export class OrganisationService extends BaseService<Organisation> {
     return this.orgUnitRepo.findOne(organisationUnitId);
   }
 
+  async findOrganisationUnitsByIds(
+    organisationUnitIds: string[]
+  ): Promise<OrganisationUnit[]> {
+    const units = await this.orgUnitRepo.find({
+      relations: ["organisation"],
+      where: { id: In(organisationUnitIds) },
+    });
+
+    return units;
+  }
+
+  async organisationActiveUnitsCount(
+    organisationId: string,
+    transaction?: EntityManager
+  ): Promise<{ count: number }> {
+
+    if (transaction) {
+      const count  = await transaction
+        .createQueryBuilder(OrganisationUnit, "unit")
+        .where("unit.inactivatedAt IS NULL")
+        .andWhere("unit.organisation_id = :organisationId", { organisationId })
+        .getCount();
+      
+      return { count };
+    }
+
+    const count = await this.orgUnitRepo
+      .createQueryBuilder("unit")
+      .where("unit.inactivatedAt IS NULL")
+      .andWhere("unit.organisation_id = :organisationId", { organisationId })
+      .getCount();
+
+    return {
+      count,
+    };
+  }
+
   async addUserToOrganisation(
     user: User,
     organisation: Organisation,
@@ -312,12 +365,14 @@ export class OrganisationService extends BaseService<Organisation> {
   ): Promise<OrganisationModel> {
     const org = await this.repository
       .createQueryBuilder("organisation")
+      .leftJoinAndSelect("organisation.organisationUnits", "units")
       .where("organisation.type = :type", {
         type: OrganisationType.ACCESSOR,
       })
       .andWhere("organisation.id = :id", {
         id: organisationId,
       })
+      .andWhere("units.inactivated_at IS NULL")
       .getOne();
 
     const orgUnits = await org.organisationUnits;
@@ -557,6 +612,28 @@ export class OrganisationService extends BaseService<Organisation> {
           userId: organisationUser.user.id,
         };
       });
+
+    return result;
+  }
+
+  async findOrganisationUnitsUsersByUnitIds(
+    organisationUnitIds: string[]
+  ): Promise<
+    {
+      externalId: string;
+      id: string;
+    }[]
+  > {
+    const filterOptions = {
+      relations: ["organisationUser", "organisationUser.user"],
+      where: { organisationUnit: In(organisationUnitIds) },
+    };
+    const orgUnitUsers = await this.orgUnitUserRepo.find(filterOptions);
+
+    const result = orgUnitUsers.map((user) => ({
+      externalId: user.organisationUser.user.externalId,
+      id: user.organisationUser.user.id,
+    }));
 
     return result;
   }

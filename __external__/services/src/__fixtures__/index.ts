@@ -180,7 +180,8 @@ export const createAdminRole = async () => {
 // Organisation
 // ****************************
 export const createOrganisation = async (
-  type: OrganisationType
+  type: OrganisationType,
+  data?: Partial<Organisation>
 ): Promise<Organisation> => {
   const organisationService = new OrganisationService(
     process.env.DB_TESTS_NAME
@@ -189,12 +190,14 @@ export const createOrganisation = async (
     name: faker.company.companyName(),
     acronym: faker.company.companySuffix(),
     type,
+    ...data,
   });
   return await organisationService.create(organisationObj);
 };
 
 export const createOrganisationUnit = async (
-  organisation: Organisation
+  organisation: Organisation,
+  data?: Partial<OrganisationUnit>
 ): Promise<OrganisationUnit> => {
   const organisationService = new OrganisationService(
     process.env.DB_TESTS_NAME
@@ -204,6 +207,7 @@ export const createOrganisationUnit = async (
     name: faker.company.companyName(),
     acronym: faker.company.companySuffix(),
     organisation,
+    ...data,
   });
 
   return await organisationService.addOrganisationUnit(unitObj);

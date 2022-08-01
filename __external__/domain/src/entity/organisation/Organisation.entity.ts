@@ -36,6 +36,9 @@ export class Organisation extends Base {
   @Column({ name: "is_shadow", nullable: false, default: false })
   isShadow: boolean;
 
+  @Column({ name: "inactivated_at", nullable: true })
+  inactivatedAt: Date;
+
   // relationships
   @ManyToMany(() => Innovation, (record) => record.organisationShares)
   innovationShares: Innovation[];
