@@ -37,7 +37,7 @@ class NotificationsUpdatePreferences {
       return;
     }
 
-    context.res = Responsify.Ok({ id: result.id });
+    context.res = Responsify.Ok(result);
   }
 }
 

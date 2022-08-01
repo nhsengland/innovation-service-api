@@ -4,7 +4,10 @@ import { CustomContext } from "../../utils/types";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import { NotificationService } from "@services/services/Notification.service";
-import { NotificationContextType } from "@domain/index";
+import {
+  NotificationContextType,
+  NotificationPreferenceType,
+} from "@domain/index";
 describe("[notificationsUpdatePreference] Persistence suite", () => {
   beforeAll(() => {
     dotenv.config({
@@ -26,7 +29,9 @@ describe("[notificationsUpdatePreference] Persistence suite", () => {
           NotificationService.prototype,
           "updateEmailNotificationPreferences"
         )
-        .mockResolvedValue([{ id: "NotificationType", status: "OK" }]);
+        .mockResolvedValue([
+          { notificationType: NotificationContextType.ACTION, status: "OK" },
+        ]);
 
       const ctx = {
         auth: {
@@ -44,7 +49,7 @@ describe("[notificationsUpdatePreference] Persistence suite", () => {
         [
           {
             notificationType: NotificationContextType.ACTION,
-            isSubscribed: true,
+            preference: NotificationPreferenceType.INSTANTLY,
           },
         ]
       );

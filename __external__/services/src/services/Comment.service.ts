@@ -175,11 +175,29 @@ export class CommentService {
               NotifContextDetail.COMMENT_REPLY,
               result.id,
               {},
-              usersInReplyChain.map((u) => u.user.id)
+              [...new Set(usersInReplyChain.map((u) => u.user.id))]
             );
           } catch (error) {
             this.logService.error(
               `An error has occured while creating a notification of type ${NotificationContextType.COMMENT} from ${requestUser.id}`,
+              error
+            );
+          }
+
+          try {
+            await this.notificationService.sendEmail(
+              requestUser,
+              EmailNotificationTemplate.ACCESSORS_COMMENT_RECEIVED,
+              innovationId,
+              result.id,
+              [...new Set(usersInReplyChain.map((u) => u.user.externalId))],
+              {
+                innovation_name: innovation.name,
+              }
+            );
+          } catch (error) {
+            this.logService.error(
+              `An error has occured while sending an email of type ${EmailNotificationTemplate.ACCESSORS_COMMENT_RECEIVED}`,
               error
             );
           }
@@ -192,9 +210,7 @@ export class CommentService {
 
         let targetNotificationUsers: ProfileSlimModel[] = [];
         if (supports && supports.length > 0) {
-          const accessorsUnitIds = supports
-            .filter((s) => s.accessors && s.accessors.length > 0)
-            .flatMap((s) => s.accessors.map((a) => a.id));
+          const accessorsUnitIds = supports.map((s) => s.organisationUnit.id);
 
           if (accessorsUnitIds && accessorsUnitIds.length > 0) {
             targetNotificationUsers = await this.organisationService.findUserFromUnitUsers(
@@ -212,7 +228,7 @@ export class CommentService {
                 NotifContextDetail.COMMENT_CREATION,
                 result.id,
                 {},
-                targetNotificationUsers.map((u) => u.id)
+                [...new Set(targetNotificationUsers.map((u) => u.id))]
               );
             } catch (error) {
               this.logService.error(
@@ -227,7 +243,7 @@ export class CommentService {
                 EmailNotificationTemplate.ACCESSORS_COMMENT_RECEIVED,
                 innovationId,
                 result.id,
-                [],
+                [...new Set(targetNotificationUsers.map((u) => u.externalId))],
                 {
                   innovation_name: innovation.name,
                 }
@@ -249,9 +265,16 @@ export class CommentService {
           requestUser.id,
           requestUser.externalId
         );
-        const senderUnit = await this.organisationService.findOrganisationUnitById(
-          requestUser.organisationUnitUser.organisationUnit.id
-        );
+
+        let senderUnitName = "needs assessment";
+
+        if (requestUser.type === UserType.ACCESSOR) {
+          const senderUnit = await this.organisationService.findOrganisationUnitById(
+            requestUser.organisationUnitUser.organisationUnit.id
+          );
+
+          senderUnitName = senderUnit.name;
+        }
 
         await this.notificationService.sendEmail(
           requestUser,
@@ -261,7 +284,7 @@ export class CommentService {
           [innovation.owner.externalId],
           {
             accessor_name: sender.displayName,
-            unit_name: senderUnit.name,
+            unit_name: senderUnitName,
           }
         );
       } catch (error) {
@@ -280,9 +303,7 @@ export class CommentService {
           replyTo
             ? NotifContextDetail.COMMENT_REPLY
             : NotifContextDetail.COMMENT_CREATION,
-          result.id,
-          {},
-          [innovation.owner.id]
+          result.id
         );
       } catch (error) {
         this.logService.error(
