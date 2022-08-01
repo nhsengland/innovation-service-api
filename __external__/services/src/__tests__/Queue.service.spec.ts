@@ -1,6 +1,13 @@
-// /**
-//  * @jest-environment node
-//  */
+/**
+ * @jest-environment node
+ */
+
+describe('QUEUE Service test suite', () => {
+
+  it('should pass', () => {
+    expect(true).toBe(true);
+  })
+});
 
 // import { QueueClient } from "@azure/storage-queue";
 // import {
