@@ -792,31 +792,14 @@ export class AdminService {
     // This is executed outside the transaction.
     // If a message fails to be delivered, we don't want to roll back.
 
+    // FIRE AND FORGET
+
     for (const user of usersToLock) {
-      try {
-        // retries 3 times before giving up and finally throwing 
-        await retryCreateQueueMessage<QueueMessageEnum.LOCK_USER>(
-          this.queueService.createQueueMessage,
-          [
-            QueueMessageEnum.LOCK_USER,
-            { requestUser, identityId: user.externalId },
-          ],
-          3
-        );
-
-        // await this.queueService.createQueueMessage<QueueMessageEnum.LOCK_USER>(
-        //   QueueMessageEnum.LOCK_USER,
-        //   { requestUser, identityId: user.externalId }
-        // );
-
-      } catch (error) {
-        this.logService.error(
-          `Correlation: ${correlationId}: [IDP Lock] failed to send message to lock user queue for user ${user.externalId}`,
-          {
-            error,
-          }
-        );
-      }
+      this.queueService.createQueueMessage<QueueMessageEnum.LOCK_USER>(
+        QueueMessageEnum.LOCK_USER,
+        { requestUser, identityId: user.externalId },
+        correlationId,
+      );
     }
 
     return result;
