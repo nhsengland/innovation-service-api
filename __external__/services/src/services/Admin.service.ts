@@ -162,7 +162,12 @@ export class AdminService {
       if (!ignoreNotifications) {
         result = await this.lockUser(requestUser, user, graphAccessToken, trs);
       } else {
-        result = await this.lockUserNoNotifications(requestUser, user, graphAccessToken, trs);
+        result = await this.lockUserNoNotifications(
+          requestUser,
+          user,
+          graphAccessToken,
+          trs
+        );
       }
     } catch (err) {
       result = {
@@ -665,10 +670,21 @@ export class AdminService {
         throw error;
       }
 
-      //FOR EACH USER, LOCK IT (SADLY IT HAS TO BE ON A LOOP BECAUSE B2C UPDATES. MAYBE CHECK IF B2C ALLOWS FOR BULK UPDATES)
       try {
+
+        // lock users in one go within a transaction
+        await transaction.update<User>(
+          User,
+          {id: In(usersToLock.map(u => u.id))},
+          {lockedAt: new Date()}
+        );
+
+        // Asynchronously lock users at the IdP using queue messages (push pull pattern)
         for (const user of usersToLock) {
-          await this.lockUsers(requestUser, user.externalId, transaction, true);
+          await this.queueService.createQueueMessage<QueueMessageEnum.LOCK_USER>(
+            QueueMessageEnum.LOCK_USER,
+            { requestUser, identityId: user.externalId }
+          );
         }
       } catch (error) {
         console.log("Lock users", error);
