@@ -681,6 +681,8 @@ export class AdminService {
 
         // Asynchronously lock users at the IdP using queue messages (push pull pattern)
         for (const user of usersToLock) {
+          // The handler of this queue should generate notifications for the locked users
+          // NOT IMPLEMENTED NOTIFICATIONS
           await this.queueService.createQueueMessage<QueueMessageEnum.LOCK_USER>(
             QueueMessageEnum.LOCK_USER,
             { requestUser, identityId: user.externalId }
