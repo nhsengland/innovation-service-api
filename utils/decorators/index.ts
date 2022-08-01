@@ -301,6 +301,13 @@ export function AllowedUserType(...type: UserType[]) {
         where: { externalId: oid },
       });
 
+      // if user exists and lockedAt property is not null or undefined means the user is locked.
+      // throw a Unauthorized error
+      if (user && user.lockedAt) {
+        context.res = Responsify.Unauthorized({ locked: true });
+        return;
+      }
+      
       /// TODO:  REMOVE AFTER FTSI REFACTOR
       if (!user) {
         context.auth.requestUser = {
