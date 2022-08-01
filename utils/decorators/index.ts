@@ -30,13 +30,16 @@ export function SQLConnector() {
         context.services = await loadAllServices();
       } catch (error) {
         context.log.error(error);
-        context.logger(
-          `${decoratorId}: an error has occurred. Check details.`,
-          Severity.Error,
-          {
-            error,
-          }
-        );
+        if (context.logger) {
+          context.logger(
+            `${decoratorId}: an error has occurred. Check details.`,
+            Severity.Error,
+            {
+              error,
+            }
+          );
+        }
+
         context.res = Responsify.Internal({
           error: "Error establishing connection with the datasource.",
         });
@@ -46,9 +49,11 @@ export function SQLConnector() {
 
       context.log.info("Database connection established");
 
-      context.logger("@SQLConnector", Severity.Information, {
-        isConnected: true,
-      });
+      if (context.logger) {
+        context.logger("@SQLConnector", Severity.Information, {
+          isConnected: true,
+        });
+      }
 
       await original.apply(this, args);
       return;

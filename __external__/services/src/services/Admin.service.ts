@@ -16,6 +16,7 @@ import {
   User,
   UserType,
 } from "@domain/index";
+import { QueueMessageEnum } from "@services/enums/queue.enum";
 import { InvalidParamsError, InvalidUserRoleError } from "@services/errors";
 import { AdminDeletionResult } from "@services/models/AdminDeletionResult";
 import { ProfileSlimModel } from "@services/models/ProfileSlimModel";
@@ -53,6 +54,7 @@ import { InnovationSupportService } from "./InnovationSupport.service";
 import { LoggerService } from "./Logger.service";
 import { NotificationService } from "./Notification.service";
 import { OrganisationService } from "./Organisation.service";
+import { QueueService } from "./Queue.service";
 
 export class AdminService {
   private readonly connection: Connection;
@@ -61,6 +63,7 @@ export class AdminService {
   private readonly logService: LoggerService;
   private readonly innovationSupportService: InnovationSupportService;
   private readonly organisationService: OrganisationService;
+  private readonly queueService: QueueService;
 
   constructor(connectionName?: string) {
     this.connection = getConnection(connectionName);
@@ -70,6 +73,7 @@ export class AdminService {
       connectionName
     );
     this.organisationService = new OrganisationService(connectionName);
+    this.queueService = new QueueService();
   }
   async getUsersOfType(
     type: UserType,
