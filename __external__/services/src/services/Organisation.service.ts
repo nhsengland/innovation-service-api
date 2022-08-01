@@ -186,7 +186,7 @@ export class OrganisationService extends BaseService<Organisation> {
 
     return users.map((u) => ({
       id: u.organisationUser.user.id,
-      externalId: u.organisationUser.user.id,
+      externalId: u.organisationUser.user.externalId,
     }));
   }
 
