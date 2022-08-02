@@ -50,7 +50,6 @@ import {
   authenticateWitGraphAPI,
   deleteB2CAccount,
   getUserFromB2C,
-  retryCreateQueueMessage,
 } from "../helpers";
 import { InnovationSupportService } from "./InnovationSupport.service";
 import { LoggerService } from "./Logger.service";
