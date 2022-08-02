@@ -23,6 +23,7 @@ import {
   Connection,
   EntityManager,
   EntityMetadata,
+  FindOneOptions,
   FindOptionsUtils,
   getConnection,
   getRepository,
@@ -280,9 +281,10 @@ export class OrganisationService extends BaseService<Organisation> {
   }
 
   async findOrganisationUnitById(
-    organisationUnitId: string
+    organisationUnitId: string,
+    options?: FindOneOptions<OrganisationUnit>,
   ): Promise<OrganisationUnit> {
-    return this.orgUnitRepo.findOne(organisationUnitId);
+    return this.orgUnitRepo.findOne(organisationUnitId, options);
   }
 
   async findOrganisationUnitsByIds(

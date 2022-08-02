@@ -32,13 +32,18 @@ import {
   UserLockValidationCode,
   UserSearchResult,
 } from "@services/types";
+import { string } from "joi";
 import {
   Connection,
   EntityManager,
   getConnection,
+  getRepository,
   In,
+  IsNull,
+  Repository,
   UpdateResult,
 } from "typeorm";
+import { UnprocessableEntity } from "utils/responsify";
 import { v4 } from "uuid";
 import { UserService } from "..";
 import * as accessorRules from "../config/admin-accessor-user-lock.config.json";
@@ -725,6 +730,10 @@ export class AdminService {
     requestUser: RequestUser,
     unitIds: string[]
   ): Promise<UpdateResult> {
+
+    if (requestUser.type !== "ADMIN") {
+      throw new Error("You must be an Admin to execute this operation.");
+    }
     // GETS UNITS FROM DATABASE
 
     const correlationId = v4();
@@ -797,11 +806,81 @@ export class AdminService {
       this.queueService.createQueueMessage<QueueMessageEnum.LOCK_USER>(
         QueueMessageEnum.LOCK_USER,
         { requestUser, identityId: user.externalId },
-        correlationId,
+        correlationId
       );
     }
 
     return result;
+  }
+
+  /**
+   *
+   * @param requestUser The user signed in that makes the activate request. Must be an admin/service team user
+   * @param unitId The unit to be activated
+   * @description A unit is currently activated one by one. Must have at least one Qualifying Accessor before being activateable
+   * @returns { status: "OK" | "ERROR"; updatedUnit?: { id: string; name: string; inactivatedAt: Date }; error?: Error; }
+   */
+  async activateOrganisationUnit(
+    requestUser: RequestUser,
+    unitId: string
+  ): Promise<{
+    status: "OK" | "ERROR";
+    updatedUnit?: { id: string; name: string; inactivatedAt: Date };
+    error?: Error;
+  }> {
+
+    // ENSURE ONLY ADMINS CAN RUN THIS
+    if (requestUser.type !== "ADMIN") {
+      throw new Error("You must be an Admin to execute this operation.");
+    }
+
+    // GETS UNIT FROM DATABASE AND ASSOCIATED UNIT USERS
+
+    const unit = await this.organisationService.findOrganisationUnitById(
+      unitId,
+      {
+        relations: [
+          "organisationUnitUsers",
+          "organisationUnitUsers.organisationUser",
+        ],
+      }
+    );
+
+    const canActivate =
+      unit.organisationUnitUsers.filter(
+        (unitUser) =>
+          unitUser.organisationUser.role ===
+          AccessorOrganisationRole.QUALIFYING_ACCESSOR
+      ).length > 0;
+
+    if (!canActivate) {
+      throw new Error(
+        `Unit ${unit.name} with id ${unit.id} cannot be activated. Missing at least one assigned Qualifying Accessor`
+      );
+    }
+
+    try {
+      const result = await this.connection
+        .createQueryBuilder(OrganisationUnit, "organisationUnit")
+        .update()
+        .set({ inactivatedAt: null })
+        .where("id = :unitId", { unitId })
+        .execute();
+
+      return {
+        status: "OK",
+        updatedUnit: {
+          id: unit.id,
+          name: unit.name,
+          inactivatedAt: unit.inactivatedAt,
+        },
+      };
+    } catch (error) {
+      return {
+        status: "ERROR",
+        error,
+      };
+    }
   }
 
   /**
@@ -1144,7 +1223,7 @@ export class AdminService {
       throw new Error("Invalid Credentials");
     }
 
-    if (requestUser.type != "ADMIN") {
+    if (requestUser.type !== "ADMIN") {
       throw new Error("This action is for Admins only");
     }
 
