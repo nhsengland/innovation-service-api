@@ -9,7 +9,9 @@ export async function lockUserIdentityQueueHandler(
 ): Promise<{ success: boolean; extra?: unknown }> {
   const adminService = queueContext.services.AdminService;
 
-  const result = await adminService.lockUsers(
+  // use method that only locks user on the IdP level.
+  // removes redundant database lock (already occured)
+  const result = await adminService.lockUsersIdP(
     context.requestUser,
     context.identityId
   );
