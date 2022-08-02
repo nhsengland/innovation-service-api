@@ -16,7 +16,7 @@ import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
 
-class AdminsCreateUser {
+class AdminsInactivateUnits {
   @AppInsights()
   @SQLConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
@@ -45,4 +45,4 @@ class AdminsCreateUser {
   }
 }
 
-export default AdminsCreateUser.httpTrigger;
+export default AdminsInactivateUnits.httpTrigger;
