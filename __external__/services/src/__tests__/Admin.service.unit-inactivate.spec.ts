@@ -19,7 +19,7 @@ import * as helpers from "../helpers";
 import { getConnection } from "typeorm";
 import { AdminService } from "@services/services/Admin.service";
 
-describe("[User Account Lock suite", () => {
+describe("[Admin Service unit inactivation suite", () => {
   let adminService: AdminService;
   beforeAll(async () => {
     //await setupTestsConnection();

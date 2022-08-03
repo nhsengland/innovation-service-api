@@ -825,7 +825,7 @@ export class AdminService {
     unitId: string
   ): Promise<{
     status: "OK" | "ERROR";
-    updatedUnit?: { id: string; name: string; inactivatedAt: Date };
+    updatedUnit?: { id: string; name: string; };
     error?: Error;
   }> {
 
@@ -846,8 +846,9 @@ export class AdminService {
       }
     );
 
-    const canActivate =
-      unit.organisationUnitUsers.filter(
+    const unitUsers = await unit.organisationUnitUsers;
+
+    const canActivate = unitUsers. filter(
         (unitUser) =>
           unitUser.organisationUser.role ===
           AccessorOrganisationRole.QUALIFYING_ACCESSOR
@@ -860,6 +861,7 @@ export class AdminService {
     }
 
     try {
+      
       const result = await this.connection
         .createQueryBuilder(OrganisationUnit, "organisationUnit")
         .update()
@@ -872,7 +874,6 @@ export class AdminService {
         updatedUnit: {
           id: unit.id,
           name: unit.name,
-          inactivatedAt: unit.inactivatedAt,
         },
       };
     } catch (error) {
