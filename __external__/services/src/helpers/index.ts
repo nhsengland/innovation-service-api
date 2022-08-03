@@ -263,6 +263,8 @@ export function getOrganisationsFromOrganisationUnitsObj(
           id: unit.id,
           name: unit.name,
           acronym: unit.acronym,
+          isActive: unit.inactivatedAt == null,
+          usersCount: unit.organisationUnitUsers?.length || 0,
         })),
       };
 

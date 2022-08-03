@@ -369,6 +369,8 @@ export class OrganisationService extends BaseService<Organisation> {
     const org = await this.repository
       .createQueryBuilder("organisation")
       .leftJoinAndSelect("organisation.organisationUnits", "units")
+      .leftJoinAndSelect("units.organisationUnitUsers", "unit_users" ) // so that the relation is loaded in the entity.
+      .leftJoinAndSelect("unit_users.organisationUnit", "user_unit") // so that the relation is loaded in the entity. required to get a mapping of user counts
       .where("organisation.type = :type", {
         type: OrganisationType.ACCESSOR,
       })
@@ -379,16 +381,28 @@ export class OrganisationService extends BaseService<Organisation> {
       .getOne();
 
     const orgUnits = await org.organisationUnits;
+    const usersFromEachUnit = await Promise.all(orgUnits.map( u => u.organisationUnitUsers));
+    const users = usersFromEachUnit.flatMap(ufeu => ufeu.map(u => ({
+      unit: u.organisationUnit.id,
+      count: ufeu.length
+    })))
 
     return {
       id: org.id,
       name: org.name,
       acronym: org.acronym,
-      organisationUnits: orgUnits?.map((unit) => ({
-        id: unit.id,
-        name: unit.name,
-        acronym: unit.acronym,
-      })),
+      organisationUnits: orgUnits?.map((unit) => {
+        
+        const usersCount = users.find(u => u.unit === unit.id)?.count || 0;
+
+        return {
+          id: unit.id,
+          name: unit.name,
+          acronym: unit.acronym,
+          isActive: unit.inactivatedAt == null, // juggle undefined or null
+          usersCount,
+        };
+      }),
     };
   }
 
