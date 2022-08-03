@@ -5,4 +5,6 @@ export interface OrganisationUnitModel {
   name: string;
   acronym?: string;
   organisation?: OrganisationModel;
+  isActive?: boolean;
+  usersCount?: number;
 }

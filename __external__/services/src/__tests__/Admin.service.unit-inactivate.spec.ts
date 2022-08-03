@@ -19,7 +19,7 @@ import * as helpers from "../helpers";
 import { getConnection } from "typeorm";
 import { AdminService } from "@services/services/Admin.service";
 
-describe("[User Account Lock suite", () => {
+describe("[Admin Service unit inactivation suite", () => {
   let adminService: AdminService;
   beforeAll(async () => {
     //await setupTestsConnection();
@@ -64,7 +64,6 @@ describe("[User Account Lock suite", () => {
     });
     jest.spyOn(helpers, "saveB2CUser").mockImplementation();
     jest.spyOn(UserService.prototype, "updateB2CUser").mockResolvedValue(true);
-    
 
     const accessorUser1 = await fixtures.createAccessorUser();
     const accessorUser2 = await fixtures.createAccessorUser();
@@ -99,14 +98,14 @@ describe("[User Account Lock suite", () => {
 
     const requestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
-      externalId: 'C7095D87-C3DF-46F6-A503-001B083F4630',
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
-    const actual = await adminService.inactivateOrganisationUnits(requestUser, [organisationUnit1.id])
-
+    const actual = await adminService.inactivateOrganisationUnits(requestUser, [
+      organisationUnit1.id,
+    ]);
 
     expect(actual).toBeDefined();
-    
   });
 });

@@ -30,6 +30,11 @@ export const STORAGE_QUEUE_CONFIG = Object.freeze({
   storageQueueName: process.env.AZURE_STORAGE_QUEUE_NAME || "",
 });
 
+type CreateMessageType<T extends QueueMessageEnum> = (
+  messageType: T,
+  data: QueueContextType<T>
+) => Promise<boolean>;
+
 export class QueueService {
   logger: LoggerService;
   queueClient: QueueClient;
@@ -41,9 +46,12 @@ export class QueueService {
 
   async createQueueMessage<T extends QueueMessageEnum>(
     messageType: T,
-    data: QueueContextType<T>
+    data: QueueContextType<T>,
+    correlationId: string,
+    maxRetries = 3,
+    retryCount?: number
   ): Promise<boolean> {
-    const correlationId = uuid();
+    const currentRetry = retryCount ?? 1;
 
     const { queue } = this.getQueueConfig<T>(messageType);
 
@@ -59,9 +67,27 @@ export class QueueService {
 
     const payload = Buffer.from(JSON.stringify(message)).toString("base64");
 
-    const response = await this.queueClient.sendMessage(payload);
+    try {
+      const response = await this.queueClient.sendMessage(payload);
+      return response._response.status === 201;
+    } catch (error) {
+      if (currentRetry > maxRetries) {
+        this.logger.error(
+          `Correlation: ${correlationId}: [IDP Lock] failed to send message to lock user queue for user ${data.identityId}`,
+          {
+            error,
+          }
+        );
+      }
 
-    return response._response.status === 201;
+      this.createQueueMessage(
+        messageType,
+        data,
+        correlationId,
+        maxRetries,
+        currentRetry + 1
+      );
+    }
   }
 
   async handleMessage<T extends QueueMessageEnum>(

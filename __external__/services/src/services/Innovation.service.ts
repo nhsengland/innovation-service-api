@@ -1324,7 +1324,7 @@ export class InnovationService extends BaseService<Innovation> {
       const units = await org.organisationUnits;
       // filter out inactive units. See comment above on the findInnovation method.
       // Oh yes. The rare case where '==' should be used. This is called juggle-checking. It will test for both null and undefined.
-      resolvedUnits.push(units.filter(unit => unit.inactivatedAt == null));
+      resolvedUnits.push(units.filter((unit) => unit.inactivatedAt == null));
     }
 
     const unitShares = resolvedUnits.flatMap((r) => r.map((u) => u.id));
@@ -1362,14 +1362,18 @@ export class InnovationService extends BaseService<Innovation> {
     // the finInnovation method is quite old and has some crazy filters and checks going on there.
     // Since we are migrating all that stuff to the new function app architecture where this sort of queries are done properly,
     // I deem as a waste of time and energy fixing that method.
-    // The practical effect of this decision is filtering out inactivated organisations in the app logic. 
+    // The practical effect of this decision is filtering out inactivated organisations in the app logic.
     // And again, if you are cringing with the '==', this is called juggle-checking. It will test for both null and undefined.
     // The rare case where double equality is actually useful.
-    const shares = innovation.organisationShares.filter((organisation) => organisation.inactivatedAt == null);
+    const shares = innovation.organisationShares.filter(
+      (organisation) => organisation.inactivatedAt == null
+    );
 
     const result = shares?.map((os: Organisation) => {
       const organisationSupports = supports.filter(
-        (is: InnovationSupport) => is.organisationUnit.organisation.id === os.id && is.organisationUnit.inactivatedAt == null // again. juggle-checking.
+        (is: InnovationSupport) =>
+          is.organisationUnit.organisation.id === os.id &&
+          is.organisationUnit.inactivatedAt == null // again. juggle-checking.
       );
 
       let status: InnovationSupportStatus = InnovationSupportStatus.UNASSIGNED;

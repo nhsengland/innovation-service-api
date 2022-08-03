@@ -1,5 +1,7 @@
 import { AccessorOrganisationRole, OrganisationUnit } from "@domain/index";
+import { QueueMessageEnum } from "@services/enums/queue.enum";
 import { OrganisationModel } from "@services/models/OrganisationModel";
+import { QueueContextType } from "@services/types/queue";
 import axios from "axios";
 
 export async function authenticateWitGraphAPI() {
@@ -261,6 +263,8 @@ export function getOrganisationsFromOrganisationUnitsObj(
           id: unit.id,
           name: unit.name,
           acronym: unit.acronym,
+          isActive: unit.inactivatedAt == null,
+          usersCount: unit.organisationUnitUsers?.length || 0,
         })),
       };
 

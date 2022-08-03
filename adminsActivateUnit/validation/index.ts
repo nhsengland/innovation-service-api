@@ -1,7 +1,7 @@
 import Joi = require("joi");
 
 const payloadSchema = Joi.object({
-  organisationUnitIds: Joi.array().items(Joi.string()),
+  organisationUnitId: Joi.string(),
 }).required();
 
 export const ValidatePayload = (data: object): any => {

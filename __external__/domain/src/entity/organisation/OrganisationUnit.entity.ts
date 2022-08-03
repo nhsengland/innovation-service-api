@@ -32,7 +32,7 @@ export class OrganisationUnit extends Base {
 
   @Column({ name: "inactivated_at", nullable: true })
   inactivatedAt: Date;
-  
+
   //relationships
   @ManyToOne(() => Organisation, { nullable: false })
   @JoinColumn({ name: "organisation_id" })
@@ -66,5 +66,4 @@ export class OrganisationUnit extends Base {
 
     return newObj;
   }
-
 }

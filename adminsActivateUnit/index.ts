@@ -16,7 +16,7 @@ import { CustomContext, Severity } from "../utils/types";
 import * as persistence from "./persistence";
 import * as validation from "./validation";
 
-class AdminsCreateUser {
+class AdminsActivateUnit {
   @AppInsights()
   @SQLConnector()
   @Validator(validation.ValidatePayload, "body", "Invalid Payload")
@@ -33,10 +33,11 @@ class AdminsCreateUser {
 
     let result;
     try {
-      result = await persistence.inactivateUnits(
-        context,
-        body.organisationUnitIds
-      );
+      result = await persistence.activateUnit(context, body.organisationUnitId);
+      if (result.error) {
+        context.res = Responsify.BadRequest({ error: result.error.message });
+        return;
+      }
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);
@@ -48,4 +49,4 @@ class AdminsCreateUser {
   }
 }
 
-export default AdminsCreateUser.httpTrigger;
+export default AdminsActivateUnit.httpTrigger;

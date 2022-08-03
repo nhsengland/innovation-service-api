@@ -23,6 +23,7 @@ import {
   Connection,
   EntityManager,
   EntityMetadata,
+  FindOneOptions,
   FindOptionsUtils,
   getConnection,
   getRepository,
@@ -79,7 +80,10 @@ export class OrganisationService extends BaseService<Organisation> {
     return await this.repository.find(filterOptions);
   }
 
-  async findAllUnits(filter: any, excludeInactive?: boolean): Promise<OrganisationUnit[]> {
+  async findAllUnits(
+    filter: any,
+    excludeInactive?: boolean
+  ): Promise<OrganisationUnit[]> {
     if (!filter) {
       throw new InvalidParamsError("Invalid filter.");
     }
@@ -89,10 +93,10 @@ export class OrganisationService extends BaseService<Organisation> {
     };
 
     if (excludeInactive) {
-      filterOptions =  {
+      filterOptions = {
         ...filterOptions,
         inactivatedAt: IsNull(),
-      }
+      };
     }
 
     return await this.orgUnitRepo.find(filterOptions);
@@ -159,17 +163,16 @@ export class OrganisationService extends BaseService<Organisation> {
   }
 
   async findUserOrganisations(userId: string): Promise<OrganisationUser[]> {
-
-    const query = this.orgUserRepo.createQueryBuilder('organisationUser')
-    .leftJoinAndSelect('organisationUser.organisation', 'org')
-    .leftJoinAndSelect('org.organisationUnits', 'units')
-    .leftJoinAndSelect('organisationUser.user', 'usr')
-    .where('usr.id = :userId', {userId})
-    .andWhere('units.inactivated_at is NULL')
-    .andWhere('org.inactivated_at is NULL');
+    const query = this.orgUserRepo
+      .createQueryBuilder("organisationUser")
+      .leftJoinAndSelect("organisationUser.organisation", "org")
+      .leftJoinAndSelect("org.organisationUnits", "units")
+      .leftJoinAndSelect("organisationUser.user", "usr")
+      .where("usr.id = :userId", { userId })
+      .andWhere("units.inactivated_at is NULL")
+      .andWhere("org.inactivated_at is NULL");
 
     return await query.getMany();
-
   }
 
   async findUserFromUnitUsers(
@@ -280,9 +283,10 @@ export class OrganisationService extends BaseService<Organisation> {
   }
 
   async findOrganisationUnitById(
-    organisationUnitId: string
+    organisationUnitId: string,
+    options?: FindOneOptions<OrganisationUnit>
   ): Promise<OrganisationUnit> {
-    return this.orgUnitRepo.findOne(organisationUnitId);
+    return this.orgUnitRepo.findOne(organisationUnitId, options);
   }
 
   async findOrganisationUnitsByIds(
@@ -300,14 +304,13 @@ export class OrganisationService extends BaseService<Organisation> {
     organisationId: string,
     transaction?: EntityManager
   ): Promise<{ count: number }> {
-
     if (transaction) {
-      const count  = await transaction
+      const count = await transaction
         .createQueryBuilder(OrganisationUnit, "unit")
         .where("unit.inactivatedAt IS NULL")
         .andWhere("unit.organisation_id = :organisationId", { organisationId })
         .getCount();
-      
+
       return { count };
     }
 
@@ -366,6 +369,8 @@ export class OrganisationService extends BaseService<Organisation> {
     const org = await this.repository
       .createQueryBuilder("organisation")
       .leftJoinAndSelect("organisation.organisationUnits", "units")
+      .leftJoinAndSelect("units.organisationUnitUsers", "unit_users" ) // so that the relation is loaded in the entity.
+      .leftJoinAndSelect("unit_users.organisationUnit", "user_unit") // so that the relation is loaded in the entity. required to get a mapping of user counts
       .where("organisation.type = :type", {
         type: OrganisationType.ACCESSOR,
       })
@@ -376,16 +381,28 @@ export class OrganisationService extends BaseService<Organisation> {
       .getOne();
 
     const orgUnits = await org.organisationUnits;
+    const usersFromEachUnit = await Promise.all(orgUnits.map( u => u.organisationUnitUsers));
+    const users = usersFromEachUnit.flatMap(ufeu => ufeu.map(u => ({
+      unit: u.organisationUnit.id,
+      count: ufeu.length
+    })))
 
     return {
       id: org.id,
       name: org.name,
       acronym: org.acronym,
-      organisationUnits: orgUnits?.map((unit) => ({
-        id: unit.id,
-        name: unit.name,
-        acronym: unit.acronym,
-      })),
+      organisationUnits: orgUnits?.map((unit) => {
+        
+        const usersCount = users.find(u => u.unit === unit.id)?.count || 0;
+
+        return {
+          id: unit.id,
+          name: unit.name,
+          acronym: unit.acronym,
+          isActive: unit.inactivatedAt == null, // juggle undefined or null
+          usersCount,
+        };
+      }),
     };
   }
 
