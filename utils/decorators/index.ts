@@ -312,7 +312,7 @@ export function AllowedUserType(...type: UserType[]) {
         context.res = Responsify.Unauthorized({ locked: true });
         return;
       }
-      
+
       /// TODO:  REMOVE AFTER FTSI REFACTOR
       if (!user) {
         context.auth.requestUser = {

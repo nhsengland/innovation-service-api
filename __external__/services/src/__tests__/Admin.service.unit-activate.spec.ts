@@ -63,10 +63,9 @@ describe("[Admin Service unit activation suite", () => {
     });
     jest.spyOn(helpers, "saveB2CUser").mockImplementation();
     jest.spyOn(UserService.prototype, "updateB2CUser").mockResolvedValue(true);
-    
 
     const accessorUser1 = await fixtures.createAccessorUser();
-   
+
     const accessorOrganisation = await fixtures.createOrganisation(
       OrganisationType.ACCESSOR
     );
@@ -76,30 +75,30 @@ describe("[Admin Service unit activation suite", () => {
       accessorOrganisation,
       AccessorOrganisationRole.QUALIFYING_ACCESSOR
     );
-  
 
     const organisationUnit1 = await fixtures.createOrganisationUnit(
       accessorOrganisation,
-       { inactivatedAt: new Date()}
+      { inactivatedAt: new Date() }
     );
 
     await fixtures.addOrganisationUserToOrganisationUnit(
       organisationAccessorUser1,
       organisationUnit1
     );
- 
 
     const requestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
-      externalId: 'C7095D87-C3DF-46F6-A503-001B083F4630',
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
-    const actual = await adminService.activateOrganisationUnit(requestUser, organisationUnit1.id)
-
+    const actual = await adminService.activateOrganisationUnit(
+      requestUser,
+      organisationUnit1.id
+    );
 
     expect(actual).toBeDefined();
-    expect(actual.status).toBe('OK');
+    expect(actual.status).toBe("OK");
   });
 
   it("Should not activate Organisation Unit if it does not have at least one Qualifying Accessor", async () => {
@@ -119,10 +118,9 @@ describe("[Admin Service unit activation suite", () => {
     });
     jest.spyOn(helpers, "saveB2CUser").mockImplementation();
     jest.spyOn(UserService.prototype, "updateB2CUser").mockResolvedValue(true);
-    
 
     const accessorUser1 = await fixtures.createAccessorUser();
-   
+
     const accessorOrganisation = await fixtures.createOrganisation(
       OrganisationType.ACCESSOR
     );
@@ -132,37 +130,38 @@ describe("[Admin Service unit activation suite", () => {
       accessorOrganisation,
       AccessorOrganisationRole.ACCESSOR
     );
-  
 
     const organisationUnit1 = await fixtures.createOrganisationUnit(
       accessorOrganisation,
-       { inactivatedAt: new Date()}
+      { inactivatedAt: new Date() }
     );
 
     await fixtures.addOrganisationUserToOrganisationUnit(
       organisationAccessorUser1,
       organisationUnit1
     );
- 
 
     const requestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
-      externalId: 'C7095D87-C3DF-46F6-A503-001B083F4630',
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
     let err;
 
     try {
-      await adminService.activateOrganisationUnit(requestUser, organisationUnit1.id)
-      
+      await adminService.activateOrganisationUnit(
+        requestUser,
+        organisationUnit1.id
+      );
     } catch (error) {
-      err = error;      
+      err = error;
     }
 
-
     expect(err).toBeDefined();
-    expect(err.message).toContain('Missing at least one assigned Qualifying Accessor');
+    expect(err.message).toContain(
+      "Missing at least one assigned Qualifying Accessor"
+    );
   });
 
   it("Should not activate Organisation Unit if it does not assigned users at all", async () => {
@@ -182,32 +181,36 @@ describe("[Admin Service unit activation suite", () => {
     });
     jest.spyOn(helpers, "saveB2CUser").mockImplementation();
     jest.spyOn(UserService.prototype, "updateB2CUser").mockResolvedValue(true);
-    
+
     const accessorOrganisation = await fixtures.createOrganisation(
       OrganisationType.ACCESSOR
     );
 
     const organisationUnit1 = await fixtures.createOrganisationUnit(
       accessorOrganisation,
-       { inactivatedAt: new Date()}
+      { inactivatedAt: new Date() }
     );
 
     const requestUser = {
       id: "C7095D87-C3DF-46F6-A503-001B083F4630",
-      externalId: 'C7095D87-C3DF-46F6-A503-001B083F4630',
+      externalId: "C7095D87-C3DF-46F6-A503-001B083F4630",
       type: UserType.ADMIN,
     };
 
     let err;
 
     try {
-      await adminService.activateOrganisationUnit(requestUser, organisationUnit1.id)
-      
+      await adminService.activateOrganisationUnit(
+        requestUser,
+        organisationUnit1.id
+      );
     } catch (error) {
-      err = error;      
+      err = error;
     }
 
     expect(err).toBeDefined();
-    expect(err.message).toContain('Missing at least one assigned Qualifying Accessor');
+    expect(err.message).toContain(
+      "Missing at least one assigned Qualifying Accessor"
+    );
   });
 });

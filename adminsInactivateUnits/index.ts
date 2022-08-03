@@ -33,7 +33,10 @@ class AdminsCreateUser {
 
     let result;
     try {
-      result = await persistence.inactivateUnits(context, body.organisationUnitIds);
+      result = await persistence.inactivateUnits(
+        context,
+        body.organisationUnitIds
+      );
     } catch (error) {
       context.logger(`[${req.method}] ${req.url}`, Severity.Error, { error });
       context.log.error(error);

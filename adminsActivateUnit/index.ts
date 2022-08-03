@@ -33,10 +33,7 @@ class AdminsActivateUnit {
 
     let result;
     try {
-      result = await persistence.activateUnit(
-        context,
-        body.organisationUnitId
-      );
+      result = await persistence.activateUnit(context, body.organisationUnitId);
       if (result.error) {
         context.res = Responsify.BadRequest({ error: result.error.message });
         return;

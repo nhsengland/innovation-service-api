@@ -730,7 +730,6 @@ export class AdminService {
     requestUser: RequestUser,
     unitIds: string[]
   ): Promise<UpdateResult> {
-
     if (requestUser.type !== "ADMIN") {
       throw new Error("You must be an Admin to execute this operation.");
     }
@@ -825,10 +824,9 @@ export class AdminService {
     unitId: string
   ): Promise<{
     status: "OK" | "ERROR";
-    updatedUnit?: { id: string; name: string; };
+    updatedUnit?: { id: string; name: string };
     error?: Error;
   }> {
-
     // ENSURE ONLY ADMINS CAN RUN THIS
     if (requestUser.type !== "ADMIN") {
       throw new Error("You must be an Admin to execute this operation.");
@@ -848,7 +846,8 @@ export class AdminService {
 
     const unitUsers = await unit.organisationUnitUsers;
 
-    const canActivate = unitUsers. filter(
+    const canActivate =
+      unitUsers.filter(
         (unitUser) =>
           unitUser.organisationUser.role ===
           AccessorOrganisationRole.QUALIFYING_ACCESSOR
@@ -861,7 +860,6 @@ export class AdminService {
     }
 
     try {
-      
       const result = await this.connection
         .createQueryBuilder(OrganisationUnit, "organisationUnit")
         .update()

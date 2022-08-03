@@ -48,7 +48,7 @@ export class QueueService {
     messageType: T,
     data: QueueContextType<T>,
     correlationId: string,
-    maxRetries: number = 3,
+    maxRetries = 3,
     retryCount?: number
   ): Promise<boolean> {
     const currentRetry = retryCount ?? 1;

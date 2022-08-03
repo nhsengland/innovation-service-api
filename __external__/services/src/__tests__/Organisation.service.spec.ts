@@ -168,7 +168,6 @@ describe("Organisation Service Suite", () => {
     expect(actual.length).toEqual(1);
   });
 
-
   it("should return user active organisations when findUserOrganisations() [0]", async () => {
     const organisationObj = Organisation.new({
       ...dummy.baseOrganisation,
@@ -460,7 +459,6 @@ describe("Organisation Service Suite", () => {
     expect(result.length).toEqual(1);
     expect(result[0].organisationUnits.length).toEqual(1);
   });
-
 
   it("should update organisation name and acronym", async () => {
     // Arrange
